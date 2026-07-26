@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Product } from "@/lib/db";
 import { formatPriceRange } from "@/lib/format";
-import Icon from "./Icon";
+import IconChip from "./IconChip";
 import RequestQuoteButton from "./RequestQuoteButton";
 
 export default function ProductCard({ product }: { product: Product }) {
@@ -9,9 +9,7 @@ export default function ProductCard({ product }: { product: Product }) {
     <div className="group bg-white rounded-2xl border border-cream-300 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition p-5 flex flex-col gap-3">
       <Link href={`/product/${product.slug}`} className="flex flex-col gap-3 min-w-0">
         <div className="flex items-start justify-between gap-3">
-          <span className="w-10 h-10 rounded-xl bg-cream-100 text-ink-700 flex items-center justify-center">
-            <Icon name={product.category_icon ?? "box"} size={22} />
-          </span>
+          <IconChip name={product.category_icon ?? "box"} size={22} chip="md" tone="neutral" />
           <span
             className={`text-[10px] font-bold uppercase tracking-wide rounded-full px-2.5 py-1 ${
               product.scheme === "CRS"

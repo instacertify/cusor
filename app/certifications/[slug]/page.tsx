@@ -8,6 +8,7 @@ import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
+import IconChip from "@/components/IconChip";
 import CertProductCatalog from "@/components/CertProductCatalog";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import {
@@ -88,9 +89,7 @@ export default async function CertificationPage({ params }: Props) {
             </span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="w-16 h-16 rounded-2xl bg-butter-300/40 text-butter-700 flex items-center justify-center shrink-0">
-              <Icon name={cert.icon} size={34} />
-            </span>
+            <IconChip name={cert.icon} size={34} chip="hero" />
             <div>
               <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
                 {cert.name}
@@ -192,9 +191,7 @@ export default async function CertificationPage({ params }: Props) {
               className="bg-white rounded-2xl border border-cream-300 shadow-card hover:shadow-card-hover transition p-4 flex flex-col gap-2"
             >
               <Link href={`/certifications/${c.slug}`} className="group flex items-center gap-3">
-                <span className="w-9 h-9 rounded-lg bg-cream-100 text-ink-700 flex items-center justify-center shrink-0 group-hover:bg-butter-300/40 group-hover:text-butter-700 transition">
-                  <Icon name={c.icon} size={19} />
-                </span>
+                <IconChip name={c.icon} size={19} chip="sm" tone="neutral" className="w-9 h-9" />
                 <span>
                   <span className="block text-sm font-bold text-ink-950 group-hover:text-butter-700 transition">{c.name}</span>
                   <span className="block text-[11px] text-ink-500">{c.region}</span>

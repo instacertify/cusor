@@ -784,6 +784,7 @@ export function seedDatabase(db: SqliteDatabase) {
       logo_primary: "/brand/certko-logo.png",
       logo_on_dark: "/brand/certko-logo-light.png",
       color_scheme: "certko",
+      icon_style: "colorful",
       ga4_measurement_id: "",
       gtm_container_id: "",
       google_site_verification: "",

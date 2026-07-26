@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Icon from "@/components/Icon";
+import IconChip from "@/components/IconChip";
 import { getCategories } from "@/lib/queries";
 import { createCategory } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
@@ -48,9 +48,7 @@ export default async function AdminCategories({ searchParams }: Props) {
             href={`/admin/categories/${c.id}`}
             className="bg-white rounded-2xl border border-cream-300 shadow-card hover:shadow-card-hover transition p-5 flex items-center gap-4"
           >
-            <span className="shrink-0 w-11 h-11 rounded-xl bg-cream-100 text-ink-700 flex items-center justify-center">
-              <Icon name={c.icon} size={24} />
-            </span>
+            <IconChip name={c.icon} size={24} chip="lg" tone="neutral" />
             <span className="min-w-0">
               <span className="block font-display font-bold text-ink-950 truncate">{c.name}</span>
               <span className="block text-xs text-ink-500">{c.product_count} products · {c.timeline}</span>

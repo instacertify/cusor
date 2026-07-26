@@ -7,7 +7,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
-import Icon from "@/components/Icon";
+import IconChip from "@/components/IconChip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { getFaqs, getTestingServiceBySlug, getTestingServices } from "@/lib/queries";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
@@ -131,8 +131,13 @@ export default async function TestingServicePage({ params }: Props) {
             className="rounded-3xl border border-cream-300 shadow-card object-cover w-full"
           />
         ) : (
-          <div className="rounded-3xl border border-cream-300 bg-cream-100 p-10 flex items-center justify-center text-butter-700">
-            <Icon name={svc.category_icon || "microscope"} size={64} />
+          <div className="rounded-3xl border border-cream-300 bg-cream-50 p-10 flex items-center justify-center">
+            <IconChip
+              name={svc.category_icon || "microscope"}
+              size={48}
+              chip="hero"
+              className="w-24 h-24 rounded-3xl"
+            />
           </div>
         )}
       </div>

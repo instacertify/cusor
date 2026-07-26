@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
+import IconChip from "@/components/IconChip";
 import SearchBox from "@/components/SearchBox";
 import ProductCard from "@/components/ProductCard";
 import FaqAccordion from "@/components/FaqAccordion";
@@ -107,9 +108,7 @@ export default async function HomePage() {
                 <span className="absolute top-5 right-5 font-display text-4xl sm:text-5xl font-semibold text-cream-200" aria-hidden>
                   {i + 1}
                 </span>
-                <span className="inline-flex w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-butter-300/40 text-butter-700 items-center justify-center">
-                  <Icon name={s.icon} size={26} />
-                </span>
+                <IconChip name={s.icon} size={26} chip="xl" className="sm:w-14 sm:h-14 sm:rounded-2xl" />
                 <h3 className="font-display text-lg font-semibold text-ink-950 mt-4 mb-2">{s.title}</h3>
                 <p className="text-sm text-ink-600 leading-relaxed">{s.text}</p>
                 {isHelp ? (
@@ -195,9 +194,7 @@ export default async function HomePage() {
               href={`/category/${c.slug}`}
               className="group bg-white rounded-2xl border border-cream-300 shadow-card hover:shadow-card-hover sm:hover:-translate-y-0.5 transition p-4 sm:p-5 flex items-center gap-3 min-h-[4.5rem]"
             >
-              <span className="shrink-0 w-11 h-11 rounded-xl bg-cream-100 text-ink-700 flex items-center justify-center group-hover:bg-butter-300/40 group-hover:text-butter-700 transition">
-                <Icon name={c.icon} size={24} />
-              </span>
+              <IconChip name={c.icon} size={24} chip="lg" tone="neutral" />
               <span className="min-w-0">
                 <span className="block font-semibold text-ink-950 text-sm leading-snug group-hover:text-butter-700 transition line-clamp-2">{c.name}</span>
                 <span className="block text-xs text-ink-500 mt-0.5">{c.product_count} products</span>
@@ -219,9 +216,7 @@ export default async function HomePage() {
             <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
               <div className="min-w-0">
                 <h2 className="font-display text-xl sm:text-3xl font-semibold text-ink-950 flex items-start sm:items-center gap-3">
-                  <span className="inline-flex w-10 h-10 rounded-xl bg-butter-300/40 text-butter-700 items-center justify-center shrink-0">
-                    <Icon name="bell" size={22} />
-                  </span>
+                  <IconChip name="bell" size={22} chip="md" />
                   <span className="leading-snug">Never Miss a New Mandatory Product</span>
                 </h2>
                 <p className="text-ink-600 mt-2 max-w-2xl text-sm sm:text-base">

@@ -39,7 +39,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         href: "/admin/settings",
         label: "Site Settings",
         icon: "settings",
-        description: "Brand, color scheme, contact, analytics, clear cache",
+        description: "Brand, color scheme, icon style, contact, analytics",
       },
       {
         href: "/admin/account",

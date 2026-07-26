@@ -5,6 +5,7 @@ import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
+import IconChip from "@/components/IconChip";
 import SearchBox from "@/components/SearchBox";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { getFaqs, getTestingCategories } from "@/lib/queries";
@@ -50,9 +51,7 @@ export default function TestingIndexPage() {
           >
             <Link href={`/testing/${c.slug}`} className="flex flex-col gap-3 min-w-0">
               <div className="flex items-center justify-between">
-                <span className="w-12 h-12 rounded-xl bg-butter-300/40 text-butter-700 flex items-center justify-center">
-                  <Icon name={c.icon} size={26} />
-                </span>
+                <IconChip name={c.icon} size={26} chip="xl" />
                 <span className="text-xs font-bold bg-cream-200 text-ink-700 rounded-full px-3 py-1">
                   {c.service_count ?? 0} test{(c.service_count ?? 0) === 1 ? "" : "s"}
                 </span>

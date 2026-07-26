@@ -5,6 +5,7 @@ import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
+import IconChip from "@/components/IconChip";
 import { getCategories, getFaqs } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
 
@@ -48,9 +49,7 @@ export default function ProductsPage() {
             className="group bg-white rounded-3xl border border-cream-300 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition p-6 flex flex-col gap-3"
           >
             <div className="flex items-center justify-between">
-              <span className="w-12 h-12 rounded-xl bg-cream-100 text-ink-700 flex items-center justify-center group-hover:bg-butter-300/40 group-hover:text-butter-700 transition">
-                <Icon name={c.icon} size={26} />
-              </span>
+              <IconChip name={c.icon} size={26} chip="xl" tone="neutral" />
               <span className="text-xs font-bold bg-butter-300/50 text-butter-700 rounded-full px-3 py-1">
                 {c.product_count} products
               </span>

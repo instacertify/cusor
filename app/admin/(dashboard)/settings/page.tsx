@@ -2,9 +2,11 @@ import Link from "next/link";
 import { getSettings } from "@/lib/db";
 import { isMailConfigured } from "@/lib/mail";
 import { resolveColorScheme } from "@/lib/color-schemes";
+import { resolveIconStyle } from "@/lib/icon-style";
 import { saveSettings } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import ColorSchemePicker from "@/components/ColorSchemePicker";
+import IconStylePicker from "@/components/IconStylePicker";
 
 export const dynamic = "force-dynamic";
 
@@ -22,12 +24,13 @@ export default async function SettingsPage({ searchParams }: Props) {
   const logoOnDark = s.logo_on_dark || DEFAULT_LOGO_ON_DARK;
   const mailReady = isMailConfigured();
   const colorScheme = resolveColorScheme(s.color_scheme);
+  const iconStyle = resolveIconStyle(s.icon_style);
 
   return (
     <div>
       <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Site Settings</h1>
       <p className="text-ink-600 text-sm mb-6">
-        Brand hub: color scheme, logos, hero copy, contact details and analytics. Email delivery is under{" "}
+        Brand hub: color scheme, icons, logos, hero copy, contact details and analytics. Email delivery is under{" "}
         <Link href="/admin/email" className="font-semibold text-butter-700 hover:underline">
           Email / SMTP
         </Link>
@@ -44,6 +47,19 @@ export default async function SettingsPage({ searchParams }: Props) {
             <strong className="text-ink-950">{colorScheme.name}</strong>.
           </p>
           <ColorSchemePicker value={colorScheme.id} />
+        </section>
+
+        <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
+          <h2 className="font-display font-bold text-ink-950">Icon style</h2>
+          <p className="text-sm text-ink-600">
+            Choose colorful or plain icons for category chips, certifications, testing and navigation
+            across the whole website. Current:{" "}
+            <strong className="text-ink-950">
+              {iconStyle === "colorful" ? "Colorful icons" : "Plain icons"}
+            </strong>
+            .
+          </p>
+          <IconStylePicker value={iconStyle} />
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">

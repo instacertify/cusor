@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Icon from "./Icon";
+import IconChip from "./IconChip";
 
 export interface DropItem {
   href: string;
@@ -65,11 +66,9 @@ export default function NavDropdown({
                   onClick={() => setOpen(false)}
                   className="flex items-center gap-3 px-4 py-2.5 hover:bg-cream-100 transition"
                 >
-                  {item.icon && (
-                    <span className="shrink-0 w-8 h-8 rounded-lg bg-cream-100 text-ink-700 flex items-center justify-center">
-                      <Icon name={item.icon} size={17} />
-                    </span>
-                  )}
+                  {item.icon ? (
+                    <IconChip name={item.icon} size={17} chip="sm" tone="neutral" />
+                  ) : null}
                   <span className="min-w-0">
                     <span className="block text-sm font-semibold text-ink-950">{item.label}</span>
                     {item.detail && (

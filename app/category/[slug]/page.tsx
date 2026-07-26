@@ -6,7 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
-import Icon from "@/components/Icon";
+import IconChip from "@/components/IconChip";
 import {
   getCategoryBySlug,
   getProductsByCategory,
@@ -69,9 +69,7 @@ export default async function CategoryPage({ params }: Props) {
       <div className="grid lg:grid-cols-[1.4fr_1fr] gap-8 items-center">
         <div>
           <div className="flex items-center gap-4">
-            <span className="w-16 h-16 rounded-2xl bg-butter-300/40 text-butter-700 flex items-center justify-center shrink-0">
-              <Icon name={category.icon} size={34} />
-            </span>
+            <IconChip name={category.icon} size={34} chip="hero" />
             <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">
               {category.name}
             </h1>

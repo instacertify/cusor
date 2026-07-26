@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Icon from "@/components/Icon";
+import IconChip from "@/components/IconChip";
 import { getTestingCategories, getTestingServices } from "@/lib/queries";
 import { createTestingCategory, saveTestingService } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
@@ -152,9 +152,7 @@ export default async function AdminTesting({ searchParams }: Props) {
                     className="w-11 h-11 rounded-xl object-cover border border-cream-200 shrink-0"
                   />
                 ) : (
-                  <span className="shrink-0 w-11 h-11 rounded-xl bg-cream-100 text-ink-700 flex items-center justify-center">
-                    <Icon name={c.icon} size={24} />
-                  </span>
+                  <IconChip name={c.icon} size={24} chip="lg" tone="neutral" />
                 )}
                 <span className="min-w-0">
                   <span className="block font-display font-bold text-ink-950 truncate">{c.name}</span>

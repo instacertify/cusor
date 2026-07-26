@@ -181,6 +181,12 @@ export async function saveSettings(formData: FormData) {
     setSetting("color_scheme", isColorSchemeId(scheme) ? scheme : DEFAULT_COLOR_SCHEME);
   }
 
+  const iconStyle = String(formData.get("icon_style") ?? "").trim();
+  if (iconStyle) {
+    const { isIconStyleId, DEFAULT_ICON_STYLE } = await import("@/lib/icon-style");
+    setSetting("icon_style", isIconStyleId(iconStyle) ? iconStyle : DEFAULT_ICON_STYLE);
+  }
+
   revalidatePath("/", "layout");
   redirect("/admin/settings?saved=1");
 }

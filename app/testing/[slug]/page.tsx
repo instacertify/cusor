@@ -8,6 +8,7 @@ import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
+import IconChip from "@/components/IconChip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import {
   getFaqs,
@@ -75,9 +76,7 @@ export default async function TestingCategoryPage({ params }: Props) {
       <div className="grid lg:grid-cols-[1.4fr_1fr] gap-10 items-center">
         <div>
           <div className="flex items-center gap-4">
-            <span className="w-16 h-16 rounded-2xl bg-butter-300/40 text-butter-700 flex items-center justify-center shrink-0">
-              <Icon name={cat.icon} size={34} />
-            </span>
+            <IconChip name={cat.icon} size={34} chip="hero" />
             <div>
               <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
                 {cat.name}
@@ -177,7 +176,7 @@ export default async function TestingCategoryPage({ params }: Props) {
                 href={`/testing/${c.slug}`}
                 className="inline-flex items-center gap-2 rounded-xl border border-cream-300 bg-white px-4 py-2 text-sm font-semibold text-ink-800 hover:border-butter-500"
               >
-                <Icon name={c.icon} size={16} />
+                <IconChip name={c.icon} size={16} chip="sm" tone="neutral" className="w-7 h-7" />
                 {c.name}
               </Link>
             ))}

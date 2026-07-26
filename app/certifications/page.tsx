@@ -4,6 +4,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import Icon from "@/components/Icon";
+import IconChip from "@/components/IconChip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { getCertifications, getCertificationCoveredProducts } from "@/lib/queries";
 
@@ -42,9 +43,7 @@ export default function CertificationsPage() {
           >
             <Link href={`/certifications/${c.slug}`} className="flex flex-col gap-3 min-w-0">
               <div className="flex items-center justify-between">
-                <span className="w-12 h-12 rounded-xl bg-butter-300/40 text-butter-700 flex items-center justify-center">
-                  <Icon name={c.icon} size={26} />
-                </span>
+                <IconChip name={c.icon} size={26} chip="xl" />
                 <span className="text-xs font-bold bg-cream-200 text-ink-700 rounded-full px-3 py-1">
                   {c.region}
                 </span>

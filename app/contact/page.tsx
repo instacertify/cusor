@@ -3,6 +3,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import FaqAccordion from "@/components/FaqAccordion";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import Icon from "@/components/Icon";
+import IconChip from "@/components/IconChip";
 import ContactForm from "@/components/ContactForm";
 import ContactThankYou from "@/components/ContactThankYou";
 import { getPage, getFaqs } from "@/lib/queries";
@@ -58,9 +59,7 @@ export default async function ContactPage({ searchParams }: Props) {
           <div className="mt-8 space-y-5">
             {PROMISES.map((p) => (
               <div key={p.title} className="flex gap-4">
-                <span className="shrink-0 w-11 h-11 rounded-xl bg-butter-300/40 text-butter-700 flex items-center justify-center">
-                  <Icon name={p.icon} size={22} />
-                </span>
+                <IconChip name={p.icon} size={22} chip="lg" />
                 <div>
                   <h3 className="font-display font-bold text-ink-950">{p.title}</h3>
                   <p className="text-sm text-ink-600">{p.text}</p>
