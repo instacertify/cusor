@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
-  <rect width="48" height="48" rx="10" fill="#16263D"/>
-  <text x="24" y="24" text-anchor="middle" font-family="Poppins, Arial, Helvetica, sans-serif" font-weight="600" font-size="16" fill="#FAF6EE">c<tspan fill="#F7C453">k</tspan></text>
-  <path d="M14 33l3.5 3.5L14 40" stroke="#FAF6EE" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M22 33l3.5 3.5L22 40" stroke="#F7C453" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M30 33l3.5 3.5L30 40" stroke="#F7C453" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
