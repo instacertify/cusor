@@ -73,47 +73,52 @@ export default function SearchBox({
     <div ref={boxRef} className="relative w-full">
       <div
         className={`flex items-center gap-2 bg-white rounded-2xl border border-cream-300 focus-within:border-butter-500 focus-within:ring-4 focus-within:ring-butter-300/30 transition ${
-          large ? "px-5 py-4 shadow-butter" : "px-4 py-2.5 shadow-card"
+          large
+            ? "flex-col sm:flex-row px-3 py-3 sm:px-5 sm:py-4 shadow-butter"
+            : "px-3 py-2.5 sm:px-4 shadow-card"
         }`}
       >
-        <svg
-          width={large ? 22 : 18}
-          height={large ? 22 : 18}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          className="text-ink-400 shrink-0"
-        >
-          <circle cx="11" cy="11" r="7" />
-          <path d="M21 21l-4.3-4.3" strokeLinecap="round" />
-        </svg>
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onFocus={() => results.length && setOpen(true)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") submit();
-            if (e.key === "ArrowDown") {
-              e.preventDefault();
-              setActive((a) => Math.min(a + 1, results.length - 1));
-            }
-            if (e.key === "ArrowUp") {
-              e.preventDefault();
-              setActive((a) => Math.max(a - 1, -1));
-            }
-            if (e.key === "Escape") setOpen(false);
-          }}
-          placeholder={placeholder}
-          aria-label="Search products, standards and labs"
-          className={`w-full bg-transparent outline-none placeholder:text-ink-400 text-ink-950 ${
-            large ? "text-lg" : "text-sm"
-          }`}
-        />
+        <div className={`flex items-center gap-2 w-full ${large ? "px-1 sm:px-0" : ""}`}>
+          <svg
+            width={large ? 22 : 18}
+            height={large ? 22 : 18}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="text-ink-400 shrink-0"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4.3-4.3" strokeLinecap="round" />
+          </svg>
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onFocus={() => results.length && setOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") submit();
+              if (e.key === "ArrowDown") {
+                e.preventDefault();
+                setActive((a) => Math.min(a + 1, results.length - 1));
+              }
+              if (e.key === "ArrowUp") {
+                e.preventDefault();
+                setActive((a) => Math.max(a - 1, -1));
+              }
+              if (e.key === "Escape") setOpen(false);
+            }}
+            placeholder={placeholder}
+            aria-label="Search products, standards and labs"
+            className={`w-full min-w-0 bg-transparent outline-none placeholder:text-ink-400 text-ink-950 ${
+              large ? "text-base sm:text-lg py-1.5" : "text-sm"
+            }`}
+          />
+        </div>
         {large && (
           <button
+            type="button"
             onClick={submit}
-            className="shrink-0 bg-ink-900 hover:bg-ink-800 text-white font-semibold rounded-xl px-5 py-2.5 text-sm transition"
+            className="w-full sm:w-auto shrink-0 min-h-11 bg-ink-900 hover:bg-ink-800 text-white font-semibold rounded-xl px-5 py-2.5 text-sm transition"
           >
             Check Now
           </button>
@@ -121,7 +126,7 @@ export default function SearchBox({
       </div>
 
       {open && results.length > 0 && (
-        <div className="absolute z-40 mt-2 w-full bg-white rounded-2xl border border-cream-300 shadow-card-hover overflow-hidden">
+        <div className="absolute z-40 mt-2 w-full max-h-[min(70vh,28rem)] overflow-y-auto bg-white rounded-2xl border border-cream-300 shadow-card-hover">
           {results.map((r, i) => (
             <Link
               key={r.href}

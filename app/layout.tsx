@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -8,6 +8,13 @@ import { getPage } from "@/lib/queries";
 import { buildJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#16263D",
+  viewportFit: "cover",
+};
 
 // CERTKO brand typography: Poppins (500/600) display, Inter (400/500/600) body
 const body = Inter({

@@ -33,14 +33,14 @@ export default async function ContactPage({ searchParams }: Props) {
   const faqs = getFaqs("page:contact");
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-10">
       <Breadcrumbs crumbs={[{ label: "Get Expert Help" }]} />
-      <div className="grid lg:grid-cols-2 gap-12">
+      <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
         <div>
-          <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
+          <h1 className="font-display text-2xl sm:text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
             {page?.hero_heading || "Talk to a BIS expert"}
           </h1>
-          <p className="mt-4 text-lg text-ink-600 leading-relaxed">{page?.hero_subheading}</p>
+          <p className="mt-4 text-base sm:text-lg text-ink-600 leading-relaxed">{page?.hero_subheading}</p>
           <div className="mt-8 space-y-5">
             {PROMISES.map((p) => (
               <div key={p.title} className="flex gap-4">
@@ -63,7 +63,7 @@ export default async function ContactPage({ searchParams }: Props) {
           </p>
         </div>
 
-        <div className="bg-white rounded-3xl border border-cream-300 shadow-card-hover p-8">
+        <div className="bg-white rounded-2xl sm:rounded-3xl border border-cream-300 shadow-card-hover p-5 sm:p-8">
           {sp.sent ? (
             <div className="text-center py-14">
               <span className="inline-flex w-16 h-16 rounded-full bg-green-100 text-green-700 items-center justify-center">
@@ -83,16 +83,16 @@ export default async function ContactPage({ searchParams }: Props) {
               )}
               <div>
                 <label htmlFor="name" className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">Your Name *</label>
-                <input id="name" name="name" required className="w-full rounded-xl border border-cream-300 px-4 py-2.5 text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30" />
+                <input id="name" name="name" required autoComplete="name" className="w-full rounded-xl border border-cream-300 px-4 py-3 text-base sm:text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30 min-h-11" />
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">Email *</label>
-                  <input id="email" name="email" type="email" required className="w-full rounded-xl border border-cream-300 px-4 py-2.5 text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30" />
+                  <input id="email" name="email" type="email" required autoComplete="email" inputMode="email" className="w-full rounded-xl border border-cream-300 px-4 py-3 text-base sm:text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30 min-h-11" />
                 </div>
                 <div>
                   <label htmlFor="phone" className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">Phone</label>
-                  <input id="phone" name="phone" className="w-full rounded-xl border border-cream-300 px-4 py-2.5 text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30" />
+                  <input id="phone" name="phone" type="tel" autoComplete="tel" inputMode="tel" className="w-full rounded-xl border border-cream-300 px-4 py-3 text-base sm:text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30 min-h-11" />
                 </div>
               </div>
               <div>
@@ -102,7 +102,7 @@ export default async function ContactPage({ searchParams }: Props) {
                   name="product"
                   defaultValue={sp.product ?? ""}
                   placeholder="e.g. LED luminaires, plywood, PVC pipes…"
-                  className="w-full rounded-xl border border-cream-300 px-4 py-2.5 text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30"
+                  className="w-full rounded-xl border border-cream-300 px-4 py-3 text-base sm:text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30 min-h-11"
                 />
               </div>
               <div>
@@ -112,10 +112,10 @@ export default async function ContactPage({ searchParams }: Props) {
                   name="message"
                   rows={4}
                   placeholder="Manufacturing location, import or domestic, timeline…"
-                  className="w-full rounded-xl border border-cream-300 px-4 py-2.5 text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30"
+                  className="w-full rounded-xl border border-cream-300 px-4 py-3 text-base sm:text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30"
                 />
               </div>
-              <button className="w-full bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3.5 transition">
+              <button className="w-full min-h-12 bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3.5 transition">
                 Get My Free Quote
               </button>
               <p className="text-[11px] text-ink-500 text-center">

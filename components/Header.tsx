@@ -30,14 +30,14 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-cream-50/90 backdrop-blur border-b border-cream-200">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 flex items-center gap-3 h-16">
-        <Link href="/" aria-label="Certko home" className="shrink-0">
+    <header className="sticky top-0 z-50 bg-cream-50/95 backdrop-blur border-b border-cream-200 pt-[env(safe-area-inset-top)]">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 flex items-center gap-2 sm:gap-3 h-14 sm:h-16">
+        <Link href="/" aria-label="Certko home" className="shrink-0 min-w-0">
           <span className="hidden sm:block">
             <Logo width={180} />
           </span>
           <span className="sm:hidden">
-            <Logo width={148} />
+            <Logo width={132} />
           </span>
         </Link>
         <div className="hidden lg:block flex-1 max-w-sm mx-auto">

@@ -200,13 +200,31 @@ export default async function ProductPage({ params }: Props) {
         <p className="text-ink-600 text-sm mb-6">
           Indicative test charges reported per laboratory, excluding GST. Confirm final quotes directly with the lab.
         </p>
-        <div className="overflow-x-auto bg-white rounded-2xl border border-cream-300 shadow-card">
+        {/* Mobile lab cards */}
+        <div className="space-y-3 sm:hidden">
+          {labs.map((lab) => (
+            <Link
+              key={lab.id}
+              href={`/labs/${lab.slug}`}
+              className="block bg-white rounded-2xl border border-cream-300 p-4 active:bg-cream-50"
+            >
+              <div className="font-semibold text-ink-950 leading-snug">{lab.name}</div>
+              <div className="mt-1 text-sm text-ink-600">
+                {[lab.city, lab.state].filter(Boolean).join(", ") || "India"}
+              </div>
+              <div className="mt-2 text-sm font-semibold text-ink-950">
+                {lab.price != null ? formatINR(lab.price) : "On request"}
+              </div>
+            </Link>
+          ))}
+        </div>
+        <div className="hidden sm:block overflow-x-auto bg-white rounded-2xl border border-cream-300 shadow-card">
           <table className="w-full text-sm min-w-[560px]">
             <thead>
               <tr className="text-left text-xs uppercase tracking-wide text-ink-500 border-b border-cream-200">
-                <th className="px-5 py-3.5 font-bold">Laboratory</th>
-                <th className="px-5 py-3.5 font-bold">Location</th>
-                <th className="px-5 py-3.5 font-bold text-right">Test Price</th>
+                <th className="px-5 py-3.5 font-semibold">Laboratory</th>
+                <th className="px-5 py-3.5 font-semibold">Location</th>
+                <th className="px-5 py-3.5 font-semibold text-right">Test Price</th>
               </tr>
             </thead>
             <tbody>

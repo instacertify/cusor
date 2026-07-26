@@ -7,7 +7,9 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
+import GmarkCategories from "@/components/GmarkCategories";
 import { getCertificationBySlug, getCertifications, getFaqs } from "@/lib/queries";
+import { getGmarkCategories } from "@/lib/gmark";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -102,6 +104,20 @@ export default async function CertificationPage({ params }: Props) {
         className="prose-certko mt-10 max-w-3xl"
         dangerouslySetInnerHTML={{ __html: marked.parse(cert.content) as string }}
       />
+
+      {cert.slug === "g-mark" && (
+        <>
+          <GmarkCategories items={getGmarkCategories()} />
+          <p className="mt-4 text-sm text-ink-600">
+            <a
+              href="/legal/gmark-product-categories.pdf"
+              className="font-semibold text-butter-700 hover:text-butter-800 underline underline-offset-4"
+            >
+              Download GMARK categories &amp; standards matrix (PDF)
+            </a>
+          </p>
+        </>
+      )}
 
       {faqs.length > 0 && (
         <div className="mt-14 max-w-3xl">

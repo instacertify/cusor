@@ -59,26 +59,26 @@ export default function HomePage() {
           className="absolute inset-0 -z-10 bg-cream-50"
           aria-hidden
         />
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-14 pb-16 grid lg:grid-cols-[1.15fr_1fr] gap-10 items-center">
-          <div className="animate-rise">
-            <p className="inline-flex items-center gap-2 bg-white border border-cream-200 rounded-full px-4 py-1.5 text-xs font-semibold text-ink-700 mb-6">
-              <span className="w-2 h-2 rounded-full bg-butter-500 animate-pulse" aria-hidden />
-              {settings.announcement}
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-8 sm:pt-14 pb-10 sm:pb-16 grid lg:grid-cols-[1.15fr_1fr] gap-8 sm:gap-10 items-center">
+          <div className="animate-rise min-w-0">
+            <p className="inline-flex max-w-full items-center gap-2 bg-white border border-cream-200 rounded-full px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs font-semibold text-ink-700 mb-5 sm:mb-6">
+              <span className="w-2 h-2 rounded-full bg-butter-500 animate-pulse shrink-0" aria-hidden />
+              <span className="truncate">{settings.announcement}</span>
             </p>
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.5rem] font-semibold leading-[1.08] tracking-tight text-ink-950">
+            <h1 className="font-display text-[1.85rem] leading-[1.12] sm:text-5xl lg:text-[3.5rem] font-semibold sm:leading-[1.08] tracking-tight text-ink-950">
               {settings.hero_heading}
             </h1>
-            <p className="mt-5 text-lg text-ink-700 max-w-xl leading-relaxed">
+            <p className="mt-4 sm:mt-5 text-base sm:text-lg text-ink-700 max-w-xl leading-relaxed">
               {settings.hero_subheading}
             </p>
-            <div className="mt-8 max-w-xl">
-              <SearchBox large />
+            <div className="mt-6 sm:mt-8 max-w-xl">
+              <SearchBox large placeholder="Search product, IS or HSN…" />
             </div>
-            <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="mt-8 sm:mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               {stats.map((s, i) => (
-                <div key={i} className="bg-white/70 border border-cream-300 rounded-2xl px-4 py-3">
-                  <div className="font-display text-2xl font-semibold text-ink-950">{s.value}</div>
-                  <div className="text-xs font-medium text-ink-600">{s.label}</div>
+                <div key={i} className="bg-white border border-cream-300 rounded-2xl px-3 sm:px-4 py-3">
+                  <div className="font-display text-xl sm:text-2xl font-semibold text-ink-950">{s.value}</div>
+                  <div className="text-[11px] sm:text-xs font-medium text-ink-600 leading-snug">{s.label}</div>
                 </div>
               ))}
             </div>
@@ -99,19 +99,21 @@ export default function HomePage() {
       </section>
 
       {/* How it works */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
-        <h2 className="font-display text-3xl font-bold text-ink-950 text-center">How It Works</h2>
-        <p className="text-center text-ink-600 mt-2 mb-10">Three steps from “is it mandatory?” to certified.</p>
-        <div className="grid sm:grid-cols-3 gap-6">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
+        <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 text-center">How It Works</h2>
+        <p className="text-center text-ink-600 mt-2 mb-8 sm:mb-10 text-sm sm:text-base px-2">
+          Three steps from “is it mandatory?” to certified.
+        </p>
+        <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
           {HOW_IT_WORKS.map((s, i) => (
-            <div key={i} className="relative bg-white rounded-3xl border border-cream-300 shadow-card p-7">
-              <span className="absolute top-6 right-6 font-display text-5xl font-semibold text-cream-200" aria-hidden>
+            <div key={i} className="relative bg-white rounded-2xl sm:rounded-3xl border border-cream-300 shadow-card p-5 sm:p-7">
+              <span className="absolute top-5 right-5 font-display text-4xl sm:text-5xl font-semibold text-cream-200" aria-hidden>
                 {i + 1}
               </span>
-              <span className="inline-flex w-14 h-14 rounded-2xl bg-butter-300/40 text-butter-700 items-center justify-center">
-                <Icon name={s.icon} size={28} />
+              <span className="inline-flex w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-butter-300/40 text-butter-700 items-center justify-center">
+                <Icon name={s.icon} size={26} />
               </span>
-              <h3 className="font-display text-lg font-bold text-ink-950 mt-4 mb-2">{s.title}</h3>
+              <h3 className="font-display text-lg font-semibold text-ink-950 mt-4 mb-2">{s.title}</h3>
               <p className="text-sm text-ink-600 leading-relaxed">{s.text}</p>
             </div>
           ))}
@@ -120,61 +122,66 @@ export default function HomePage() {
 
       {/* Popular products */}
       <section className="bg-cream-100 border-y border-cream-200">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
-          <div className="flex items-end justify-between mb-8 gap-4">
-            <div>
-              <h2 className="font-display text-3xl font-bold text-ink-950">Popular Products</h2>
-              <p className="text-ink-600 mt-2">The most searched BIS certification requirements.</p>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
+          <div className="flex items-end justify-between mb-6 sm:mb-8 gap-4">
+            <div className="min-w-0">
+              <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950">Popular Products</h2>
+              <p className="text-ink-600 mt-2 text-sm sm:text-base">The most searched BIS certification requirements.</p>
             </div>
-            <Link href="/products" className="hidden sm:inline-flex text-sm font-bold text-butter-700 hover:text-butter-600">
+            <Link href="/products" className="hidden sm:inline-flex text-sm font-semibold text-butter-700 hover:text-butter-600 shrink-0">
               Browse all {formatNumber(totalProducts)} products →
             </Link>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             {featured.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
           <div className="sm:hidden mt-6 text-center">
-            <Link href="/products" className="text-sm font-bold text-butter-700">
+            <Link href="/products" className="inline-flex min-h-11 items-center text-sm font-semibold text-butter-700">
               Browse all {formatNumber(totalProducts)} products →
             </Link>
           </div>
-          <div className="mt-8 text-center">
+          <div className="mt-6 sm:mt-8 text-center">
             <Link
               href="/products/all"
-              className="inline-flex items-center gap-2 bg-white border border-cream-300 hover:border-butter-500 text-ink-950 text-sm font-bold rounded-xl px-5 py-3 shadow-card transition"
+              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto bg-white border border-cream-300 hover:border-butter-500 text-ink-950 text-sm font-semibold rounded-xl px-5 py-3.5 min-h-11 shadow-card transition text-left sm:text-center"
             >
-              <Icon name="table" size={18} className="text-butter-700" />
-              Open the full search table — standards, HSN, QCO status, fees & labs
+              <Icon name="table" size={18} className="text-butter-700 shrink-0" />
+              <span className="sm:hidden">Open full product search table</span>
+              <span className="hidden sm:inline">
+                Open the full search table — standards, HSN, QCO status, fees & labs
+              </span>
             </Link>
           </div>
         </div>
       </section>
 
       {/* Categories */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
-        <h2 className="font-display text-3xl font-bold text-ink-950">Browse by Category</h2>
-        <p className="text-ink-600 mt-2 mb-8">Find BIS requirements across {categories.length} notified product categories.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
+        <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950">Browse by Category</h2>
+        <p className="text-ink-600 mt-2 mb-6 sm:mb-8 text-sm sm:text-base">
+          Find BIS requirements across {categories.length} notified product categories.
+        </p>
+        <div className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {categories.slice(0, 12).map((c) => (
             <Link
               key={c.id}
               href={`/category/${c.slug}`}
-              className="group bg-white rounded-2xl border border-cream-300 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition p-5 flex items-center gap-3"
+              className="group bg-white rounded-2xl border border-cream-300 shadow-card hover:shadow-card-hover sm:hover:-translate-y-0.5 transition p-4 sm:p-5 flex items-center gap-3 min-h-[4.5rem]"
             >
               <span className="shrink-0 w-11 h-11 rounded-xl bg-cream-100 text-ink-700 flex items-center justify-center group-hover:bg-butter-300/40 group-hover:text-butter-700 transition">
                 <Icon name={c.icon} size={24} />
               </span>
-              <span>
-                <span className="block font-semibold text-ink-950 text-sm group-hover:text-butter-700 transition">{c.name}</span>
-                <span className="block text-xs text-ink-500">{c.product_count} products</span>
+              <span className="min-w-0">
+                <span className="block font-semibold text-ink-950 text-sm leading-snug group-hover:text-butter-700 transition line-clamp-2">{c.name}</span>
+                <span className="block text-xs text-ink-500 mt-0.5">{c.product_count} products</span>
               </span>
             </Link>
           ))}
         </div>
         <div className="mt-6 text-center">
-          <Link href="/products" className="inline-flex bg-ink-900 hover:bg-ink-800 text-white text-sm font-bold rounded-xl px-6 py-3 transition">
+          <Link href="/products" className="inline-flex items-center justify-center min-h-11 w-full sm:w-auto bg-ink-900 hover:bg-ink-800 text-white text-sm font-semibold rounded-xl px-6 py-3 transition">
             View all categories
           </Link>
         </div>
@@ -182,15 +189,15 @@ export default function HomePage() {
 
       {/* Upcoming QCOs teaser */}
       {upcomingQcos.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-16">
-          <div className="bg-white rounded-3xl border border-cream-300 shadow-card p-8 sm:p-10">
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-12 sm:pb-16">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-cream-300 shadow-card p-5 sm:p-10">
             <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
-              <div>
-                <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink-950 flex items-center gap-3">
-                  <span className="inline-flex w-10 h-10 rounded-xl bg-butter-300/40 text-butter-700 items-center justify-center">
+              <div className="min-w-0">
+                <h2 className="font-display text-xl sm:text-3xl font-semibold text-ink-950 flex items-start sm:items-center gap-3">
+                  <span className="inline-flex w-10 h-10 rounded-xl bg-butter-300/40 text-butter-700 items-center justify-center shrink-0">
                     <Icon name="bell" size={22} />
                   </span>
-                  Never Miss a New Mandatory Product
+                  <span className="leading-snug">Never Miss a New Mandatory Product</span>
                 </h2>
                 <p className="text-ink-600 mt-2 max-w-2xl text-sm sm:text-base">
                   New Quality Control Orders keep adding products to the mandatory BIS list.
@@ -224,13 +231,13 @@ export default function HomePage() {
 
       {/* Testimonials */}
       <section className="bg-ink-950 text-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
-          <h2 className="font-display text-3xl font-bold text-center">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
+          <h2 className="font-display text-2xl sm:text-3xl font-semibold text-center px-2 leading-snug">
             Trusted by Importers & Manufacturers Across India
           </h2>
-          <div className="grid md:grid-cols-3 gap-6 mt-10">
+          <div className="grid md:grid-cols-3 gap-4 sm:gap-6 mt-8 sm:mt-10">
             {testimonials.map((t) => (
-              <figure key={t.id} className="bg-ink-900 rounded-3xl border border-ink-800 p-7 flex flex-col gap-4">
+              <figure key={t.id} className="bg-ink-900 rounded-2xl sm:rounded-3xl border border-ink-800 p-5 sm:p-7 flex flex-col gap-4">
                 <div className="text-butter-400 tracking-wider" aria-label={`${t.rating} star rating`}>
                   {"★".repeat(t.rating)}
                 </div>

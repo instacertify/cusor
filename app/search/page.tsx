@@ -116,22 +116,22 @@ export default async function SearchPage({ searchParams }: Props) {
   );
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-10">
       <Breadcrumbs crumbs={[{ label: "Search" }]} />
-      <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">
+      <h1 className="font-display text-2xl sm:text-4xl font-semibold text-ink-950 tracking-tight break-words">
         {q ? `Results for “${q}”` : tab === "labs" ? "Find a Testing Lab" : "Search"}
       </h1>
-      <div className="mt-6 max-w-xl">
-        <SearchBox large placeholder="Search product, IS standard, HSN code or lab…" />
+      <div className="mt-5 sm:mt-6 max-w-xl">
+        <SearchBox large placeholder="Search product, IS, HSN or lab…" />
       </div>
 
       {/* Tabs */}
-      <div className="mt-8 flex flex-wrap gap-2">
+      <div className="mt-6 sm:mt-8 flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-none">
         {TABS.map((t) => (
           <Link
             key={t.key}
             href={tabHref(t.key)}
-            className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold border transition ${
+            className={`inline-flex items-center gap-2 rounded-xl px-3.5 sm:px-4 py-2.5 text-sm font-semibold border transition whitespace-nowrap min-h-11 shrink-0 ${
               tab === t.key
                 ? "bg-ink-900 text-white border-ink-900"
                 : "bg-white text-ink-700 border-cream-300 hover:border-butter-500"
@@ -140,7 +140,7 @@ export default async function SearchPage({ searchParams }: Props) {
             <Icon name={t.icon} size={15} />
             {t.label}
             {t.count != null && (
-              <span className={`text-[11px] font-bold rounded-full px-2 py-0.5 ${tab === t.key ? "bg-ink-700" : "bg-cream-200 text-ink-600"}`}>
+              <span className={`text-[11px] font-semibold rounded-full px-2 py-0.5 ${tab === t.key ? "bg-ink-700" : "bg-cream-200 text-ink-600"}`}>
                 {formatNumber(t.count)}
               </span>
             )}

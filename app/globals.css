@@ -52,11 +52,47 @@
   --shadow-card-hover: 0 8px 24px -10px rgb(22 38 61 / 0.14);
 }
 
+:root {
+  --header-height: 3.5rem; /* h-14 */
+}
+
+@media (min-width: 640px) {
+  :root {
+    --header-height: 4rem; /* h-16 */
+  }
+}
+
+html {
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   background: var(--color-cream-50);
   color: var(--color-ink-950);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Comfortable tap targets on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  a,
+  button,
+  summary,
+  [role="button"] {
+    -webkit-tap-highlight-color: rgb(247 196 83 / 0.25);
+  }
 }
 
 ::selection {
@@ -121,6 +157,9 @@ body {
   border-collapse: collapse;
   margin: 1rem 0;
   font-size: 0.925rem;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .prose-certko th,
 .prose-certko td {

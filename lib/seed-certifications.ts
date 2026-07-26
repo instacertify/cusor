@@ -103,44 +103,57 @@ The Bureau of Energy Efficiency runs India's Standards & Labelling programme. Ap
   },
   {
     slug: "g-mark",
-    name: "G Mark",
-    full_name: "Gulf Conformity Mark (GSO)",
+    name: "GMARK",
+    full_name: "Gulf Conformity Mark (GSO G Mark)",
     region: "GCC / Middle East",
     icon: "globe",
     summary:
-      "The Gulf conformity mark required for regulated products — mainly toys and low-voltage electricals — sold in GCC countries such as Saudi Arabia and the UAE.",
-    content: `## What it covers
+      "Gulf Conformity Mark (GMARK) for regulated products across GCC states — low-voltage appliances, electrical accessories, children's toys and water-conservation products under GSO technical regulations.",
+    content: `## What is GMARK?
 
-The G Mark is the Gulf Standards Organization's conformity mark for regulated products across GCC member states (Saudi Arabia, UAE, Kuwait, Qatar, Bahrain, Oman, Yemen). It currently applies mainly to:
+**GMARK** (also written G Mark) is the Gulf Conformity Mark operated under the Gulf Standardization Organization (GSO). It shows that a regulated product meets the applicable Gulf technical regulations and can circulate in GSO member states — Saudi Arabia, UAE, Kuwait, Qatar, Bahrain, Oman and Yemen.
 
-- **Children's toys**
-- **Low-voltage electrical equipment and appliances**
+## Product categories covered
 
-## How it works
+GMARK currently focuses on:
 
-1. Identify the applicable Gulf technical regulation and standards.
-2. Test the product at a recognised laboratory.
-3. Obtain a Gulf Type Examination Certificate from a GSO-notified body.
-4. Affix the G Mark and issue the declaration of conformity.
+- **Low-voltage electrical equipment & appliances** — refrigerators, washers, cookers, personal care, HVAC, fans, heaters, chargers and more (mainly IEC 60335 series)
+- **Electrical accessories** — plugs, sockets, extension cords and travel adaptors (IEC 60884 series)
+- **Children's toys** — ISO 8124 / EN 71 / IEC 62115
+- **Water-conservation products** — taps, shower heads, flow regulators and flush valves under applicable GSO water standards
+
+Browse the full category matrix on this page for main standards plus typical EMC, IECEE CB and GSO Notified Body requirements.
+
+## How certification works
+
+1. Map your product to the correct GSO technical regulation and main standard(s).
+2. Complete safety (and EMC where required) testing at a recognised laboratory — IECEE CB reports are often reusable.
+3. Obtain a **Gulf Type Examination Certificate** from a **GSO Notified Body**.
+4. Affix the GMARK, issue the declaration of conformity, and keep technical documentation ready for market surveillance.
 
 ## Why Indian exporters care
 
-If you export appliances or toys to the Gulf, the G Mark is your ticket to customs clearance across all GCC states with a single mark. Testing can often reuse IEC test reports prepared for BIS/CB certification, reducing duplicate cost.`,
+If you ship appliances, toys or electrical accessories to the Gulf, GMARK is often the single mark that unlocks customs clearance across GCC markets. Manufacturers already testing to IEC/CB for BIS or export programmes can usually shorten the GMARK path by reusing recent reports — cutting duplicate lab cost and timeline.`,
     faqs: [
       {
-        question: "Which products need the G Mark?",
+        question: "Which products need GMARK?",
         answer:
-          "Currently children's toys and a defined list of low-voltage electrical equipment (household appliances, plugs, cords and similar). Other products follow individual GCC country schemes such as SABER in Saudi Arabia.",
+          "GMARK applies to regulated Gulf categories such as low-voltage household and personal-care appliances, selected electrical accessories, children's toys, and certain water-conservation products. Use the category matrix on this page to check the typical standard and Notified Body route for your product family.",
       },
       {
-        question: "Can I reuse my existing test reports?",
+        question: "Can I reuse IECEE CB or existing IEC test reports?",
         answer:
-          "Often yes — G Mark assessment is based on IEC/ISO standards, so recent CB-scheme or IEC test reports can significantly cut testing time and cost.",
+          "Often yes. Many GMARK appliance categories accept IECEE CB / IEC evidence for the main standard (and EMC where applicable), which can reduce retesting. Accessories, toys and water products may follow different evidence rules — a GSO Notified Body confirms the exact file.",
       },
       {
-        question: "Is one G Mark valid across all GCC countries?",
+        question: "Is one GMARK certificate valid across all GCC countries?",
         answer:
-          "Yes. A Gulf Type Examination Certificate issued by a notified body allows the product to circulate in all GSO member states.",
+          "Yes. A Gulf Type Examination Certificate issued by a GSO Notified Body supports circulation of the marked product across GSO member states, subject to national customs and labelling rules.",
+      },
+      {
+        question: "Is GMARK the same as SABER?",
+        answer:
+          "No. GMARK is the Gulf-wide conformity mark under GSO regulations. SABER is Saudi Arabia's product-registration and shipment-approval platform and can apply to a wider Saudi product list. Some shipments need both.",
       },
     ],
   },

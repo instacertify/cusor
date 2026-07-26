@@ -8,9 +8,9 @@ import { getCertifications } from "@/lib/queries";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Product Certifications We Cover | BIS, BEE, G Mark, FCC, CE, WPC",
+  title: "Product Certifications We Cover | BIS, BEE, GMARK, FCC, CE, SABER, WPC",
   description:
-    "Explore the product certifications Certko supports: BIS/ISI, BEE star labelling, Gulf G Mark, US FCC, EU CE marking and India's WPC ETA — process, costs and expert help.",
+    "Explore the product certifications Certko supports: BIS/ISI, BEE star labelling, Gulf GMARK, US FCC, EU CE marking, Saudi SABER and India's WPC ETA — process, costs and expert help.",
 };
 
 export default function CertificationsPage() {
