@@ -130,6 +130,10 @@ export async function removeProductImage(formData: FormData) {
 }
 
 // ---------- faqs ----------
+function withParam(url: string, param: string): string {
+  return `${url}${url.includes("?") ? "&" : "?"}${param}`;
+}
+
 export async function saveFaq(formData: FormData) {
   await requireAdmin();
   const id = formData.get("id") ? Number(formData.get("id")) : null;
@@ -138,7 +142,7 @@ export async function saveFaq(formData: FormData) {
   const answer = String(formData.get("answer") ?? "").trim();
   const sort = Number(formData.get("sort") ?? 0);
   const back = String(formData.get("back") ?? "/admin/faqs");
-  if (!question || !answer) redirect(`${back}?error=1`);
+  if (!question || !answer) redirect(withParam(back, "error=1"));
   const db = getDb();
   if (id) {
     db.prepare("UPDATE faqs SET question=?, answer=?, sort=? WHERE id=?").run(
@@ -150,7 +154,7 @@ export async function saveFaq(formData: FormData) {
     );
   }
   revalidatePath("/", "layout");
-  redirect(`${back}?saved=1`);
+  redirect(withParam(back, "saved=1"));
 }
 
 export async function deleteFaq(formData: FormData) {
@@ -159,7 +163,7 @@ export async function deleteFaq(formData: FormData) {
   const back = String(formData.get("back") ?? "/admin/faqs");
   getDb().prepare("DELETE FROM faqs WHERE id=?").run(id);
   revalidatePath("/", "layout");
-  redirect(`${back}?saved=1`);
+  redirect(withParam(back, "saved=1"));
 }
 
 // ---------- testimonials ----------
