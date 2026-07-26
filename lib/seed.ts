@@ -775,6 +775,7 @@ export function seedDatabase(db: Database.Database) {
       stat_2_value: "35", stat_2_label: "BEE Schemes",
       stat_3_value: "7+", stat_3_label: "Certifications",
       stat_4_value: "Free", stat_4_label: "Product Checker",
+      // Placeholder — first successful login (or settings change) stores a bcrypt hash
       admin_password: "certko-admin",
       logo_primary: "/brand/certko-logo.png",
       logo_on_dark: "/brand/certko-logo-light.png",

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -73,30 +74,38 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const settings = getSettings();
   const scheme = resolveColorScheme(settings.color_scheme);
-  const orgJsonLd = buildJsonLd(["Organization"], {
-    name: "Certko",
-    description: "",
-    url: "https://certko.com",
-  });
+  const pathname = (await headers()).get("x-pathname") || "";
+  const isAdminShell = pathname.startsWith("/admin");
+  const orgJsonLd = isAdminShell
+    ? null
+    : buildJsonLd(["Organization"], {
+        name: "Certko",
+        description: "",
+        url: "https://certko.com",
+      });
   return (
     <html lang="en" data-color-scheme={scheme.id}>
       <body className={`${body.variable} ${display.variable} min-h-screen flex flex-col`}>
-        <SiteIntegrationsBody />
-        <SiteIntegrations />
+        {!isAdminShell && (
+          <>
+            <SiteIntegrationsBody />
+            <SiteIntegrations />
+          </>
+        )}
         {orgJsonLd && (
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
           />
         )}
-        <Header />
+        {!isAdminShell && <Header />}
         <main className="flex-1">{children}</main>
-        <Footer />
+        {!isAdminShell && <Footer />}
       </body>
     </html>
   );

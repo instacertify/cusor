@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import fs from "fs";
 import path from "path";
 import { getDb, setSetting } from "@/lib/db";
-import { requireAdmin, clearAdminSession } from "@/lib/auth";
+import { requireAdmin, clearAdminSession, updateAdminPassword } from "@/lib/auth";
+import { logAdminEvent } from "@/lib/admin-audit";
 
 async function saveUploadedImage(file: File | null): Promise<string | null> {
   if (!file || file.size === 0) return null;
@@ -33,6 +34,7 @@ async function saveUploadedMedia(file: File | null): Promise<string | null> {
 }
 
 export async function logout() {
+  logAdminEvent("logout", "", "session_cleared");
   await clearAdminSession();
   redirect("/admin/login");
 }
@@ -42,7 +44,7 @@ const LOGO_DEFAULTS = {
   logo_on_dark: "/brand/certko-logo-light.png",
 } as const;
 
-const SECRET_SETTINGS = new Set(["smtp_pass"]);
+const SECRET_SETTINGS = new Set(["smtp_pass", "admin_password"]);
 
 // ---------- settings ----------
 export async function saveSettings(formData: FormData) {
@@ -53,17 +55,29 @@ export async function saveSettings(formData: FormData) {
     formData.getAll("smtp_enabled").map(String).includes("1") ? "1" : "0"
   );
 
+  const nextAdminPassword = String(formData.get("admin_password") ?? "").trim();
+
   for (const [key, value] of formData.entries()) {
     if (
       typeof value === "string" &&
       !key.startsWith("$") &&
       !key.startsWith("clear_") &&
       !key.endsWith("_file") &&
-      key !== "smtp_enabled"
+      key !== "smtp_enabled" &&
+      key !== "admin_password"
     ) {
       // Keep existing secret if the password field is left blank
       if (SECRET_SETTINGS.has(key) && value.trim() === "") continue;
       setSetting(key, value);
+    }
+  }
+
+  if (nextAdminPassword) {
+    try {
+      await updateAdminPassword(nextAdminPassword);
+      logAdminEvent("password_changed", "", "admin_password updated via settings");
+    } catch {
+      redirect("/admin/settings?error=password");
     }
   }
 

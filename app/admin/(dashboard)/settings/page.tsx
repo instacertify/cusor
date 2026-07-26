@@ -12,7 +12,7 @@ const DEFAULT_LOGO_PRIMARY = "/brand/certko-logo.png";
 const DEFAULT_LOGO_ON_DARK = "/brand/certko-logo-light.png";
 
 interface Props {
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string }>;
 }
 
 export default async function SettingsPage({ searchParams }: Props) {
@@ -34,6 +34,11 @@ export default async function SettingsPage({ searchParams }: Props) {
         .
       </p>
       <SavedBanner saved={sp.saved} />
+      {sp.error === "password" && (
+        <p className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          Admin password must be at least 8 characters. Previous password was kept.
+        </p>
+      )}
       <form action={saveSettings} className="space-y-8">
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Color scheme</h2>
@@ -123,7 +128,18 @@ export default async function SettingsPage({ searchParams }: Props) {
             defaultValue={s.contact_address}
             rows={3}
           />
-          <Field label="Admin Password" name="admin_password" defaultValue={s.admin_password} type="text" />
+          <div>
+            <Field
+              label="Admin Password"
+              name="admin_password"
+              defaultValue=""
+              type="password"
+              placeholder="Leave blank to keep current password"
+            />
+            <p className="mt-1.5 text-xs text-ink-500">
+              Stored as a bcrypt hash — never shown after save. Minimum 8 characters when changing.
+            </p>
+          </div>
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-3">
