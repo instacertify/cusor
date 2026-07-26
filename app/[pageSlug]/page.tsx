@@ -16,7 +16,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const CONTENT_PAGES = new Set(["guide", "about"]);
+const CONTENT_PAGES = new Set(["guide", "about", "tenders", "marketplaces"]);
 
 interface Props {
   params: Promise<{ pageSlug: string }>;

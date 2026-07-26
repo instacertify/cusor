@@ -21,7 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/certifications`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE}/labs`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE}/qco`, changeFrequency: "weekly", priority: 0.8 },
-    ...["guide", "about", "contact"]
+    ...["guide", "about", "contact", "tenders", "marketplaces"]
       .filter((slug) => !excludedPages.has(slug))
       .map((slug) => ({
         url: `${BASE}/${slug}`,

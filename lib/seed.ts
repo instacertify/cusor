@@ -522,15 +522,86 @@ const PAGE_FAQS: Record<string, { question: string; answer: string }[]> = {
     {
       question: "What can I search for?",
       answer:
-        "Product names (e.g. 'pressure cooker'), IS standard numbers (e.g. 'IS 302'), HSN codes (e.g. '8516'), product categories and laboratory names — all from the same search box.",
+        "Product names (e.g. 'pressure cooker'), IS standard numbers (e.g. 'IS 302'), HSN codes (e.g. '8516'), product categories and laboratory names — all from the same search box. Use the Find a Product and Find a Lab tabs to focus your results.",
     },
     {
       question: "Why does an HSN code return several products?",
       answer:
         "One HSN heading often covers multiple notified products, each with its own IS standard. Open each result to see which standard matches your exact product variant.",
     },
+    {
+      question: "How do I find a lab near me?",
+      answer:
+        "Switch to the Find a Lab tab and filter by state, or search a city name. Each lab card shows its approved scopes and indicative price range; the lab page lists contact details.",
+    },
+  ],
+  tenders: [
+    {
+      question: "The tender quotes an IS standard I don't have a licence for. How fast can I get one?",
+      answer:
+        "ISI licences typically take 10-26 weeks depending on the product, lab workload and inspection scheduling. If the bid deadline is close, we prioritise the fastest suitable lab and prepare inspection readiness in parallel — send us the tender extract for a realistic timeline.",
+    },
+    {
+      question: "Does one BIS licence cover all my products in a tender?",
+      answer:
+        "No. A licence is specific to one IS standard, one factory and a declared variety list. If the tender quotes multiple standards, each needs its own licence covering the varieties you are offering.",
+    },
+    {
+      question: "Can I bid while my BIS application is under process?",
+      answer:
+        "That depends on the tender conditions. Some tenders accept proof of application or a commitment letter; most require a valid licence at technical evaluation. Read the pre-qualification clause carefully — we can review it for you free.",
+    },
+  ],
+  marketplaces: [
+    {
+      question: "Amazon asked for a BIS number on my listing. Where do I get it?",
+      answer:
+        "If your product is notified, the number comes from the BIS licence (ISI) or CRS registration (R-number for electronics). Search your product on Certko to see which applies; the certification is issued to the manufacturer per factory and brand.",
+    },
+    {
+      question: "My listing was delisted for missing BIS compliance. Can it be reinstated?",
+      answer:
+        "Yes — once you hold a valid certification for the exact product and it is added to the listing's compliance field, marketplaces typically reinstate it. We prioritise delisted-seller cases to shorten the downtime.",
+    },
+    {
+      question: "I import and resell — do I still need certification?",
+      answer:
+        "The certification must cover the manufacturer (Indian or foreign) of the product you sell. Importers of notified products must ensure the overseas factory holds BIS certification (FMCS or CRS) — customs and marketplaces both check.",
+    },
   ],
 };
+
+const TENDERS_CONTENT = `## Why tenders ask for BIS certification
+
+Government and PSU tenders in India routinely require the ISI mark or CRS registration as a **pre-qualification condition**. Departments buying cement, steel, cables, transformers, pipes, luminaires, pumps or safety gear typically ask bidders to attach a valid BIS licence for the exact IS standard named in the tender document — bids without it are rejected at technical evaluation, before price is even opened.
+
+## How to prepare, step by step
+
+1. **Read the tender's technical specification** — note the exact IS standard(s) quoted (for example "conforming to IS 694" for wiring cables).
+2. **Search that IS number on Certko** — the product page shows the applicable scheme, approved testing labs with real charges, marking fees and the typical timeline.
+3. **Check your licence scope** — an ISI licence is per standard, per factory and per variety list. A licence for one part or section of a standard does not cover another.
+4. **Start early** — ISI licences commonly take 10-26 weeks. If the tender closes sooner, ask us about expedited handling; testing slots are usually the bottleneck.
+5. **Keep renewals current** — expired or suspended licences are treated as missing during evaluation.
+
+## What Certko does for tender-driven certification
+
+We map the tender's quoted standards to the correct BIS scheme, shortlist the fastest suitable labs, prepare the application and technical file, coordinate the factory inspection, and track the grant so you can bid on time. Use the search box above — type the product or IS number from your tender document — or send us the tender extract through the contact form for a free assessment within 24 hours.`;
+
+const MARKETPLACES_CONTENT = `## Why marketplaces delist non-certified products
+
+Amazon, Flipkart, Meesho, JioMart and other Indian marketplaces actively verify compliance for notified products. Listings for products under a Quality Control Order — toys, pressure cookers, helmets, electronics, appliances, footwear and many more — must display a valid **BIS licence or CRS registration number** (R-number). Missing or invalid numbers lead to listing blocks, delisting and account health strikes; enforcement drives also remove entire categories overnight.
+
+## Seller checklist before you list
+
+1. **Search your product on Certko** — by name or HSN code — to confirm whether it is notified and under which scheme (ISI or CRS).
+2. **Get the certification in the right name** — CRS registrations are per brand and per manufacturing location; reselling someone else's registration is not compliant unless you are an authorised brand seller.
+3. **Add the number to your listing** — marketplaces provide a compliance field for the BIS/CRS number; the printed label on the product and packaging must match.
+4. **Watch upcoming QCOs** — products that are legal to sell today can become mandatory in months. Our QCO Alerts page lists notified enforcement dates so you can certify before the deadline instead of after a delisting.
+5. **Importing to sell?** Customs also checks certification for notified goods — uncertified consignments are held or re-exported.
+
+## What Certko does for marketplace sellers
+
+We confirm your exact product's status in minutes, run testing at the most economical approved lab, complete the CRS or ISI process, and hand you the number in the format marketplaces expect. If your listing was already taken down, we prioritise the fastest compliant route to reinstatement. Start with a free product check — search above or send us your listing link.`;
 
 const TESTIMONIALS = [
   {
@@ -739,6 +810,30 @@ export function seedDatabase(db: Database.Database) {
         "Tell us about your product and we will map the standard, estimate the full cost and send a free quote within 24 hours.",
       content: "",
       image: "/images/pages/contact.png",
+    });
+    insPage.run({
+      slug: "tenders",
+      title: "Certification for Tenders",
+      meta_title: "BIS Certification for Government Tenders | Pre-Qualify On Time | Certko",
+      meta_description:
+        "Government and PSU tenders require valid BIS/ISI licences for the quoted IS standards. Map the standard, find labs and get certified before the bid deadline.",
+      hero_heading: "Win tenders with the right BIS certification",
+      hero_subheading:
+        "Most government and PSU tenders reject bids without a valid ISI licence for the quoted IS standard. Search the standard from your tender document and see exactly what it takes to qualify.",
+      content: TENDERS_CONTENT,
+      image: "/images/pages/tenders.png",
+    });
+    insPage.run({
+      slug: "marketplaces",
+      title: "Sell on Amazon & Marketplaces",
+      meta_title: "BIS Certification for Amazon, Flipkart & Marketplaces | Avoid Delisting | Certko",
+      meta_description:
+        "Marketplaces verify BIS/CRS numbers for notified products. Check your product, get certified and keep your listings live on Amazon, Flipkart and more.",
+      hero_heading: "Keep your marketplace listings live",
+      hero_subheading:
+        "Amazon, Flipkart and other marketplaces block listings for notified products without a valid BIS or CRS number. Check your product's status in seconds and certify before a delisting, not after.",
+      content: MARKETPLACES_CONTENT,
+      image: "/images/pages/marketplaces.png",
     });
     insPage.run({
       slug: "home",

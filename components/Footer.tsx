@@ -34,19 +34,32 @@ export default function Footer() {
             <li><Link href="/contact" className="hover:text-butter-400">Get Expert Help</Link></li>
           </ul>
         </div>
-        <div>
-          <h3 className="text-white font-display font-bold mb-3 text-sm uppercase tracking-wider">
-            Top Categories
-          </h3>
-          <ul className="space-y-2 text-sm">
-            {topCategories.map((c) => (
-              <li key={c.id}>
-                <Link href={`/category/${c.slug}`} className="hover:text-butter-400">
-                  {c.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
+        <div className="space-y-8">
+          <div>
+            <h3 className="text-white font-display font-bold mb-3 text-sm uppercase tracking-wider">
+              Use Cases
+            </h3>
+            <ul className="space-y-2 text-sm">
+              <li><Link href="/tenders" className="hover:text-butter-400">Certification for Tenders</Link></li>
+              <li><Link href="/marketplaces" className="hover:text-butter-400">Sell on Amazon & Marketplaces</Link></li>
+              <li><Link href="/search?type=products" className="hover:text-butter-400">Find a Product&apos;s Certification</Link></li>
+              <li><Link href="/search?type=labs" className="hover:text-butter-400">Find a Testing Lab</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-white font-display font-bold mb-3 text-sm uppercase tracking-wider">
+              Top Categories
+            </h3>
+            <ul className="space-y-2 text-sm">
+              {topCategories.slice(0, 4).map((c) => (
+                <li key={c.id}>
+                  <Link href={`/category/${c.slug}`} className="hover:text-butter-400">
+                    {c.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
       <div className="border-t border-ink-800">
