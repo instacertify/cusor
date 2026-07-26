@@ -6,6 +6,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import FaqAccordion from "@/components/FaqAccordion";
 import { getPage, getFaqs } from "@/lib/queries";
+import { isRoutableContentPage } from "@/lib/pages-nav";
 import {
   buildMetadata,
   buildJsonLd,
@@ -15,15 +16,6 @@ import {
 } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
-
-const CONTENT_PAGES = new Set([
-  "guide",
-  "about",
-  "tenders",
-  "marketplaces",
-  "privacy",
-  "terms",
-]);
 
 const LEGAL_PDF: Record<string, { href: string; label: string }> = {
   privacy: {
@@ -42,7 +34,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { pageSlug } = await params;
-  if (!CONTENT_PAGES.has(pageSlug)) return {};
+  if (!isRoutableContentPage(pageSlug)) return {};
   const page = getPage(pageSlug);
   if (!page) return {};
   return buildMetadata(`page:${pageSlug}`, {
@@ -55,7 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ContentPage({ params }: Props) {
   const { pageSlug } = await params;
-  if (!CONTENT_PAGES.has(pageSlug)) notFound();
+  if (!isRoutableContentPage(pageSlug)) notFound();
   const page = getPage(pageSlug);
   if (!page) notFound();
   const faqs = getFaqs(`page:${pageSlug}`);

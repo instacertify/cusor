@@ -7,7 +7,9 @@ import {
   getAuthors,
   getTestingCategories,
   getAllTestingServices,
+  getRoutableContentPages,
 } from "@/lib/queries";
+import { pagePublicPath } from "@/lib/pages-nav";
 import { getDb } from "@/lib/db";
 import { getSeoExclusions } from "@/lib/seo";
 
@@ -33,12 +35,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/blog`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE}/labs`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE}/qco`, changeFrequency: "weekly", priority: 0.8 },
-    ...["guide", "about", "contact", "tenders", "marketplaces", "privacy", "terms"]
-      .filter((slug) => !excludedPages.has(slug))
-      .map((slug) => ({
-        url: `${BASE}/${slug}`,
+    ...(excludedPages.has("contact")
+      ? []
+      : [{ url: `${BASE}/contact`, changeFrequency: "monthly" as const, priority: 0.6 }]),
+    ...getRoutableContentPages()
+      .filter((p) => !excludedPages.has(p.slug))
+      .map((p) => ({
+        url: `${BASE}${pagePublicPath(p.slug)}`,
         changeFrequency: "monthly" as const,
-        priority: slug === "guide" ? 0.8 : slug === "privacy" || slug === "terms" ? 0.4 : 0.6,
+        priority:
+          p.slug === "guide" ? 0.8 : p.slug === "privacy" || p.slug === "terms" ? 0.4 : 0.6,
       })),
   ];
 

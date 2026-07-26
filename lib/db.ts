@@ -5,6 +5,7 @@ import { seedDatabase } from "./seed";
 import { ensureCertProductsCatalog } from "./seed-cert-products";
 import { ensureTestingCatalog } from "./seed-testing";
 import { ensureAuthorsCatalog } from "./authors";
+import { ensurePagesNavColumns } from "./pages-nav";
 
 const DB_DIR = path.join(process.cwd(), "data");
 const DB_PATH = path.join(DB_DIR, "certko.db");
@@ -33,7 +34,13 @@ function createDb(): Database.Database {
       hero_heading TEXT NOT NULL DEFAULT '',
       hero_subheading TEXT NOT NULL DEFAULT '',
       content TEXT NOT NULL DEFAULT '',
-      image TEXT NOT NULL DEFAULT ''
+      image TEXT NOT NULL DEFAULT '',
+      nav_menu INTEGER NOT NULL DEFAULT 0,
+      nav_submenu INTEGER NOT NULL DEFAULT 0,
+      nav_footer INTEGER NOT NULL DEFAULT 0,
+      nav_label TEXT NOT NULL DEFAULT '',
+      nav_detail TEXT NOT NULL DEFAULT '',
+      nav_sort INTEGER NOT NULL DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS categories (
@@ -274,6 +281,7 @@ function createDb(): Database.Database {
   ensureCertProductsCatalog(db);
   ensureTestingCatalog(db);
   ensureAuthorsCatalog(db);
+  ensurePagesNavColumns(db);
   return db;
 }
 
@@ -285,6 +293,7 @@ export function getDb(): Database.Database {
     ensureCertProductsCatalog(global.__certkoDb);
     ensureTestingCatalog(global.__certkoDb);
     ensureAuthorsCatalog(global.__certkoDb);
+    ensurePagesNavColumns(global.__certkoDb);
   }
   return global.__certkoDb;
 }
@@ -417,6 +426,12 @@ export interface PageRecord {
   hero_subheading: string;
   content: string;
   image: string;
+  nav_menu: number;
+  nav_submenu: number;
+  nav_footer: number;
+  nav_label: string;
+  nav_detail: string;
+  nav_sort: number;
 }
 
 export interface Testimonial {

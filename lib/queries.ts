@@ -356,6 +356,35 @@ export function getPage(slug: string): PageRecord | undefined {
     | undefined;
 }
 
+export function getAllPages(): PageRecord[] {
+  return getDb()
+    .prepare("SELECT * FROM pages ORDER BY nav_sort, title, slug")
+    .all() as PageRecord[];
+}
+
+export type PageNavLocation = "menu" | "submenu" | "footer";
+
+export function getPagesForNav(location: PageNavLocation): PageRecord[] {
+  const column =
+    location === "menu" ? "nav_menu" : location === "submenu" ? "nav_submenu" : "nav_footer";
+  return getDb()
+    .prepare(
+      `SELECT * FROM pages WHERE ${column} = 1 AND slug NOT IN ('home')
+       ORDER BY nav_sort, title, slug`
+    )
+    .all() as PageRecord[];
+}
+
+export function getRoutableContentPages(): PageRecord[] {
+  return getDb()
+    .prepare(
+      `SELECT * FROM pages
+       WHERE slug NOT IN ('home', 'contact')
+       ORDER BY nav_sort, title, slug`
+    )
+    .all() as PageRecord[];
+}
+
 export function getTestimonials(): Testimonial[] {
   return getDb()
     .prepare("SELECT * FROM testimonials ORDER BY sort, id")

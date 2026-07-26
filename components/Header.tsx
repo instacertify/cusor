@@ -3,11 +3,14 @@ import Logo from "./Logo";
 import SearchBox from "./SearchBox";
 import MobileNav from "./MobileNav";
 import NavDropdown from "./NavDropdown";
-import { getCertifications, getTestingCategories } from "@/lib/queries";
+import { getCertifications, getTestingCategories, getPagesForNav } from "@/lib/queries";
+import { pagePublicPath } from "@/lib/pages-nav";
 
 export default function Header() {
   const certs = getCertifications();
   const testingCats = getTestingCategories();
+  const menuPages = getPagesForNav("menu");
+  const submenuPages = getPagesForNav("submenu");
 
   const certItems = certs.map((c) => ({
     href: `/certifications/${c.slug}`,
@@ -29,13 +32,25 @@ export default function Header() {
     { href: "/qco", label: "Upcoming QCOs", detail: "Deadlines for new mandatory products", icon: "bell" },
   ];
 
+  const cmsSubmenuItems = submenuPages.map((p) => ({
+    href: pagePublicPath(p.slug),
+    label: p.nav_label || p.title,
+    detail: p.nav_detail || p.meta_description || "",
+    icon: "file",
+  }));
+
   const resourceItems = [
-    { href: "/guide", label: "Certification Guide", detail: "Process, documents, costs", icon: "file" },
+    ...cmsSubmenuItems,
     { href: "/blog", label: "Blog", detail: "Compliance insights & how-tos", icon: "file" },
-    { href: "/tenders", label: "Certification for Tenders", detail: "Pre-qualify before the bid closes", icon: "clipboard" },
-    { href: "/marketplaces", label: "Sell on Marketplaces", detail: "Amazon, Flipkart compliance", icon: "box" },
-    { href: "/about", label: "About Certko", detail: "Our data and mission", icon: "users" },
   ];
+
+  // Keep unique hrefs (prefer earlier CMS entries)
+  const seen = new Set<string>();
+  const uniqueResources = resourceItems.filter((item) => {
+    if (seen.has(item.href)) return false;
+    seen.add(item.href);
+    return true;
+  });
 
   return (
     <header className="sticky top-0 z-50 bg-cream-50/95 backdrop-blur border-b border-cream-200 pt-[env(safe-area-inset-top)]">
@@ -69,7 +84,16 @@ export default function Header() {
           >
             Labs
           </Link>
-          <NavDropdown label="Resources" items={resourceItems} />
+          {menuPages.map((p) => (
+            <Link
+              key={p.slug}
+              href={pagePublicPath(p.slug)}
+              className="px-3 py-2 rounded-lg text-sm font-medium text-ink-700 hover:text-ink-950 hover:bg-cream-200 transition"
+            >
+              {p.nav_label || p.title}
+            </Link>
+          ))}
+          <NavDropdown label="Resources" items={uniqueResources} />
           <Link
             href="/contact"
             className="ml-2 bg-butter-500 hover:bg-butter-400 text-ink-950 text-sm font-semibold rounded-xl px-4 py-2.5 transition"
@@ -85,7 +109,17 @@ export default function Header() {
               label: "Product Testing",
               items: [{ href: "/testing", label: "Search all tests" }, ...testingItems],
             },
-            { label: "Labs & Resources", items: [{ href: "/labs", label: "Testing Labs" }, ...resourceItems] },
+            {
+              label: "Labs & Resources",
+              items: [
+                { href: "/labs", label: "Testing Labs" },
+                ...menuPages.map((p) => ({
+                  href: pagePublicPath(p.slug),
+                  label: p.nav_label || p.title,
+                })),
+                ...uniqueResources,
+              ],
+            },
             { label: "", items: [{ href: "/contact", label: "Get Expert Help" }] },
           ]}
         />

@@ -1,13 +1,22 @@
 import Link from "next/link";
 import Logo from "./Logo";
 import { getSettings } from "@/lib/db";
-import { getCategories, getCertifications, getTestingCategories } from "@/lib/queries";
+import {
+  getCategories,
+  getCertifications,
+  getTestingCategories,
+  getPagesForNav,
+} from "@/lib/queries";
+import { pagePublicPath } from "@/lib/pages-nav";
 
 export default function Footer() {
   const settings = getSettings();
   const topCategories = getCategories().slice(0, 6);
   const certifications = getCertifications();
   const testingCategories = getTestingCategories().slice(0, 6);
+  const footerPages = getPagesForNav("footer").filter(
+    (p) => !["privacy", "terms"].includes(p.slug)
+  );
 
   return (
     <footer className="mt-12 sm:mt-20 bg-ink-950 text-ink-300 pb-[env(safe-area-inset-bottom)]">
@@ -64,10 +73,18 @@ export default function Footer() {
             <li><Link href="/testing" className="inline-flex min-h-9 items-center hover:text-butter-400">Product Testing</Link></li>
             <li><Link href="/labs" className="inline-flex min-h-9 items-center hover:text-butter-400">Testing Labs</Link></li>
             <li><Link href="/qco" className="inline-flex min-h-9 items-center hover:text-butter-400">Upcoming QCOs</Link></li>
-            <li><Link href="/guide" className="inline-flex min-h-9 items-center hover:text-butter-400">Guide</Link></li>
             <li><Link href="/blog" className="inline-flex min-h-9 items-center hover:text-butter-400">Blog</Link></li>
-            <li><Link href="/about" className="inline-flex min-h-9 items-center hover:text-butter-400">About</Link></li>
             <li><Link href="/contact" className="inline-flex min-h-9 items-center hover:text-butter-400">Contact</Link></li>
+            {footerPages.map((p) => (
+              <li key={p.slug}>
+                <Link
+                  href={pagePublicPath(p.slug)}
+                  className="inline-flex min-h-9 items-center hover:text-butter-400"
+                >
+                  {p.nav_label || p.title}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
         <div>

@@ -117,13 +117,66 @@ export async function sendTestLeadEmailAction() {
 }
 
 // ---------- pages ----------
+function pageNavFlags(formData: FormData) {
+  return {
+    nav_menu: formData.getAll("nav_menu").map(String).includes("1") ? 1 : 0,
+    nav_submenu: formData.getAll("nav_submenu").map(String).includes("1") ? 1 : 0,
+    nav_footer: formData.getAll("nav_footer").map(String).includes("1") ? 1 : 0,
+    nav_label: String(formData.get("nav_label") ?? "").trim(),
+    nav_detail: String(formData.get("nav_detail") ?? "").trim(),
+    nav_sort: Number(formData.get("nav_sort") ?? 0) || 0,
+  };
+}
+
+export async function createPage(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const { isReservedPageSlug } = await import("@/lib/pages-nav");
+  const title = String(formData.get("title") ?? "").trim();
+  if (!title) redirect("/admin/pages?error=1");
+
+  const db = getDb();
+  let slug = slugify(String(formData.get("slug") ?? "")) || slugify(title);
+  if (!slug || isReservedPageSlug(slug)) redirect("/admin/pages?error=1");
+  let candidate = slug;
+  let n = 2;
+  while (db.prepare("SELECT 1 FROM pages WHERE slug = ?").get(candidate) || isReservedPageSlug(candidate)) {
+    candidate = `${slug}-${n++}`;
+  }
+  slug = candidate;
+  const nav = pageNavFlags(formData);
+
+  db.prepare(
+    `INSERT INTO pages (
+      slug, title, meta_title, meta_description, hero_heading, hero_subheading, content, image,
+      nav_menu, nav_submenu, nav_footer, nav_label, nav_detail, nav_sort
+    ) VALUES (?, ?, ?, '', ?, '', 'Write your page content here using **Markdown**.', '', ?, ?, ?, ?, ?, ?)`
+  ).run(
+    slug,
+    title,
+    `${title} | Certko`,
+    title,
+    nav.nav_menu,
+    nav.nav_submenu,
+    nav.nav_footer,
+    nav.nav_label || title,
+    nav.nav_detail,
+    nav.nav_sort
+  );
+
+  revalidatePath("/", "layout");
+  redirect(`/admin/pages/${slug}?saved=1`);
+}
+
 export async function savePage(formData: FormData) {
   await requireAdmin();
   const slug = String(formData.get("slug"));
   const image = await saveUploadedImage(formData.get("image_file") as File | null);
   const db = getDb();
+  const nav = pageNavFlags(formData);
   db.prepare(
-    `UPDATE pages SET title=?, meta_title=?, meta_description=?, hero_heading=?, hero_subheading=?, content=?
+    `UPDATE pages SET title=?, meta_title=?, meta_description=?, hero_heading=?, hero_subheading=?, content=?,
+     nav_menu=?, nav_submenu=?, nav_footer=?, nav_label=?, nav_detail=?, nav_sort=?
      ${image ? ", image=?" : ""} WHERE slug=?`
   ).run(
     ...[
@@ -133,12 +186,28 @@ export async function savePage(formData: FormData) {
       String(formData.get("hero_heading") ?? ""),
       String(formData.get("hero_subheading") ?? ""),
       String(formData.get("content") ?? ""),
+      nav.nav_menu,
+      nav.nav_submenu,
+      nav.nav_footer,
+      nav.nav_label,
+      nav.nav_detail,
+      nav.nav_sort,
       ...(image ? [image] : []),
       slug,
     ]
   );
   revalidatePath("/", "layout");
   redirect(`/admin/pages/${slug}?saved=1`);
+}
+
+export async function deletePage(formData: FormData) {
+  await requireAdmin();
+  const slug = String(formData.get("slug") ?? "");
+  const protectedSlugs = new Set(["home", "contact", "privacy", "terms", "about", "guide"]);
+  if (!slug || protectedSlugs.has(slug)) redirect("/admin/pages?error=1");
+  getDb().prepare("DELETE FROM pages WHERE slug = ?").run(slug);
+  revalidatePath("/", "layout");
+  redirect("/admin/pages?saved=1");
 }
 
 // ---------- categories ----------

@@ -45,7 +45,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         href: "/admin/pages",
         label: "Pages",
         icon: "file",
-        description: "Guide, about, legal and static pages",
+        description: "Create pages; place in menu, submenu or footer",
       },
       {
         href: "/admin/media",
