@@ -5,7 +5,7 @@ const PREVIEW = ["cpu", "flask", "shield", "leaf", "award", "bell"] as const;
 
 export default function IconStylePicker({ value }: { value: IconStyleId }) {
   return (
-    <div className="grid sm:grid-cols-2 gap-3">
+    <div className="grid sm:grid-cols-3 gap-3">
       {ICON_STYLES.map((style) => {
         const selected = style.id === value;
         return (
@@ -30,13 +30,13 @@ export default function IconStylePicker({ value }: { value: IconStyleId }) {
                 <p className="text-xs text-ink-600 mt-1 leading-relaxed">{style.description}</p>
               </div>
               {selected ? (
-                <span className="text-[11px] font-bold uppercase tracking-wide text-butter-700">
+                <span className="text-[11px] font-bold uppercase tracking-wide text-butter-700 shrink-0">
                   Active
                 </span>
               ) : null}
             </div>
             <div
-              className="mt-3 flex flex-wrap gap-2"
+              className="mt-3 flex flex-wrap gap-2.5 pt-1"
               data-icon-style-preview={style.id}
             >
               {PREVIEW.map((name) => (

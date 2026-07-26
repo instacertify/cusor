@@ -11,7 +11,7 @@ const SIZE_CLASS: Record<string, string> = {
 };
 
 /**
- * Sitewide icon chip — respects admin Icon style (colorful vs plain)
+ * Sitewide icon chip — respects admin Icon style (3d / colorful / plain)
  * via html[data-icon-style] CSS in globals.css.
  */
 export default function IconChip({
