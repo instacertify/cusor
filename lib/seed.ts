@@ -752,8 +752,8 @@ export function seedDatabase(db: Database.Database) {
       hero_heading: "Does Your Product Need BIS Certification?",
       hero_subheading:
         "Check instantly, free. Search 1,400+ notified products by name, IS standard or HSN code to see certification type, real lab testing costs, timelines and BIS-recognised labs near you.",
-      contact_email: "hello@certko.com",
-      contact_phone: "+91 98765 43210",
+      contact_email: "info@certko.com",
+      contact_phone: "+91-9999118039",
       footer_text:
         "Certko is an independent compliance intelligence platform. We are not affiliated with the Bureau of Indian Standards. Prices are indicative and exclude GST.",
       announcement: "Updated July 2026 · 1,400+ products · 400+ labs · 29 upcoming QCOs",
