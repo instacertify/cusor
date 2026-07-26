@@ -110,7 +110,11 @@ export default async function CertificationPage({ params }: Props) {
             certSlug={cert.slug}
             certName={cert.name}
             title={`${cert.name} Product Catalogue`}
-            subtitle={`Searchable products and schemes under ${cert.full_name || cert.name}. Open any row for standards, indicative testing costs and guidance.`}
+            subtitle={
+              cert.slug === "bee"
+                ? `Searchable BEE star labelling schemes under ${cert.full_name || cert.name}. Open any row for standards, star tables and guidance.`
+                : `Searchable products and schemes under ${cert.full_name || cert.name}. Open any row for standards, indicative testing costs and guidance.`
+            }
           />
           {cert.slug === "g-mark" && (
             <p className="mt-4 text-sm text-ink-600">

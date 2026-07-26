@@ -54,6 +54,32 @@ export function ensureCertProductsCatalog(db: Database.Database) {
 
   seedBeeIfEmpty(db);
   seedGmarkIfEmpty(db);
+  stripBeeIndicativeLabs(db);
+}
+
+/** BEE catalogue should not surface indicative lab text. */
+function stripBeeIndicativeLabs(db: Database.Database) {
+  const bee = db.prepare("SELECT id FROM certifications WHERE slug = 'bee'").get() as
+    | { id: number }
+    | undefined;
+  if (!bee) return;
+  const rows = db
+    .prepare("SELECT id, content, labs FROM cert_products WHERE certification_id = ?")
+    .all(bee.id) as { id: number; content: string; labs: string }[];
+  const upd = db.prepare("UPDATE cert_products SET labs = '', content = ? WHERE id = ?");
+  const tx = db.transaction(() => {
+    for (const row of rows) {
+      const cleaned = row.content
+        .replace(/\n*\*\*Indicative labs:\*\*[^\n]*/gi, "")
+        .replace(/\n*Indicative labs:[^\n]*/gi, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+      if (row.labs || cleaned !== row.content) {
+        upd.run(cleaned, row.id);
+      }
+    }
+  });
+  tx();
 }
 
 function seedBeeIfEmpty(db: Database.Database) {
@@ -90,10 +116,10 @@ function seedBeeIfEmpty(db: Database.Database) {
         regime: r.regime,
         standards: r.standards,
         summary: `${r.regime} BEE star labelling · ${r.regime_detail}`,
-        content: `## ${r.name}\n\n**Regime:** ${r.regime_detail}\n\n**Test standard:** ${r.standards}\n\n**Star rating table:** ${r.star_table}\n\n**Indicative labs:** ${r.labs}\n\n**Label fee note:** ${r.fee_note}`,
+        content: `## ${r.name}\n\n**Regime:** ${r.regime_detail}\n\n**Test standard:** ${r.standards}\n\n**Star rating table:** ${r.star_table}\n\n**Label fee note:** ${r.fee_note}`,
         min_price: r.min_price,
         max_price: r.max_price,
-        labs: r.labs,
+        labs: "",
         fee_note: r.fee_note,
         extras,
         sort: r.sort,
