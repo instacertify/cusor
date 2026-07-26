@@ -78,7 +78,7 @@ export default function CertProductExpandableList({
                 <form action={saveCertProduct} className="space-y-3 bg-white rounded-xl border border-cream-300 p-4">
                   <input type="hidden" name="id" value={p.id} />
                   <input type="hidden" name="certification_id" value={certificationId} />
-                  <input type="hidden" name="return_to" value="cert" />
+                  <input type="hidden" name="return_to" value="products" />
                   <div className="grid sm:grid-cols-2 gap-3">
                     <Field label="Product name" name="name" defaultValue={p.name} required />
                     <Field label="Slug" name="slug" defaultValue={p.slug} />

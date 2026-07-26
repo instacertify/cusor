@@ -206,59 +206,60 @@ export default async function AdminCertifications({ searchParams }: Props) {
                   View ↗
                 </Link>
                 <Link
-                  href={`/admin/certifications/${c.id}`}
+                  href={`/admin/certifications/${c.id}/products`}
                   className="text-butter-700 hover:text-butter-600"
                 >
-                  Manage →
+                  View all →
+                </Link>
+                <Link
+                  href={`/admin/certifications/${c.id}`}
+                  className="text-ink-700 hover:text-ink-900"
+                >
+                  Settings
                 </Link>
               </div>
             </div>
 
             {c.products.length === 0 ? (
               <p className="px-5 py-4 text-sm text-ink-500">
-                No products covered yet. Use “Add a product covered…” above (select {c.name}), or open
-                Manage.
+                No products covered yet. Use “Add a product covered…” above, or{" "}
+                <Link
+                  href={`/admin/certifications/${c.id}/products#add-product`}
+                  className="font-bold text-butter-700"
+                >
+                  open View all →
+                </Link>
               </p>
             ) : (
-              <ul className="divide-y divide-cream-100">
-                {c.products.slice(0, 12).map((p) => (
-                  <li
-                    key={p.id}
-                    className="flex flex-wrap items-center gap-3 px-5 py-3 hover:bg-cream-50"
+              <>
+                <ul className="divide-y divide-cream-100">
+                  {c.products.slice(0, 5).map((p) => (
+                    <li
+                      key={p.id}
+                      className="flex flex-wrap items-center gap-3 px-5 py-3 hover:bg-cream-50"
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold text-ink-950 truncate">
+                          {p.name}
+                        </span>
+                        <span className="block text-xs text-ink-500 truncate">
+                          {p.standards || "No standard set"}
+                          {p.regime ? ` · ${p.regime}` : ""}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="px-5 py-3 border-t border-cream-200 bg-cream-50">
+                  <Link
+                    href={`/admin/certifications/${c.id}/products`}
+                    className="text-sm font-bold text-butter-700 hover:text-butter-600"
                   >
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold text-ink-950 truncate">
-                        {p.name}
-                      </span>
-                      <span className="block text-xs text-ink-500 truncate">
-                        /certifications/{c.slug}/products/{p.slug}
-                        {p.standards ? ` · ${p.standards}` : ""}
-                        {p.regime ? ` · ${p.regime}` : ""}
-                      </span>
-                    </span>
-                    <Link
-                      href={`/certifications/${c.slug}/products/${p.slug}`}
-                      target="_blank"
-                      className="text-xs font-bold text-ink-600"
-                    >
-                      View ↗
-                    </Link>
-                    <Link
-                      href={`/admin/certifications/${c.id}?edit=${p.id}#product-${p.id}`}
-                      className="text-xs font-bold text-butter-700"
-                    >
-                      Edit →
-                    </Link>
-                  </li>
-                ))}
-                {c.products.length > 12 && (
-                  <li className="px-5 py-3 text-xs font-semibold text-ink-600">
-                    <Link href={`/admin/certifications/${c.id}`} className="hover:text-butter-700">
-                      + {c.products.length - 12} more under {c.name} →
-                    </Link>
-                  </li>
-                )}
-              </ul>
+                    View all {c.products.length} product{c.products.length === 1 ? "" : "s"} under{" "}
+                    {c.name} →
+                  </Link>
+                </div>
+              </>
             )}
           </div>
         ))}

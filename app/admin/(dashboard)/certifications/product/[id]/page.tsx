@@ -25,10 +25,10 @@ export default async function AdminCertProductEdit({ params, searchParams }: Pro
       <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
           <Link
-            href={`/admin/certifications/${product.certification_id}`}
+            href={`/admin/certifications/${product.certification_id}/products`}
             className="text-xs font-bold text-ink-500 hover:text-butter-700"
           >
-            ← {product.cert_name}
+            ← All {product.cert_name} products
           </Link>
           <h1 className="font-display text-3xl font-semibold text-ink-950 mt-1 leading-snug">
             Covered product: {product.name}

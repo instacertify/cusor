@@ -720,15 +720,20 @@ export async function saveCertProduct(formData: FormData) {
   if (returnTo === "list") {
     redirect("/admin/certifications?saved=1");
   }
-  // Stay on the certification list and keep the edited row expanded
-  if (returnTo === "cert" || returnTo === "" || returnTo === "expand") {
-    const editQs = savedId ? `&edit=${savedId}` : "";
-    redirect(`/admin/certifications/${certificationId}?saved=1${editQs}#product-${savedId || ""}`);
+  // Full product list page for this certification (keep edited row expanded)
+  const editQs = savedId ? `&edit=${savedId}` : "";
+  const hash = savedId ? `#product-${savedId}` : "";
+  if (
+    returnTo === "products" ||
+    returnTo === "cert" ||
+    returnTo === "expand" ||
+    returnTo === ""
+  ) {
+    redirect(
+      `/admin/certifications/${certificationId}/products?saved=1${editQs}${hash}`
+    );
   }
-  if (savedId) {
-    redirect(`/admin/certifications/${certificationId}?saved=1&edit=${savedId}#product-${savedId}`);
-  }
-  redirect(`/admin/certifications/${certificationId}?saved=1`);
+  redirect(`/admin/certifications/${certificationId}/products?saved=1${editQs}${hash}`);
 }
 
 export async function deleteCertProduct(formData: FormData) {
@@ -737,7 +742,7 @@ export async function deleteCertProduct(formData: FormData) {
   const certificationId = Number(formData.get("certification_id"));
   getDb().prepare("DELETE FROM cert_products WHERE id = ?").run(id);
   revalidatePath("/", "layout");
-  redirect(`/admin/certifications/${certificationId}?saved=1`);
+  redirect(`/admin/certifications/${certificationId}/products?saved=1`);
 }
 
 export async function saveEntityImage(formData: FormData) {
