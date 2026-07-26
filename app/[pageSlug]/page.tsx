@@ -16,7 +16,25 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const CONTENT_PAGES = new Set(["guide", "about", "tenders", "marketplaces"]);
+const CONTENT_PAGES = new Set([
+  "guide",
+  "about",
+  "tenders",
+  "marketplaces",
+  "privacy",
+  "terms",
+]);
+
+const LEGAL_PDF: Record<string, { href: string; label: string }> = {
+  privacy: {
+    href: "/legal/certko-privacy-policy.pdf",
+    label: "Download Privacy Policy (PDF)",
+  },
+  terms: {
+    href: "/legal/certko-terms-of-service.pdf",
+    label: "Download Terms of Service (PDF)",
+  },
+};
 
 interface Props {
   params: Promise<{ pageSlug: string }>;
@@ -62,13 +80,29 @@ export default async function ContentPage({ params }: Props) {
         />
       )}
       <Breadcrumbs crumbs={[{ label: page.title }]} />
-      <div className="grid lg:grid-cols-[1.4fr_1fr] gap-10 items-center">
+      <div
+        className={
+          page.image
+            ? "grid lg:grid-cols-[1.4fr_1fr] gap-10 items-center"
+            : "max-w-3xl"
+        }
+      >
         <div>
           <h1 className="font-display text-4xl font-extrabold text-ink-950 tracking-tight leading-tight">
             {page.hero_heading || page.title}
           </h1>
           {page.hero_subheading && (
             <p className="mt-4 text-lg text-ink-600 leading-relaxed">{page.hero_subheading}</p>
+          )}
+          {LEGAL_PDF[pageSlug] && (
+            <p className="mt-5">
+              <a
+                href={LEGAL_PDF[pageSlug].href}
+                className="inline-flex items-center gap-2 text-sm font-semibold text-butter-700 hover:text-butter-800 underline underline-offset-4"
+              >
+                {LEGAL_PDF[pageSlug].label}
+              </a>
+            </p>
           )}
         </div>
         {page.image ? (
@@ -93,9 +127,11 @@ export default async function ContentPage({ params }: Props) {
         </div>
       )}
 
-      <div className="mt-16">
-        <CtaBanner />
-      </div>
+      {!LEGAL_PDF[pageSlug] && (
+        <div className="mt-16">
+          <CtaBanner />
+        </div>
+      )}
     </div>
   );
 }

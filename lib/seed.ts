@@ -4,6 +4,7 @@ import path from "path";
 import { slugify, formatPriceRange } from "./format";
 import { CERTIFICATIONS } from "./seed-certifications";
 import { POSTS } from "./seed-posts";
+import { PRIVACY_CONTENT, TERMS_CONTENT } from "./legal-content";
 
 interface RawProduct {
   category: string;
@@ -846,6 +847,30 @@ export function seedDatabase(db: Database.Database) {
       hero_subheading: "",
       content: "",
       image: "/images/hero.png",
+    });
+    insPage.run({
+      slug: "privacy",
+      title: "Privacy Policy",
+      meta_title: "Privacy Policy | Certko",
+      meta_description:
+        "How Certko and Instacertify Labs Private Limited collect, use, store and protect personal information on the CERTKO platform.",
+      hero_heading: "Privacy Policy",
+      hero_subheading:
+        "How Instacertify Labs Private Limited collects, uses and protects personal information when you use CERTKO.",
+      content: PRIVACY_CONTENT,
+      image: "",
+    });
+    insPage.run({
+      slug: "terms",
+      title: "Terms of Service",
+      meta_title: "Terms of Service & Code of Conduct | Certko",
+      meta_description:
+        "Terms of Service and Code of Conduct for using the CERTKO regulatory intelligence and product compliance platform.",
+      hero_heading: "Terms of Service & Code of Conduct",
+      hero_subheading:
+        "The rules governing use of CERTKO, owned and operated by Instacertify Labs Private Limited.",
+      content: TERMS_CONTENT,
+      image: "",
     });
 
     // ---- categories ----

@@ -84,11 +84,19 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t border-ink-800">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-ink-400">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink-400">
           <span>© {new Date().getFullYear()} {settings.site_name}.com — All rights reserved.</span>
-          <span>
-            {settings.contact_email} · {settings.contact_phone}
-          </span>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            <Link href="/privacy" className="hover:text-butter-400">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="hover:text-butter-400">
+              Terms of Service
+            </Link>
+            <span>
+              {settings.contact_email} · {settings.contact_phone}
+            </span>
+          </div>
         </div>
       </div>
     </footer>

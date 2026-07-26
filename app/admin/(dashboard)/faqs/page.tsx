@@ -13,6 +13,8 @@ const PAGE_SCOPES = [
   { value: "page:contact", label: "Contact page" },
   { value: "page:guide", label: "Guide page" },
   { value: "page:about", label: "About page" },
+  { value: "page:privacy", label: "Privacy Policy" },
+  { value: "page:terms", label: "Terms of Service" },
   { value: "page:search", label: "Search page" },
 ];
 

@@ -22,12 +22,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/blog`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE}/labs`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE}/qco`, changeFrequency: "weekly", priority: 0.8 },
-    ...["guide", "about", "contact", "tenders", "marketplaces"]
+    ...["guide", "about", "contact", "tenders", "marketplaces", "privacy", "terms"]
       .filter((slug) => !excludedPages.has(slug))
       .map((slug) => ({
         url: `${BASE}/${slug}`,
         changeFrequency: "monthly" as const,
-        priority: slug === "guide" ? 0.8 : 0.6,
+        priority: slug === "guide" ? 0.8 : slug === "privacy" || slug === "terms" ? 0.4 : 0.6,
       })),
   ];
 
