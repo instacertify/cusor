@@ -1,323 +1,91 @@
-# Dummy’s Guide: Deploy Certko on Hostinger NVMe VPS
+# Hostinger NVMe — one-click install (simple)
 
-This guide is for **Hostinger VPS (NVMe)** — the kind with **SSH / root access**.
-
-> **Do not use** normal Hostinger shared hosting / “Website” plans for this project.  
-> Certko needs a real Node.js server + disk for SQLite (`data/certko.db`) and uploads.
-
-Time needed: about **45–90 minutes** the first time.
+Certko needs a **Hostinger VPS (NVMe)** with SSH — not shared hosting.
 
 ---
 
-## What you need before starting
+## Before you start (2 minutes)
 
-1. A **Hostinger VPS NVMe** plan (KVM VPS)
-2. Your **domain** (e.g. `certko.com`) — can be on Hostinger or elsewhere
-3. Your project on **GitHub** (this repo: `instacertify/cusor`)
-4. A computer with:
-   - **Mac / Linux:** Terminal  
-   - **Windows:** PowerShell or [PuTTY](https://www.putty.org/)
+1. In Hostinger hPanel → **VPS** → create/open server → **Ubuntu 22.04 or 24.04**
+2. Copy the **VPS IP** and **root password**
+3. Point DNS to the VPS:
 
-Write these down when Hostinger shows them:
+| Type | Name | Value |
+|------|------|--------|
+| A | `@` | your VPS IP |
+| A | `www` | your VPS IP |
 
-| Item | Example | Your value |
-|------|---------|------------|
-| VPS IP | `123.45.67.89` | ________ |
-| Root password | (from email / hPanel) | ________ |
-| Domain | `certko.com` | ________ |
+Wait a few minutes for DNS.
 
 ---
 
-## STEP 0 — Buy / open the VPS (hPanel)
+## One-click install (copy & paste)
 
-1. Log in to [Hostinger hPanel](https://hpanel.hostinger.com)
-2. Go to **VPS** → your server → **Manage**
-3. When creating the VPS (or rebuilding):
-   - **OS:** Ubuntu **22.04** or **24.04** LTS  
-   - Set a **strong root password** (save it in a password manager)
-4. On **Overview**, copy the **IP address**
-
-Optional but nice: use Hostinger’s **MERN / Node** template if offered — you can still follow this guide.
-
----
-
-## STEP 1 — Point your domain to the VPS
-
-In DNS (Hostinger Domains **or** wherever the domain is managed):
-
-Create / edit these records:
-
-| Type | Name | Points to | TTL |
-|------|------|-----------|-----|
-| **A** | `@` | `YOUR_VPS_IP` | 300 or Auto |
-| **A** | `www` | `YOUR_VPS_IP` | 300 or Auto |
-
-Wait 5–30 minutes (sometimes up to a few hours).
-
-Check later with:
-
-```bash
-ping certko.com
-```
-
-You should see your VPS IP.
-
----
-
-## STEP 2 — Connect with SSH
-
-### Mac / Linux / Windows PowerShell
+### 1) Login to the VPS
 
 ```bash
 ssh root@YOUR_VPS_IP
 ```
 
-- Type `yes` if asked about fingerprint  
-- Paste the root password (nothing shows while typing — that is normal)  
-- Press Enter  
+### 2) Run the installer
 
-You should see a prompt like `root@srvXXXXX:~#`
-
----
-
-## STEP 3 — Update the server
-
-Copy–paste **one block at a time**:
+**Option A — from GitHub (easiest):**
 
 ```bash
-apt update && apt upgrade -y
+curl -fsSL https://raw.githubusercontent.com/instacertify/cusor/main/scripts/hostinger-one-click.sh -o install.sh
+bash install.sh
 ```
 
+If `main` does not have the script yet, use your deploy branch:
+
 ```bash
-apt install -y git curl build-essential ufw nginx
+curl -fsSL https://raw.githubusercontent.com/instacertify/cusor/cursor/certko-website-cms-2bc7/scripts/hostinger-one-click.sh -o install.sh
+bash install.sh
 ```
 
-(`build-essential` is needed so `better-sqlite3` can compile.)
-
----
-
-## STEP 4 — Install Node.js 20 LTS
+**Option B — clone first:**
 
 ```bash
-curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-apt install -y nodejs
-node -v
-npm -v
-```
-
-You want Node **v20.x** (or newer LTS).
-
-Install PM2 (keeps the site running after reboot):
-
-```bash
-npm install -g pm2
-```
-
----
-
-## STEP 5 — Get the Certko code on the server
-
-```bash
-mkdir -p /var/www
-cd /var/www
-git clone https://github.com/instacertify/cusor.git certko
+git clone https://github.com/instacertify/cusor.git /var/www/certko
 cd /var/www/certko
+bash scripts/hostinger-one-click.sh
 ```
 
-Use your real branch if needed:
+### 3) Answer 3 questions
 
-```bash
-git checkout main
-# or: git checkout cursor/certko-website-cms-2bc7
-```
+1. **Domain** — e.g. `certko.com` (or leave blank)
+2. **Branch** — press Enter for `main` (or type your branch)
+3. **SSL** — type `y` for free HTTPS (only if DNS already points to this VPS)
 
-If the repo is **private**, create a GitHub Personal Access Token and clone with:
-
-```bash
-git clone https://YOUR_GITHUB_USERNAME:YOUR_TOKEN@github.com/instacertify/cusor.git certko
-```
+The script installs Node, builds Certko, starts PM2, configures Nginx, and optionally SSL.
 
 ---
 
-## STEP 6 — Create the secret env file
+## Login to admin
 
-```bash
-cd /var/www/certko
-nano .env.production
-```
+Open:
 
-Paste this (change the secret!):
+`https://YOUR_DOMAIN/admin/login`
 
-```bash
-NODE_ENV=production
-PORT=3000
-CERTKO_SECRET=REPLACE_WITH_A_LONG_RANDOM_STRING_32_CHARS_MIN
-COOKIE_SECURE=1
-```
+| Field | Value |
+|-------|--------|
+| Login ID | `admin` |
+| Password | `certko-admin` |
+| Captcha | type the **number** answer |
 
-How to make a random secret on the server:
-
-```bash
-openssl rand -hex 32
-```
-
-Copy the output into `CERTKO_SECRET=...`
-
-Save in nano: `Ctrl+O` → Enter → `Ctrl+X`
+Then go to **Admin → Login & password** and change them.
 
 ---
 
-## STEP 7 — Install packages and build
-
-```bash
-cd /var/www/certko
-npm ci
-npm run build
-```
-
-First build can take a few minutes.  
-If `better-sqlite3` fails, make sure Step 3 installed `build-essential`, then:
-
-```bash
-npm rebuild better-sqlite3
-npm run build
-```
-
----
-
-## STEP 8 — Start Certko with PM2
-
-```bash
-cd /var/www/certko
-pm2 start npm --name certko -- start
-pm2 save
-pm2 startup
-```
-
-PM2 will print a command starting with `sudo env PATH=...` — **copy and run that exact command**, then:
-
-```bash
-pm2 save
-```
-
-Useful checks:
+## Useful commands
 
 ```bash
 pm2 status
-pm2 logs certko --lines 50
-curl -I http://127.0.0.1:3000
+pm2 logs certko
+pm2 restart certko
 ```
 
-You want HTTP `200` or `307` from curl, not “connection refused”.
-
----
-
-## STEP 9 — Firewall
-
-```bash
-ufw allow OpenSSH
-ufw allow 'Nginx Full'
-ufw enable
-ufw status
-```
-
----
-
-## STEP 10 — Nginx reverse proxy (domain → app)
-
-```bash
-nano /etc/nginx/sites-available/certko
-```
-
-Paste (**change the domain**):
-
-```nginx
-server {
-    listen 80;
-    server_name certko.com www.certko.com;
-
-    client_max_body_size 25M;
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-```
-
-Enable it:
-
-```bash
-ln -sf /etc/nginx/sites-available/certko /etc/nginx/sites-enabled/certko
-rm -f /etc/nginx/sites-enabled/default
-nginx -t
-systemctl reload nginx
-```
-
-Open in browser: `http://certko.com`  
-If DNS is ready, the site should load.
-
----
-
-## STEP 11 — Free HTTPS (SSL)
-
-```bash
-apt install -y certbot python3-certbot-nginx
-certbot --nginx -d certko.com -d www.certko.com
-```
-
-- Enter email  
-- Agree to terms  
-- Choose redirect HTTP → HTTPS (**yes**)
-
-Then open: `https://certko.com`
-
----
-
-## STEP 12 — First admin login (important)
-
-1. Go to `https://your-domain.com/admin/login`
-2. Default credentials:
-   - **Login ID:** `admin`
-   - **Password:** `certko-admin`
-   - Solve the **math captcha** (type the number answer)
-3. Immediately go to **Admin → Login & password** and change both login ID and password
-4. Confirm twice when asked
-
-Also set SMTP under **Admin → Email / SMTP** if you want inquiry emails.
-
----
-
-## STEP 13 — What you must never delete
-
-These live on the VPS disk and hold your real content:
-
-| Path | What it is |
-|------|------------|
-| `/var/www/certko/data/certko.db` | Database (pages, products, blogs, settings) |
-| `/var/www/certko/public/uploads/` | Images / videos you upload in admin |
-
-### Simple backup (run anytime)
-
-```bash
-mkdir -p /root/certko-backups
-cp /var/www/certko/data/certko.db /root/certko-backups/certko-$(date +%F).db
-tar -czf /root/certko-backups/uploads-$(date +%F).tar.gz -C /var/www/certko/public uploads
-ls -lah /root/certko-backups
-```
-
-Download backups to your PC occasionally (Hostinger file manager / `scp`).
-
----
-
-## How to update the site later (after code changes)
+### Update site after new code
 
 ```bash
 cd /var/www/certko
@@ -327,65 +95,34 @@ npm run build
 pm2 restart certko
 ```
 
-Your database and uploads stay (they are not in git).
+### Backup (important)
+
+```bash
+cp /var/www/certko/data/certko.db /root/certko-backup-$(date +%F).db
+tar -czf /root/uploads-backup-$(date +%F).tar.gz -C /var/www/certko/public uploads
+```
 
 ---
 
-## If something breaks — quick fixes
+## If SSL failed the first time
 
-### Site down
-
-```bash
-pm2 status
-pm2 restart certko
-pm2 logs certko --lines 100
-```
-
-### Nginx error
+DNS was probably not ready. After DNS works:
 
 ```bash
-nginx -t
-systemctl status nginx
-tail -50 /var/log/nginx/error.log
+certbot --nginx -d yourdomain.com -d www.yourdomain.com
 ```
-
-### Rebuild native SQLite module after Node upgrade
-
-```bash
-cd /var/www/certko
-npm rebuild better-sqlite3
-pm2 restart certko
-```
-
-### Forgot admin password
-
-SSH in, then reset via SQLite only if you know what you are doing — easier: from a working local DB, or ask a developer. Best prevention: change password after first login and store it safely.
 
 ---
 
-## One-page checklist
+## What the one-click script does for you
 
-- [ ] Hostinger **VPS NVMe** created (Ubuntu)
-- [ ] Domain **A records** → VPS IP
-- [ ] SSH works as `root`
-- [ ] Node 20 + PM2 installed
-- [ ] Repo cloned to `/var/www/certko`
-- [ ] `.env.production` with strong `CERTKO_SECRET`
-- [ ] `npm ci` + `npm run build` OK
-- [ ] `pm2 start` + `pm2 startup` OK
-- [ ] Nginx proxy OK
-- [ ] Certbot HTTPS OK
-- [ ] Admin login works; password changed
-- [ ] Backup folder created
+1. Updates Ubuntu  
+2. Installs Node.js + PM2 + Nginx  
+3. Clones/updates Certko  
+4. Creates a strong `CERTKO_SECRET`  
+5. Runs `npm ci` + `npm run build`  
+6. Starts the app with PM2 (auto-restart on reboot)  
+7. Configures Nginx reverse proxy  
+8. Optional Let’s Encrypt HTTPS  
 
----
-
-## Mental picture
-
-```
-Internet → HTTPS (Nginx) → http://127.0.0.1:3000 (Next.js / PM2)
-                              ├─ data/certko.db   (SQLite)
-                              └─ public/uploads/  (media)
-```
-
-You are done when `https://your-domain.com` loads and `/admin/login` lets you in.
+That’s the whole deploy.
