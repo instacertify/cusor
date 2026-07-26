@@ -13,6 +13,7 @@ import type {
   CertProduct,
   TestingCategory,
   TestingService,
+  HeroSlide,
 } from "./db";
 
 // ---------- categories ----------
@@ -389,6 +390,28 @@ export function getTestimonials(): Testimonial[] {
   return getDb()
     .prepare("SELECT * FROM testimonials ORDER BY sort, id")
     .all() as Testimonial[];
+}
+
+// ---------- hero slider ----------
+export function getActiveHeroSlides(): HeroSlide[] {
+  return getDb()
+    .prepare(
+      `SELECT * FROM hero_slides WHERE active = 1 AND media != ''
+       ORDER BY sort, id`
+    )
+    .all() as HeroSlide[];
+}
+
+export function getAllHeroSlides(): HeroSlide[] {
+  return getDb()
+    .prepare("SELECT * FROM hero_slides ORDER BY sort, id")
+    .all() as HeroSlide[];
+}
+
+export function getHeroSlideById(id: number): HeroSlide | undefined {
+  return getDb().prepare("SELECT * FROM hero_slides WHERE id = ?").get(id) as
+    | HeroSlide
+    | undefined;
 }
 
 // ---------- upcoming QCOs ----------

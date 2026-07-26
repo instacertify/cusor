@@ -1,18 +1,18 @@
 import Link from "next/link";
-import Image from "next/image";
 import Icon from "@/components/Icon";
 import SearchBox from "@/components/SearchBox";
 import ProductCard from "@/components/ProductCard";
 import FaqAccordion from "@/components/FaqAccordion";
 import CtaBanner from "@/components/CtaBanner";
+import HeroSlider from "@/components/HeroSlider";
 import { getSettings } from "@/lib/db";
 import {
   getCategories,
   getFeaturedProducts,
   getFaqs,
   getTestimonials,
-  getPage,
   getUpcomingQcos,
+  getActiveHeroSlides,
 } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
 
@@ -38,7 +38,7 @@ const HOW_IT_WORKS = [
 
 export default function HomePage() {
   const settings = getSettings();
-  const home = getPage("home");
+  const heroSlides = getActiveHeroSlides();
   const categories = getCategories();
   const featured = getFeaturedProducts(8);
   const faqs = getFaqs("global");
@@ -83,18 +83,11 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-          <div className="hidden lg:block animate-rise">
-            {home?.image ? (
-              <Image
-                src={home.image}
-                alt="BIS product certification in India"
-                width={620}
-                height={480}
-                priority
-                className="rounded-3xl shadow-card-hover border border-cream-300 object-cover"
-              />
-            ) : null}
-          </div>
+          {heroSlides.length > 0 ? (
+            <div className="animate-rise min-w-0 order-first lg:order-none">
+              <HeroSlider slides={heroSlides} />
+            </div>
+          ) : null}
         </div>
       </section>
 

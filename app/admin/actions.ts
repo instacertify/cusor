@@ -10,13 +10,26 @@ import { requireAdmin, clearAdminSession } from "@/lib/auth";
 async function saveUploadedImage(file: File | null): Promise<string | null> {
   if (!file || file.size === 0) return null;
   const ext = path.extname(file.name).toLowerCase();
-  if (![".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"].includes(ext)) return null;
+  if (![".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".avif"].includes(ext)) return null;
   const dir = path.join(process.cwd(), "public", "uploads");
   fs.mkdirSync(dir, { recursive: true });
   const name = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
   const buf = Buffer.from(await file.arrayBuffer());
   fs.writeFileSync(path.join(dir, name), buf);
   return `/uploads/${name}`;
+}
+
+async function saveUploadedMedia(file: File | null): Promise<string | null> {
+  if (!file || file.size === 0) return null;
+  const ext = path.extname(file.name).toLowerCase();
+  const { HERO_MEDIA_EXTS } = await import("@/lib/hero-slides");
+  if (!HERO_MEDIA_EXTS.includes(ext)) return null;
+  const dir = path.join(process.cwd(), "public", "uploads", "hero");
+  fs.mkdirSync(dir, { recursive: true });
+  const name = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+  const buf = Buffer.from(await file.arrayBuffer());
+  fs.writeFileSync(path.join(dir, name), buf);
+  return `/uploads/hero/${name}`;
 }
 
 export async function logout() {
@@ -1109,4 +1122,68 @@ export async function deleteTestingService(formData: FormData) {
   db.prepare("DELETE FROM testing_services WHERE id = ?").run(id);
   revalidatePath("/", "layout");
   redirect(`/admin/testing/${categoryId}?saved=1`);
+}
+
+// ---------- hero slider ----------
+export async function saveHeroSlide(formData: FormData) {
+  await requireAdmin();
+  const { mediaTypeFromPath } = await import("@/lib/hero-slides");
+  const id = formData.get("id") ? Number(formData.get("id")) : null;
+  const mediaUpload = await saveUploadedMedia(formData.get("media_file") as File | null);
+  const posterUpload = await saveUploadedImage(formData.get("poster_file") as File | null);
+  const db = getDb();
+
+  const title = String(formData.get("title") ?? "").trim();
+  const subtitle = String(formData.get("subtitle") ?? "").trim();
+  const link_href = String(formData.get("link_href") ?? "").trim();
+  const link_label = String(formData.get("link_label") ?? "").trim();
+  const duration_ms = Math.max(2000, Number(formData.get("duration_ms") ?? 6000) || 6000);
+  const sort = Number(formData.get("sort") ?? 0) || 0;
+  const active = formData.getAll("active").map(String).includes("1") ? 1 : 0;
+
+  if (id) {
+    const existing = db.prepare("SELECT media, poster, media_type FROM hero_slides WHERE id = ?").get(id) as
+      | { media: string; poster: string; media_type: string }
+      | undefined;
+    if (!existing) redirect("/admin/hero");
+    let media = existing.media;
+    let poster = existing.poster;
+    if (mediaUpload) media = mediaUpload;
+    else if (formData.get("clear_media") === "1") media = "";
+    if (posterUpload) poster = posterUpload;
+    else if (formData.get("clear_poster") === "1") poster = "";
+    const media_type = media ? mediaTypeFromPath(media) : existing.media_type;
+    db.prepare(
+      `UPDATE hero_slides SET title=?, subtitle=?, media=?, media_type=?, poster=?, link_href=?, link_label=?,
+       duration_ms=?, active=?, sort=? WHERE id=?`
+    ).run(title, subtitle, media, media_type, poster, link_href, link_label, duration_ms, active, sort, id);
+    revalidatePath("/", "layout");
+    redirect(`/admin/hero?saved=1`);
+  }
+
+  if (!mediaUpload) redirect("/admin/hero?error=1");
+  db.prepare(
+    `INSERT INTO hero_slides (title, subtitle, media, media_type, poster, link_href, link_label, duration_ms, active, sort)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(
+    title,
+    subtitle,
+    mediaUpload,
+    mediaTypeFromPath(mediaUpload),
+    posterUpload || "",
+    link_href,
+    link_label,
+    duration_ms,
+    active,
+    sort
+  );
+  revalidatePath("/", "layout");
+  redirect("/admin/hero?saved=1");
+}
+
+export async function deleteHeroSlide(formData: FormData) {
+  await requireAdmin();
+  getDb().prepare("DELETE FROM hero_slides WHERE id = ?").run(Number(formData.get("id")));
+  revalidatePath("/", "layout");
+  redirect("/admin/hero?saved=1");
 }

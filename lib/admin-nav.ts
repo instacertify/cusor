@@ -48,10 +48,16 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         description: "Create pages; place in menu, submenu or footer",
       },
       {
+        href: "/admin/hero",
+        label: "Hero Slider",
+        icon: "image",
+        description: "Homepage banner slides — image, GIF, video",
+      },
+      {
         href: "/admin/media",
         label: "Front Images",
         icon: "image",
-        description: "Hero and page cover images",
+        description: "Page cover and catalogue images",
       },
       {
         href: "/admin/testimonials",

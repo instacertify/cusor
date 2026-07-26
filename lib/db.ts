@@ -6,6 +6,7 @@ import { ensureCertProductsCatalog } from "./seed-cert-products";
 import { ensureTestingCatalog } from "./seed-testing";
 import { ensureAuthorsCatalog } from "./authors";
 import { ensurePagesNavColumns } from "./pages-nav";
+import { ensureHeroSlidesCatalog } from "./hero-slides";
 
 const DB_DIR = path.join(process.cwd(), "data");
 const DB_PATH = path.join(DB_DIR, "certko.db");
@@ -270,6 +271,21 @@ function createDb(): Database.Database {
     );
     CREATE INDEX IF NOT EXISTS idx_testing_services_cat ON testing_services(category_id);
     CREATE INDEX IF NOT EXISTS idx_testing_services_name ON testing_services(name);
+
+    CREATE TABLE IF NOT EXISTS hero_slides (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL DEFAULT '',
+      subtitle TEXT NOT NULL DEFAULT '',
+      media TEXT NOT NULL DEFAULT '',
+      media_type TEXT NOT NULL DEFAULT 'image',
+      poster TEXT NOT NULL DEFAULT '',
+      link_href TEXT NOT NULL DEFAULT '',
+      link_label TEXT NOT NULL DEFAULT '',
+      duration_ms INTEGER NOT NULL DEFAULT 6000,
+      active INTEGER NOT NULL DEFAULT 1,
+      sort INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `);
 
   const count = (
@@ -282,6 +298,7 @@ function createDb(): Database.Database {
   ensureTestingCatalog(db);
   ensureAuthorsCatalog(db);
   ensurePagesNavColumns(db);
+  ensureHeroSlidesCatalog(db);
   return db;
 }
 
@@ -294,6 +311,7 @@ export function getDb(): Database.Database {
     ensureTestingCatalog(global.__certkoDb);
     ensureAuthorsCatalog(global.__certkoDb);
     ensurePagesNavColumns(global.__certkoDb);
+    ensureHeroSlidesCatalog(global.__certkoDb);
   }
   return global.__certkoDb;
 }
@@ -544,4 +562,19 @@ export interface TestingService {
   category_slug?: string;
   category_name?: string;
   category_icon?: string;
+}
+
+export interface HeroSlide {
+  id: number;
+  title: string;
+  subtitle: string;
+  media: string;
+  media_type: "image" | "gif" | "video" | string;
+  poster: string;
+  link_href: string;
+  link_label: string;
+  duration_ms: number;
+  active: number;
+  sort: number;
+  created_at: string;
 }
