@@ -3,6 +3,7 @@ import Icon from "@/components/Icon";
 import { getCertifications, countCertProducts } from "@/lib/queries";
 import { createCertification, deleteCertification } from "../../actions";
 import { Field, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import BulkImportLink from "@/components/admin/BulkImportLink";
 
 export const dynamic = "force-dynamic";
 
@@ -16,10 +17,13 @@ export default async function AdminCertifications({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Certifications</h1>
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+        <h1 className="font-display text-3xl font-semibold text-ink-950">Certifications</h1>
+        <BulkImportLink entity="certifications" />
+      </div>
       <p className="text-ink-600 text-sm mb-6">
         Add any certification programme (BIS, BEE, GMARK, CE, FCC, SABER, custom…). Pages appear in the
-        header, footer and search. Each certification can hold an editable product catalogue.
+        header, footer and search. Each certification can hold an editable product catalogue. Or bulk-upload via Excel.
       </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
 

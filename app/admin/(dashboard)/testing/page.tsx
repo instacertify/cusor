@@ -3,6 +3,7 @@ import Icon from "@/components/Icon";
 import { getTestingCategories, countTestingServices } from "@/lib/queries";
 import { createTestingCategory, deleteTestingCategory } from "../../actions";
 import { Field, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import BulkImportLink from "@/components/admin/BulkImportLink";
 
 export const dynamic = "force-dynamic";
 
@@ -16,10 +17,13 @@ export default async function AdminTesting({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Product Testing</h1>
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+        <h1 className="font-display text-3xl font-semibold text-ink-950">Product Testing</h1>
+        <BulkImportLink entity="testing_categories" />
+      </div>
       <p className="text-ink-600 text-sm mb-6">
         Manage testing categories and individual tests. Each category and test page supports image,
-        writeup, FAQs and SEO. Pages appear under Product Testing in the header and site search.
+        writeup, FAQs and SEO. Pages appear under Product Testing in the header and site search. Or bulk-upload categories via Excel.
       </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
 

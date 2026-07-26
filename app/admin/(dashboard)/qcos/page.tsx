@@ -1,6 +1,7 @@
 import { getUpcomingQcos } from "@/lib/queries";
 import { saveQco, deleteQco } from "../../actions";
 import { Field, SavedBanner, SubmitButton } from "@/components/admin/Field";
+import BulkImportLink from "@/components/admin/BulkImportLink";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +15,12 @@ export default async function AdminQcos({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">QCO Alerts</h1>
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+        <h1 className="font-display text-3xl font-semibold text-ink-950">QCO Alerts</h1>
+        <BulkImportLink entity="qcos" />
+      </div>
       <p className="text-ink-600 text-sm mb-6">
-        Upcoming Quality Control Orders shown on the public /qco page and the homepage teaser.
+        Upcoming Quality Control Orders shown on the public /qco page and the homepage teaser. Add one below or bulk-upload via Excel.
       </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
 

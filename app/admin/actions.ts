@@ -224,6 +224,39 @@ export async function deletePage(formData: FormData) {
 }
 
 // ---------- categories ----------
+export async function createCategory(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) redirect("/admin/categories?error=1");
+  const db = getDb();
+  let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
+  let n = 2;
+  while (db.prepare("SELECT 1 FROM categories WHERE slug = ?").get(slug)) {
+    slug = `${slugify(name)}-${n++}`;
+  }
+  const maxSort = (
+    db.prepare("SELECT COALESCE(MAX(sort), 0) AS m FROM categories").get() as { m: number }
+  ).m;
+  const image = (await saveUploadedImage(formData.get("image_file") as File | null)) ?? "";
+  const res = db
+    .prepare(
+      `INSERT INTO categories (slug, name, icon, description, image, timeline, sort)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+    )
+    .run(
+      slug,
+      name,
+      String(formData.get("icon") ?? "box").trim() || "box",
+      String(formData.get("description") ?? "").trim(),
+      image,
+      String(formData.get("timeline") ?? "8-16 weeks").trim() || "8-16 weeks",
+      maxSort + 1
+    );
+  revalidatePath("/", "layout");
+  redirect(`/admin/categories/${Number(res.lastInsertRowid)}?saved=1`);
+}
+
 export async function saveCategory(formData: FormData) {
   await requireAdmin();
   const id = Number(formData.get("id"));
@@ -247,6 +280,53 @@ export async function saveCategory(formData: FormData) {
 }
 
 // ---------- products ----------
+export async function createProduct(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const name = String(formData.get("name") ?? "").trim();
+  const categoryId = Number(formData.get("category_id"));
+  if (!name || !categoryId) redirect("/admin/products?error=1");
+  const db = getDb();
+  const cat = db.prepare("SELECT id FROM categories WHERE id = ?").get(categoryId) as
+    | { id: number }
+    | undefined;
+  if (!cat) redirect("/admin/products?error=1");
+  let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
+  let n = 2;
+  while (db.prepare("SELECT 1 FROM products WHERE slug = ?").get(slug)) {
+    slug = `${slugify(name)}-${n++}`;
+  }
+  const minPrice = formData.get("min_price") ? Number(formData.get("min_price")) : null;
+  const maxPrice = formData.get("max_price") ? Number(formData.get("max_price")) : null;
+  const description = String(formData.get("description") ?? "").trim();
+  const res = db
+    .prepare(
+      `INSERT INTO products (
+        slug, name, standard, scheme, category_id, min_price, max_price, lab_count, timeline,
+        description, image, featured, meta_title, meta_description, hsn4, hsn8, qco_status, qco_order
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, '', 0, ?, ?, ?, ?, ?, ?)`
+    )
+    .run(
+      slug,
+      name,
+      String(formData.get("standard") ?? "").trim(),
+      String(formData.get("scheme") ?? "ISI") || "ISI",
+      categoryId,
+      minPrice,
+      maxPrice,
+      String(formData.get("timeline") ?? "").trim(),
+      description || `## About ${name}\n\nWrite the BIS compliance overview here.`,
+      `${name} | BIS Certification | Certko`,
+      description || `BIS certification details for ${name}.`,
+      String(formData.get("hsn4") ?? "").trim(),
+      String(formData.get("hsn8") ?? "").trim(),
+      String(formData.get("qco_status") ?? "").trim(),
+      String(formData.get("qco_order") ?? "").trim()
+    );
+  revalidatePath("/", "layout");
+  redirect(`/admin/products/${Number(res.lastInsertRowid)}?saved=1`);
+}
+
 export async function saveProduct(formData: FormData) {
   await requireAdmin();
   const id = Number(formData.get("id"));
@@ -1186,4 +1266,59 @@ export async function deleteHeroSlide(formData: FormData) {
   getDb().prepare("DELETE FROM hero_slides WHERE id = ?").run(Number(formData.get("id")));
   revalidatePath("/", "layout");
   redirect("/admin/hero?saved=1");
+}
+
+// ---------- bulk excel import ----------
+export async function bulkImportEntity(formData: FormData) {
+  await requireAdmin();
+  const { getBulkEntity, parseWorkbook, importBulkRows } = await import("@/lib/bulk-import");
+  const entity = String(formData.get("entity") ?? "") as import("@/lib/bulk-import").BulkEntity;
+  const def = getBulkEntity(entity);
+  if (!def) {
+    return { ok: false as const, created: 0, updated: 0, skipped: 0, errors: ["Unknown entity"] };
+  }
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return {
+      ok: false as const,
+      created: 0,
+      updated: 0,
+      skipped: 0,
+      errors: ["Please choose an .xlsx file"],
+    };
+  }
+  const name = file.name.toLowerCase();
+  if (!name.endsWith(".xlsx") && !name.endsWith(".xls") && !name.endsWith(".csv")) {
+    return {
+      ok: false as const,
+      created: 0,
+      updated: 0,
+      skipped: 0,
+      errors: ["File must be .xlsx, .xls or .csv"],
+    };
+  }
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const rows = parseWorkbook(buffer);
+    if (!rows.length) {
+      return {
+        ok: false as const,
+        created: 0,
+        updated: 0,
+        skipped: 0,
+        errors: ["No data rows found — keep the header row and add your rows below the example"],
+      };
+    }
+    const result = importBulkRows(entity, rows);
+    revalidatePath("/", "layout");
+    return { ok: true as const, ...result };
+  } catch (err) {
+    return {
+      ok: false as const,
+      created: 0,
+      updated: 0,
+      skipped: 0,
+      errors: [err instanceof Error ? err.message : "Could not read spreadsheet"],
+    };
+  }
 }

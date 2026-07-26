@@ -132,6 +132,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: "Growth & delivery",
     items: [
       {
+        href: "/admin/import",
+        label: "Bulk Import",
+        icon: "table",
+        description: "Excel upload for catalogue, QCOs, posts and more",
+      },
+      {
         href: "/admin/seo",
         label: "SEO Tools",
         icon: "sparkles",

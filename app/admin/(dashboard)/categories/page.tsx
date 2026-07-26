@@ -1,12 +1,14 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
 import { getCategories } from "@/lib/queries";
-import { SavedBanner } from "@/components/admin/Field";
+import { createCategory } from "../../actions";
+import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import BulkImportLink from "@/components/admin/BulkImportLink";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string }>;
 }
 
 export default async function AdminCategories({ searchParams }: Props) {
@@ -15,11 +17,30 @@ export default async function AdminCategories({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Categories</h1>
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+        <h1 className="font-display text-3xl font-semibold text-ink-950">Categories</h1>
+        <BulkImportLink entity="categories" />
+      </div>
       <p className="text-ink-600 text-sm mb-6">
-        Edit category names, icons, descriptions, timelines and images.
+        Create BIS product categories, or edit names, icons, descriptions, timelines and images.
       </p>
-      <SavedBanner saved={sp.saved} />
+      <SavedBanner saved={sp.saved} error={sp.error} />
+
+      <div className="bg-cream-100 rounded-2xl border border-cream-300 p-5 mb-8">
+        <h2 className="font-display font-bold text-ink-950 mb-3">Add a BIS category</h2>
+        <form action={createCategory} className="space-y-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <Field label="Name" name="name" required placeholder="e.g. Kitchen Appliances" />
+            <Field label="URL slug (optional)" name="slug" placeholder="auto from name" />
+            <Field label="Icon" name="icon" placeholder="box" defaultValue="box" />
+          </div>
+          <Field label="Typical Timeline" name="timeline" placeholder="e.g. 8-16 weeks" defaultValue="8-16 weeks" />
+          <TextArea label="Description" name="description" rows={2} />
+          <ImageUpload current="" label="Category image (optional)" allowClear={false} />
+          <SubmitButton label="Create category" />
+        </form>
+      </div>
+
       <div className="grid sm:grid-cols-2 gap-4">
         {categories.map((c) => (
           <Link

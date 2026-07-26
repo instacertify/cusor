@@ -1,6 +1,7 @@
 import { getTestimonials } from "@/lib/queries";
 import { saveTestimonial, deleteTestimonial } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton } from "@/components/admin/Field";
+import BulkImportLink from "@/components/admin/BulkImportLink";
 
 export const dynamic = "force-dynamic";
 
@@ -14,8 +15,11 @@ export default async function AdminTestimonials({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Testimonials</h1>
-      <p className="text-ink-600 text-sm mb-6">Shown on the homepage trust section.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+        <h1 className="font-display text-3xl font-semibold text-ink-950">Testimonials</h1>
+        <BulkImportLink entity="testimonials" />
+      </div>
+      <p className="text-ink-600 text-sm mb-6">Shown on the homepage trust section. Add one below or bulk-upload via Excel.</p>
       <SavedBanner saved={sp.saved} error={sp.error} />
 
       <div className="space-y-4">

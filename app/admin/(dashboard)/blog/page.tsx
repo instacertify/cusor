@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getAllPosts, getAuthors } from "@/lib/queries";
 import { createPost } from "../../actions";
 import { Field, SavedBanner, SubmitButton } from "@/components/admin/Field";
+import BulkImportLink from "@/components/admin/BulkImportLink";
 
 export const dynamic = "force-dynamic";
 
@@ -17,9 +18,12 @@ export default async function AdminBlog({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Blog</h1>
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+        <h1 className="font-display text-3xl font-semibold text-ink-950">Blog</h1>
+        <BulkImportLink entity="posts" />
+      </div>
       <p className="text-ink-600 text-sm mb-6">
-        Write articles in Markdown, pick an author profile, then publish to /blog.{" "}
+        Write articles in Markdown, pick an author profile, then publish to /blog. Bulk-upload drafts via Excel.{" "}
         <Link href="/admin/authors" className="font-semibold text-butter-700 hover:underline">
           Manage authors →
         </Link>
