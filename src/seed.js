@@ -12,11 +12,11 @@ function slugify(s) {
 
 const SETTINGS = {
   site_name: 'Certko',
-  tagline: 'Product Certification, Made Buttery Smooth',
+  tagline: 'Knowledge in Compliance. Excellence in Execution.',
   hero_eyebrow: 'Updated Jul 2026 · 870+ Products · 31 Upcoming QCOs',
   hero_title: 'Does Your Product Need BIS Certification?',
   hero_subtitle:
-    'Check instantly. Free. Enter your product name or HSN code and get the certification type, estimated cost, timeline, and nearby testing labs — all in one buttery-smooth dashboard.',
+    'Check instantly. Free. Enter your product name or HSN code and get the certification type, estimated cost, timeline, and nearby testing labs — all in one clear dashboard.',
   hero_cta_primary: 'Check My Product',
   hero_cta_secondary: 'Talk to an Expert',
   stat_products: '870+',
@@ -39,9 +39,9 @@ const SETTINGS = {
     'Connect with verified BIS consultants who handle the entire process: application, testing, inspection, and certification. Free quote in 24 hours.',
   contact_email: 'hello@certko.com',
   contact_phone: '+91 98765 43210',
-  brand_primary: '#12294a',
-  brand_accent: '#f2a41c',
-  brand_teal: '#1c8b8e',
+  brand_primary: '#0d1b3d',
+  brand_accent: '#ff8a00',
+  brand_teal: '#17b3a3',
   footer_note: 'Certko is an independent guidance platform and is not affiliated with the Bureau of Indian Standards.',
 };
 

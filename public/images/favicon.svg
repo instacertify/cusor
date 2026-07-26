@@ -1,8 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect width="64" height="64" rx="14" fill="#12294a"/>
-  <g fill="none" stroke="#1c8b8e" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M20 20 L32 32 L20 44"/>
-    <path d="M34 20 L46 32 L34 44"/>
+  <rect width="64" height="64" rx="14" fill="#0d1b3d"/>
+  <text x="8" y="42" font-family="Poppins, Arial, sans-serif" font-size="26" font-weight="700" fill="#ffffff">C</text>
+  <text x="24" y="42" font-family="Poppins, Arial, sans-serif" font-size="26" font-weight="700" fill="#17b3a3">K</text>
+  <g fill="none" stroke="#17b3a3" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M44 24 L52 32 L44 40"/>
+    <path d="M52 24 L60 32 L52 40" stroke="#137d8c"/>
   </g>
-  <circle cx="16" cy="44" r="3.4" fill="#f2a41c"/>
 </svg>

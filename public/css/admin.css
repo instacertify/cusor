@@ -1,12 +1,14 @@
 :root {
-  --navy: #12294a; --teal: #1c8b8e; --amber: #f2a41c; --amber-600: #d98d08;
-  --bg: #f4f6fb; --card: #fff; --line: #e6e9f2; --ink: #26262b; --muted: #767b8a;
+  --navy: #0d1b3d; --teal: #17b3a3; --amber: #ff8a00; --amber-600: #e67c00;
+  --bg: #f5f7fa; --card: #fff; --line: #e6eaf1; --ink: #1f2733; --muted: #6b7280;
   --radius: 14px; --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-head: 'Poppins', 'Inter', system-ui, sans-serif;
 }
 /* Certko logo (admin) */
 .ck-logo { display: inline-flex; flex-direction: column; gap: 2px; line-height: 1; text-decoration: none; }
 .ck-top { display: inline-flex; align-items: center; gap: 8px; }
-.ck-word { font-weight: 800; font-size: 1.45rem; letter-spacing: -0.03em; }
+.ck-word { font-family: var(--font-head); font-weight: 700; font-size: 1.4rem; letter-spacing: -0.02em; }
+.topbar h1, .login-card h1, .stat .n { font-family: var(--font-head); }
 .ck-cert { color: var(--navy); }
 .ck-ko { color: var(--teal); }
 .ck-logo.is-light .ck-cert { color: #fff; }
@@ -25,15 +27,15 @@ a { color: var(--navy); text-decoration: none; }
 .sidebar .brand .mark { width: 34px; height: 34px; border-radius: 9px; background: var(--amber); color: var(--navy); display: grid; place-items: center; font-weight: 900; }
 .sidebar nav a { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,.8); padding: 10px 12px; border-radius: 10px; font-weight: 600; font-size: .93rem; margin-bottom: 3px; }
 .sidebar nav a:hover { background: rgba(255,255,255,.08); color: #fff; }
-.sidebar nav a.active { background: var(--amber); color: var(--navy); }
+.sidebar nav a.active { background: var(--teal); color: #fff; }
 .sidebar .sep { border-top: 1px solid rgba(255,255,255,.12); margin: 16px 0; }
 .sidebar .logout { position: absolute; bottom: 20px; left: 16px; right: 16px; }
 .main { padding: 30px 34px; }
 .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; }
 .topbar h1 { margin: 0; font-size: 1.5rem; color: var(--navy); }
 .btn { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: none; border-radius: 10px; padding: 10px 18px; font-weight: 700; font-size: .9rem; font-family: inherit; }
-.btn-primary { background: var(--amber); color: var(--navy); }
-.btn-primary:hover { background: var(--amber-600); }
+.btn-primary { background: var(--navy); color: #fff; }
+.btn-primary:hover { background: #16265a; }
 .btn-dark { background: var(--navy); color: #fff; }
 .btn-danger { background: #fdecec; color: #c0392b; }
 .btn-sm { padding: 6px 12px; font-size: .82rem; }

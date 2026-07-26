@@ -22,13 +22,13 @@
           <div><div style="color:rgba(255,255,255,.7);font-size:.82rem">Timeline</div><div class="big"><%= match.timeline %></div></div>
         </div>
         <a class="btn btn-primary" href="/product/<%= match.slug %>">View full details</a>
-        <a class="btn btn-ghost" href="/contact?product=<%= encodeURIComponent(match.name) %>">Get expert help</a>
+        <a class="btn btn-cta" href="/contact?product=<%= encodeURIComponent(match.name) %>">Get expert help</a>
       </div>
     <% } else { %>
       <div class="card" style="max-width:720px;">
         <h3>No exact match found</h3>
         <p class="muted">We couldn't find “<%= q %>” in our database. This may mean it isn't currently notified — but rules change often. Ask an expert to be sure.</p>
-        <a class="btn btn-primary" href="/contact?product=<%= encodeURIComponent(q) %>">Ask an Expert</a>
+        <a class="btn btn-cta" href="/contact?product=<%= encodeURIComponent(q) %>">Ask an Expert</a>
         <a class="btn btn-outline" href="/products">Browse all products</a>
       </div>
     <% } %>
