@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import { seedDatabase } from "./seed";
 import { ensureCertProductsCatalog } from "./seed-cert-products";
+import { ensureTestingCatalog } from "./seed-testing";
 
 const DB_DIR = path.join(process.cwd(), "data");
 const DB_PATH = path.join(DB_DIR, "certko.db");
@@ -212,6 +213,39 @@ function createDb(): Database.Database {
     );
     CREATE INDEX IF NOT EXISTS idx_cert_products_cert ON cert_products(certification_id);
     CREATE INDEX IF NOT EXISTS idx_cert_products_name ON cert_products(name);
+
+    CREATE TABLE IF NOT EXISTS testing_categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      slug TEXT UNIQUE NOT NULL,
+      name TEXT NOT NULL,
+      icon TEXT NOT NULL DEFAULT 'microscope',
+      summary TEXT NOT NULL DEFAULT '',
+      content TEXT NOT NULL DEFAULT '',
+      image TEXT NOT NULL DEFAULT '',
+      meta_title TEXT NOT NULL DEFAULT '',
+      meta_description TEXT NOT NULL DEFAULT '',
+      sort INTEGER NOT NULL DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS testing_services (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category_id INTEGER NOT NULL REFERENCES testing_categories(id) ON DELETE CASCADE,
+      slug TEXT NOT NULL,
+      name TEXT NOT NULL,
+      product_category TEXT NOT NULL DEFAULT '',
+      standards TEXT NOT NULL DEFAULT '',
+      test_type TEXT NOT NULL DEFAULT '',
+      accreditation TEXT NOT NULL DEFAULT 'ISO/IEC 17025 / NABL',
+      summary TEXT NOT NULL DEFAULT '',
+      content TEXT NOT NULL DEFAULT '',
+      image TEXT NOT NULL DEFAULT '',
+      meta_title TEXT NOT NULL DEFAULT '',
+      meta_description TEXT NOT NULL DEFAULT '',
+      sort INTEGER NOT NULL DEFAULT 0,
+      UNIQUE(category_id, slug)
+    );
+    CREATE INDEX IF NOT EXISTS idx_testing_services_cat ON testing_services(category_id);
+    CREATE INDEX IF NOT EXISTS idx_testing_services_name ON testing_services(name);
   `);
 
   const count = (
@@ -221,6 +255,7 @@ function createDb(): Database.Database {
     seedDatabase(db);
   }
   ensureCertProductsCatalog(db);
+  ensureTestingCatalog(db);
   return db;
 }
 
@@ -230,6 +265,7 @@ export function getDb(): Database.Database {
   } else {
     // Keep catalog migrations/seeds idempotent across hot reloads
     ensureCertProductsCatalog(global.__certkoDb);
+    ensureTestingCatalog(global.__certkoDb);
   }
   return global.__certkoDb;
 }
@@ -419,4 +455,38 @@ export interface CertProduct {
   cert_slug?: string;
   cert_name?: string;
   cert_region?: string;
+}
+
+export interface TestingCategory {
+  id: number;
+  slug: string;
+  name: string;
+  icon: string;
+  summary: string;
+  content: string;
+  image: string;
+  meta_title: string;
+  meta_description: string;
+  sort: number;
+  service_count?: number;
+}
+
+export interface TestingService {
+  id: number;
+  category_id: number;
+  slug: string;
+  name: string;
+  product_category: string;
+  standards: string;
+  test_type: string;
+  accreditation: string;
+  summary: string;
+  content: string;
+  image: string;
+  meta_title: string;
+  meta_description: string;
+  sort: number;
+  category_slug?: string;
+  category_name?: string;
+  category_icon?: string;
 }

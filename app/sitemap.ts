@@ -1,5 +1,12 @@
 import type { MetadataRoute } from "next";
-import { getCategories, getLabs, getCertifications, getPublishedPosts } from "@/lib/queries";
+import {
+  getCategories,
+  getLabs,
+  getCertifications,
+  getPublishedPosts,
+  getTestingCategories,
+  getAllTestingServices,
+} from "@/lib/queries";
 import { getDb } from "@/lib/db";
 import { getSeoExclusions } from "@/lib/seo";
 
@@ -13,12 +20,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const excludedProducts = getSeoExclusions("product");
   const excludedCategories = getSeoExclusions("category");
   const excludedCerts = getSeoExclusions("cert");
+  const excludedTestCats = getSeoExclusions("testcat");
+  const excludedTests = getSeoExclusions("test");
 
   const staticPages: MetadataRoute.Sitemap = [
     ...(excludedPages.has("home") ? [] : [{ url: BASE, changeFrequency: "weekly" as const, priority: 1 }]),
     { url: `${BASE}/products`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${BASE}/products/all`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${BASE}/certifications`, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${BASE}/testing`, changeFrequency: "weekly", priority: 0.85 },
     { url: `${BASE}/blog`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE}/labs`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE}/qco`, changeFrequency: "weekly", priority: 0.8 },
@@ -47,6 +57,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     }));
 
+  const testingCategories = getTestingCategories()
+    .filter((c) => !excludedTestCats.has(String(c.id)))
+    .map((c) => ({
+      url: `${BASE}/testing/${c.slug}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    }));
+
+  const testingServices = getAllTestingServices(5000)
+    .filter((s) => !excludedTests.has(String(s.id)))
+    .map((s) => ({
+      url: `${BASE}/testing/${s.category_slug}/${s.slug}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    }));
+
   const products = (
     getDb().prepare("SELECT id, slug FROM products").all() as { id: number; slug: string }[]
   )
@@ -73,5 +99,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     }));
 
-  return [...staticPages, ...categories, ...certifications, ...posts, ...products, ...labPages];
+  return [
+    ...staticPages,
+    ...categories,
+    ...certifications,
+    ...testingCategories,
+    ...testingServices,
+    ...posts,
+    ...products,
+    ...labPages,
+  ];
 }

@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   searchProducts,
   searchCertProducts,
+  searchTestingServices,
   getLabs,
   getCategories,
   getCertifications,
+  getTestingCategories,
 } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +57,28 @@ export async function GET(req: NextRequest) {
       href: `/category/${c.slug}`,
     }));
 
+  const testingCategories = getTestingCategories()
+    .filter(
+      (c) =>
+        c.name.toLowerCase().includes(lq) ||
+        c.summary.toLowerCase().includes(lq) ||
+        c.slug.includes(lq)
+    )
+    .slice(0, 2)
+    .map((c) => ({
+      type: "testing-category" as const,
+      name: c.name,
+      detail: `Product testing · ${c.service_count ?? 0} tests`,
+      href: `/testing/${c.slug}`,
+    }));
+
+  const testingServices = searchTestingServices(q, 4).map((s) => ({
+    type: "testing-service" as const,
+    name: s.name,
+    detail: `${s.category_name}${s.standards ? ` · ${s.standards}` : ""}${s.test_type ? ` · ${s.test_type}` : ""}`,
+    href: `/testing/${s.category_slug}/${s.slug}`,
+  }));
+
   const { labs } = getLabs({ q, limit: 2 });
   const labResults = labs.map((l) => ({
     type: "lab" as const,
@@ -67,6 +91,8 @@ export async function GET(req: NextRequest) {
     results: [
       ...certifications,
       ...certProducts,
+      ...testingCategories,
+      ...testingServices,
       ...products,
       ...categories,
       ...labResults,

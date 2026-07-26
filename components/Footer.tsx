@@ -1,16 +1,17 @@
 import Link from "next/link";
 import Logo from "./Logo";
 import { getSettings } from "@/lib/db";
-import { getCategories, getCertifications } from "@/lib/queries";
+import { getCategories, getCertifications, getTestingCategories } from "@/lib/queries";
 
 export default function Footer() {
   const settings = getSettings();
   const topCategories = getCategories().slice(0, 6);
   const certifications = getCertifications();
+  const testingCategories = getTestingCategories().slice(0, 6);
 
   return (
     <footer className="mt-12 sm:mt-20 bg-ink-950 text-ink-300 pb-[env(safe-area-inset-bottom)]">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-14 grid gap-8 sm:gap-10 grid-cols-2 md:grid-cols-5">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-14 grid gap-8 sm:gap-10 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         <div className="col-span-2 md:col-span-1 space-y-4">
           <Logo width={170} withTagline variant="reverse" />
           <p className="text-sm leading-relaxed max-w-md">{settings.tagline}</p>
@@ -26,6 +27,7 @@ export default function Footer() {
             <li><Link href="/products" className="inline-flex min-h-9 items-center hover:text-butter-400">All Products</Link></li>
             <li><Link href="/products/all" className="inline-flex min-h-9 items-center hover:text-butter-400">Search Table</Link></li>
             <li><Link href="/certifications" className="inline-flex min-h-9 items-center hover:text-butter-400">Certifications</Link></li>
+            <li><Link href="/testing" className="inline-flex min-h-9 items-center hover:text-butter-400">Product Testing</Link></li>
             <li><Link href="/labs" className="inline-flex min-h-9 items-center hover:text-butter-400">Testing Labs</Link></li>
             <li><Link href="/qco" className="inline-flex min-h-9 items-center hover:text-butter-400">Upcoming QCOs</Link></li>
             <li><Link href="/guide" className="inline-flex min-h-9 items-center hover:text-butter-400">Guide</Link></li>
@@ -53,6 +55,25 @@ export default function Footer() {
             </li>
           </ul>
         </div>
+        <div>
+          <h3 className="text-white font-display font-semibold mb-3 text-sm uppercase tracking-wider">
+            Product Testing
+          </h3>
+          <ul className="space-y-2.5 text-sm">
+            {testingCategories.map((c) => (
+              <li key={c.id}>
+                <Link href={`/testing/${c.slug}`} className="inline-flex min-h-9 items-center hover:text-butter-400">
+                  {c.name}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link href="/testing" className="inline-flex min-h-9 items-center font-semibold text-butter-400 hover:text-butter-300">
+                All product testing →
+              </Link>
+            </li>
+          </ul>
+        </div>
         <div className="col-span-2 md:col-span-1 space-y-8">
           <div>
             <h3 className="text-white font-display font-semibold mb-3 text-sm uppercase tracking-wider">
@@ -62,6 +83,7 @@ export default function Footer() {
               <li><Link href="/tenders" className="inline-flex min-h-9 items-center hover:text-butter-400">Certification for Tenders</Link></li>
               <li><Link href="/marketplaces" className="inline-flex min-h-9 items-center hover:text-butter-400">Sell on Marketplaces</Link></li>
               <li><Link href="/search?type=products" className="inline-flex min-h-9 items-center hover:text-butter-400">Find a Product</Link></li>
+              <li><Link href="/search?type=testing" className="inline-flex min-h-9 items-center hover:text-butter-400">Find a Product Test</Link></li>
               <li><Link href="/search?type=labs" className="inline-flex min-h-9 items-center hover:text-butter-400">Find a Testing Lab</Link></li>
             </ul>
           </div>

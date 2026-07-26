@@ -1,7 +1,14 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getDb } from "@/lib/db";
-import type { Product, Category, Certification, PageRecord } from "@/lib/db";
+import type {
+  Product,
+  Category,
+  Certification,
+  PageRecord,
+  TestingCategory,
+  TestingService,
+} from "@/lib/db";
 import {
   getSeoMeta,
   analyzeMarkdown,
@@ -96,6 +103,57 @@ function loadEntity(entity: string): SeoEditorData | null {
       contentText: a.text, headings: [p.hero_heading || p.title, ...a.headings],
       internalLinks: a.internalLinks, words: a.words, image: p.image,
       defaultSchemaTypes: DEFAULT_SCHEMA_TYPES.page, seo,
+    };
+  }
+  if (kind === "testcat") {
+    const c = db.prepare("SELECT * FROM testing_categories WHERE id = ?").get(Number(id)) as
+      | TestingCategory
+      | undefined;
+    if (!c) return null;
+    const a = analyzeMarkdown(c.content);
+    return {
+      entity,
+      kind,
+      name: c.name,
+      pathPrefix: "/testing/",
+      currentSlug: c.slug,
+      slugEditable: true,
+      fallbackTitle: c.meta_title || c.name,
+      fallbackDescription: c.meta_description || c.summary,
+      contentText: a.text,
+      headings: [c.name, ...a.headings],
+      internalLinks: a.internalLinks,
+      words: a.words,
+      image: c.image,
+      defaultSchemaTypes: DEFAULT_SCHEMA_TYPES.testcat,
+      seo,
+    };
+  }
+  if (kind === "test") {
+    const s = db
+      .prepare(
+        `SELECT s.*, c.slug AS category_slug FROM testing_services s
+         JOIN testing_categories c ON c.id = s.category_id WHERE s.id = ?`
+      )
+      .get(Number(id)) as (TestingService & { category_slug: string }) | undefined;
+    if (!s) return null;
+    const a = analyzeMarkdown(s.content);
+    return {
+      entity,
+      kind,
+      name: s.name,
+      pathPrefix: `/testing/${s.category_slug}/`,
+      currentSlug: s.slug,
+      slugEditable: true,
+      fallbackTitle: s.meta_title || s.name,
+      fallbackDescription: s.meta_description || s.summary,
+      contentText: a.text,
+      headings: [s.name, ...a.headings],
+      internalLinks: a.internalLinks,
+      words: a.words,
+      image: s.image,
+      defaultSchemaTypes: DEFAULT_SCHEMA_TYPES.test,
+      seo,
     };
   }
   return null;

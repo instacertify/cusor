@@ -612,6 +612,8 @@ export async function saveSeo(formData: FormData) {
     product: "products",
     category: "categories",
     cert: "certifications",
+    testcat: "testing_categories",
+    test: "testing_services",
   };
   const table = tables[kind];
   if (table && newSlug) {
@@ -639,4 +641,212 @@ export async function setInquiryStatus(formData: FormData) {
   const status = String(formData.get("status") ?? "new");
   getDb().prepare("UPDATE inquiries SET status=? WHERE id=?").run(status, id);
   redirect("/admin/inquiries");
+}
+
+// ---------- product testing ----------
+export async function createTestingCategory(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) redirect("/admin/testing?error=1");
+  const db = getDb();
+  let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
+  let n = 2;
+  while (db.prepare("SELECT 1 FROM testing_categories WHERE slug = ?").get(slug)) {
+    slug = `${slugify(name)}-${n++}`;
+  }
+  const maxSort = (
+    db.prepare("SELECT COALESCE(MAX(sort), 0) AS m FROM testing_categories").get() as { m: number }
+  ).m;
+  const image = (await saveUploadedImage(formData.get("image_file") as File | null)) ?? "";
+  const summary = String(formData.get("summary") ?? "").trim();
+  const res = db
+    .prepare(
+      `INSERT INTO testing_categories (slug, name, icon, summary, content, image, meta_title, meta_description, sort)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+    .run(
+      slug,
+      name,
+      String(formData.get("icon") ?? "microscope").trim() || "microscope",
+      summary,
+      `## About ${name}\n\nDescribe the testing category, typical products, standards and how Certko helps arrange accredited labs.`,
+      image,
+      `${name} | Product Testing Services | Certko`,
+      summary,
+      maxSort + 1
+    );
+  revalidatePath("/", "layout");
+  redirect(`/admin/testing/${Number(res.lastInsertRowid)}?saved=1`);
+}
+
+export async function deleteTestingCategory(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  const db = getDb();
+  const cat = db.prepare("SELECT slug FROM testing_categories WHERE id = ?").get(id) as
+    | { slug: string }
+    | undefined;
+  if (cat) {
+    const services = db
+      .prepare("SELECT id FROM testing_services WHERE category_id = ?")
+      .all(id) as { id: number }[];
+    for (const s of services) {
+      db.prepare("DELETE FROM faqs WHERE scope = ?").run(`test:${s.id}`);
+      db.prepare("DELETE FROM seo_meta WHERE entity = ?").run(`test:${s.id}`);
+    }
+    db.prepare("DELETE FROM faqs WHERE scope = ?").run(`testcat:${cat.slug}`);
+    db.prepare("DELETE FROM seo_meta WHERE entity = ?").run(`testcat:${id}`);
+    db.prepare("DELETE FROM testing_services WHERE category_id = ?").run(id);
+    db.prepare("DELETE FROM testing_categories WHERE id = ?").run(id);
+  }
+  revalidatePath("/", "layout");
+  redirect("/admin/testing?saved=1");
+}
+
+export async function saveTestingCategory(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const id = Number(formData.get("id"));
+  const db = getDb();
+  const current = db.prepare("SELECT slug, image FROM testing_categories WHERE id = ?").get(id) as
+    | { slug: string; image: string }
+    | undefined;
+  if (!current) redirect("/admin/testing?error=1");
+
+  let slug = slugify(String(formData.get("slug") ?? "").trim() || current.slug);
+  const clash = db
+    .prepare("SELECT id FROM testing_categories WHERE slug = ? AND id != ?")
+    .get(slug, id) as { id: number } | undefined;
+  if (clash) slug = `${slug}-${id}`;
+
+  const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
+  const clearImage = formData.get("clear_image") === "1";
+  const image = uploaded ?? (clearImage ? "" : current.image);
+  const sort = Number(formData.get("sort") ?? 0) || 0;
+
+  db.prepare(
+    `UPDATE testing_categories SET slug=?, name=?, icon=?, summary=?, content=?, image=?, meta_title=?, meta_description=?, sort=?
+     WHERE id=?`
+  ).run(
+    slug,
+    String(formData.get("name") ?? ""),
+    String(formData.get("icon") ?? "microscope"),
+    String(formData.get("summary") ?? ""),
+    String(formData.get("content") ?? ""),
+    image,
+    String(formData.get("meta_title") ?? ""),
+    String(formData.get("meta_description") ?? ""),
+    sort,
+    id
+  );
+
+  if (current.slug !== slug) {
+    db.prepare("UPDATE faqs SET scope = ? WHERE scope = ?").run(
+      `testcat:${slug}`,
+      `testcat:${current.slug}`
+    );
+  }
+
+  revalidatePath("/", "layout");
+  redirect(`/admin/testing/${id}?saved=1`);
+}
+
+export async function saveTestingService(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const db = getDb();
+  const id = formData.get("id") ? Number(formData.get("id")) : null;
+  const categoryId = Number(formData.get("category_id"));
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name || !categoryId) {
+    redirect(categoryId ? `/admin/testing/${categoryId}?error=1` : "/admin/testing?error=1");
+  }
+  let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
+  const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
+  const clearImage = formData.get("clear_image") === "1";
+  const values = {
+    category_id: categoryId,
+    name,
+    product_category: String(formData.get("product_category") ?? "").trim(),
+    standards: String(formData.get("standards") ?? "").trim(),
+    test_type: String(formData.get("test_type") ?? "").trim(),
+    accreditation:
+      String(formData.get("accreditation") ?? "").trim() || "ISO/IEC 17025 / NABL",
+    summary: String(formData.get("summary") ?? "").trim(),
+    content: String(formData.get("content") ?? "").trim(),
+    meta_title: String(formData.get("meta_title") ?? "").trim(),
+    meta_description: String(formData.get("meta_description") ?? "").trim(),
+    sort: Number(formData.get("sort") ?? 0) || 0,
+  };
+
+  if (id) {
+    const current = db.prepare("SELECT image, slug FROM testing_services WHERE id = ?").get(id) as
+      | { image: string; slug: string }
+      | undefined;
+    const image = uploaded ?? (clearImage ? "" : current?.image ?? "");
+    const clash = db
+      .prepare("SELECT id FROM testing_services WHERE category_id = ? AND slug = ? AND id != ?")
+      .get(categoryId, slug, id);
+    if (clash) slug = `${slug}-${id}`;
+    db.prepare(
+      `UPDATE testing_services SET slug=?, name=?, product_category=?, standards=?, test_type=?, accreditation=?,
+        summary=?, content=?, image=?, meta_title=?, meta_description=?, sort=? WHERE id=?`
+    ).run(
+      slug,
+      values.name,
+      values.product_category,
+      values.standards,
+      values.test_type,
+      values.accreditation,
+      values.summary,
+      values.content,
+      image,
+      values.meta_title,
+      values.meta_description,
+      values.sort,
+      id
+    );
+  } else {
+    const clash = db
+      .prepare("SELECT id FROM testing_services WHERE category_id = ? AND slug = ?")
+      .get(categoryId, slug);
+    if (clash) slug = `${slug}-${Date.now().toString(36)}`;
+    const image = uploaded ?? "";
+    db.prepare(
+      `INSERT INTO testing_services
+        (category_id, slug, name, product_category, standards, test_type, accreditation, summary, content, image, meta_title, meta_description, sort)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(
+      categoryId,
+      slug,
+      values.name,
+      values.product_category,
+      values.standards,
+      values.test_type,
+      values.accreditation,
+      values.summary,
+      values.content ||
+        `## ${values.name}\n\nDescribe the test method, sample requirements, turnaround and how Certko helps.`,
+      image,
+      values.meta_title || `${values.name} Testing | Certko`,
+      values.meta_description || values.summary,
+      values.sort
+    );
+  }
+
+  revalidatePath("/", "layout");
+  redirect(`/admin/testing/${categoryId}?saved=1`);
+}
+
+export async function deleteTestingService(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  const categoryId = Number(formData.get("category_id"));
+  const db = getDb();
+  db.prepare("DELETE FROM faqs WHERE scope = ?").run(`test:${id}`);
+  db.prepare("DELETE FROM seo_meta WHERE entity = ?").run(`test:${id}`);
+  db.prepare("DELETE FROM testing_services WHERE id = ?").run(id);
+  revalidatePath("/", "layout");
+  redirect(`/admin/testing/${categoryId}?saved=1`);
 }

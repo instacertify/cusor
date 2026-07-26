@@ -14,6 +14,7 @@ const NAV = [
   { href: "/admin/pages", label: "Pages", icon: "file" },
   { href: "/admin/media", label: "Front Images", icon: "image" },
   { href: "/admin/certifications", label: "Certifications", icon: "award" },
+  { href: "/admin/testing", label: "Product Testing", icon: "microscope" },
   { href: "/admin/categories", label: "Categories", icon: "folder" },
   { href: "/admin/products", label: "BIS Products", icon: "box" },
   { href: "/admin/qcos", label: "QCO Alerts", icon: "bell" },

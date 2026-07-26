@@ -3,15 +3,23 @@ import Logo from "./Logo";
 import SearchBox from "./SearchBox";
 import MobileNav from "./MobileNav";
 import NavDropdown from "./NavDropdown";
-import { getCertifications } from "@/lib/queries";
+import { getCertifications, getTestingCategories } from "@/lib/queries";
 
 export default function Header() {
   const certs = getCertifications();
+  const testingCats = getTestingCategories();
 
   const certItems = certs.map((c) => ({
     href: `/certifications/${c.slug}`,
     label: c.name,
     detail: c.region,
+    icon: c.icon,
+  }));
+
+  const testingItems = testingCats.map((c) => ({
+    href: `/testing/${c.slug}`,
+    label: c.name,
+    detail: `${c.service_count ?? 0} test${(c.service_count ?? 0) === 1 ? "" : "s"}`,
     icon: c.icon,
   }));
 
@@ -50,6 +58,11 @@ export default function Header() {
             items={certItems}
             footerItem={{ href: "/certifications", label: "All certifications & more" }}
           />
+          <NavDropdown
+            label="Product Testing"
+            items={testingItems}
+            footerItem={{ href: "/testing", label: "Search all product tests" }}
+          />
           <Link
             href="/labs"
             className="px-3 py-2 rounded-lg text-sm font-medium text-ink-700 hover:text-ink-950 hover:bg-cream-200 transition"
@@ -68,6 +81,10 @@ export default function Header() {
           groups={[
             { label: "Products", items: productItems },
             { label: "Certifications", items: certItems },
+            {
+              label: "Product Testing",
+              items: [{ href: "/testing", label: "Search all tests" }, ...testingItems],
+            },
             { label: "Labs & Resources", items: [{ href: "/labs", label: "Testing Labs" }, ...resourceItems] },
             { label: "", items: [{ href: "/contact", label: "Get Expert Help" }] },
           ]}

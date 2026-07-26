@@ -9,25 +9,28 @@ import {
   searchProducts,
   countSearchProducts,
   searchCertProducts,
+  searchTestingServices,
+  getAllTestingServices,
   getLabs,
   getLabStates,
   getFaqs,
   getLabsForProduct,
   getCertifications,
+  getTestingCategories,
 } from "@/lib/queries";
 import { formatNumber, formatPriceRange, formatINR } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Search Certifications, Products & Testing Labs",
+  title: "Search Certifications, Product Testing & Labs",
   description:
-    "Search Certko for BIS, BEE, GMARK, CE, FCC, SABER and WPC certifications, product schemes, standards and testing labs.",
+    "Search Certko for certifications, product testing services, BIS schemes, standards and testing labs.",
 };
 
 const PAGE_SIZE = 24;
 
-type Tab = "all" | "products" | "certs" | "labs";
+type Tab = "all" | "products" | "certs" | "testing" | "labs";
 
 interface Props {
   searchParams: Promise<{ q?: string; page?: string; type?: string; state?: string }>;
@@ -44,6 +47,8 @@ export default async function SearchPage({ searchParams }: Props) {
       ? "products"
       : sp.type === "certs"
       ? "certs"
+      : sp.type === "testing"
+      ? "testing"
       : "all";
   const state = (sp.state ?? "").trim();
   const faqs = getFaqs("page:search");
@@ -68,6 +73,21 @@ export default async function SearchPage({ searchParams }: Props) {
       )
     : getCertifications();
   const certProducts = q ? searchCertProducts(q, tab === "certs" ? 40 : 8) : [];
+
+  // product testing categories + services
+  const testingCategories = q
+    ? getTestingCategories().filter(
+        (c) =>
+          c.name.toLowerCase().includes(lq) ||
+          c.summary.toLowerCase().includes(lq) ||
+          c.slug.includes(lq)
+      )
+    : getTestingCategories();
+  const uniqueTestingServices = q
+    ? searchTestingServices(q, tab === "testing" ? 60 : 8)
+    : tab === "testing"
+    ? getAllTestingServices(60)
+    : [];
 
   // labs (labs tab searches even without q, supports state filter + pagination)
   const labLimit = tab === "labs" ? PAGE_SIZE : 6;
@@ -107,6 +127,14 @@ export default async function SearchPage({ searchParams }: Props) {
       label: "Find a Certification",
       count: q ? certProgrammes.length + certProducts.length : getCertifications().length,
       icon: "award",
+    },
+    {
+      key: "testing",
+      label: "Product Testing",
+      count: q
+        ? testingCategories.length + uniqueTestingServices.length
+        : getTestingCategories().reduce((n, c) => n + (c.service_count ?? 0), 0),
+      icon: "flask",
     },
     { key: "products", label: "BIS Products", count: q ? productTotal : undefined, icon: "box" },
     { key: "labs", label: "Find a Lab", count: tab === "labs" ? labTotal : undefined, icon: "microscope" },
@@ -210,6 +238,65 @@ export default async function SearchPage({ searchParams }: Props) {
         </>
       )}
 
+      {/* ---- Product Testing tab / all ---- */}
+      {(tab === "testing" || (tab === "all" && q && (testingCategories.length > 0 || uniqueTestingServices.length > 0))) && (
+        <section className="mt-8">
+          <h2 className="font-display text-xl font-semibold text-ink-950">Product Testing</h2>
+          {tab === "testing" && !q && (
+            <p className="mt-2 text-sm text-ink-600">
+              Browse testing categories or search by product, standard or test type (e.g. LED, heavy metals, EMC).
+            </p>
+          )}
+          <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {testingCategories.map((c) => (
+              <Link
+                key={c.id}
+                href={`/testing/${c.slug}`}
+                className="bg-white rounded-2xl border border-cream-300 p-5 hover:border-butter-500 transition"
+              >
+                <div className="text-xs font-semibold uppercase tracking-wide text-butter-700">
+                  {c.service_count ?? 0} tests
+                </div>
+                <div className="mt-1 font-display font-semibold text-ink-950">{c.name}</div>
+                <p className="mt-2 text-sm text-ink-600 line-clamp-2">{c.summary}</p>
+              </Link>
+            ))}
+          </div>
+          {uniqueTestingServices.length > 0 && (
+            <>
+              <h3 className="mt-8 font-display text-lg font-semibold text-ink-950">
+                Matching tests &amp; services
+              </h3>
+              <div className="mt-4 grid sm:grid-cols-2 gap-3">
+                {uniqueTestingServices.map((s) => (
+                  <Link
+                    key={s.id}
+                    href={`/testing/${s.category_slug}/${s.slug}`}
+                    className="bg-white rounded-2xl border border-cream-300 p-4 hover:border-butter-500 transition"
+                  >
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-butter-700">
+                      {s.category_name}
+                      {s.test_type ? ` · ${s.test_type}` : ""}
+                    </div>
+                    <div className="mt-1 font-semibold text-ink-950">{s.name}</div>
+                    <div className="mt-1 text-xs font-mono text-ink-500 line-clamp-1">
+                      {s.standards || s.product_category}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
+          {tab === "testing" && !q && (
+            <p className="mt-6 text-sm">
+              <Link href="/testing" className="font-semibold text-butter-700 hover:underline">
+                Open the full Product Testing directory →
+              </Link>
+            </p>
+          )}
+        </section>
+      )}
+
       {/* ---- Certifications tab / all ---- */}
       {(tab === "certs" || (tab === "all" && q)) && (
         <section className="mt-8">
@@ -268,7 +355,7 @@ export default async function SearchPage({ searchParams }: Props) {
       )}
 
       {/* ---- Products / All tabs ---- */}
-      {tab !== "labs" && tab !== "certs" && q && (
+      {tab !== "labs" && tab !== "certs" && tab !== "testing" && q && (
         <>
           {bestCertProduct && (
             <section className="mt-8 bg-white rounded-3xl border border-cream-300 shadow-card-hover overflow-hidden">

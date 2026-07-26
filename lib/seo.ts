@@ -36,6 +36,8 @@ export const DEFAULT_SCHEMA_TYPES: Record<string, string[]> = {
   category: ["BreadcrumbList", "FAQPage"],
   cert: ["Service", "FAQPage", "BreadcrumbList"],
   page: ["Article", "FAQPage", "BreadcrumbList"],
+  testcat: ["Service", "FAQPage", "BreadcrumbList"],
+  test: ["Service", "FAQPage", "BreadcrumbList"],
 };
 
 export function getSeoMeta(entity: string): SeoMeta | undefined {

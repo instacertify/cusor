@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 export interface SeoEditorData {
   entity: string;
-  kind: "product" | "category" | "cert" | "page";
+  kind: "product" | "category" | "cert" | "page" | "testcat" | "test";
   name: string;
   pathPrefix: string;
   currentSlug: string;

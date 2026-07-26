@@ -5,7 +5,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 interface Suggestion {
-  type: "product" | "category" | "lab" | "certification" | "cert-product";
+  type:
+    | "product"
+    | "category"
+    | "lab"
+    | "certification"
+    | "cert-product"
+    | "testing-category"
+    | "testing-service";
   name: string;
   detail: string;
   href: string;
@@ -157,6 +164,10 @@ export default function SearchBox({
                   ? "cert"
                   : r.type === "cert-product"
                   ? "scheme"
+                  : r.type === "testing-category"
+                  ? "testing"
+                  : r.type === "testing-service"
+                  ? "test"
                   : r.type}
               </span>
             </Link>

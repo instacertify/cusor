@@ -10,6 +10,8 @@ import type {
   Certification,
   Post,
   CertProduct,
+  TestingCategory,
+  TestingService,
 } from "./db";
 
 // ---------- categories ----------
@@ -372,4 +374,92 @@ export function countCertProducts(certificationId?: number): number {
     ).n;
   }
   return (getDb().prepare("SELECT COUNT(*) AS n FROM cert_products").get() as { n: number }).n;
+}
+
+// ---------- product testing ----------
+export function getTestingCategories(): TestingCategory[] {
+  return getDb()
+    .prepare(
+      `SELECT c.*,
+        (SELECT COUNT(*) FROM testing_services s WHERE s.category_id = c.id) AS service_count
+       FROM testing_categories c
+       ORDER BY c.sort, c.id`
+    )
+    .all() as TestingCategory[];
+}
+
+export function getTestingCategoryBySlug(slug: string): TestingCategory | undefined {
+  return getDb()
+    .prepare(
+      `SELECT c.*,
+        (SELECT COUNT(*) FROM testing_services s WHERE s.category_id = c.id) AS service_count
+       FROM testing_categories c WHERE c.slug = ?`
+    )
+    .get(slug) as TestingCategory | undefined;
+}
+
+export function getTestingServices(categoryId: number): TestingService[] {
+  return getDb()
+    .prepare(
+      `SELECT s.*, c.slug AS category_slug, c.name AS category_name, c.icon AS category_icon
+       FROM testing_services s
+       JOIN testing_categories c ON c.id = s.category_id
+       WHERE s.category_id = ?
+       ORDER BY s.sort, s.name`
+    )
+    .all(categoryId) as TestingService[];
+}
+
+export function getTestingServiceBySlug(
+  categorySlug: string,
+  serviceSlug: string
+): TestingService | undefined {
+  return getDb()
+    .prepare(
+      `SELECT s.*, c.slug AS category_slug, c.name AS category_name, c.icon AS category_icon
+       FROM testing_services s
+       JOIN testing_categories c ON c.id = s.category_id
+       WHERE c.slug = ? AND s.slug = ?`
+    )
+    .get(categorySlug, serviceSlug) as TestingService | undefined;
+}
+
+export function searchTestingServices(q: string, limit = 8): TestingService[] {
+  const like = `%${q}%`;
+  return getDb()
+    .prepare(
+      `SELECT s.*, c.slug AS category_slug, c.name AS category_name, c.icon AS category_icon
+       FROM testing_services s
+       JOIN testing_categories c ON c.id = s.category_id
+       WHERE s.name LIKE ? OR s.standards LIKE ? OR s.test_type LIKE ?
+          OR s.product_category LIKE ? OR s.summary LIKE ? OR c.name LIKE ?
+       ORDER BY
+         CASE WHEN s.name LIKE ? THEN 0 WHEN c.name LIKE ? THEN 1 ELSE 2 END,
+         s.sort, s.name
+       LIMIT ?`
+    )
+    .all(like, like, like, like, like, like, `${q}%`, `${q}%`, limit) as TestingService[];
+}
+
+export function getAllTestingServices(limit = 100): TestingService[] {
+  return getDb()
+    .prepare(
+      `SELECT s.*, c.slug AS category_slug, c.name AS category_name, c.icon AS category_icon
+       FROM testing_services s
+       JOIN testing_categories c ON c.id = s.category_id
+       ORDER BY c.sort, s.sort, s.name
+       LIMIT ?`
+    )
+    .all(limit) as TestingService[];
+}
+
+export function countTestingServices(categoryId?: number): number {
+  if (categoryId) {
+    return (
+      getDb()
+        .prepare("SELECT COUNT(*) AS n FROM testing_services WHERE category_id = ?")
+        .get(categoryId) as { n: number }
+    ).n;
+  }
+  return (getDb().prepare("SELECT COUNT(*) AS n FROM testing_services").get() as { n: number }).n;
 }
