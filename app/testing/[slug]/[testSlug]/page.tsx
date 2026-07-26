@@ -33,10 +33,8 @@ export default async function TestingServicePage({ params }: Props) {
   const { slug, testSlug } = await params;
   const svc = getTestingServiceBySlug(slug, testSlug);
   if (!svc || !svc.category_slug) notFound();
-  const testFaqs = getFaqs(`test:${svc.id}`);
-  const categoryFaqs = getFaqs(`testcat:${svc.category_slug}`);
-  // Prefer test-specific FAQs; fall back to category FAQs so every test page can show Q&A
-  const faqs = testFaqs.length > 0 ? testFaqs : categoryFaqs;
+  // Each test page uses only its own FAQ set (editable in admin per test)
+  const faqs = getFaqs(`test:${svc.id}`);
   const siblings = getTestingServices(svc.category_id).filter((s) => s.id !== svc.id).slice(0, 6);
   const html = marked.parse(svc.content || "") as string;
 
@@ -145,12 +143,11 @@ export default async function TestingServicePage({ params }: Props) {
         />
       ) : null}
 
-      <section className="mt-14" id="faqs">
-        <FaqAccordion
-          faqs={faqs}
-          heading={testFaqs.length > 0 ? `FAQs about ${svc.name}` : `${svc.category_name} FAQs`}
-        />
-      </section>
+      {faqs.length > 0 && (
+        <section className="mt-14" id="faqs">
+          <FaqAccordion faqs={faqs} heading={`FAQs about ${svc.name}`} />
+        </section>
+      )}
 
       {siblings.length > 0 && (
         <section className="mt-14">

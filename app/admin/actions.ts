@@ -1123,6 +1123,7 @@ export async function saveTestingService(formData: FormData) {
     sort: Number(formData.get("sort") ?? 0) || 0,
   };
 
+  let savedId = id;
   if (id) {
     const current = db
       .prepare("SELECT image, slug, category_id FROM testing_services WHERE id = ?")
@@ -1184,13 +1185,17 @@ export async function saveTestingService(formData: FormData) {
         values.meta_description || values.summary,
         values.sort
       );
-    const newId = Number(res.lastInsertRowid);
+    savedId = Number(res.lastInsertRowid);
     const starterFaqs = [
       [
         `What does “${values.name}” cover?`,
         `${values.name} covers the key parameters for this test${
           values.standards ? ` under ${values.standards}` : ""
         }. Edit this FAQ in admin with your exact scope notes.`,
+      ],
+      [
+        "Which accreditation applies?",
+        `This scope is typically run in ${values.accreditation} accredited laboratories. Confirm the exact lab and NABL scope on your quotation.`,
       ],
       [
         "How do I get a quote?",
@@ -1200,12 +1205,15 @@ export async function saveTestingService(formData: FormData) {
     const insFaq = db.prepare(
       "INSERT INTO faqs (scope, question, answer, sort) VALUES (?, ?, ?, ?)"
     );
-    starterFaqs.forEach(([q, a], i) => insFaq.run(`test:${newId}`, q, a, i));
+    starterFaqs.forEach(([q, a], i) => insFaq.run(`test:${savedId}`, q, a, i));
   }
 
   revalidatePath("/", "layout");
   if (returnTo === "list" || returnTo === "/admin/testing") {
     redirect("/admin/testing?saved=1");
+  }
+  if (savedId) {
+    redirect(`/admin/testing/service/${savedId}?saved=1`);
   }
   redirect(`/admin/testing/${categoryId}?saved=1`);
 }

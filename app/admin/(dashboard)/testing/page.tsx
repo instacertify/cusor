@@ -198,10 +198,16 @@ export default async function AdminTesting({ searchParams }: Props) {
                       View ↗
                     </Link>
                     <Link
-                      href={`/admin/testing/${c.id}#test-${t.id}`}
+                      href={`/admin/testing/service/${t.id}#faqs`}
+                      className="text-xs font-bold text-ink-800 border border-cream-300 rounded-lg px-2.5 py-1 hover:border-butter-400"
+                    >
+                      Edit FAQs
+                    </Link>
+                    <Link
+                      href={`/admin/testing/service/${t.id}`}
                       className="text-xs font-bold text-butter-700 hover:text-butter-600"
                     >
-                      Edit →
+                      Edit test →
                     </Link>
                   </li>
                 ))}

@@ -543,6 +543,17 @@ export function getTestingServiceBySlug(
     .get(categorySlug, serviceSlug) as TestingService | undefined;
 }
 
+export function getTestingServiceById(id: number): TestingService | undefined {
+  return getDb()
+    .prepare(
+      `SELECT s.*, c.slug AS category_slug, c.name AS category_name, c.icon AS category_icon
+       FROM testing_services s
+       JOIN testing_categories c ON c.id = s.category_id
+       WHERE s.id = ?`
+    )
+    .get(id) as TestingService | undefined;
+}
+
 export function searchTestingServices(q: string, limit = 8): TestingService[] {
   const like = `%${q}%`;
   return getDb()
