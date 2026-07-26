@@ -275,12 +275,25 @@ export default async function SearchPage({ searchParams }: Props) {
           )}
           {tab === "products" && pagination(page, productPages, "products")}
 
-          {tab === "all" && labs.length > 0 && (
+          {tab === "all" && (
             <>
-              <h2 className="mt-12 font-display text-xl font-bold text-ink-950">Matching Labs</h2>
-              <div className="mt-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{labs.map(labCard)}</div>
-              <div className="mt-5">
-                <Link href={tabHref("labs")} className="text-sm font-bold text-butter-700 hover:text-butter-600">
+              {labs.length > 0 && (
+                <>
+                  <h2 className="mt-12 font-display text-xl font-bold text-ink-950">Matching Labs</h2>
+                  <div className="mt-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{labs.map(labCard)}</div>
+                </>
+              )}
+              <div className="mt-8 bg-cream-100 border border-cream-300 rounded-2xl px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm text-ink-700 flex items-center gap-2">
+                  <Icon name="microscope" size={17} className="text-butter-700 shrink-0" />
+                  {labs.length > 0
+                    ? "Need more options? Search the full lab directory with state filters."
+                    : "No labs matched this name — labs that test this product are listed in the Best Match panel, or search the full directory."}
+                </p>
+                <Link
+                  href={tabHref("labs")}
+                  className="text-sm font-bold text-butter-700 hover:text-butter-600 shrink-0"
+                >
                   Search all labs with filters →
                 </Link>
               </div>
