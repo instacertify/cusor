@@ -1,8 +1,10 @@
 :root {
-  --navy: #1d2b50;
-  --navy-700: #26386a;
-  --amber: #f5b93f;
-  --amber-600: #e5a417;
+  --navy: #12294a;
+  --navy-700: #1d3a63;
+  --teal: #1c8b8e;
+  --teal-700: #15706f;
+  --amber: #f2a41c;
+  --amber-600: #d98d08;
   --cream: #fdf7ec;
   --cream-2: #fbf1dd;
   --ink: #26262b;
@@ -37,7 +39,7 @@ img { max-width: 100%; display: block; }
 .center { text-align: center; }
 .muted { color: var(--muted); }
 .eyebrow {
-  display: inline-block; background: var(--cream-2); color: var(--amber-600);
+  display: inline-block; background: var(--cream-2); color: var(--teal);
   border: 1px solid var(--line); padding: 6px 14px; border-radius: 999px;
   font-size: .8rem; font-weight: 600; margin-bottom: 18px;
 }
@@ -71,9 +73,24 @@ img { max-width: 100%; display: block; }
 }
 .brand img { height: 38px; width: auto; }
 .brand small { color: var(--amber-600); font-weight: 700; }
+
+/* Certko logo */
+.ck-logo { display: inline-flex; flex-direction: column; gap: 2px; line-height: 1; text-decoration: none; }
+.ck-top { display: inline-flex; align-items: center; gap: 9px; }
+.ck-word { font-weight: 800; font-size: 1.7rem; letter-spacing: -0.03em; }
+.ck-cert { color: var(--navy); }
+.ck-ko { color: var(--teal); }
+.ck-logo.is-light .ck-cert { color: #fff; }
+.ck-chev { height: 0.82em; width: auto; display: block; }
+.ck-tag { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.22em; margin-left: 2px; }
+.ck-tag-a { color: var(--navy); }
+.ck-tag-b { color: var(--teal); }
+.ck-logo.is-light .ck-tag-a { color: rgba(255,255,255,.85); }
+.ck-dot { color: var(--amber); }
+.ck-logo.sm .ck-word { font-size: 1.3rem; }
 .nav-links { display: flex; align-items: center; gap: 26px; list-style: none; margin: 0; padding: 0; }
 .nav-links a { color: var(--ink); font-weight: 600; font-size: .95rem; }
-.nav-links a:hover, .nav-links a.active { color: var(--amber-600); }
+.nav-links a:hover, .nav-links a.active { color: var(--teal); }
 .nav-cta { display: flex; gap: 10px; align-items: center; }
 .menu-toggle { display: none; background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--navy); }
 
@@ -90,7 +107,7 @@ img { max-width: 100%; display: block; }
 }
 .search-bar input { flex: 1; border: none; outline: none; padding: 12px 14px; font-size: 1rem; background: transparent; }
 .hero-hints { font-size: .85rem; color: var(--muted); }
-.hero-hints a { color: var(--amber-600); font-weight: 600; }
+.hero-hints a { color: var(--teal); font-weight: 600; }
 
 /* Stat pills */
 .stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 34px; }
@@ -126,7 +143,7 @@ img { max-width: 100%; display: block; }
 .product-card .body { padding: 18px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
 .product-card h3 { font-size: 1rem; margin: 0; }
 .tags { display: flex; gap: 6px; flex-wrap: wrap; }
-.tag { font-size: .72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--cream-2); color: var(--amber-600); border: 1px solid var(--line); }
+.tag { font-size: .72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--cream-2); color: var(--teal); border: 1px solid var(--line); }
 .tag.scheme { background: var(--navy); color: #fff; border-color: var(--navy); }
 .price { font-weight: 700; color: var(--navy); font-size: .92rem; margin-top: auto; }
 .price small { color: var(--muted); font-weight: 500; }
@@ -161,7 +178,7 @@ img { max-width: 100%; display: block; }
 .page-head { background: linear-gradient(180deg, var(--cream-2), var(--cream)); border-bottom: 1px solid var(--line); padding: 54px 0; }
 .page-head h1 { font-size: clamp(1.9rem, 3.4vw, 2.8rem); }
 .breadcrumb { font-size: .85rem; color: var(--muted); margin-bottom: 12px; }
-.breadcrumb a { color: var(--amber-600); }
+.breadcrumb a { color: var(--teal); }
 
 /* Prose */
 .prose { max-width: 760px; }
@@ -180,7 +197,7 @@ img { max-width: 100%; display: block; }
 
 /* FAQ accordion */
 .faq-group { margin-bottom: 34px; }
-.faq-cat { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--amber-600); font-weight: 700; margin-bottom: 12px; }
+.faq-cat { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); font-weight: 700; margin-bottom: 12px; }
 .accordion { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); }
 .accordion details { border-bottom: 1px solid var(--line); }
 .accordion details:last-child { border-bottom: none; }

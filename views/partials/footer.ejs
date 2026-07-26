@@ -3,8 +3,8 @@
   <div class="container">
     <div class="footer-grid">
       <div>
-        <a class="brand" href="/" style="color:#fff"><span class="logo-mark">C</span><span style="color:#fff"><%= settings.site_name || 'Certko' %></span></a>
-        <p style="margin-top:14px;max-width:26em;"><%= settings.tagline %></p>
+        <a class="brand" href="/"><%- include('logo', { light: true, tagline: true }) %></a>
+        <p style="margin-top:16px;max-width:26em;color:rgba(255,255,255,.75);"><%= settings.tagline %></p>
       </div>
       <div>
         <h4>Explore</h4>

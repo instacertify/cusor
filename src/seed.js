@@ -39,8 +39,9 @@ const SETTINGS = {
     'Connect with verified BIS consultants who handle the entire process: application, testing, inspection, and certification. Free quote in 24 hours.',
   contact_email: 'hello@certko.com',
   contact_phone: '+91 98765 43210',
-  brand_primary: '#1d2b50',
-  brand_accent: '#f5b93f',
+  brand_primary: '#12294a',
+  brand_accent: '#f2a41c',
+  brand_teal: '#1c8b8e',
   footer_note: 'Certko is an independent guidance platform and is not affiliated with the Bureau of Indian Standards.',
 };
 

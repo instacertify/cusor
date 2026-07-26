@@ -1,8 +1,21 @@
 :root {
-  --navy: #1d2b50; --amber: #f5b93f; --amber-600: #e5a417;
+  --navy: #12294a; --teal: #1c8b8e; --amber: #f2a41c; --amber-600: #d98d08;
   --bg: #f4f6fb; --card: #fff; --line: #e6e9f2; --ink: #26262b; --muted: #767b8a;
   --radius: 14px; --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
+/* Certko logo (admin) */
+.ck-logo { display: inline-flex; flex-direction: column; gap: 2px; line-height: 1; text-decoration: none; }
+.ck-top { display: inline-flex; align-items: center; gap: 8px; }
+.ck-word { font-weight: 800; font-size: 1.45rem; letter-spacing: -0.03em; }
+.ck-cert { color: var(--navy); }
+.ck-ko { color: var(--teal); }
+.ck-logo.is-light .ck-cert { color: #fff; }
+.ck-chev { height: 0.82em; width: auto; display: block; }
+.ck-tag { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.2em; }
+.ck-tag-a { color: var(--navy); }
+.ck-tag-b { color: var(--teal); }
+.ck-logo.is-light .ck-tag-a { color: rgba(255,255,255,.85); }
+.ck-dot { color: var(--amber); }
 * { box-sizing: border-box; }
 body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--ink); }
 a { color: var(--navy); text-decoration: none; }

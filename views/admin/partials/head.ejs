@@ -10,7 +10,7 @@
 <body>
 <div class="admin-shell">
   <aside class="sidebar">
-    <div class="brand"><span class="mark">C</span> Certko</div>
+    <div class="brand" style="margin-bottom:24px;"><%- include('../../partials/logo', { light: true, tagline: true }) %></div>
     <nav>
       <a href="/admin" class="<%= section === 'dashboard' ? 'active' : '' %>">📊 Dashboard</a>
       <a href="/admin/products" class="<%= section === 'products' ? 'active' : '' %>">📦 Products</a>

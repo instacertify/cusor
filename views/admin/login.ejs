@@ -10,8 +10,8 @@
 <body>
   <div class="login-wrap">
     <form class="login-card" action="/admin/login" method="post">
-      <div class="mark">C</div>
-      <h1>Certko Admin</h1>
+      <div style="margin-bottom:18px;"><%- include('../partials/logo', { light: false, tagline: true }) %></div>
+      <h1>Admin Console</h1>
       <p style="color:var(--muted);margin-top:0;font-size:.9rem;">Sign in to manage your content.</p>
       <% if (error) { %><div class="err"><%= error %></div><% } %>
       <div class="field"><label>Username</label><input type="text" name="username" autofocus required /></div>
