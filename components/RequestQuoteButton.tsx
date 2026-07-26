@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Icon from "./Icon";
 
 export type QuoteKind = "test" | "certification" | "product" | "general";
@@ -28,6 +27,10 @@ export function quoteLabel(kind: QuoteKind, short = false): string {
   return short ? "Request quote" : "Request a free quote";
 }
 
+/**
+ * Plain <a> (not next/link) so Get Expert Help / quote CTAs do a full navigation.
+ * Avoids broken soft RSC navigations on flaky hosts.
+ */
 export default function RequestQuoteButton({
   subject,
   kind = "general",
@@ -46,7 +49,7 @@ export default function RequestQuoteButton({
 
   if (variant === "link" || variant === "compact") {
     return (
-      <Link
+      <a
         href={href}
         className={`inline-flex items-center gap-1 font-bold text-butter-700 hover:text-butter-600 transition ${
           variant === "compact" ? "text-xs" : "text-sm"
@@ -54,27 +57,27 @@ export default function RequestQuoteButton({
       >
         {label}
         <Icon name="arrow-right" size={variant === "compact" ? 12 : 14} />
-      </Link>
+      </a>
     );
   }
 
   if (variant === "secondary") {
     return (
-      <Link
+      <a
         href={href}
         className={`inline-flex items-center justify-center gap-2 min-h-11 border border-cream-300 bg-white hover:border-butter-500 text-ink-900 font-semibold rounded-xl px-5 py-3 text-sm transition ${className}`}
       >
         {label}
-      </Link>
+      </a>
     );
   }
 
   return (
-    <Link
+    <a
       href={href}
       className={`inline-flex items-center justify-center gap-2 min-h-11 bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3 text-sm transition ${className}`}
     >
       {label} <Icon name="arrow-right" size={16} />
-    </Link>
+    </a>
   );
 }

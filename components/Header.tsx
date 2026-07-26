@@ -58,14 +58,14 @@ export default async function Header() {
   return (
     <header className="sticky top-0 z-50 isolate bg-cream-50/95 backdrop-blur border-b border-cream-200 pt-[env(safe-area-inset-top)]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 flex items-center gap-2 sm:gap-3 min-h-[4.25rem] sm:min-h-[5rem] py-2">
-        <Link href="/" aria-label="certko home" className="shrink-0 min-w-0">
+        <a href="/" aria-label="certko home" className="shrink-0 min-w-0">
           <span className="hidden sm:block">
             <Logo width={176} withTagline priority />
           </span>
           <span className="sm:hidden">
             <Logo width={128} withTagline priority />
           </span>
-        </Link>
+        </a>
         <div className="hidden lg:block flex-1 max-w-sm mx-auto">
           <SearchBox />
         </div>
@@ -97,15 +97,22 @@ export default async function Header() {
             </Link>
           ))}
           <NavDropdown label="Resources" items={uniqueResources} />
-          <Link
+          <a
             href="/contact"
             className="ml-2 bg-butter-500 hover:bg-butter-400 text-ink-950 text-sm font-semibold rounded-xl px-4 py-2.5 transition"
           >
             Get Expert Help
-          </Link>
+          </a>
         </nav>
-        <MobileNav
-          groups={[
+        <div className="lg:hidden ml-auto flex items-center gap-2">
+          <a
+            href="/contact"
+            className="inline-flex items-center justify-center min-h-11 rounded-xl bg-butter-500 hover:bg-butter-400 px-3 text-xs font-bold text-ink-950 transition"
+          >
+            Get help
+          </a>
+          <MobileNav
+            groups={[
             {
               label: "Products",
               items: productItems.map(({ href, label }) => ({ href, label })),
@@ -140,7 +147,8 @@ export default async function Header() {
             },
             { label: "", items: [{ href: "/contact", label: "Get Expert Help" }] },
           ]}
-        />
+          />
+        </div>
       </div>
     </header>
   );

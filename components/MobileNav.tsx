@@ -130,14 +130,14 @@ export default function MobileNav({ groups }: { groups: Group[] }) {
                     return (
                       <div key={`cta-${gi}`} className="pt-1">
                         {group.items.map((item) => (
-                          <Link
+                          <a
                             key={item.href}
                             href={item.href}
                             onClick={() => setOpen(false)}
                             className="flex items-center justify-center min-h-12 rounded-xl bg-butter-500 text-ink-950 font-semibold text-sm"
                           >
                             {item.label}
-                          </Link>
+                          </a>
                         ))}
                       </div>
                     );
@@ -191,7 +191,7 @@ export default function MobileNav({ groups }: { groups: Group[] }) {
       : null;
 
   return (
-    <div className="lg:hidden ml-auto relative z-[60]">
+    <div className="relative z-[60]">
       <button
         type="button"
         aria-label={open ? "Close menu" : "Open menu"}

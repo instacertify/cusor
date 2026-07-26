@@ -100,18 +100,42 @@ export default async function HomePage() {
           Three steps from “is it mandatory?” to certified.
         </p>
         <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
-          {HOW_IT_WORKS.map((s, i) => (
-            <div key={i} className="relative bg-white rounded-2xl sm:rounded-3xl border border-cream-300 shadow-card p-5 sm:p-7">
-              <span className="absolute top-5 right-5 font-display text-4xl sm:text-5xl font-semibold text-cream-200" aria-hidden>
-                {i + 1}
-              </span>
-              <span className="inline-flex w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-butter-300/40 text-butter-700 items-center justify-center">
-                <Icon name={s.icon} size={26} />
-              </span>
-              <h3 className="font-display text-lg font-semibold text-ink-950 mt-4 mb-2">{s.title}</h3>
-              <p className="text-sm text-ink-600 leading-relaxed">{s.text}</p>
-            </div>
-          ))}
+          {HOW_IT_WORKS.map((s, i) => {
+            const isHelp = s.title === "Get Expert Help";
+            const Card = (
+              <>
+                <span className="absolute top-5 right-5 font-display text-4xl sm:text-5xl font-semibold text-cream-200" aria-hidden>
+                  {i + 1}
+                </span>
+                <span className="inline-flex w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-butter-300/40 text-butter-700 items-center justify-center">
+                  <Icon name={s.icon} size={26} />
+                </span>
+                <h3 className="font-display text-lg font-semibold text-ink-950 mt-4 mb-2">{s.title}</h3>
+                <p className="text-sm text-ink-600 leading-relaxed">{s.text}</p>
+                {isHelp ? (
+                  <span className="mt-4 inline-flex text-sm font-bold text-butter-700">
+                    Contact us →
+                  </span>
+                ) : null}
+              </>
+            );
+            return isHelp ? (
+              <a
+                key={i}
+                href="/contact"
+                className="relative bg-white rounded-2xl sm:rounded-3xl border border-cream-300 shadow-card p-5 sm:p-7 hover:border-butter-500 transition block"
+              >
+                {Card}
+              </a>
+            ) : (
+              <div
+                key={i}
+                className="relative bg-white rounded-2xl sm:rounded-3xl border border-cream-300 shadow-card p-5 sm:p-7"
+              >
+                {Card}
+              </div>
+            );
+          })}
         </div>
       </section>
 

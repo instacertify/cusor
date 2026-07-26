@@ -38,12 +38,12 @@ export default async function CtaBanner({
             {subject ? (
               <RequestQuoteButton subject={subject} kind={kind} />
             ) : (
-              <Link
+              <a
                 href="/contact"
                 className="inline-flex items-center justify-center min-h-11 bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3 text-sm transition"
               >
                 {quoteLabel("general")}
-              </Link>
+              </a>
             )}
             <Link
               href="/blog"

@@ -1,30 +1,20 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { getDb } from "@/lib/db";
-import { sendLeadNotification } from "@/lib/mail";
+import { createInquiry } from "@/lib/inquiries";
 
 export async function submitInquiry(formData: FormData) {
-  const name = String(formData.get("name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
-  const product = String(formData.get("product") ?? "").trim();
-  const message = String(formData.get("message") ?? "").trim();
+  const result = await createInquiry({
+    name: String(formData.get("name") ?? ""),
+    email: String(formData.get("email") ?? ""),
+    phone: String(formData.get("phone") ?? ""),
+    product: String(formData.get("product") ?? ""),
+    message: String(formData.get("message") ?? ""),
+  });
 
-  if (!name || !email) {
-    redirect("/contact?error=1");
-  }
-
-  getDb()
-    .prepare(
-      "INSERT INTO inquiries (name, email, phone, product, message) VALUES (?, ?, ?, ?, ?)"
-    )
-    .run(name, email, phone, product, message);
-
-  // Notify Google Workspace inbox — do not fail the lead if SMTP is misconfigured
-  const result = await sendLeadNotification({ name, email, phone, product, message });
   if (!result.ok) {
-    console.error("[contact] lead saved but email notify failed:", result.error);
+    if (result.error === "missing_fields") redirect("/contact?error=1");
+    redirect("/contact?error=save");
   }
 
   redirect("/contact?sent=1");

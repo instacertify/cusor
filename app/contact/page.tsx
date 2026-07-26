@@ -4,12 +4,12 @@ import FaqAccordion from "@/components/FaqAccordion";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import Icon from "@/components/Icon";
 import { getPage, getFaqs } from "@/lib/queries";
-import { getSettings } from "@/lib/db";
-import { submitInquiry } from "./actions";
+import { ensureDbReady, getSettings } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
+  await ensureDbReady();
   const page = getPage("contact");
   return {
     title: page?.meta_title || "Get Expert Help",
@@ -28,10 +28,17 @@ const PROMISES = [
 ];
 
 export default async function ContactPage({ searchParams }: Props) {
+  await ensureDbReady();
   const sp = await searchParams;
   const page = getPage("contact");
   const settings = getSettings();
   const faqs = getFaqs("page:contact");
+  const errorMessage =
+    sp.error === "save"
+      ? "We could not save your request just now. Please try again, or email us directly."
+      : sp.error
+        ? "Please fill in your name and email."
+        : null;
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-10">
@@ -41,7 +48,10 @@ export default async function ContactPage({ searchParams }: Props) {
           <h1 className="font-display text-2xl sm:text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
             {page?.hero_heading || "Talk to a BIS expert"}
           </h1>
-          <p className="mt-4 text-base sm:text-lg text-ink-600 leading-relaxed">{page?.hero_subheading}</p>
+          <p className="mt-4 text-base sm:text-lg text-ink-600 leading-relaxed">
+            {page?.hero_subheading ||
+              "Tell us about your product and we will map the standard, estimate the full cost and send a free quote within 24 hours."}
+          </p>
           <div className="mt-8 space-y-5">
             {PROMISES.map((p) => (
               <div key={p.title} className="flex gap-4">
@@ -88,12 +98,12 @@ export default async function ContactPage({ searchParams }: Props) {
               </p>
             </div>
           ) : (
-            <form action={submitInquiry} className="space-y-4">
-              {sp.error && (
+            <form action="/api/contact" method="post" className="space-y-4">
+              {errorMessage ? (
                 <p className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
-                  Please fill in your name and email.
+                  {errorMessage}
                 </p>
-              )}
+              ) : null}
               <div>
                 <label htmlFor="name" className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">Your Name *</label>
                 <input id="name" name="name" required autoComplete="name" className="w-full rounded-xl border border-cream-300 px-4 py-3 text-base sm:text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30 min-h-11" />
