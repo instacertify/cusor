@@ -764,6 +764,7 @@ export function seedDatabase(db: Database.Database) {
       smtp_user: "contact@instacertify.com",
       smtp_pass: "",
       smtp_from: "contact@instacertify.com",
+      smtp_secure: "0",
       footer_text:
         "Certko is an independent compliance intelligence and product-testing guidance platform operated by Instacertify Labs Private Limited. We are not a government authority. Prices and schedules are indicative — always verify with the relevant regulator and laboratory.",
       announcement: "Updated July 2026 · BIS · BEE · GMARK · CE · FCC · SABER · WPC · 400+ labs",

@@ -16,9 +16,11 @@ function envOrSetting(envKey: string, settingKey: string, fallback = ""): string
 }
 
 export function getMailConfig() {
+  const port = Number(envOrSetting("SMTP_PORT", "smtp_port", "587")) || 587;
+  const secureSetting = envOrSetting("SMTP_SECURE", "smtp_secure", port === 465 ? "1" : "0");
   return {
     host: envOrSetting("SMTP_HOST", "smtp_host", "smtp.gmail.com"),
-    port: Number(envOrSetting("SMTP_PORT", "smtp_port", "587")) || 587,
+    port,
     user: envOrSetting("SMTP_USER", "smtp_user", "contact@instacertify.com"),
     pass: envOrSetting("SMTP_PASS", "smtp_pass", ""),
     from:
@@ -30,6 +32,7 @@ export function getMailConfig() {
       "contact@instacertify.com"
     ),
     enabled: envOrSetting("SMTP_ENABLED", "smtp_enabled", "1") !== "0",
+    secure: secureSetting === "1" || port === 465,
   };
 }
 
@@ -43,7 +46,7 @@ function createTransport() {
   return nodemailer.createTransport({
     host: c.host,
     port: c.port,
-    secure: c.port === 465,
+    secure: c.secure,
     auth: {
       user: c.user,
       pass: c.pass,
@@ -64,7 +67,7 @@ export async function sendLeadNotification(lead: LeadPayload): Promise<{ ok: boo
     return {
       ok: false,
       error:
-        "Email not configured. Add Google Workspace SMTP user + App Password in Admin → Site Settings.",
+        "Email not configured. Add SMTP host, username and password in Admin → Email / SMTP.",
     };
   }
 

@@ -11,6 +11,7 @@ export const metadata = { robots: { index: false } };
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: "chart" },
   { href: "/admin/settings", label: "Site Settings", icon: "settings" },
+  { href: "/admin/email", label: "Email / SMTP", icon: "mail" },
   { href: "/admin/pages", label: "Pages", icon: "file" },
   { href: "/admin/media", label: "Front Images", icon: "image" },
   { href: "/admin/certifications", label: "Certifications", icon: "award" },

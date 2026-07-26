@@ -67,15 +67,45 @@ export async function saveSettings(formData: FormData) {
   redirect("/admin/settings?saved=1");
 }
 
+const SMTP_SETTING_KEYS = [
+  "lead_notify_email",
+  "smtp_host",
+  "smtp_port",
+  "smtp_user",
+  "smtp_pass",
+  "smtp_from",
+] as const;
+
+export async function saveSmtpSettings(formData: FormData) {
+  await requireAdmin();
+  setSetting(
+    "smtp_enabled",
+    formData.getAll("smtp_enabled").map(String).includes("1") ? "1" : "0"
+  );
+  setSetting(
+    "smtp_secure",
+    formData.getAll("smtp_secure").map(String).includes("1") ? "1" : "0"
+  );
+  for (const key of SMTP_SETTING_KEYS) {
+    const value = formData.get(key);
+    if (typeof value !== "string") continue;
+    if (SECRET_SETTINGS.has(key) && value.trim() === "") continue;
+    setSetting(key, value.trim());
+  }
+  revalidatePath("/admin/email");
+  revalidatePath("/admin/settings");
+  redirect("/admin/email?saved=1");
+}
+
 export async function sendTestLeadEmailAction() {
   await requireAdmin();
   const { sendTestLeadEmail } = await import("@/lib/mail");
   const result = await sendTestLeadEmail();
-  revalidatePath("/admin/settings");
+  revalidatePath("/admin/email");
   redirect(
     result.ok
-      ? "/admin/settings?mail=sent"
-      : `/admin/settings?mail=error&mail_error=${encodeURIComponent(result.error || "send failed")}`
+      ? "/admin/email?mail=sent"
+      : `/admin/email?mail=error&mail_error=${encodeURIComponent(result.error || "send failed")}`
   );
 }
 
