@@ -1,0 +1,42 @@
+<%- include('partials/head') %>
+<div class="topbar"><h1><%= isNew ? 'New' : 'Edit' %> Product</h1><a class="btn btn-light" href="/admin/products">← Back</a></div>
+<div class="panel">
+  <form action="<%= isNew ? '/admin/products' : '/admin/products/' + product.id %>" method="post" enctype="multipart/form-data">
+    <div class="row">
+      <div class="field"><label>Name</label><input type="text" name="name" value="<%= product.name || '' %>" required /></div>
+      <div class="field"><label>Slug (optional)</label><input type="text" name="slug" value="<%= product.slug || '' %>" /><div class="hint">Auto-generated from name if blank.</div></div>
+    </div>
+    <div class="row-3">
+      <div class="field"><label>Category</label>
+        <select name="category_id">
+          <option value="">— None —</option>
+          <% categories.forEach(function(c){ %><option value="<%= c.id %>" <%= product.category_id == c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
+        </select>
+      </div>
+      <div class="field"><label>Scheme</label>
+        <select name="scheme">
+          <% ['ISI','CRS','FMCS','Voluntary'].forEach(function(s){ %><option <%= product.scheme === s ? 'selected' : '' %>><%= s %></option><% }); %>
+        </select>
+      </div>
+      <div class="field"><label>HSN Code</label><input type="text" name="hsn" value="<%= product.hsn || '' %>" /></div>
+    </div>
+    <div class="row-3">
+      <div class="field"><label>Cost min (₹)</label><input type="number" name="cost_min" value="<%= product.cost_min || 0 %>" /></div>
+      <div class="field"><label>Cost max (₹)</label><input type="number" name="cost_max" value="<%= product.cost_max || 0 %>" /></div>
+      <div class="field"><label>Timeline</label><input type="text" name="timeline" value="<%= product.timeline || '' %>" placeholder="e.g. 8–20 weeks" /></div>
+    </div>
+    <div class="field"><label>Summary</label><textarea name="summary" rows="2"><%= product.summary || '' %></textarea></div>
+    <div class="field"><label>Content (HTML)</label><textarea name="content" rows="10"><%= product.content || '' %></textarea><div class="hint">Full write-up shown on the product page. HTML allowed.</div></div>
+    <div class="row">
+      <div class="field"><label>Image URL</label><input type="text" name="image" value="<%= product.image || '' %>" placeholder="/images/... or upload below" /></div>
+      <div class="field"><label>Or upload image</label><input type="file" name="image_file" accept="image/*" /></div>
+    </div>
+    <div class="row">
+      <div class="field check"><input type="checkbox" name="is_popular" id="pop" <%= product.is_popular ? 'checked' : '' %> /><label for="pop" style="margin:0">Show in “Popular Products”</label></div>
+      <div class="field check"><input type="checkbox" name="is_mandatory" id="man" <%= (product.is_mandatory === undefined || product.is_mandatory) ? 'checked' : '' %> /><label for="man" style="margin:0">Mandatory certification</label></div>
+    </div>
+    <div class="field"><label>Sort order</label><input type="number" name="sort_order" value="<%= product.sort_order || 0 %>" style="max-width:120px" /></div>
+    <button class="btn btn-primary" type="submit">Save Product</button>
+  </form>
+</div>
+<%- include('partials/foot') %>

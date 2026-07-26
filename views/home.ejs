@@ -1,0 +1,127 @@
+<%- include('partials/head') %>
+
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <span class="eyebrow"><%= settings.hero_eyebrow %></span>
+      <h1><%= settings.hero_title %></h1>
+      <p class="lead"><%= settings.hero_subtitle %></p>
+      <form class="search-bar" action="/check" method="get">
+        <input type="text" name="q" placeholder="Enter product name or HSN code (e.g. LED, 2523)" aria-label="Product search" />
+        <button class="btn btn-primary" type="submit">Check Now</button>
+      </form>
+      <div class="hero-hints">
+        Popular:
+        <a href="/check?q=cement">Cement</a> ·
+        <a href="/check?q=LED">LED</a> ·
+        <a href="/check?q=cable">Cables</a> ·
+        <a href="/check?q=solar">Solar</a>
+      </div>
+      <div class="stat-strip">
+        <div class="stat-pill"><div class="num"><%= settings.stat_products %></div><div class="lbl"><%= settings.stat_products_label %></div></div>
+        <div class="stat-pill"><div class="num"><%= settings.stat_labs %></div><div class="lbl"><%= settings.stat_labs_label %></div></div>
+        <div class="stat-pill"><div class="num"><%= settings.stat_experts %></div><div class="lbl"><%= settings.stat_experts_label %></div></div>
+        <div class="stat-pill"><div class="num"><%= settings.stat_free %></div><div class="lbl"><%= settings.stat_free_label %></div></div>
+      </div>
+    </div>
+    <div class="hero-art">
+      <img src="/images/hero.png" alt="Certko certification dashboard" onerror="this.style.display='none'" />
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="sec-head"><h2>How It Works</h2><p class="muted">From "do I need this?" to fully certified in three buttery-smooth steps.</p></div>
+    <div class="grid grid-3">
+      <% steps.forEach(function(s, i){ %>
+        <div class="card step">
+          <span class="num"><%= i + 1 %></span>
+          <div class="icon"><%= s.icon %></div>
+          <h3><%= s.title %></h3>
+          <p class="muted"><%= s.description %></p>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<section class="section-sm">
+  <div class="container">
+    <div class="sec-head"><h2>Popular Products</h2><p class="muted">Most-searched BIS certification requirements.</p></div>
+    <div class="grid grid-4">
+      <% popular.forEach(function(p){ %>
+        <a class="card product-card" href="/product/<%= p.slug %>">
+          <div class="thumb"><img src="<%= p.image %>" alt="<%= p.name %>" onerror="this.parentNode.style.display='none'" /></div>
+          <div class="body">
+            <div class="tags"><span class="tag scheme"><%= p.scheme %></span><span class="tag">HSN <%= p.hsn %></span></div>
+            <h3><%= p.name %></h3>
+            <div class="price"><%= formatCost(p.cost_min) %>–<%= formatCost(p.cost_max) %> <small>· <%= p.timeline %></small></div>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+    <div class="center" style="margin-top:30px;"><a class="btn btn-outline" href="/products">Browse all <%= totalProducts %>+ products &rarr;</a></div>
+  </div>
+</section>
+
+<section class="section band">
+  <div class="container">
+    <div class="sec-head"><h2 style="color:#fff">Trusted by Importers &amp; Manufacturers Across India</h2></div>
+    <div class="grid grid-3">
+      <% testimonials.forEach(function(t){ %>
+        <div class="card testimonial">
+          <div class="stars"><%= '★'.repeat(t.rating) %></div>
+          <p>“<%= t.quote %>”</p>
+          <div class="who"><span class="avatar"><%= t.initial %></span><div><strong style="color:var(--navy)"><%= t.name %></strong><div class="muted" style="font-size:.85rem"><%= t.role %>, <%= t.location %></div></div></div>
+        </div>
+      <% }); %>
+    </div>
+    <div class="stat-strip">
+      <div class="stat-pill"><div class="num"><%= settings.band_1_value %></div><div class="lbl"><%= settings.band_1_label %></div></div>
+      <div class="stat-pill"><div class="num"><%= settings.band_2_value %></div><div class="lbl"><%= settings.band_2_label %></div></div>
+      <div class="stat-pill"><div class="num"><%= settings.band_3_value %></div><div class="lbl"><%= settings.band_3_label %></div></div>
+      <div class="stat-pill"><div class="num"><%= settings.band_4_value %></div><div class="lbl"><%= settings.band_4_label %></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="sec-head"><h2>Browse by Category</h2><p class="muted">Find BIS requirements by product category.</p></div>
+    <div class="grid grid-3">
+      <% categories.forEach(function(c){ %>
+        <a class="card cat-tile" href="/category/<%= c.slug %>">
+          <span class="emoji"><%= c.icon %></span>
+          <div><h3 style="margin:0"><%= c.name %></h3><div class="count"><%= c.description %></div></div>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<section class="section-sm">
+  <div class="container">
+    <div class="newsletter">
+      <h2><%= settings.newsletter_title %></h2>
+      <p class="muted" style="max-width:44em;margin:0 auto;"><%= settings.newsletter_body %></p>
+      <form action="/subscribe" method="post">
+        <input type="email" name="email" placeholder="you@company.com" required />
+        <button class="btn btn-dark" type="submit">Subscribe Free</button>
+      </form>
+      <div class="muted" style="font-size:.82rem">Free monthly QCO summary. Unsubscribe anytime.</div>
+    </div>
+  </div>
+</section>
+
+<section class="section-sm">
+  <div class="container">
+    <div class="cta">
+      <h2><%= settings.cta_title %></h2>
+      <p><%= settings.cta_body %></p>
+      <a class="btn btn-primary" href="/contact">Get Expert Help — Free Quote</a>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

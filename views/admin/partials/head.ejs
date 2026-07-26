@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %> — Certko Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="sidebar">
+    <div class="brand"><span class="mark">C</span> Certko</div>
+    <nav>
+      <a href="/admin" class="<%= section === 'dashboard' ? 'active' : '' %>">📊 Dashboard</a>
+      <a href="/admin/products" class="<%= section === 'products' ? 'active' : '' %>">📦 Products</a>
+      <a href="/admin/categories" class="<%= section === 'categories' ? 'active' : '' %>">🗂️ Categories</a>
+      <a href="/admin/faqs" class="<%= section === 'faqs' ? 'active' : '' %>">❓ FAQs</a>
+      <a href="/admin/testimonials" class="<%= section === 'testimonials' ? 'active' : '' %>">💬 Testimonials</a>
+      <a href="/admin/pages" class="<%= section === 'pages' ? 'active' : '' %>">📄 Content Pages</a>
+      <a href="/admin/leads" class="<%= section === 'leads' ? 'active' : '' %>">📥 Leads</a>
+      <div class="sep"></div>
+      <a href="/admin/settings" class="<%= section === 'settings' ? 'active' : '' %>">⚙️ Site Settings</a>
+      <a href="/" target="_blank">🌐 View Site</a>
+    </nav>
+    <form class="logout" action="/admin/logout" method="post">
+      <button class="btn btn-light" style="width:100%" type="submit">Log out (<%= currentUser %>)</button>
+    </form>
+  </aside>
+  <div class="main">

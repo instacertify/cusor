@@ -1,0 +1,45 @@
+<%- include('partials/head') %>
+<div class="topbar"><h1>Site Settings</h1><a class="btn btn-light" href="/" target="_blank">View site</a></div>
+<form action="/admin/settings" method="post">
+  <div class="panel">
+    <h3 style="margin-top:0">Brand</h3>
+    <div class="row-3">
+      <div class="field"><label>Site name</label><input type="text" name="site_name" value="<%= values.site_name || '' %>" /></div>
+      <div class="field"><label>Primary color</label><input type="text" name="brand_primary" value="<%= values.brand_primary || '' %>" /></div>
+      <div class="field"><label>Accent color</label><input type="text" name="brand_accent" value="<%= values.brand_accent || '' %>" /></div>
+    </div>
+    <div class="field"><label>Tagline</label><input type="text" name="tagline" value="<%= values.tagline || '' %>" /></div>
+  </div>
+
+  <div class="panel">
+    <h3 style="margin-top:0">Hero section</h3>
+    <div class="field"><label>Eyebrow</label><input type="text" name="hero_eyebrow" value="<%= values.hero_eyebrow || '' %>" /></div>
+    <div class="field"><label>Title</label><input type="text" name="hero_title" value="<%= values.hero_title || '' %>" /></div>
+    <div class="field"><label>Subtitle</label><textarea name="hero_subtitle" rows="2"><%= values.hero_subtitle || '' %></textarea></div>
+    <div class="row-3">
+      <div class="field"><label>Stat: Products</label><input type="text" name="stat_products" value="<%= values.stat_products || '' %>" /></div>
+      <div class="field"><label>Stat: Labs</label><input type="text" name="stat_labs" value="<%= values.stat_labs || '' %>" /></div>
+      <div class="field"><label>Stat: Experts</label><input type="text" name="stat_experts" value="<%= values.stat_experts || '' %>" /></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3 style="margin-top:0">Newsletter &amp; CTA</h3>
+    <div class="field"><label>Newsletter title</label><input type="text" name="newsletter_title" value="<%= values.newsletter_title || '' %>" /></div>
+    <div class="field"><label>Newsletter body</label><textarea name="newsletter_body" rows="2"><%= values.newsletter_body || '' %></textarea></div>
+    <div class="field"><label>CTA title</label><input type="text" name="cta_title" value="<%= values.cta_title || '' %>" /></div>
+    <div class="field"><label>CTA body</label><textarea name="cta_body" rows="2"><%= values.cta_body || '' %></textarea></div>
+  </div>
+
+  <div class="panel">
+    <h3 style="margin-top:0">Contact &amp; footer</h3>
+    <div class="row">
+      <div class="field"><label>Contact email</label><input type="text" name="contact_email" value="<%= values.contact_email || '' %>" /></div>
+      <div class="field"><label>Contact phone</label><input type="text" name="contact_phone" value="<%= values.contact_phone || '' %>" /></div>
+    </div>
+    <div class="field"><label>Footer note</label><input type="text" name="footer_note" value="<%= values.footer_note || '' %>" /></div>
+  </div>
+
+  <button class="btn btn-primary" type="submit">Save Settings</button>
+</form>
+<%- include('partials/foot') %>

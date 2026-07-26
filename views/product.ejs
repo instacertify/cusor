@@ -1,0 +1,55 @@
+<%- include('partials/head') %>
+<div class="page-head">
+  <div class="container">
+    <div class="breadcrumb"><a href="/">Home</a> / <a href="/products">Products</a><% if (product.category_slug) { %> / <a href="/category/<%= product.category_slug %>"><%= product.category_name %></a><% } %></div>
+    <h1><%= product.name %></h1>
+    <p class="muted"><%= product.summary %></p>
+  </div>
+</div>
+<section class="section">
+  <div class="container detail-grid">
+    <div>
+      <div class="detail-media" style="margin-bottom:24px;">
+        <img src="<%= product.image %>" alt="<%= product.name %>" onerror="this.style.display='none'" />
+      </div>
+      <div class="prose"><%- product.content %></div>
+
+      <div class="cta" style="margin-top:36px;">
+        <h2>Get <%= product.name %> Certified</h2>
+        <p>Our BIS experts handle the full application, testing and inspection so you stay compliant. Free quote in 24 hours.</p>
+        <a class="btn btn-primary" href="/contact?product=<%= encodeURIComponent(product.name) %>">Request a Free Quote</a>
+      </div>
+    </div>
+    <aside>
+      <div class="fact-box">
+        <h3 style="margin-top:0">Certification Snapshot</h3>
+        <div class="fact-row"><span class="k">Mandatory?</span><span class="v"><%= product.is_mandatory ? 'Yes' : 'Voluntary' %></span></div>
+        <div class="fact-row"><span class="k">Scheme</span><span class="v"><%= product.scheme %></span></div>
+        <div class="fact-row"><span class="k">HSN Code</span><span class="v"><%= product.hsn || '—' %></span></div>
+        <div class="fact-row"><span class="k">Category</span><span class="v"><%= product.category_name || '—' %></span></div>
+        <div class="fact-row"><span class="k">Est. Cost</span><span class="v"><%= formatCost(product.cost_min) %>–<%= formatCost(product.cost_max) %></span></div>
+        <div class="fact-row"><span class="k">Timeline</span><span class="v"><%= product.timeline %></span></div>
+        <a class="btn btn-dark btn-block" style="margin-top:18px;" href="/contact?product=<%= encodeURIComponent(product.name) %>">Talk to an Expert</a>
+      </div>
+    </aside>
+  </div>
+
+  <% if (related && related.length) { %>
+  <div class="container" style="margin-top:56px;">
+    <div class="sec-head"><h2>Related Products</h2></div>
+    <div class="grid grid-4">
+      <% related.forEach(function(p){ %>
+        <a class="card product-card" href="/product/<%= p.slug %>">
+          <div class="thumb"><img src="<%= p.image %>" alt="<%= p.name %>" onerror="this.parentNode.style.display='none'" /></div>
+          <div class="body">
+            <div class="tags"><span class="tag scheme"><%= p.scheme %></span></div>
+            <h3><%= p.name %></h3>
+            <div class="price"><%= formatCost(p.cost_min) %>–<%= formatCost(p.cost_max) %></div>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+  <% } %>
+</section>
+<%- include('partials/footer') %>

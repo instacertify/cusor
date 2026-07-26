@@ -1,0 +1,39 @@
+<%- include('partials/head') %>
+<div class="page-head">
+  <div class="container">
+    <div class="breadcrumb"><a href="/">Home</a> / Products</div>
+    <h1>Browse Products</h1>
+    <p class="muted">Search <%= products.length %> notified products and see their BIS scheme, cost and timeline.</p>
+  </div>
+</div>
+<section class="section">
+  <div class="container">
+    <form class="searchform" action="/products" method="get">
+      <input type="text" name="q" value="<%= q %>" placeholder="Search by product name or HSN code" />
+      <button class="btn btn-primary" type="submit">Search</button>
+    </form>
+    <div class="filters">
+      <a class="chip <%= !catSlug ? 'active' : '' %>" href="/products">All</a>
+      <% categories.forEach(function(c){ %>
+        <a class="chip <%= catSlug === c.slug ? 'active' : '' %>" href="/products?category=<%= c.slug %>"><%= c.icon %> <%= c.name %></a>
+      <% }); %>
+    </div>
+    <% if (products.length === 0) { %>
+      <div class="card center"><p class="muted">No products found for “<%= q %>”. Try a different term or <a href="/contact">ask an expert</a>.</p></div>
+    <% } else { %>
+      <div class="grid grid-4">
+        <% products.forEach(function(p){ %>
+          <a class="card product-card" href="/product/<%= p.slug %>">
+            <div class="thumb"><img src="<%= p.image %>" alt="<%= p.name %>" onerror="this.parentNode.style.display='none'" /></div>
+            <div class="body">
+              <div class="tags"><span class="tag scheme"><%= p.scheme %></span><span class="tag">HSN <%= p.hsn %></span></div>
+              <h3><%= p.name %></h3>
+              <div class="price"><%= formatCost(p.cost_min) %>–<%= formatCost(p.cost_max) %> <small>· <%= p.timeline %></small></div>
+            </div>
+          </a>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+</section>
+<%- include('partials/footer') %>

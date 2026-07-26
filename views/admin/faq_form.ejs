@@ -1,0 +1,14 @@
+<%- include('partials/head') %>
+<div class="topbar"><h1><%= isNew ? 'New' : 'Edit' %> FAQ</h1><a class="btn btn-light" href="/admin/faqs">← Back</a></div>
+<div class="panel">
+  <form action="<%= isNew ? '/admin/faqs' : '/admin/faqs/' + faq.id %>" method="post">
+    <div class="field"><label>Question</label><input type="text" name="question" value="<%= faq.question || '' %>" required /></div>
+    <div class="field"><label>Answer</label><textarea name="answer" rows="5"><%= faq.answer || '' %></textarea></div>
+    <div class="row">
+      <div class="field"><label>Category</label><input type="text" name="category" value="<%= faq.category || 'General' %>" /></div>
+      <div class="field"><label>Sort order</label><input type="number" name="sort_order" value="<%= faq.sort_order || 0 %>" /></div>
+    </div>
+    <button class="btn btn-primary" type="submit">Save FAQ</button>
+  </form>
+</div>
+<%- include('partials/foot') %>

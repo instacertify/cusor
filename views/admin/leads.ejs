@@ -1,0 +1,16 @@
+<%- include('partials/head') %>
+<div class="topbar"><h1>Leads</h1></div>
+<% if (leads.length === 0) { %>
+  <div class="panel"><p style="color:var(--muted)">No leads captured yet.</p></div>
+<% } else { %>
+<table>
+  <tr><th>Name</th><th>Email</th><th>Phone</th><th>Product</th><th>Message</th><th>When</th></tr>
+  <% leads.forEach(function(l){ %>
+    <tr>
+      <td><%= l.name %></td><td><%= l.email %></td><td><%= l.phone %></td>
+      <td><%= l.product %></td><td style="max-width:280px;color:var(--muted)"><%= l.message %></td><td style="white-space:nowrap"><%= l.created_at %></td>
+    </tr>
+  <% }); %>
+</table>
+<% } %>
+<%- include('partials/foot') %>

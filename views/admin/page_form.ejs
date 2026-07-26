@@ -1,0 +1,19 @@
+<%- include('partials/head') %>
+<div class="topbar"><h1><%= isNew ? 'New' : 'Edit' %> Page</h1><a class="btn btn-light" href="/admin/pages">← Back</a></div>
+<div class="panel">
+  <form action="<%= isNew ? '/admin/pages' : '/admin/pages/' + pageRow.id %>" method="post" enctype="multipart/form-data">
+    <div class="row">
+      <div class="field"><label>Title</label><input type="text" name="title" value="<%= pageRow.title || '' %>" required /></div>
+      <div class="field"><label>Slug</label><input type="text" name="slug" value="<%= pageRow.slug || '' %>" /><div class="hint">URL will be /page/&lt;slug&gt;</div></div>
+    </div>
+    <div class="field"><label>Subtitle</label><input type="text" name="subtitle" value="<%= pageRow.subtitle || '' %>" /></div>
+    <div class="field"><label>Body (HTML)</label><textarea name="body_html" rows="12"><%= pageRow.body_html || '' %></textarea></div>
+    <div class="field"><label>Meta description</label><input type="text" name="meta_description" value="<%= pageRow.meta_description || '' %>" /></div>
+    <div class="row">
+      <div class="field"><label>Image URL</label><input type="text" name="image" value="<%= pageRow.image || '' %>" /></div>
+      <div class="field"><label>Or upload image</label><input type="file" name="image_file" accept="image/*" /></div>
+    </div>
+    <button class="btn btn-primary" type="submit">Save Page</button>
+  </form>
+</div>
+<%- include('partials/foot') %>

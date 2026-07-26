@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Certko Admin — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body>
+  <div class="login-wrap">
+    <form class="login-card" action="/admin/login" method="post">
+      <div class="mark">C</div>
+      <h1>Certko Admin</h1>
+      <p style="color:var(--muted);margin-top:0;font-size:.9rem;">Sign in to manage your content.</p>
+      <% if (error) { %><div class="err"><%= error %></div><% } %>
+      <div class="field"><label>Username</label><input type="text" name="username" autofocus required /></div>
+      <div class="field"><label>Password</label><input type="password" name="password" required /></div>
+      <button class="btn btn-primary" style="width:100%" type="submit">Log in</button>
+    </form>
+  </div>
+</body>
+</html>

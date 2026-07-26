@@ -1,0 +1,32 @@
+<%- include('partials/head') %>
+<div class="topbar"><h1>Dashboard</h1><a class="btn btn-primary" href="/admin/products/new">+ New Product</a></div>
+<div class="cards">
+  <div class="stat"><div class="n"><%= counts.products %></div><div class="l">Products</div></div>
+  <div class="stat"><div class="n"><%= counts.categories %></div><div class="l">Categories</div></div>
+  <div class="stat"><div class="n"><%= counts.faqs %></div><div class="l">FAQs</div></div>
+  <div class="stat"><div class="n"><%= counts.testimonials %></div><div class="l">Testimonials</div></div>
+  <div class="stat"><div class="n"><%= counts.leads %></div><div class="l">Leads</div></div>
+</div>
+<div class="panel">
+  <h3 style="margin-top:0">Recent leads</h3>
+  <% if (recentLeads.length === 0) { %>
+    <p style="color:var(--muted)">No leads yet.</p>
+  <% } else { %>
+    <table>
+      <tr><th>Name</th><th>Email</th><th>Product</th><th>When</th></tr>
+      <% recentLeads.forEach(function(l){ %>
+        <tr><td><%= l.name %></td><td><%= l.email %></td><td><%= l.product %></td><td><%= l.created_at %></td></tr>
+      <% }); %>
+    </table>
+  <% } %>
+</div>
+<div class="panel">
+  <h3 style="margin-top:0">Quick actions</h3>
+  <div class="actions">
+    <a class="btn btn-light" href="/admin/products/new">Add Product</a>
+    <a class="btn btn-light" href="/admin/faqs/new">Add FAQ</a>
+    <a class="btn btn-light" href="/admin/pages">Edit Pages</a>
+    <a class="btn btn-light" href="/admin/settings">Site Settings</a>
+  </div>
+</div>
+<%- include('partials/foot') %>

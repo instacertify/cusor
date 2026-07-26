@@ -1,0 +1,17 @@
+<%- include('partials/head') %>
+<div class="topbar"><h1>FAQs</h1><a class="btn btn-primary" href="/admin/faqs/new">+ New FAQ</a></div>
+<table>
+  <tr><th>Question</th><th>Category</th><th>Order</th><th>Actions</th></tr>
+  <% faqs.forEach(function(f){ %>
+    <tr>
+      <td><strong><%= f.question %></strong></td>
+      <td><span class="pill"><%= f.category %></span></td>
+      <td><%= f.sort_order %></td>
+      <td class="actions">
+        <a class="btn btn-light btn-sm" href="/admin/faqs/<%= f.id %>/edit">Edit</a>
+        <form action="/admin/faqs/<%= f.id %>/delete" method="post" onsubmit="return confirm('Delete FAQ?')"><button class="btn btn-danger btn-sm" type="submit">Delete</button></form>
+      </td>
+    </tr>
+  <% }); %>
+</table>
+<%- include('partials/foot') %>
