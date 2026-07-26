@@ -33,6 +33,11 @@ export default function BulkImportPanel({
     startTransition(async () => {
       const res = await bulkImportEntity(fd);
       setResult(res);
+      if (res.ok) {
+        window.alert(
+          `Done — import finished.\nCreated ${res.created} · Updated ${res.updated} · Skipped ${res.skipped}`
+        );
+      }
       if (res.ok && res.created + res.updated > 0) {
         form.reset();
       }
