@@ -4,17 +4,10 @@ import { getDb, getSettings } from "@/lib/db";
 import { ADMIN_NAV_GROUPS } from "@/lib/admin-nav";
 import { isMailConfigured } from "@/lib/mail";
 import { resolveColorScheme } from "@/lib/color-schemes";
-import { clearSiteCache } from "../actions";
-import { SavedBanner, SubmitButton } from "@/components/admin/Field";
 
 export const dynamic = "force-dynamic";
 
-interface Props {
-  searchParams: Promise<{ cache?: string }>;
-}
-
-export default async function AdminDashboard({ searchParams }: Props) {
-  const sp = await searchParams;
+export default function AdminDashboard() {
   const db = getDb();
   const settings = getSettings();
   const scheme = resolveColorScheme(settings.color_scheme);
@@ -80,6 +73,7 @@ export default async function AdminDashboard({ searchParams }: Props) {
           <h1 className="font-display text-3xl font-semibold text-ink-950">Dashboard</h1>
           <p className="text-ink-600 mt-1 text-sm">
             Jump into organised admin areas — content, catalogue, blog, SEO and email.
+            Use <strong>Clear cache</strong> in the left sidebar anytime after publishing.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -95,21 +89,7 @@ export default async function AdminDashboard({ searchParams }: Props) {
           >
             SMTP: {mailReady ? "Ready" : "Needs setup"}
           </span>
-          <form action={clearSiteCache}>
-            <input type="hidden" name="next" value="/admin" />
-            <SubmitButton
-              label="Clear cache"
-              className="inline-flex items-center rounded-full bg-ink-900 hover:bg-ink-800 px-3 py-1.5 font-semibold text-white transition disabled:opacity-60 disabled:cursor-wait"
-            />
-          </form>
         </div>
-      </div>
-
-      <div className="mt-6">
-        <SavedBanner
-          saved={sp.cache ? "1" : undefined}
-          message="Done — site cache cleared. Public pages will rebuild with the latest content."
-        />
       </div>
 
       <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-4">

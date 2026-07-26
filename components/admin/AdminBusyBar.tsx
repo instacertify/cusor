@@ -31,15 +31,17 @@ export default function AdminBusyBar() {
         (submitter instanceof HTMLButtonElement && submitter.textContent?.trim()) ||
         "Saving…";
       const next =
-        /update/i.test(raw)
-          ? "Updating…"
-          : /delete/i.test(raw)
-            ? "Deleting…"
-            : /add|create/i.test(raw)
-              ? "Creating…"
-              : /import/i.test(raw)
-                ? "Importing…"
-                : "Saving…";
+        /clear/i.test(raw)
+          ? "Clearing cache…"
+          : /update/i.test(raw)
+            ? "Updating…"
+            : /delete/i.test(raw)
+              ? "Deleting…"
+              : /add|create/i.test(raw)
+                ? "Creating…"
+                : /import/i.test(raw)
+                  ? "Importing…"
+                  : "Saving…";
 
       setLabel(next);
       setBusy(true);

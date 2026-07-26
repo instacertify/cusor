@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getSettings } from "@/lib/db";
 import { isMailConfigured } from "@/lib/mail";
 import { resolveColorScheme } from "@/lib/color-schemes";
-import { saveSettings, clearSiteCache } from "../../actions";
+import { saveSettings } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import ColorSchemePicker from "@/components/ColorSchemePicker";
 
@@ -31,31 +31,9 @@ export default async function SettingsPage({ searchParams }: Props) {
         <Link href="/admin/email" className="font-semibold text-butter-700 hover:underline">
           Email / SMTP
         </Link>
-        .
+        . Use the sidebar <strong>Clear cache</strong> button anytime to refresh the public site.
       </p>
-      <SavedBanner
-        saved={sp.cache ? "1" : sp.saved}
-        message={
-          sp.cache
-            ? "Done — site cache cleared. Public pages will rebuild with the latest content."
-            : undefined
-        }
-      />
-
-      <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 mb-8">
-        <h2 className="font-display font-bold text-ink-950">Clear cache</h2>
-        <p className="text-sm text-ink-600 mt-1 max-w-2xl">
-          If the public site still shows old content after you save changes, clear the cache.
-          This forces homepage, catalogue, blog, contact and related pages to refresh.
-        </p>
-        <form action={clearSiteCache} className="mt-4">
-          <input type="hidden" name="next" value="/admin/settings" />
-          <SubmitButton
-            label="Clear site cache"
-            className="bg-butter-500 hover:bg-butter-400 text-ink-950 font-bold rounded-xl px-6 py-3 text-sm transition disabled:opacity-60 disabled:cursor-wait"
-          />
-        </form>
-      </section>
+      <SavedBanner saved={sp.saved} />
 
       <form action={saveSettings} className="space-y-8">
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">

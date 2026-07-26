@@ -3,6 +3,7 @@
 import { useFormStatus } from "react-dom";
 
 function pendingLabel(label: string) {
+  if (/clear/i.test(label)) return "Clearing…";
   if (/update/i.test(label)) return "Updating…";
   if (/add|create/i.test(label)) return "Creating…";
   if (/import/i.test(label)) return "Importing…";
