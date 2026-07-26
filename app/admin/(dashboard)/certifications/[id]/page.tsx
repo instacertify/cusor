@@ -1,14 +1,14 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getDb } from "@/lib/db";
-import type { Certification, CertProduct } from "@/lib/db";
+import type { Certification } from "@/lib/db";
 import { getFaqs, getCertProducts } from "@/lib/queries";
 import {
   saveCertification,
+  deleteCertification,
   saveFaq,
   deleteFaq,
   saveCertProduct,
-  deleteCertProduct,
 } from "../../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 
@@ -32,18 +32,129 @@ export default async function AdminCertificationEdit({ params, searchParams }: P
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <h1 className="font-display text-3xl font-semibold text-ink-950">Edit: {cert.name}</h1>
-        <Link href={`/certifications/${cert.slug}`} target="_blank" className="text-sm font-bold text-butter-700 shrink-0">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div>
+          <Link
+            href="/admin/certifications"
+            className="text-xs font-bold text-ink-500 hover:text-butter-700"
+          >
+            ← All certifications
+          </Link>
+          <h1 className="font-display text-3xl font-semibold text-ink-950 mt-1">
+            {cert.name}
+          </h1>
+          <p className="text-sm text-ink-600 mt-1">
+            {products.length} product{products.length === 1 ? "" : "s"} covered under this
+            certification.
+          </p>
+        </div>
+        <Link
+          href={`/certifications/${cert.slug}`}
+          target="_blank"
+          className="text-sm font-bold text-butter-700 shrink-0"
+        >
           View page ↗
         </Link>
       </div>
       <SavedBanner saved={sp.saved} error={sp.error} />
 
-      <form action={saveCertification} className="space-y-6">
+      <section className="mb-10 bg-white rounded-2xl border border-cream-300 shadow-card overflow-hidden">
+        <div className="px-5 py-4 border-b border-cream-200 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-display text-xl font-bold text-ink-950">
+            Products covered ({products.length})
+          </h2>
+          <a
+            href="#add-product"
+            className="text-sm font-bold bg-butter-500 hover:bg-butter-400 text-ink-950 rounded-xl px-4 py-2 transition"
+          >
+            + Add covered product
+          </a>
+        </div>
+        {products.length === 0 ? (
+          <p className="px-5 py-5 text-sm text-ink-600">
+            No products yet. Add BEE schemes, GMARK categories, SABER product families, or any other
+            items covered under <strong>{cert.name}</strong>.
+          </p>
+        ) : (
+          <ul className="divide-y divide-cream-100">
+            {products.map((p) => (
+              <li
+                key={p.id}
+                className="flex flex-wrap items-center gap-3 px-5 py-3 hover:bg-cream-50"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold text-ink-950 truncate">{p.name}</span>
+                  <span className="block text-xs text-ink-500 truncate">
+                    /certifications/{cert.slug}/products/{p.slug}
+                    {p.standards ? ` · ${p.standards}` : ""}
+                    {p.regime ? ` · ${p.regime}` : ""}
+                  </span>
+                </span>
+                <Link
+                  href={`/certifications/${cert.slug}/products/${p.slug}`}
+                  target="_blank"
+                  className="text-xs font-bold text-ink-600"
+                >
+                  View ↗
+                </Link>
+                <Link
+                  href={`/admin/certifications/product/${p.id}`}
+                  className="text-xs font-bold text-butter-700"
+                >
+                  Edit product →
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section
+        id="add-product"
+        className="mb-10 bg-cream-100 rounded-2xl border border-cream-300 p-5 scroll-mt-24"
+      >
+        <h2 className="font-display font-bold text-ink-950 mb-1">
+          Add a product covered under {cert.name}
+        </h2>
+        <p className="text-xs text-ink-600 mb-4">
+          These appear on the public {cert.name} page and in site search.
+        </p>
+        <form action={saveCertProduct} className="space-y-3">
+          <input type="hidden" name="certification_id" value={cert.id} />
+          <div className="grid sm:grid-cols-2 gap-3">
+            <Field label="Product name" name="name" required placeholder="e.g. Room Air Conditioner" />
+            <Field label="Slug (optional)" name="slug" placeholder="auto from name" />
+          </div>
+          <div className="grid sm:grid-cols-3 gap-3">
+            <Field label="Family / group" name="family" placeholder="e.g. Mandatory" />
+            <Field label="Regime" name="regime" placeholder="Mandatory / Voluntary" />
+            <Field label="Sort" name="sort" type="number" defaultValue={String(products.length + 1)} />
+          </div>
+          <Field label="Standards" name="standards" placeholder="IS / IEC / GSO / SASO…" />
+          <div className="grid sm:grid-cols-2 gap-3">
+            <Field label="Min testing price (INR)" name="min_price" type="number" />
+            <Field label="Max testing price (INR)" name="max_price" type="number" />
+          </div>
+          <TextArea label="Summary" name="summary" rows={2} />
+          <TextArea label="Labs (indicative)" name="labs" rows={2} />
+          <TextArea label="Fee note" name="fee_note" rows={2} />
+          <TextArea label="Content (Markdown)" name="content" rows={4} />
+          <TextArea
+            label="Extras JSON"
+            name="extras"
+            rows={2}
+            defaultValue="{}"
+            hint='Optional structured fields, e.g. {"star_table":"…","emc":"Yes"}'
+          />
+          <ImageUpload current="" label="Product image" allowClear={false} />
+          <SubmitButton label="Create covered product" />
+        </form>
+      </section>
+
+      <form action={saveCertification} className="space-y-6 mb-10">
         <input type="hidden" name="id" value={cert.id} />
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
-          <h2 className="font-display font-bold text-ink-950">Fields</h2>
+          <h2 className="font-display font-bold text-ink-950">Certification settings</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Field label="Name" name="name" defaultValue={cert.name} required />
             <Field label="URL slug" name="slug" defaultValue={cert.slug} required />
@@ -58,64 +169,21 @@ export default async function AdminCertificationEdit({ params, searchParams }: P
           <ImageUpload current={cert.image} label="Front / hero image" />
         </section>
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
-          <h2 className="font-display font-bold text-ink-950">Content Writeup</h2>
+          <h2 className="font-display font-bold text-ink-950">Content writeup</h2>
           <TextArea label="Content (Markdown)" name="content" defaultValue={cert.content} rows={16} />
         </section>
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">SEO</h2>
           <Field label="Meta Title" name="meta_title" defaultValue={cert.meta_title} />
-          <TextArea label="Meta Description" name="meta_description" defaultValue={cert.meta_description} rows={2} />
+          <TextArea
+            label="Meta Description"
+            name="meta_description"
+            defaultValue={cert.meta_description}
+            rows={2}
+          />
         </section>
-        <SubmitButton />
+        <SubmitButton label="Save certification" />
       </form>
-
-      <section className="mt-10">
-        <h2 className="font-display text-xl font-bold text-ink-950 mb-2">
-          Product catalogue ({products.length})
-        </h2>
-        <p className="text-sm text-ink-600 mb-4">
-          Add BEE schemes, GMARK categories or any products under this certification. They appear on the public
-          certification page and in site search.
-        </p>
-        <div className="space-y-4">
-          {products.map((p) => (
-            <CertProductEditor key={p.id} product={p} certificationId={cert.id} />
-          ))}
-        </div>
-        <div className="mt-6 bg-cream-100 rounded-2xl border border-cream-300 p-5">
-          <h3 className="font-display font-bold text-ink-950 mb-3">Add catalogue product</h3>
-          <form action={saveCertProduct} className="space-y-3">
-            <input type="hidden" name="certification_id" value={cert.id} />
-            <div className="grid sm:grid-cols-2 gap-3">
-              <Field label="Product name" name="name" required placeholder="e.g. Room Air Conditioner" />
-              <Field label="Slug (optional)" name="slug" placeholder="auto from name" />
-            </div>
-            <div className="grid sm:grid-cols-3 gap-3">
-              <Field label="Family / group" name="family" placeholder="e.g. Mandatory" />
-              <Field label="Regime" name="regime" placeholder="Mandatory / Voluntary" />
-              <Field label="Sort" name="sort" type="number" defaultValue={String(products.length + 1)} />
-            </div>
-            <Field label="Standards" name="standards" placeholder="IS / IEC standards" />
-            <div className="grid sm:grid-cols-2 gap-3">
-              <Field label="Min testing price (INR)" name="min_price" type="number" />
-              <Field label="Max testing price (INR)" name="max_price" type="number" />
-            </div>
-            <TextArea label="Summary" name="summary" rows={2} />
-            <TextArea label="Labs (indicative)" name="labs" rows={2} />
-            <TextArea label="Fee note" name="fee_note" rows={2} />
-            <TextArea label="Content (Markdown)" name="content" rows={4} />
-            <TextArea
-              label="Extras JSON"
-              name="extras"
-              rows={2}
-              defaultValue="{}"
-              hint='Optional structured fields, e.g. {"star_table":"…","emc":"Yes"}'
-            />
-            <ImageUpload current="" label="Product image" allowClear={false} />
-            <SubmitButton label="Add product" />
-          </form>
-        </div>
-      </section>
 
       <section className="mt-10">
         <h2 className="font-display text-xl font-bold text-ink-950 mb-4">
@@ -136,7 +204,9 @@ export default async function AdminCertificationEdit({ params, searchParams }: P
               <form action={deleteFaq} className="mt-2">
                 <input type="hidden" name="id" value={f.id} />
                 <input type="hidden" name="back" value={back} />
-                <button className="text-xs font-semibold text-red-600 hover:text-red-700">Delete FAQ</button>
+                <button className="text-xs font-semibold text-red-600 hover:text-red-700">
+                  Delete FAQ
+                </button>
               </form>
             </div>
           ))}
@@ -153,58 +223,12 @@ export default async function AdminCertificationEdit({ params, searchParams }: P
           </form>
         </div>
       </section>
-    </div>
-  );
-}
 
-function CertProductEditor({
-  product,
-  certificationId,
-}: {
-  product: CertProduct;
-  certificationId: number;
-}) {
-  return (
-    <div className="bg-white rounded-2xl border border-cream-300 shadow-card p-5">
-      <form action={saveCertProduct} className="space-y-3">
-        <input type="hidden" name="id" value={product.id} />
-        <input type="hidden" name="certification_id" value={certificationId} />
-        <div className="grid sm:grid-cols-2 gap-3">
-          <Field label="Product name" name="name" defaultValue={product.name} required />
-          <Field label="Slug" name="slug" defaultValue={product.slug} />
-        </div>
-        <div className="grid sm:grid-cols-3 gap-3">
-          <Field label="Family" name="family" defaultValue={product.family} />
-          <Field label="Regime" name="regime" defaultValue={product.regime} />
-          <Field label="Sort" name="sort" type="number" defaultValue={String(product.sort)} />
-        </div>
-        <Field label="Standards" name="standards" defaultValue={product.standards} />
-        <div className="grid sm:grid-cols-2 gap-3">
-          <Field
-            label="Min testing price (INR)"
-            name="min_price"
-            type="number"
-            defaultValue={product.min_price != null ? String(product.min_price) : ""}
-          />
-          <Field
-            label="Max testing price (INR)"
-            name="max_price"
-            type="number"
-            defaultValue={product.max_price != null ? String(product.max_price) : ""}
-          />
-        </div>
-        <TextArea label="Summary" name="summary" defaultValue={product.summary} rows={2} />
-        <TextArea label="Labs" name="labs" defaultValue={product.labs} rows={2} />
-        <TextArea label="Fee note" name="fee_note" defaultValue={product.fee_note} rows={2} />
-        <TextArea label="Content (Markdown)" name="content" defaultValue={product.content} rows={4} />
-        <TextArea label="Extras JSON" name="extras" defaultValue={product.extras || "{}"} rows={2} />
-        <ImageUpload current={product.image} label="Product image" />
-        <SubmitButton label="Save product" />
-      </form>
-      <form action={deleteCertProduct} className="mt-3 pt-3 border-t border-cream-200">
-        <input type="hidden" name="id" value={product.id} />
-        <input type="hidden" name="certification_id" value={certificationId} />
-        <button className="text-xs font-semibold text-red-600 hover:text-red-700">Delete product</button>
+      <form action={deleteCertification} className="mt-12 pt-6 border-t border-cream-300">
+        <input type="hidden" name="id" value={cert.id} />
+        <button className="text-sm font-semibold text-red-600 hover:text-red-700">
+          Delete this certification and its covered products
+        </button>
       </form>
     </div>
   );

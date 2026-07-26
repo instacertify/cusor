@@ -453,8 +453,17 @@ export async function createCertification(formData: FormData) {
   const maxSort = (
     db.prepare("SELECT COALESCE(MAX(sort), 0) AS m FROM certifications").get() as { m: number }
   ).m;
+  const sortRaw = String(formData.get("sort") ?? "").trim();
+  const sort = sortRaw ? Number(sortRaw) || maxSort + 1 : maxSort + 1;
   const image = (await saveUploadedImage(formData.get("image_file") as File | null)) ?? "";
   const summary = String(formData.get("summary") ?? "").trim();
+  const content =
+    String(formData.get("content") ?? "").trim() ||
+    `## About ${name}\n\nWrite the certification overview here — what it covers, when it is mandatory, the process, and how Certko helps.`;
+  const metaTitle =
+    String(formData.get("meta_title") ?? "").trim() ||
+    `${name} Certification | Process, Cost & Help | Certko`;
+  const metaDescription = String(formData.get("meta_description") ?? "").trim() || summary;
   const res = db
     .prepare(
       `INSERT INTO certifications (slug, name, full_name, region, icon, summary, content, image, meta_title, meta_description, sort)
@@ -467,14 +476,75 @@ export async function createCertification(formData: FormData) {
       String(formData.get("region") ?? "").trim(),
       String(formData.get("icon") ?? "award").trim() || "award",
       summary,
-      `## About ${name}\n\nWrite the certification overview here — what it covers, when it is mandatory, the process, and how Certko helps.`,
+      content,
       image,
-      `${name} Certification | Process, Cost & Help | Certko`,
-      summary,
+      metaTitle,
+      metaDescription,
+      sort
+    );
+  const newId = Number(res.lastInsertRowid);
+  // Starter FAQs so every new certification page has editable Q&A
+  const insFaq = db.prepare(
+    "INSERT INTO faqs (scope, question, answer, sort) VALUES (?, ?, ?, ?)"
+  );
+  [
+    [
+      `What products need ${name}?`,
+      `Use the product catalogue on this page to see categories covered under ${name}. Add or edit products in Admin → Certifications.`,
+    ],
+    [
+      "How can Certko help?",
+      "Share your product, destination market and HS code via Contact / Get Expert Help — we map the right route, labs and timeline.",
+    ],
+  ].forEach(([q, a], i) => insFaq.run(`cert:${slug}`, q, a, i));
+
+  revalidatePath("/", "layout");
+  redirect(`/admin/certifications/${newId}?saved=1`);
+}
+
+/** One-click create for BEE, GMARK, SABER and other common programmes from seed presets. */
+export async function createCertificationPreset(formData: FormData) {
+  await requireAdmin();
+  const { getCertificationPreset } = await import("@/lib/certification-presets");
+  const presetSlug = String(formData.get("preset_slug") ?? "").trim();
+  const preset = getCertificationPreset(presetSlug);
+  if (!preset) redirect("/admin/certifications?error=1");
+  const db = getDb();
+  const existing = db
+    .prepare("SELECT id FROM certifications WHERE slug = ?")
+    .get(preset.slug) as { id: number } | undefined;
+  if (existing) {
+    redirect(`/admin/certifications/${existing.id}?saved=1`);
+  }
+  const maxSort = (
+    db.prepare("SELECT COALESCE(MAX(sort), 0) AS m FROM certifications").get() as { m: number }
+  ).m;
+  const res = db
+    .prepare(
+      `INSERT INTO certifications (slug, name, full_name, region, icon, summary, content, image, meta_title, meta_description, sort)
+       VALUES (?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?)`
+    )
+    .run(
+      preset.slug,
+      preset.name,
+      preset.full_name,
+      preset.region,
+      preset.icon,
+      preset.summary,
+      preset.content,
+      `${preset.name} Certification | Process, Cost & Help | Certko`,
+      preset.summary.slice(0, 155),
       maxSort + 1
     );
+  const newId = Number(res.lastInsertRowid);
+  const insFaq = db.prepare(
+    "INSERT INTO faqs (scope, question, answer, sort) VALUES (?, ?, ?, ?)"
+  );
+  (preset.faqs || []).forEach((f, i) =>
+    insFaq.run(`cert:${preset.slug}`, f.question, f.answer, i)
+  );
   revalidatePath("/", "layout");
-  redirect(`/admin/certifications/${Number(res.lastInsertRowid)}?saved=1`);
+  redirect(`/admin/certifications/${newId}?saved=1`);
 }
 
 export async function deleteCertification(formData: FormData) {
@@ -575,6 +645,7 @@ export async function saveCertProduct(formData: FormData) {
     sort: Number(formData.get("sort") ?? 0) || 0,
   };
 
+  let savedId = id;
   if (id) {
     const current = db.prepare("SELECT image, slug FROM cert_products WHERE id = ?").get(id) as
       | { image: string; slug: string }
@@ -587,9 +658,10 @@ export async function saveCertProduct(formData: FormData) {
       .get(certificationId, slug, id);
     if (clash) slug = `${slug}-${id}`;
     db.prepare(
-      `UPDATE cert_products SET slug=?, name=?, family=?, regime=?, standards=?, summary=?, content=?, image=?,
+      `UPDATE cert_products SET certification_id=?, slug=?, name=?, family=?, regime=?, standards=?, summary=?, content=?, image=?,
         min_price=?, max_price=?, labs=?, fee_note=?, extras=?, sort=? WHERE id=?`
     ).run(
+      certificationId,
       slug,
       values.name,
       values.family,
@@ -615,29 +687,42 @@ export async function saveCertProduct(formData: FormData) {
     ) {
       slug = `${slugify(name)}-${n++}`;
     }
-    db.prepare(
-      `INSERT INTO cert_products
+    const content =
+      values.content ||
+      `## ${name}\n\nProducts covered under this certification. Edit this writeup with scope, standards and process notes.`;
+    const res = db
+      .prepare(
+        `INSERT INTO cert_products
         (certification_id, slug, name, family, regime, standards, summary, content, image, min_price, max_price, labs, fee_note, extras, sort)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).run(
-      certificationId,
-      slug,
-      values.name,
-      values.family,
-      values.regime,
-      values.standards,
-      values.summary,
-      values.content,
-      uploaded ?? "",
-      values.min_price,
-      values.max_price,
-      values.labs,
-      values.fee_note,
-      values.extras,
-      values.sort
-    );
+      )
+      .run(
+        certificationId,
+        slug,
+        values.name,
+        values.family,
+        values.regime,
+        values.standards,
+        values.summary,
+        content,
+        uploaded ?? "",
+        values.min_price,
+        values.max_price,
+        values.labs,
+        values.fee_note,
+        values.extras,
+        values.sort
+      );
+    savedId = Number(res.lastInsertRowid);
   }
   revalidatePath("/", "layout");
+  const returnTo = String(formData.get("return_to") ?? "").trim();
+  if (returnTo === "list") {
+    redirect("/admin/certifications?saved=1");
+  }
+  if (savedId) {
+    redirect(`/admin/certifications/product/${savedId}?saved=1`);
+  }
   redirect(`/admin/certifications/${certificationId}?saved=1`);
 }
 

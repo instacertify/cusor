@@ -468,6 +468,17 @@ export function getCertProductBySlug(
     .get(certSlug, productSlug) as CertProduct | undefined;
 }
 
+export function getCertProductById(id: number): CertProduct | undefined {
+  return getDb()
+    .prepare(
+      `SELECT cp.*, c.slug AS cert_slug, c.name AS cert_name, c.region AS cert_region
+       FROM cert_products cp
+       JOIN certifications c ON c.id = cp.certification_id
+       WHERE cp.id = ?`
+    )
+    .get(id) as CertProduct | undefined;
+}
+
 export function searchCertProducts(q: string, limit = 8): CertProduct[] {
   const like = `%${q}%`;
   return getDb()
