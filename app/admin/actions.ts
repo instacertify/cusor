@@ -197,6 +197,57 @@ export async function deleteTestimonial(formData: FormData) {
 }
 
 // ---------- certifications ----------
+export async function createCertification(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) redirect("/admin/certifications?error=1");
+  const db = getDb();
+  let slug = slugify(name);
+  let n = 2;
+  while (db.prepare("SELECT 1 FROM certifications WHERE slug = ?").get(slug)) {
+    slug = `${slugify(name)}-${n++}`;
+  }
+  const maxSort = (
+    db.prepare("SELECT COALESCE(MAX(sort), 0) AS m FROM certifications").get() as { m: number }
+  ).m;
+  const res = db
+    .prepare(
+      `INSERT INTO certifications (slug, name, full_name, region, icon, summary, content, image, meta_title, meta_description, sort)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+    .run(
+      slug,
+      name,
+      String(formData.get("full_name") ?? "").trim(),
+      String(formData.get("region") ?? "").trim(),
+      String(formData.get("icon") ?? "award").trim() || "award",
+      String(formData.get("summary") ?? "").trim(),
+      `## About ${name}\n\nWrite the certification overview here — what it covers, when it is mandatory, the process, and how Certko helps.`,
+      "",
+      `${name} Certification | Process, Cost & Help | Certko`,
+      String(formData.get("summary") ?? "").trim(),
+      maxSort + 1
+    );
+  revalidatePath("/", "layout");
+  redirect(`/admin/certifications/${Number(res.lastInsertRowid)}?saved=1`);
+}
+
+export async function deleteCertification(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  const db = getDb();
+  const cert = db.prepare("SELECT slug FROM certifications WHERE id = ?").get(id) as
+    | { slug: string }
+    | undefined;
+  if (cert) {
+    db.prepare("DELETE FROM faqs WHERE scope = ?").run(`cert:${cert.slug}`);
+    db.prepare("DELETE FROM certifications WHERE id = ?").run(id);
+  }
+  revalidatePath("/", "layout");
+  redirect("/admin/certifications?saved=1");
+}
+
 export async function saveCertification(formData: FormData) {
   await requireAdmin();
   const id = Number(formData.get("id"));
@@ -259,6 +310,82 @@ export async function deleteQco(formData: FormData) {
   getDb().prepare("DELETE FROM qcos WHERE id=?").run(Number(formData.get("id")));
   revalidatePath("/", "layout");
   redirect("/admin/qcos?saved=1");
+}
+
+// ---------- blog posts ----------
+export async function createPost(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const title = String(formData.get("title") ?? "").trim();
+  if (!title) redirect("/admin/blog?error=1");
+  const db = getDb();
+  let slug = slugify(title);
+  let n = 2;
+  while (db.prepare("SELECT 1 FROM posts WHERE slug = ?").get(slug)) {
+    slug = `${slugify(title)}-${n++}`;
+  }
+  const res = db
+    .prepare(
+      `INSERT INTO posts (slug, title, excerpt, content, author, status, meta_title, meta_description)
+       VALUES (?, ?, '', 'Write your post here using **Markdown** — ## headings, lists, links and tables are supported.', ?, 'draft', ?, '')`
+    )
+    .run(slug, title, String(formData.get("author") ?? "Certko Team").trim() || "Certko Team", `${title} | Certko Blog`);
+  redirect(`/admin/blog/${Number(res.lastInsertRowid)}?saved=1`);
+}
+
+export async function savePost(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const id = Number(formData.get("id"));
+  const image = await saveUploadedImage(formData.get("image_file") as File | null);
+  const db = getDb();
+  const existing = db.prepare("SELECT slug, status, published_at FROM posts WHERE id = ?").get(id) as
+    | { slug: string; status: string; published_at: string | null }
+    | undefined;
+  if (!existing) redirect("/admin/blog");
+
+  let slug = slugify(String(formData.get("slug") ?? "")) || existing.slug;
+  if (slug !== existing.slug) {
+    let candidate = slug;
+    let n = 2;
+    while (db.prepare("SELECT 1 FROM posts WHERE slug = ? AND id != ?").get(candidate, id)) {
+      candidate = `${slug}-${n++}`;
+    }
+    slug = candidate;
+  }
+  const status = String(formData.get("status") ?? "draft") === "published" ? "published" : "draft";
+  const publishedAt =
+    status === "published"
+      ? existing.published_at ?? new Date().toISOString().slice(0, 10)
+      : existing.published_at;
+
+  db.prepare(
+    `UPDATE posts SET slug=?, title=?, excerpt=?, content=?, author=?, status=?, published_at=?,
+     meta_title=?, meta_description=? ${image ? ", image=?" : ""} WHERE id=?`
+  ).run(
+    ...[
+      slug,
+      String(formData.get("title") ?? "").trim(),
+      String(formData.get("excerpt") ?? "").trim(),
+      String(formData.get("content") ?? ""),
+      String(formData.get("author") ?? "").trim() || "Certko Team",
+      status,
+      publishedAt,
+      String(formData.get("meta_title") ?? "").trim(),
+      String(formData.get("meta_description") ?? "").trim(),
+      ...(image ? [image] : []),
+      id,
+    ]
+  );
+  revalidatePath("/", "layout");
+  redirect(`/admin/blog/${id}?saved=1`);
+}
+
+export async function deletePost(formData: FormData) {
+  await requireAdmin();
+  getDb().prepare("DELETE FROM posts WHERE id = ?").run(Number(formData.get("id")));
+  revalidatePath("/", "layout");
+  redirect("/admin/blog?saved=1");
 }
 
 // ---------- SEO tools ----------

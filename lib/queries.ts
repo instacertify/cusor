@@ -8,6 +8,7 @@ import type {
   Testimonial,
   Qco,
   Certification,
+  Post,
 } from "./db";
 
 // ---------- categories ----------
@@ -242,6 +243,33 @@ export function getProductsForLab(labId: number, limit = 50): Product[] {
        WHERE pl.lab_id = ? ORDER BY p.name LIMIT ?`
     )
     .all(labId, limit) as Product[];
+}
+
+// ---------- blog posts ----------
+export function getPublishedPosts(limit = 50, offset = 0): Post[] {
+  return getDb()
+    .prepare(
+      "SELECT * FROM posts WHERE status = 'published' ORDER BY published_at DESC, id DESC LIMIT ? OFFSET ?"
+    )
+    .all(limit, offset) as Post[];
+}
+
+export function getPostBySlug(slug: string): Post | undefined {
+  return getDb().prepare("SELECT * FROM posts WHERE slug = ?").get(slug) as
+    | Post
+    | undefined;
+}
+
+export function getAllPosts(): Post[] {
+  return getDb()
+    .prepare("SELECT * FROM posts ORDER BY id DESC")
+    .all() as Post[];
+}
+
+export function getPostById(id: number): Post | undefined {
+  return getDb().prepare("SELECT * FROM posts WHERE id = ?").get(id) as
+    | Post
+    | undefined;
 }
 
 // ---------- faqs ----------

@@ -14,9 +14,11 @@ export interface DropItem {
 export default function NavDropdown({
   label,
   items,
+  footerItem,
 }: {
   label: string;
   items: DropItem[];
+  footerItem?: DropItem;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -54,27 +56,39 @@ export default function NavDropdown({
       </button>
       {open && (
         <div className="absolute left-0 top-full pt-2 z-50">
-          <div className="w-72 bg-white rounded-2xl border border-cream-300 shadow-card-hover overflow-hidden py-2">
-            {items.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-4 py-2.5 hover:bg-cream-100 transition"
-              >
-                {item.icon && (
-                  <span className="shrink-0 w-8 h-8 rounded-lg bg-cream-100 text-ink-700 flex items-center justify-center">
-                    <Icon name={item.icon} size={17} />
-                  </span>
-                )}
-                <span className="min-w-0">
-                  <span className="block text-sm font-semibold text-ink-950">{item.label}</span>
-                  {item.detail && (
-                    <span className="block text-[11px] text-ink-500 truncate">{item.detail}</span>
+          <div className="w-72 bg-white rounded-2xl border border-cream-300 shadow-card-hover overflow-hidden">
+            <div className="max-h-[60vh] overflow-y-auto py-2">
+              {items.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-cream-100 transition"
+                >
+                  {item.icon && (
+                    <span className="shrink-0 w-8 h-8 rounded-lg bg-cream-100 text-ink-700 flex items-center justify-center">
+                      <Icon name={item.icon} size={17} />
+                    </span>
                   )}
-                </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-ink-950">{item.label}</span>
+                    {item.detail && (
+                      <span className="block text-[11px] text-ink-500 truncate">{item.detail}</span>
+                    )}
+                  </span>
+                </Link>
+              ))}
+            </div>
+            {footerItem && (
+              <Link
+                href={footerItem.href}
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between gap-2 px-4 py-3 bg-cream-100 border-t border-cream-200 text-sm font-bold text-butter-700 hover:text-butter-600 transition"
+              >
+                {footerItem.label}
+                <Icon name="arrow-right" size={15} />
               </Link>
-            ))}
+            )}
           </div>
         </div>
       )}

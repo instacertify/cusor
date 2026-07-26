@@ -145,6 +145,22 @@ function createDb(): Database.Database {
       sort INTEGER NOT NULL DEFAULT 0
     );
 
+    CREATE TABLE IF NOT EXISTS posts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      slug TEXT UNIQUE NOT NULL,
+      title TEXT NOT NULL,
+      excerpt TEXT NOT NULL DEFAULT '',
+      content TEXT NOT NULL DEFAULT '',
+      image TEXT NOT NULL DEFAULT '',
+      author TEXT NOT NULL DEFAULT 'Certko Team',
+      status TEXT NOT NULL DEFAULT 'draft',
+      published_at TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      meta_title TEXT NOT NULL DEFAULT '',
+      meta_description TEXT NOT NULL DEFAULT ''
+    );
+    CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status);
+
     CREATE TABLE IF NOT EXISTS seo_meta (
       entity TEXT PRIMARY KEY,
       title TEXT NOT NULL DEFAULT '',
@@ -328,6 +344,21 @@ export interface Testimonial {
   quote: string;
   rating: number;
   sort: number;
+}
+
+export interface Post {
+  id: number;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  image: string;
+  author: string;
+  status: string;
+  published_at: string | null;
+  created_at: string;
+  meta_title: string;
+  meta_description: string;
 }
 
 export interface Inquiry {

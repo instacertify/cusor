@@ -224,6 +224,51 @@ CE is the gateway to the EU's single market. An EU Authorised Representative and
     ],
   },
   {
+    slug: "saber",
+    name: "SABER",
+    full_name: "Saudi Product Safety Programme (SALEEM/SABER)",
+    region: "Saudi Arabia",
+    icon: "clipboard",
+    summary:
+      "Saudi Arabia's mandatory conformity platform — every regulated product needs SABER Product and Shipment Certificates of Conformity before customs clearance.",
+    content: `## What it covers
+
+SABER is the online platform of the Saudi Standards, Metrology and Quality Organization (SASO) under the SALEEM product-safety programme. Almost every regulated consumer product imported into Saudi Arabia — electronics, appliances, toys, auto parts, building materials, textiles, cosmetics containers and more — must be registered on SABER before shipment.
+
+## The two certificates
+
+- **Product Certificate of Conformity (PCoC)** — issued once per product (valid one year) after assessment against the applicable Saudi technical regulation by a SASO-approved certification body.
+- **Shipment Certificate of Conformity (SCoC)** — issued per consignment against the active PCoC; customs will not clear the shipment without it.
+
+## How it works
+
+1. Classify the product by HS code on SABER to identify the applicable technical regulation.
+2. Appoint a SASO-approved certification body through the platform.
+3. Submit test reports (IEC/ISO-based reports are commonly accepted) and product documentation.
+4. Receive the PCoC, then request an SCoC for each shipment.
+
+## Why Indian exporters care
+
+Saudi Arabia is a major destination for Indian appliances, cables, auto components and building products. SABER registration is transactional and deadline-driven — a missing SCoC strands containers at Dammam or Jeddah. Certko coordinates the certification body, testing and platform filings so your PCoC is ready before production ships.`,
+    faqs: [
+      {
+        question: "Is SABER the same as the G Mark?",
+        answer:
+          "No. The G Mark is a Gulf-wide conformity mark for toys and low-voltage electricals under GSO regulations, while SABER is Saudi Arabia's own platform covering a much wider product range. Some products need both: the G Mark for the GCC regulation and SABER registration for Saudi customs.",
+      },
+      {
+        question: "How long is a SABER certificate valid?",
+        answer:
+          "The Product CoC is typically valid for one year and must be renewed. The Shipment CoC is per consignment — you request a new one for every shipment against the active Product CoC.",
+      },
+      {
+        question: "Can I use my existing test reports for SABER?",
+        answer:
+          "Usually yes. SASO technical regulations reference IEC/ISO standards, so recent accredited test reports (for example from CB-scheme testing) are commonly accepted by the certification bodies, which cuts both cost and lead time.",
+      },
+    ],
+  },
+  {
     slug: "wpc-eta",
     name: "WPC / ETA",
     full_name: "Wireless Planning & Coordination — Equipment Type Approval",

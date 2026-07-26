@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getCategories, getLabs, getCertifications } from "@/lib/queries";
+import { getCategories, getLabs, getCertifications, getPublishedPosts } from "@/lib/queries";
 import { getDb } from "@/lib/db";
 import { getSeoExclusions } from "@/lib/seo";
 
@@ -19,6 +19,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/products`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${BASE}/products/all`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${BASE}/certifications`, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${BASE}/blog`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE}/labs`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE}/qco`, changeFrequency: "weekly", priority: 0.8 },
     ...["guide", "about", "contact", "tenders", "marketplaces"]
@@ -63,5 +64,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  return [...staticPages, ...categories, ...certifications, ...products, ...labPages];
+  const excludedPosts = getSeoExclusions("post");
+  const posts = getPublishedPosts(500)
+    .filter((p) => !excludedPosts.has(String(p.id)))
+    .map((p) => ({
+      url: `${BASE}/blog/${p.slug}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    }));
+
+  return [...staticPages, ...categories, ...certifications, ...posts, ...products, ...labPages];
 }

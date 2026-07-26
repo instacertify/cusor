@@ -23,6 +23,9 @@ export default function Header() {
 
   const resourceItems = [
     { href: "/guide", label: "Certification Guide", detail: "Process, documents, costs", icon: "file" },
+    { href: "/blog", label: "Blog", detail: "Compliance insights & how-tos", icon: "file" },
+    { href: "/tenders", label: "Certification for Tenders", detail: "Pre-qualify before the bid closes", icon: "clipboard" },
+    { href: "/marketplaces", label: "Sell on Marketplaces", detail: "Amazon, Flipkart compliance", icon: "box" },
     { href: "/about", label: "About Certko", detail: "Our data and mission", icon: "users" },
   ];
 
@@ -37,7 +40,11 @@ export default function Header() {
         </div>
         <nav className="hidden lg:flex items-center gap-0.5 ml-auto">
           <NavDropdown label="Products" items={productItems} />
-          <NavDropdown label="Certifications" items={certItems} />
+          <NavDropdown
+            label="Certifications"
+            items={certItems}
+            footerItem={{ href: "/certifications", label: "All certifications & more" }}
+          />
           <Link
             href="/labs"
             className="px-3 py-2 rounded-lg text-sm font-medium text-ink-700 hover:text-ink-950 hover:bg-cream-200 transition"

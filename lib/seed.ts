@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { slugify, formatPriceRange } from "./format";
 import { CERTIFICATIONS } from "./seed-certifications";
+import { POSTS } from "./seed-posts";
 
 interface RawProduct {
   category: string;
@@ -1063,6 +1064,25 @@ export function seedDatabase(db: Database.Database) {
       });
       c.faqs.forEach((f, j) => insFaq.run(`cert:${c.slug}`, f.question, f.answer, j));
     });
+
+    // ---- blog posts ----
+    const insPost = db.prepare(
+      `INSERT INTO posts (slug, title, excerpt, content, image, author, status, published_at, meta_title, meta_description)
+       VALUES (@slug, @title, @excerpt, @content, @image, @author, 'published', @published_at, @meta_title, @meta_description)`
+    );
+    for (const p of POSTS) {
+      insPost.run({
+        slug: p.slug,
+        title: p.title,
+        excerpt: p.excerpt,
+        content: p.content,
+        image: p.image,
+        author: p.author,
+        published_at: p.published_at,
+        meta_title: `${p.title} | Certko Blog`,
+        meta_description: p.excerpt,
+      });
+    }
   });
 
   tx();
