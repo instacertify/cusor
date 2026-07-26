@@ -88,7 +88,7 @@ interface Props {
 
 const ERRORS: Record<string, string> = {
   "1": "Incorrect login ID or password. Check your credentials and try again.",
-  captcha: "Captcha did not match. Enter the new characters and try again.",
+  captcha: "Security check answer was wrong. Solve the new question and try again.",
   locked: "Too many failed attempts. Please wait about 15 minutes, then try again.",
   session: "Your session expired. Sign in again to continue.",
 };

@@ -11,6 +11,9 @@ type Props = {
   initialToken?: string;
 };
 
+const inputClass =
+  "w-full rounded-2xl border border-cream-300 bg-white px-4 py-3.5 text-base text-ink-950 outline-none placeholder:text-ink-400 focus:border-butter-500 focus:ring-4 focus:ring-butter-300/40 disabled:opacity-60";
+
 export default function AdminLoginForm({
   action,
   error,
@@ -48,7 +51,6 @@ export default function AdminLoginForm({
   }, []);
 
   useEffect(() => {
-    // Server already rendered a challenge; only fetch if missing
     if (!initialSvg || !initialToken) {
       void refreshCaptcha();
     }
@@ -62,7 +64,6 @@ export default function AdminLoginForm({
           await action(fd);
         } finally {
           setSubmitting(false);
-          // Always refresh captcha after an attempt (success redirects away)
           void refreshCaptcha();
         }
       }}
@@ -94,8 +95,9 @@ export default function AdminLoginForm({
           autoComplete="username"
           disabled={locked || submitting}
           autoFocus
-          className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 text-sm text-cream-50 outline-none placeholder:text-cream-200/40 focus:border-butter-400 focus:ring-4 focus:ring-butter-400/20 disabled:opacity-60"
-          placeholder="Enter your login ID"
+          className={inputClass}
+          placeholder="e.g. admin"
+          defaultValue="admin"
         />
       </div>
 
@@ -114,13 +116,13 @@ export default function AdminLoginForm({
             required
             autoComplete="current-password"
             disabled={locked || submitting}
-            className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 pr-24 text-sm text-cream-50 outline-none placeholder:text-cream-200/40 focus:border-butter-400 focus:ring-4 focus:ring-butter-400/20 disabled:opacity-60"
+            className={`${inputClass} pr-24`}
             placeholder="Enter your password"
           />
           <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl px-3 py-1.5 text-xs font-semibold text-cream-200/80 hover:bg-white/10 hover:text-cream-50"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl px-3 py-1.5 text-xs font-semibold text-ink-600 hover:bg-cream-100"
           >
             {showPassword ? "Hide" : "Show"}
           </button>
@@ -132,24 +134,24 @@ export default function AdminLoginForm({
           htmlFor="captcha"
           className="block text-[11px] font-bold uppercase tracking-[0.14em] text-cream-200/80 mb-2"
         >
-          Security captcha
+          Security check — type the answer
         </label>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1 min-h-[64px] rounded-2xl border border-white/15 bg-[#f7f4ec] overflow-hidden flex items-center justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch">
+          <div className="relative flex-1 min-h-[88px] rounded-2xl border border-cream-300 bg-white overflow-hidden flex items-center justify-center">
             {loadingCaptcha ? (
-              <span className="text-xs font-semibold text-ink-500 animate-pulse">
-                Loading captcha…
+              <span className="text-sm font-semibold text-ink-500 animate-pulse">
+                Loading…
               </span>
             ) : svg ? (
               <div
-                className="w-full flex items-center justify-center p-1 [&_svg]:w-full [&_svg]:h-16 [&_svg]:max-h-16"
+                className="w-full flex items-center justify-center [&_svg]:w-full [&_svg]:h-[88px]"
                 dangerouslySetInnerHTML={{ __html: svg }}
               />
             ) : (
               <button
                 type="button"
                 onClick={() => void refreshCaptcha()}
-                className="text-xs font-semibold text-red-700 px-3 text-center underline"
+                className="text-sm font-semibold text-red-700 px-3 text-center underline"
               >
                 Captcha unavailable — click to retry
               </button>
@@ -161,26 +163,26 @@ export default function AdminLoginForm({
             disabled={loadingCaptcha || locked || submitting}
             className="shrink-0 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-bold text-cream-50 hover:bg-white/10 disabled:opacity-50 transition"
           >
-            Refresh
+            New question
           </button>
         </div>
         <input
           id="captcha"
           name="captcha"
           type="text"
+          inputMode="numeric"
           required
           autoComplete="off"
           spellCheck={false}
-          inputMode="text"
           disabled={locked || submitting || !token}
           value={captchaValue}
-          onChange={(e) => setCaptchaValue(e.target.value.toUpperCase())}
-          className="mt-3 w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 text-sm text-cream-50 outline-none placeholder:text-cream-200/40 focus:border-butter-400 focus:ring-4 focus:ring-butter-400/20 disabled:opacity-60 tracking-[0.3em] uppercase"
-          placeholder="Type the 4 characters"
-          maxLength={8}
+          onChange={(e) => setCaptchaValue(e.target.value.replace(/[^\d-]/g, ""))}
+          className={`${inputClass} mt-3 tracking-[0.2em]`}
+          placeholder="Type the number (e.g. 12)"
+          maxLength={3}
         />
-        <p className="mt-1.5 text-[11px] text-cream-200/45">
-          Letters and numbers are not case-sensitive.
+        <p className="mt-1.5 text-[11px] text-cream-200/55">
+          Solve the sum or subtraction shown above, then type only the number.
         </p>
       </div>
 
