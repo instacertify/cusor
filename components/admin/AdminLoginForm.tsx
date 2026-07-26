@@ -81,10 +81,30 @@ export default function AdminLoginForm({
 
       <div>
         <label
+          htmlFor="username"
+          className="block text-[11px] font-bold uppercase tracking-[0.14em] text-cream-200/80 mb-2"
+        >
+          Login ID
+        </label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          required
+          autoComplete="username"
+          disabled={locked || submitting}
+          autoFocus
+          className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 text-sm text-cream-50 outline-none placeholder:text-cream-200/40 focus:border-butter-400 focus:ring-4 focus:ring-butter-400/20 disabled:opacity-60"
+          placeholder="Enter your login ID"
+        />
+      </div>
+
+      <div>
+        <label
           htmlFor="password"
           className="block text-[11px] font-bold uppercase tracking-[0.14em] text-cream-200/80 mb-2"
         >
-          Admin password
+          Password
         </label>
         <div className="relative">
           <input
@@ -94,7 +114,6 @@ export default function AdminLoginForm({
             required
             autoComplete="current-password"
             disabled={locked || submitting}
-            autoFocus
             className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 pr-24 text-sm text-cream-50 outline-none placeholder:text-cream-200/40 focus:border-butter-400 focus:ring-4 focus:ring-butter-400/20 disabled:opacity-60"
             placeholder="Enter your password"
           />

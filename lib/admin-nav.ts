@@ -42,6 +42,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         description: "Brand, color scheme, contact, analytics",
       },
       {
+        href: "/admin/account",
+        label: "Login & password",
+        icon: "users",
+        description: "Change CMS login ID and password",
+      },
+      {
         href: "/admin/pages",
         label: "Pages",
         icon: "file",

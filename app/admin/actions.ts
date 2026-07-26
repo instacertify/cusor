@@ -5,7 +5,11 @@ import { revalidatePath } from "next/cache";
 import fs from "fs";
 import path from "path";
 import { getDb, setSetting } from "@/lib/db";
-import { requireAdmin, clearAdminSession, updateAdminPassword } from "@/lib/auth";
+import {
+  requireAdmin,
+  clearAdminSession,
+  changeAdminCredentials,
+} from "@/lib/auth";
 import { logAdminEvent } from "@/lib/admin-audit";
 
 async function saveUploadedImage(file: File | null): Promise<string | null> {
@@ -44,7 +48,48 @@ const LOGO_DEFAULTS = {
   logo_on_dark: "/brand/certko-logo-light.png",
 } as const;
 
-const SECRET_SETTINGS = new Set(["smtp_pass", "admin_password"]);
+const SECRET_SETTINGS = new Set(["smtp_pass", "admin_password", "admin_username"]);
+
+// ---------- admin credentials ----------
+export async function changeAdminLoginCredentials(formData: FormData) {
+  await requireAdmin();
+  const currentPassword = String(formData.get("current_password") ?? "");
+  const newUsername = String(formData.get("new_username") ?? "").trim();
+  const confirmUsername = String(formData.get("confirm_username") ?? "").trim();
+  const newPassword = String(formData.get("new_password") ?? "");
+  const confirmPassword = String(formData.get("confirm_password") ?? "");
+
+  if (newUsername && newUsername !== confirmUsername) {
+    redirect("/admin/account?error=user_match");
+  }
+
+  try {
+    const result = await changeAdminCredentials({
+      currentPassword,
+      newUsername,
+      newPassword,
+      confirmPassword,
+    });
+    const detail = [
+      result.usernameChanged ? "username" : "",
+      result.passwordChanged ? "password" : "",
+    ]
+      .filter(Boolean)
+      .join("+");
+    logAdminEvent("credentials_changed", "", detail || "updated");
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "";
+    if (msg.includes("Current password")) redirect("/admin/account?error=current");
+    if (msg.includes("do not match")) redirect("/admin/account?error=match");
+    if (msg.includes("at least 8")) redirect("/admin/account?error=short");
+    if (msg.includes("Login ID")) redirect("/admin/account?error=username");
+    if (msg.includes("Enter a new")) redirect("/admin/account?error=empty");
+    if (msg.includes("Nothing to update")) redirect("/admin/account?error=unchanged");
+    redirect("/admin/account?error=1");
+  }
+
+  redirect("/admin/account?saved=1");
+}
 
 // ---------- settings ----------
 export async function saveSettings(formData: FormData) {
@@ -55,8 +100,6 @@ export async function saveSettings(formData: FormData) {
     formData.getAll("smtp_enabled").map(String).includes("1") ? "1" : "0"
   );
 
-  const nextAdminPassword = String(formData.get("admin_password") ?? "").trim();
-
   for (const [key, value] of formData.entries()) {
     if (
       typeof value === "string" &&
@@ -64,20 +107,17 @@ export async function saveSettings(formData: FormData) {
       !key.startsWith("clear_") &&
       !key.endsWith("_file") &&
       key !== "smtp_enabled" &&
-      key !== "admin_password"
+      key !== "admin_password" &&
+      key !== "admin_username" &&
+      key !== "current_password" &&
+      key !== "new_username" &&
+      key !== "confirm_username" &&
+      key !== "new_password" &&
+      key !== "confirm_password"
     ) {
       // Keep existing secret if the password field is left blank
       if (SECRET_SETTINGS.has(key) && value.trim() === "") continue;
       setSetting(key, value);
-    }
-  }
-
-  if (nextAdminPassword) {
-    try {
-      await updateAdminPassword(nextAdminPassword);
-      logAdminEvent("password_changed", "", "admin_password updated via settings");
-    } catch {
-      redirect("/admin/settings?error=password");
     }
   }
 

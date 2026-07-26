@@ -5,7 +5,7 @@ import AdminLoginForm from "@/components/admin/AdminLoginForm";
 import {
   isAdmin,
   setAdminSession,
-  checkPassword,
+  checkCredentials,
   clearAdminSession,
 } from "@/lib/auth";
 import { CAPTCHA_COOKIE, createCaptchaChallenge, verifyCaptchaToken } from "@/lib/captcha";
@@ -43,6 +43,7 @@ async function login(formData: FormData) {
     redirect("/admin/login?error=locked");
   }
 
+  const username = String(formData.get("username") ?? "");
   const password = String(formData.get("password") ?? "");
   const captcha = String(formData.get("captcha") ?? "");
   const formToken = String(formData.get("captcha_token") ?? "").trim();
@@ -69,9 +70,9 @@ async function login(formData: FormData) {
     /* ignore */
   }
 
-  if (!(await checkPassword(password))) {
+  if (!(await checkCredentials(username, password))) {
     const n = recordLoginFailure(ip);
-    logAdminEvent("login_fail", ip, `bad_password attempt=${n}`);
+    logAdminEvent("login_fail", ip, `bad_credentials attempt=${n}`);
     redirect(n >= 8 ? "/admin/login?error=locked" : "/admin/login?error=1");
   }
 
@@ -86,7 +87,7 @@ interface Props {
 }
 
 const ERRORS: Record<string, string> = {
-  "1": "Incorrect password. Check your credentials and try again.",
+  "1": "Incorrect login ID or password. Check your credentials and try again.",
   captcha: "Captcha did not match. Enter the new characters and try again.",
   locked: "Too many failed attempts. Please wait about 15 minutes, then try again.",
   session: "Your session expired. Sign in again to continue.",
