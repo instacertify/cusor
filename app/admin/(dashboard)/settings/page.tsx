@@ -27,7 +27,11 @@ export default async function SettingsPage({ searchParams }: Props) {
     <div>
       <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Site Settings</h1>
       <p className="text-ink-600 text-sm mb-6">
-        Brand fields, hero copy, stats and contact details shown across the site.
+        Brand hub: color scheme, logos, hero copy, contact details and analytics. Email delivery is under{" "}
+        <Link href="/admin/email" className="font-semibold text-butter-700 hover:underline">
+          Email / SMTP
+        </Link>
+        .
       </p>
       <SavedBanner saved={sp.saved} />
       <form action={saveSettings} className="space-y-8">
