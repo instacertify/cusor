@@ -336,6 +336,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensurePagesNavColumns(db);
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
+  clearLegacyHomeAnnouncement(db);
 }
 
 function runEnsures(db: SqliteDatabase) {
@@ -346,6 +347,24 @@ function runEnsures(db: SqliteDatabase) {
   ensurePagesNavColumns(db);
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
+  clearLegacyHomeAnnouncement(db);
+}
+
+/** Remove the old default homepage announcement chip from existing installs. */
+function clearLegacyHomeAnnouncement(db: SqliteDatabase) {
+  const row = db
+    .prepare("SELECT value FROM settings WHERE key = 'announcement'")
+    .get() as { value: string } | undefined;
+  const value = (row?.value || "").trim();
+  if (!value) return;
+  if (
+    value.includes("Updated July 2026") ||
+    (value.includes("400+ labs") && value.includes("BIS") && value.includes("BEE"))
+  ) {
+    db.prepare(
+      "INSERT INTO settings (key, value) VALUES ('announcement', '') ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+    ).run();
+  }
 }
 
 /** Call once on server start (instrumentation / root layout). Idempotent. */

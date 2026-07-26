@@ -61,10 +61,12 @@ export default async function HomePage() {
         />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-8 sm:pt-14 pb-10 sm:pb-16 grid lg:grid-cols-[1.15fr_1fr] gap-8 sm:gap-10 items-center">
           <div className="animate-rise min-w-0">
-            <p className="inline-flex max-w-full items-center gap-2 bg-white border border-cream-200 rounded-full px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs font-semibold text-ink-700 mb-5 sm:mb-6">
-              <span className="w-2 h-2 rounded-full bg-butter-500 animate-pulse shrink-0" aria-hidden />
-              <span className="truncate">{settings.announcement}</span>
-            </p>
+            {settings.announcement?.trim() ? (
+              <p className="inline-flex max-w-full items-center gap-2 bg-white border border-cream-200 rounded-full px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs font-semibold text-ink-700 mb-5 sm:mb-6">
+                <span className="w-2 h-2 rounded-full bg-butter-500 animate-pulse shrink-0" aria-hidden />
+                <span className="truncate">{settings.announcement}</span>
+              </p>
+            ) : null}
             <h1 className="font-display text-[1.7rem] leading-[1.12] sm:text-4xl lg:text-[3.1rem] font-semibold sm:leading-[1.08] tracking-tight text-ink-950">
               {settings.hero_heading}
             </h1>
