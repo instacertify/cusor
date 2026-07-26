@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Certko
 
-## Getting Started
+BIS / product certification website with a full CMS admin backend.
 
-First, run the development server:
+**Repo:** https://github.com/instacertify/cusor  
+**Stack:** Next.js 16 · React 19 · SQLite (`better-sqlite3`) · Tailwind
+
+---
+
+## Local development
 
 ```bash
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Admin
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- URL: http://localhost:3000/admin/login  
+- Login ID: `admin`  
+- Password: `certko-admin`  
+- Captcha: type the **number** answer  
 
-## Learn More
+Change credentials after first login: **Admin → Login & password**
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Production (Hostinger NVMe VPS)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+One-click guide: **[DEPLOY-HOSTINGER.md](./DEPLOY-HOSTINGER.md)**
 
-## Deploy on Vercel
+```bash
+ssh root@YOUR_VPS_IP
+curl -fsSL https://raw.githubusercontent.com/instacertify/cusor/main/scripts/hostinger-one-click.sh -o install.sh
+bash install.sh
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Requires a Hostinger **VPS** (not shared hosting) so SQLite + uploads can persist.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Important paths
+
+| Path | Purpose |
+|------|---------|
+| `data/certko.db` | CMS database (created on first run) |
+| `public/uploads/` | Admin-uploaded media |
+| `scripts/hostinger-one-click.sh` | VPS installer |
+| `.env.production` | `CERTKO_SECRET`, `COOKIE_SECURE=1` |
+
+---
+
+## Scripts
+
+```bash
+npm run dev      # development
+npm run build    # production build
+npm start        # production server (port 3000)
+```
