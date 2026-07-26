@@ -1,0 +1,51 @@
+<%- include('partials/head') %>
+<div class="page-head">
+  <div class="container">
+    <div class="breadcrumb"><a href="/">Home</a> / Check</div>
+    <h1>Results for “<%= q %>”</h1>
+  </div>
+</div>
+<section class="section">
+  <div class="container">
+    <form class="searchform" action="/check" method="get" style="max-width:640px;">
+      <input type="text" name="q" value="<%= q %>" placeholder="Enter product name or HSN code" />
+      <button class="btn btn-primary" type="submit">Check</button>
+    </form>
+
+    <% if (match) { %>
+      <div class="result-box" style="max-width:720px;">
+        <div class="tags" style="margin-bottom:10px;"><span class="tag scheme"><%= match.scheme %></span><span class="tag">HSN <%= match.hsn %></span></div>
+        <h3><%= match.name %> — <span style="color:var(--amber)">BIS Certification Required</span></h3>
+        <p style="color:rgba(255,255,255,.85)"><%= match.summary %></p>
+        <div style="display:flex;gap:26px;flex-wrap:wrap;margin:16px 0;">
+          <div><div style="color:rgba(255,255,255,.7);font-size:.82rem">Estimated cost</div><div class="big"><%= formatCost(match.cost_min) %>–<%= formatCost(match.cost_max) %></div></div>
+          <div><div style="color:rgba(255,255,255,.7);font-size:.82rem">Timeline</div><div class="big"><%= match.timeline %></div></div>
+        </div>
+        <a class="btn btn-primary" href="/product/<%= match.slug %>">View full details</a>
+        <a class="btn btn-cta" href="/contact?product=<%= encodeURIComponent(match.name) %>">Get expert help</a>
+      </div>
+    <% } else { %>
+      <div class="card" style="max-width:720px;">
+        <h3>No exact match found</h3>
+        <p class="muted">We couldn't find “<%= q %>” in our database. This may mean it isn't currently notified — but rules change often. Ask an expert to be sure.</p>
+        <a class="btn btn-cta" href="/contact?product=<%= encodeURIComponent(q) %>">Ask an Expert</a>
+        <a class="btn btn-outline" href="/products">Browse all products</a>
+      </div>
+    <% } %>
+
+    <% if (related && related.length) { %>
+      <div style="margin-top:44px;">
+        <div class="sec-head" style="margin-bottom:24px;"><h2>Related matches</h2></div>
+        <div class="grid grid-3">
+          <% related.forEach(function(p){ %>
+            <a class="card product-card" href="/product/<%= p.slug %>">
+              <div class="thumb"><img src="<%= p.image %>" alt="<%= p.name %>" onerror="this.parentNode.style.display='none'" /></div>
+              <div class="body"><div class="tags"><span class="tag scheme"><%= p.scheme %></span></div><h3><%= p.name %></h3><div class="price"><%= formatCost(p.cost_min) %>–<%= formatCost(p.cost_max) %></div></div>
+            </a>
+          <% }); %>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</section>
+<%- include('partials/footer') %>

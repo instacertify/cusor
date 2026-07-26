@@ -1,0 +1,20 @@
+<%- include('partials/head') %>
+<div class="topbar"><h1>Products</h1><a class="btn btn-primary" href="/admin/products/new">+ New Product</a></div>
+<table>
+  <tr><th></th><th>Name</th><th>Category</th><th>Scheme</th><th>Cost</th><th>Popular</th><th>Actions</th></tr>
+  <% products.forEach(function(p){ %>
+    <tr>
+      <td><% if (p.image) { %><img class="thumb-sm" src="<%= p.image %>" alt="" /><% } %></td>
+      <td><strong><%= p.name %></strong><br><span style="color:var(--muted);font-size:.8rem">/<%= p.slug %></span></td>
+      <td><%= p.category_name || '—' %></td>
+      <td><span class="pill"><%= p.scheme %></span></td>
+      <td>₹<%= Math.round(p.cost_min/1000) %>K–<%= Math.round(p.cost_max/1000) %>K</td>
+      <td><% if (p.is_popular) { %><span class="pill on">Popular</span><% } else { %>—<% } %></td>
+      <td class="actions">
+        <a class="btn btn-light btn-sm" href="/admin/products/<%= p.id %>/edit">Edit</a>
+        <form action="/admin/products/<%= p.id %>/delete" method="post" onsubmit="return confirm('Delete this product?')"><button class="btn btn-danger btn-sm" type="submit">Delete</button></form>
+      </td>
+    </tr>
+  <% }); %>
+</table>
+<%- include('partials/foot') %>

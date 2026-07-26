@@ -1,0 +1,18 @@
+<%- include('partials/head') %>
+<div class="topbar"><h1>Testimonials</h1><a class="btn btn-primary" href="/admin/testimonials/new">+ New Testimonial</a></div>
+<table>
+  <tr><th>Name</th><th>Role</th><th>Rating</th><th>Quote</th><th>Actions</th></tr>
+  <% testimonials.forEach(function(t){ %>
+    <tr>
+      <td><strong><%= t.name %></strong></td>
+      <td><%= t.role %>, <%= t.location %></td>
+      <td style="color:var(--amber-600)"><%= '★'.repeat(t.rating) %></td>
+      <td style="max-width:340px;color:var(--muted)"><%= t.quote.slice(0,80) %>…</td>
+      <td class="actions">
+        <a class="btn btn-light btn-sm" href="/admin/testimonials/<%= t.id %>/edit">Edit</a>
+        <form action="/admin/testimonials/<%= t.id %>/delete" method="post" onsubmit="return confirm('Delete?')"><button class="btn btn-danger btn-sm" type="submit">Delete</button></form>
+      </td>
+    </tr>
+  <% }); %>
+</table>
+<%- include('partials/foot') %>

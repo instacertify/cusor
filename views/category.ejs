@@ -1,0 +1,30 @@
+<%- include('partials/head') %>
+<div class="page-head">
+  <div class="container">
+    <div class="breadcrumb"><a href="/">Home</a> / <a href="/categories">Categories</a> / <%= category.name %></div>
+    <h1><%= category.icon %> <%= category.name %></h1>
+    <p class="muted"><%= category.description %></p>
+  </div>
+</div>
+<section class="section">
+  <div class="container">
+    <% if (category.content) { %><div class="prose" style="margin-bottom:34px;"><%- category.content %></div><% } %>
+    <% if (products.length === 0) { %>
+      <div class="card center"><p class="muted">No products listed yet in this category.</p></div>
+    <% } else { %>
+      <div class="grid grid-4">
+        <% products.forEach(function(p){ %>
+          <a class="card product-card" href="/product/<%= p.slug %>">
+            <div class="thumb"><img src="<%= p.image %>" alt="<%= p.name %>" onerror="this.parentNode.style.display='none'" /></div>
+            <div class="body">
+              <div class="tags"><span class="tag scheme"><%= p.scheme %></span><span class="tag">HSN <%= p.hsn %></span></div>
+              <h3><%= p.name %></h3>
+              <div class="price"><%= formatCost(p.cost_min) %>–<%= formatCost(p.cost_max) %> <small>· <%= p.timeline %></small></div>
+            </div>
+          </a>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+</section>
+<%- include('partials/footer') %>

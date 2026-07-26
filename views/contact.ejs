@@ -1,0 +1,42 @@
+<%- include('partials/head') %>
+<div class="page-head">
+  <div class="container">
+    <div class="breadcrumb"><a href="/">Home</a> / Get Expert Help</div>
+    <h1>Get Expert Help</h1>
+    <p class="muted">Connect with verified BIS consultants who handle the entire process. Free quote in 24 hours.</p>
+  </div>
+</div>
+<section class="section">
+  <div class="container detail-grid">
+    <div class="form-card">
+      <% if (sent) { %><div class="notice">✓ Thanks! Your request has been received. A BIS expert will reach out within 24 hours.</div><% } %>
+      <form action="/contact" method="post">
+        <div class="field"><label>Your name</label><input type="text" name="name" required /></div>
+        <div class="field"><label>Email</label><input type="email" name="email" required /></div>
+        <div class="field"><label>Phone</label><input type="text" name="phone" /></div>
+        <div class="field"><label>Product</label><input type="text" name="product" placeholder="e.g. LED bulbs, TMT bars" /></div>
+        <div class="field"><label>How can we help?</label><textarea name="message" rows="4" placeholder="Tell us about your product and where you sell it."></textarea></div>
+        <button class="btn btn-cta btn-block" type="submit">Request Free Quote</button>
+      </form>
+    </div>
+    <aside>
+      <div class="fact-box">
+        <h3 style="margin-top:0">Why Certko?</h3>
+        <p class="muted">✓ Vetted consultants across India</p>
+        <p class="muted">✓ Transparent, upfront pricing</p>
+        <p class="muted">✓ End-to-end: application → testing → licence</p>
+        <p class="muted">✓ 98% first-time approval rate</p>
+        <hr style="border:none;border-top:1px dashed var(--line);margin:16px 0" />
+        <p style="margin:0"><strong>Email</strong><br><a href="mailto:<%= settings.contact_email %>"><%= settings.contact_email %></a></p>
+        <p style="margin:10px 0 0"><strong>Phone</strong><br><a href="tel:<%= settings.contact_phone %>"><%= settings.contact_phone %></a></p>
+      </div>
+    </aside>
+  </div>
+</section>
+<script>
+  (function(){
+    var p = new URLSearchParams(window.location.search).get('product');
+    if (p) { var f = document.querySelector('input[name=product]'); if (f) f.value = p; }
+  })();
+</script>
+<%- include('partials/footer') %>

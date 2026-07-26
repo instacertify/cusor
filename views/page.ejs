@@ -1,0 +1,18 @@
+<%- include('partials/head') %>
+<div class="page-head">
+  <div class="container">
+    <div class="breadcrumb"><a href="/">Home</a> / <%= pageRow.title %></div>
+    <h1><%= pageRow.title %></h1>
+    <% if (pageRow.subtitle) { %><p class="muted"><%= pageRow.subtitle %></p><% } %>
+  </div>
+</div>
+<section class="section">
+  <div class="container">
+    <% if (pageRow.image) { %>
+      <img src="<%= pageRow.image %>" alt="<%= pageRow.title %>" style="border-radius:var(--radius);box-shadow:var(--shadow-sm);margin-bottom:30px;max-height:360px;width:100%;object-fit:cover;" onerror="this.style.display='none'" />
+    <% } %>
+    <div class="prose"><%- pageRow.body_html %></div>
+    <div class="center" style="margin-top:34px;"><a class="btn btn-cta" href="/contact">Get Expert Help</a></div>
+  </div>
+</section>
+<%- include('partials/footer') %>

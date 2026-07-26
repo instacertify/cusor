@@ -1,0 +1,24 @@
+<%- include('partials/head') %>
+<div class="page-head">
+  <div class="container">
+    <div class="breadcrumb"><a href="/">Home</a> / Categories</div>
+    <h1>Browse by Category</h1>
+    <p class="muted">Find BIS certification requirements grouped by product category.</p>
+  </div>
+</div>
+<section class="section">
+  <div class="container">
+    <div class="grid grid-3">
+      <% categories.forEach(function(c){ %>
+        <a class="card" href="/category/<%= c.slug %>">
+          <div class="cat-tile" style="margin-bottom:12px;">
+            <span class="emoji"><%= c.icon %></span>
+            <div><h3 style="margin:0"><%= c.name %></h3><div class="count"><%= c.count %> products</div></div>
+          </div>
+          <p class="muted" style="margin:0"><%= c.description %></p>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+<%- include('partials/footer') %>

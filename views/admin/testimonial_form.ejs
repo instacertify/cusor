@@ -1,0 +1,18 @@
+<%- include('partials/head') %>
+<div class="topbar"><h1><%= isNew ? 'New' : 'Edit' %> Testimonial</h1><a class="btn btn-light" href="/admin/testimonials">← Back</a></div>
+<div class="panel">
+  <form action="<%= isNew ? '/admin/testimonials' : '/admin/testimonials/' + item.id %>" method="post">
+    <div class="row-3">
+      <div class="field"><label>Name</label><input type="text" name="name" value="<%= item.name || '' %>" required /></div>
+      <div class="field"><label>Role</label><input type="text" name="role" value="<%= item.role || '' %>" /></div>
+      <div class="field"><label>Location</label><input type="text" name="location" value="<%= item.location || '' %>" /></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Rating (1–5)</label><input type="number" name="rating" min="1" max="5" value="<%= item.rating || 5 %>" /></div>
+      <div class="field"><label>Sort order</label><input type="number" name="sort_order" value="<%= item.sort_order || 0 %>" /></div>
+    </div>
+    <div class="field"><label>Quote</label><textarea name="quote" rows="4"><%= item.quote || '' %></textarea></div>
+    <button class="btn btn-primary" type="submit">Save Testimonial</button>
+  </form>
+</div>
+<%- include('partials/foot') %>

@@ -1,0 +1,27 @@
+<%
+  var isLight = (typeof light !== 'undefined') && light;
+  var showTag = (typeof tagline !== 'undefined') && tagline;
+  var chevA = isLight ? '#ffffff' : (settings.brand_primary || '#12294a');
+  var chevB = settings.brand_teal || '#1c8b8e';
+%>
+<span class="ck-logo <%= isLight ? 'is-light' : '' %> <%= showTag ? 'has-tag' : '' %>" role="img" aria-label="<%= (settings.site_name || 'Certko') %> — compliance assured">
+  <span class="ck-top">
+    <span class="ck-word"><span class="ck-cert">cert</span><span class="ck-ko">ko</span></span>
+    <svg class="ck-chev" viewBox="0 0 50 26" fill="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="ckchev-<%= isLight ? 'l' : 'd' %>" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="<%= chevA %>" />
+          <stop offset="1" stop-color="<%= chevB %>" />
+        </linearGradient>
+      </defs>
+      <g stroke="url(#ckchev-<%= isLight ? 'l' : 'd' %>)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4 L15 13 L4 22" />
+        <path d="M18 4 L29 13 L18 22" />
+        <path d="M32 4 L43 13 L32 22" />
+      </g>
+    </svg>
+  </span>
+  <% if (showTag) { %>
+    <span class="ck-tag"><span class="ck-tag-a">COMPLIANCE.</span> <span class="ck-tag-b">ASSURED<span class="ck-dot">.</span></span></span>
+  <% } %>
+</span>

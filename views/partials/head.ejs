@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %></title>
+  <meta name="description" content="<%= typeof metaDescription !== 'undefined' ? metaDescription : (settings.tagline || '') %>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="/images/certko-logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/styles.css" />
+  <style>:root{--navy:<%= settings.brand_primary || '#12294a' %>;--amber:<%= settings.brand_accent || '#f2a41c' %>;--teal:<%= settings.brand_teal || '#1c8b8e' %>;}</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand" href="/" aria-label="<%= settings.site_name || 'Certko' %> home">
+      <%- include('logo', { light: false, tagline: false }) %>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/products" class="<%= page === 'products' ? 'active' : '' %>">Products</a></li>
+      <li><a href="/categories" class="<%= page === 'categories' ? 'active' : '' %>">Categories</a></li>
+      <li><a href="/page/guide" class="<%= page === 'guide' ? 'active' : '' %>">Guide</a></li>
+      <li><a href="/cost-calculator" class="<%= page === 'calculator' ? 'active' : '' %>">Cost Calculator</a></li>
+      <li><a href="/faq" class="<%= page === 'faq' ? 'active' : '' %>">FAQ</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a class="btn btn-cta" href="/contact">Get Expert Help</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Menu">&#9776;</button>
+    </div>
+  </div>
+</header>
+<main>

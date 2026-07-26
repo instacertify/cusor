@@ -1,0 +1,31 @@
+<%- include('partials/head') %>
+<div class="page-head">
+  <div class="container">
+    <div class="breadcrumb"><a href="/">Home</a> / FAQ</div>
+    <h1>Frequently Asked Questions</h1>
+    <p class="muted">Everything you need to know about BIS certification in India.</p>
+  </div>
+</div>
+<section class="section">
+  <div class="container" style="max-width:820px;">
+    <% Object.keys(groups).forEach(function(cat){ %>
+      <div class="faq-group">
+        <div class="faq-cat"><%= cat %></div>
+        <div class="accordion">
+          <% groups[cat].forEach(function(f){ %>
+            <details>
+              <summary><%= f.question %></summary>
+              <div class="answer"><%= f.answer %></div>
+            </details>
+          <% }); %>
+        </div>
+      </div>
+    <% }); %>
+    <div class="cta" style="margin-top:20px;">
+      <h2>Still have questions?</h2>
+      <p>Our BIS specialists reply within 24 hours with a free, no-obligation assessment.</p>
+      <a class="btn btn-cta" href="/contact">Ask an Expert</a>
+    </div>
+  </div>
+</section>
+<%- include('partials/footer') %>

@@ -1,0 +1,9 @@
+node_modules/
+*.log
+data/certko.db
+data/certko.db-*
+data/sessions.db
+data/sessions.db-*
+public/uploads/*
+!public/uploads/.gitkeep
+.env
