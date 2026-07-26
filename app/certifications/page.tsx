@@ -4,7 +4,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import Icon from "@/components/Icon";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
-import { getCertifications } from "@/lib/queries";
+import { getCertifications, getCertProducts } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,11 @@ export const metadata: Metadata = {
 };
 
 export default function CertificationsPage() {
-  const certs = getCertifications();
+  const certs = getCertifications().map((c) => {
+    const products = getCertProducts(c.id);
+    const regimes = [...new Set(products.map((p) => p.regime).filter(Boolean))];
+    return { ...c, productCount: products.length, regimes };
+  });
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
@@ -49,8 +53,15 @@ export default function CertificationsPage() {
               </h2>
               <p className="text-xs font-semibold text-ink-500">{c.full_name}</p>
               <p className="text-sm text-ink-600 leading-relaxed line-clamp-3">{c.summary}</p>
+              {c.productCount > 0 && (
+                <p className="text-xs font-semibold text-ink-700">
+                  {c.productCount} products covered
+                  {c.regimes.length > 0 ? ` · ${c.regimes.join(" & ")}` : ""}
+                </p>
+              )}
               <span className="text-sm font-bold text-butter-700 inline-flex items-center gap-1.5">
-                Learn more <Icon name="arrow-right" size={15} />
+                {c.productCount > 0 ? "See products covered" : "Learn more"}{" "}
+                <Icon name="arrow-right" size={15} />
               </span>
             </Link>
             <div className="mt-auto pt-2 border-t border-cream-200">

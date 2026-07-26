@@ -83,8 +83,16 @@ export default async function CertificationPage({ params }: Props) {
             </div>
           </div>
           <p className="mt-5 text-lg text-ink-600 leading-relaxed">{cert.summary}</p>
-          <div className="mt-6">
+          <div className="mt-6 flex flex-wrap items-center gap-3">
             <RequestQuoteButton subject={cert.name} kind="certification" />
+            {catalog.length > 0 && (
+              <a
+                href="#products-covered"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-cream-300 bg-white px-4 py-2.5 text-sm font-bold text-ink-800 hover:border-butter-500 hover:text-butter-700 transition"
+              >
+                Products covered ({catalog.length}) ↓
+              </a>
+            )}
           </div>
         </div>
         {cert.image ? (
@@ -109,11 +117,11 @@ export default async function CertificationPage({ params }: Props) {
             items={catalog}
             certSlug={cert.slug}
             certName={cert.name}
-            title={`${cert.name} Product Catalogue`}
+            title={`Products covered under ${cert.name}`}
             subtitle={
               cert.slug === "bee"
-                ? `Searchable BEE star labelling schemes under ${cert.full_name || cert.name}. Open any row for standards, star tables and guidance.`
-                : `Searchable products and schemes under ${cert.full_name || cert.name}. Open any row for standards, indicative testing costs and guidance.`
+                ? `Full list of BEE star labelling product options — Mandatory and Voluntary. Filter by regime or search by product / standard, then open any row for star tables and guidance.`
+                : `Full list of product options covered under ${cert.full_name || cert.name}. Grouped by regime where available; open any row for standards, testing costs and guidance.`
             }
           />
           {cert.slug === "g-mark" && (
