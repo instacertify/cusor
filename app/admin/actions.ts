@@ -24,14 +24,34 @@ export async function logout() {
   redirect("/admin/login");
 }
 
+const LOGO_DEFAULTS = {
+  logo_primary: "/brand/certko-logo.png",
+  logo_on_dark: "/brand/certko-logo-light.png",
+} as const;
+
 // ---------- settings ----------
 export async function saveSettings(formData: FormData) {
   await requireAdmin();
   for (const [key, value] of formData.entries()) {
-    if (typeof value === "string" && !key.startsWith("$")) {
+    if (
+      typeof value === "string" &&
+      !key.startsWith("$") &&
+      !key.startsWith("clear_") &&
+      !key.endsWith("_file")
+    ) {
       setSetting(key, value);
     }
   }
+
+  for (const key of Object.keys(LOGO_DEFAULTS) as Array<keyof typeof LOGO_DEFAULTS>) {
+    const uploaded = await saveUploadedImage(formData.get(`${key}_file`) as File | null);
+    if (uploaded) {
+      setSetting(key, uploaded);
+    } else if (formData.get(`clear_${key}`) === "1") {
+      setSetting(key, LOGO_DEFAULTS[key]);
+    }
+  }
+
   revalidatePath("/", "layout");
   redirect("/admin/settings?saved=1");
 }

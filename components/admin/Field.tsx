@@ -90,12 +90,22 @@ export function ImageUpload({
   name = "image_file",
   label = "Image",
   allowClear = true,
+  clearName = "clear_image",
+  clearLabel = "Remove current image",
+  previewFit = "cover",
+  hint = "Upload PNG/JPG/WebP to replace the current image.",
 }: {
   current?: string;
   name?: string;
   label?: string;
   allowClear?: boolean;
+  /** Distinct checkbox name when multiple uploads share one form */
+  clearName?: string;
+  clearLabel?: string;
+  previewFit?: "cover" | "contain";
+  hint?: string;
 }) {
+  const fitClass = previewFit === "contain" ? "object-contain bg-cream-100 p-3" : "object-cover";
   return (
     <div>
       <label htmlFor={name} className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">
@@ -106,7 +116,7 @@ export function ImageUpload({
         <img
           src={current}
           alt="Current"
-          className="w-full max-w-xs rounded-xl border border-cream-300 mb-2 object-cover"
+          className={`w-full max-w-xs rounded-xl border border-cream-300 mb-2 ${fitClass}`}
         />
       ) : (
         <p className="text-xs text-ink-500 mb-2">No image set yet.</p>
@@ -115,16 +125,16 @@ export function ImageUpload({
         id={name}
         name={name}
         type="file"
-        accept="image/*"
+        accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
         className="block w-full text-sm text-ink-700 file:mr-3 file:rounded-lg file:border-0 file:bg-cream-200 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink-800 hover:file:bg-cream-300"
       />
       {allowClear && current ? (
         <label className="mt-2 flex items-center gap-2 text-xs text-ink-600">
-          <input type="checkbox" name="clear_image" value="1" className="rounded border-cream-300" />
-          Remove current image
+          <input type="checkbox" name={clearName} value="1" className="rounded border-cream-300" />
+          {clearLabel}
         </label>
       ) : null}
-      <p className="text-[11px] text-ink-500 mt-1">Upload PNG/JPG/WebP to replace the current image.</p>
+      <p className="text-[11px] text-ink-500 mt-1">{hint}</p>
     </div>
   );
 }

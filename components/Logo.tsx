@@ -1,6 +1,11 @@
+import { getSetting } from "@/lib/db";
+
+const DEFAULT_PRIMARY = "/brand/certko-logo.png";
+const DEFAULT_ON_DARK = "/brand/certko-logo-light.png";
+
 /**
  * Official CERTKO PNG logo — transparent, no extra background/pill.
- * Sits directly on whatever page background is behind it.
+ * Paths come from admin Site Settings when customized.
  */
 export default function Logo({
   width = 200,
@@ -21,7 +26,9 @@ export default function Logo({
   void withTagline;
   const height = Math.round(width * 0.28);
   const onDark = variant === "reverse" || variant === "onDark";
-  const src = onDark ? "/brand/certko-logo-light.png" : "/brand/certko-logo.png";
+  const src = onDark
+    ? getSetting("logo_on_dark", DEFAULT_ON_DARK) || DEFAULT_ON_DARK
+    : getSetting("logo_primary", DEFAULT_PRIMARY) || DEFAULT_PRIMARY;
 
   return (
     // eslint-disable-next-line @next/next/no-img-element

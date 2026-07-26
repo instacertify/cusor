@@ -766,6 +766,8 @@ export function seedDatabase(db: Database.Database) {
       stat_3_value: "7+", stat_3_label: "Certifications",
       stat_4_value: "Free", stat_4_label: "Product Checker",
       admin_password: "certko-admin",
+      logo_primary: "/brand/certko-logo.png",
+      logo_on_dark: "/brand/certko-logo-light.png",
     };
     const insSetting = db.prepare(
       "INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)"
