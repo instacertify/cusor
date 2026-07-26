@@ -1,83 +1,73 @@
-# CERTKO Brand Identity Guidelines
+# CERTKO Brand Guidelines
 
-Version 1.0 | Final Logo — Option 10
+Version 1.0 – Premium Global Compliance Brand
 
-## Brand Overview
+## Brand Vision
 
-**Brand Name:** CERTKO
+CERTKO is a modern global compliance platform that simplifies certification through **Knowledge + Operations**.
 
-**Meaning**
+The brand combines technical expertise, regulatory intelligence, testing, certification, and execution into one trusted ecosystem.
 
-- CERT = Certification, Compliance, Standards & Trust
-- KO = Knowledge + Operations
+## Brand Position
 
-CERTKO represents a modern compliance and certification platform that combines deep regulatory expertise with operational excellence to simplify global product compliance.
+Your trusted global compliance partner.
 
-**Vision:** To become the world's most trusted digital platform for product certification, testing, compliance intelligence, and regulatory operations.
+## Brand Mission
 
-**Mission:** Empowering manufacturers, laboratories, and certification bodies with knowledge-driven compliance solutions that accelerate global market access.
+To help manufacturers access global markets through reliable compliance intelligence, certification, testing and regulatory solutions.
 
-**Values:** Trust · Knowledge · Operational Excellence · Precision · Innovation · Transparency · Global Compliance
+## Brand Values
 
-## Logo
-
-Clean typographic identity supported by a forward movement symbol — no shields, checkmarks, certificates or globes.
-
-- **CERT** — Deep Navy (`#0D1B3D`): certification, compliance, standards, regulatory expertise, trust
-- **KO** — Teal (`#17B3A3`): knowledge + operations — the heart of the company
-- **>>>** — three forward arrows: progress, growth, faster compliance, continuous improvement, digital transformation, global expansion
-
-Implementation: `components/Logo.tsx` (primary + reverse variants), favicon `app/icon.svg` (CK monogram + arrows on navy rounded square).
-
-### Logo usage
-
-- Primary logo on white or light gray backgrounds
-- Reverse logo (white + teal) on navy or dark teal backgrounds
-- Monochrome only for print restrictions, embossing, watermarks, single-color merchandise
-- Minimum width: 160 px digital / 30 mm print
-- Clear space equal to the height of the lowercase "o" in certko
-- Do not: stretch/distort, recolor, rearrange, rotate arrows, add shadows/bevels/glows, place on busy backgrounds, use gradients, or swap the typeface
-
-## Color Palette
-
-| Role | HEX | RGB | Usage |
-| --- | --- | --- | --- |
-| Primary Navy | `#0D1B3D` | 13, 27, 61 | Logo (CERT), navigation, headlines, documents |
-| Primary Teal | `#17B3A3` | 23, 179, 163 | Logo (KO), icons, CTA buttons, highlights, interactive |
-| Dark Teal | `#137D8C` | 19, 125, 140 | Secondary graphics, infographics, hover states |
-| Accent Orange | `#FF8A00` | 255, 138, 0 | Notification dots, CTA hover, status indicators — max 5% of any layout |
-| Neutral Gray | `#6B7280` | 107, 114, 128 | Secondary text, labels, UI borders, form elements |
-| Light Gray | `#F5F7FA` | 245, 247, 250 | Backgrounds, cards, forms, tables, sections |
-
-**Ratio:** Navy 55% · Teal 25% · White 15% · Light Gray 3% · Orange 2%
-
-Implementation: CSS design tokens in `app/globals.css` (`@theme` block). The legacy token names `ink-*` (navy/gray scale), `butter-*` (teal scale), `cream-*` (white/light-gray surfaces) and `accent-*` (orange) map onto this palette.
-
-## Typography
-
-- **Primary:** Poppins SemiBold — logo support, headlines, navigation, marketing, buttons (`--font-display`)
-- **Secondary:** Inter Regular — body copy, website content, reports, forms, UI text (`--font-body`)
-
-Loaded via `next/font` in `app/layout.tsx`.
-
-## Iconography
-
-Minimal, line-based, rounded, geometric, technical. Recommended stroke width 2 px. See `components/Icon.tsx`.
-
-## Photography
-
-Manufacturing facilities, testing laboratories, engineers, compliance processes, global trade, industrial automation, precision equipment. Avoid generic stock photography, handshakes, exaggerated corporate imagery.
-
-## Website Design Principles
-
-White backgrounds, spacious layouts, rounded cards, minimal shadows, navy headings, teal highlights, orange reserved for primary actions and notifications. The experience should resemble a modern enterprise SaaS platform.
-
-## Brand Voice
-
-Professional, knowledgeable, helpful, accurate, direct, solution-oriented. Avoid exaggerated claims such as "Best", "No.1" or "Guaranteed" — focus on measurable value, technical expertise and operational excellence.
+Trust · Knowledge · Precision · Transparency · Innovation · Reliability · Global Reach · Operational Excellence
 
 ## Brand Personality
 
-Always: professional, technical, reliable, modern, global, intelligent, minimal, efficient.
+Premium · Modern · Intelligent · Professional · Global · Technical · Reliable · Efficient
 
-Avoid: loud graphics, cartoon illustrations, heavy gradients, excessive shadows, traditional certification clichés.
+Avoid: overly corporate, overly playful, generic consulting appearance, excessive gradients, heavy shadows.
+
+## Color System
+
+| Role | Name | HEX | Usage |
+|------|------|-----|-------|
+| Primary | Dark Navy Blue | `#16263D` | Logo, header, headlines, navigation, buttons, reports |
+| Secondary | Golden Amber | `#F7C453` | KO highlight, CTAs, icons, links, accents |
+| Background | Premium Cream | `#FAF6EE` | Website background, landing pages, documents |
+| Supporting | Charcoal | `#4B5563` | Secondary text, UI labels |
+| Supporting | Light Gray | `#E9E6DE` | Borders, tables, dividers |
+| Supporting | White | `#FFFFFF` | Cards, contrast blocks (sparingly) |
+
+**Website color ratio:** ~60% Cream · ~30% Dark Navy · ~10% Golden Amber
+
+**Accessibility:** Dark Navy on Cream; Cream on Dark Navy; Amber only for highlights/CTAs (WCAG AA).
+
+## Typography
+
+- **Primary:** Poppins SemiBold / Medium (500, 600) — headlines, hero, navigation, buttons
+- **Secondary:** Inter Regular / Medium (400, 500, 600) — body, forms, blogs, reports
+
+## Logo Meaning
+
+- **CERT** — Certification, Compliance, Confidence (Dark Navy)
+- **KO** — Knowledge + Operations (Golden Amber)
+- **Three arrows** — Knowledge → Compliance → Global Market Access (also speed, progress, continuous improvement)
+
+### Logo usage
+
+- Always Dark Navy + Golden Amber
+- Never stretch, rotate, add shadows/outlines, recolor, or place on busy backgrounds
+- Clear space = height of lowercase “o”
+- Minimum website width: **180 px**; print: 35 mm
+- Favicon: **CK monogram** with three arrows, 32×32 (legible at 16 / 32 / 48)
+
+### Implementation
+
+- Wordmark: `components/Logo.tsx`
+- CK mark helper: `LogoMark` in `components/Logo.tsx`
+- Favicon: `app/icon.svg`
+- Static assets: `public/brand/certko-logo.svg`, `public/brand/certko-ck-favicon.svg`
+- Tokens: `app/globals.css`
+
+## UI Style
+
+Stripe / Notion / Linear–inspired: whitespace, rounded corners, large type, flat icons, high contrast, mobile-first. Minimal decorative graphics; SVG logo; light shadows only.
