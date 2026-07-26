@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import fs from "fs";
 import path from "path";
@@ -11,6 +12,14 @@ import {
   changeAdminCredentials,
 } from "@/lib/auth";
 import { logAdminEvent } from "@/lib/admin-audit";
+
+/** Revalidate after the redirect response so Save/Update feels snappy. */
+function revalidateSoon(path: string, type?: "layout" | "page") {
+  after(() => {
+    if (type) revalidatePath(path, type);
+    else revalidatePath(path);
+  });
+}
 
 async function saveUploadedImage(file: File | null): Promise<string | null> {
   if (!file || file.size === 0) return null;

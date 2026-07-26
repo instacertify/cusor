@@ -1,7 +1,7 @@
 import { getDb } from "@/lib/db";
 import type { Inquiry } from "@/lib/db";
 import { setInquiryStatus } from "../../actions";
-import { SavedBanner } from "@/components/admin/Field";
+import { SavedBanner, SubmitButton } from "@/components/admin/Field";
 
 export const dynamic = "force-dynamic";
 
@@ -53,9 +53,10 @@ export default async function AdminInquiries({ searchParams }: Props) {
                     <option value="contacted">contacted</option>
                     <option value="closed">closed</option>
                   </select>
-                  <button className="text-xs font-bold bg-ink-900 text-white rounded-lg px-3 py-1.5">
-                    Update
-                  </button>
+                  <SubmitButton
+                    label="Update"
+                    className="text-xs font-bold bg-ink-900 text-white rounded-lg px-3 py-1.5 disabled:opacity-60 disabled:cursor-wait"
+                  />
                 </form>
               </div>
               {i.product && (

@@ -62,14 +62,7 @@ export function TextArea({
 }
 
 export { default as SavedBanner } from "./SavedBanner";
-
-export function SubmitButton({ label = "Save Changes" }: { label?: string }) {
-  return (
-    <button className="bg-ink-900 hover:bg-ink-800 text-white font-bold rounded-xl px-6 py-3 text-sm transition">
-      {label}
-    </button>
-  );
-}
+export { default as SubmitButton } from "./SubmitButton";
 
 export function ImageUpload({
   current,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import SubmitButton from "./SubmitButton";
 
 export interface SeoEditorData {
   entity: string;
@@ -348,9 +349,7 @@ export default function SeoEditor({
           </div>
         </section>
 
-        <button className="bg-ink-900 hover:bg-ink-800 text-white font-bold rounded-xl px-6 py-3 text-sm transition">
-          Save SEO Settings
-        </button>
+        <SubmitButton label="Save SEO Settings" />
       </div>
 
       {/* 10: score panel */}
