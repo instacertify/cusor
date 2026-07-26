@@ -19,7 +19,7 @@ export default async function AdminCertifications({ searchParams }: Props) {
     <div>
       <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
         <h1 className="font-display text-3xl font-semibold text-ink-950">Certifications</h1>
-        <BulkImportLink entity="certifications" />
+        <BulkImportLink entities={["certifications", "cert_products"]} />
       </div>
       <p className="text-ink-600 text-sm mb-6">
         Add any certification programme (BIS, BEE, GMARK, CE, FCC, SABER, custom…). Pages appear in the

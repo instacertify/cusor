@@ -4,6 +4,7 @@ import { pagePublicPath } from "@/lib/pages-nav";
 import { createPage } from "../../actions";
 import { Field, SavedBanner, SubmitButton } from "@/components/admin/Field";
 import PageNavPlacement from "@/components/admin/PageNavPlacement";
+import BulkImportLink from "@/components/admin/BulkImportLink";
 
 export const dynamic = "force-dynamic";
 
@@ -29,9 +30,13 @@ export default async function AdminPagesList({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Pages</h1>
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+        <h1 className="font-display text-3xl font-semibold text-ink-950">Pages</h1>
+        <BulkImportLink entity="pages" />
+      </div>
       <p className="text-ink-600 text-sm mb-6">
         Create CMS pages and choose where they appear: top menu, Resources submenu, and/or footer.
+        Or bulk-upload via Excel.
       </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
 

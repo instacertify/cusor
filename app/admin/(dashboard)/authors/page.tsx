@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getAuthors } from "@/lib/queries";
 import { saveAuthor } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton } from "@/components/admin/Field";
+import BulkImportLink from "@/components/admin/BulkImportLink";
 
 export const dynamic = "force-dynamic";
 
@@ -15,10 +16,13 @@ export default async function AdminAuthorsPage({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Authors</h1>
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+        <h1 className="font-display text-3xl font-semibold text-ink-950">Authors</h1>
+        <BulkImportLink entity="authors" />
+      </div>
       <p className="text-ink-600 text-sm mb-6">
         Create author profiles, then assign them to blog posts. Public profiles live at{" "}
-        <code className="bg-cream-100 px-1 rounded">/authors/[slug]</code>.
+        <code className="bg-cream-100 px-1 rounded">/authors/[slug]</code>. Or bulk-upload via Excel.
       </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
 

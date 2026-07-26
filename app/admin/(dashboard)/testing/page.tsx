@@ -24,7 +24,7 @@ export default async function AdminTesting({ searchParams }: Props) {
     <div>
       <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
         <h1 className="font-display text-3xl font-semibold text-ink-950">Product Testing</h1>
-        <BulkImportLink entity="testing_categories" />
+        <BulkImportLink entities={["testing_categories", "testing_services"]} />
       </div>
       <p className="text-ink-600 text-sm mb-6">
         Create testing categories, then add complete test pages under each category.{" "}

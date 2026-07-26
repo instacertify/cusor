@@ -41,10 +41,27 @@ export default function BulkImportPanel({
 
   return (
     <div className="space-y-6">
+      <div className="bg-cream-50 rounded-2xl border border-cream-300 p-4">
+        <p className="text-xs font-bold uppercase tracking-wide text-ink-600 mb-2">
+          Download example Excel for any option
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {entities.map((e) => (
+            <a
+              key={e.id}
+              href={`/api/admin/bulk-template/${e.id}`}
+              className="text-[11px] font-bold rounded-lg px-2.5 py-1.5 bg-white border border-cream-300 text-ink-800 hover:border-butter-400 transition"
+            >
+              {e.label}
+            </a>
+          ))}
+        </div>
+      </div>
+
       <div className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
         <div>
           <label htmlFor="bulk-entity" className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">
-            Content type
+            Content type to upload
           </label>
           <select
             id="bulk-entity"
@@ -57,7 +74,7 @@ export default function BulkImportPanel({
           >
             {entities.map((e) => (
               <option key={e.id} value={e.id}>
-                {e.label}
+                {e.group}: {e.label}
               </option>
             ))}
           </select>

@@ -2,6 +2,7 @@ import { getFaqs } from "@/lib/queries";
 import { getDb } from "@/lib/db";
 import { saveFaq, deleteFaq } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton } from "@/components/admin/Field";
+import BulkImportLink from "@/components/admin/BulkImportLink";
 
 export const dynamic = "force-dynamic";
 
@@ -59,11 +60,14 @@ export default async function AdminFaqs({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">FAQs</h1>
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+        <h1 className="font-display text-3xl font-semibold text-ink-950">FAQs</h1>
+        <BulkImportLink entity="faqs" />
+      </div>
       <p className="text-ink-600 text-sm mb-6">
         Every public page has its own FAQ section. Pick a page to edit its FAQs —
         including Product Testing index, testing categories and individual tests.
-        You can also edit testing FAQs inside Admin → Product Testing.
+        You can also edit testing FAQs inside Admin → Product Testing, or bulk-upload via Excel.
       </p>
 
       <form action="/admin/faqs" method="GET" className="mb-6 flex items-center gap-3">

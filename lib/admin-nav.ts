@@ -135,7 +135,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         href: "/admin/import",
         label: "Bulk Import",
         icon: "table",
-        description: "Excel upload for catalogue, QCOs, posts and more",
+        description: "Excel templates + upload for every content type",
       },
       {
         href: "/admin/seo",
