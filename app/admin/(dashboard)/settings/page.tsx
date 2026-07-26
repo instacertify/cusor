@@ -107,6 +107,65 @@ export default async function SettingsPage({ searchParams }: Props) {
           <Field label="Admin Password" name="admin_password" defaultValue={s.admin_password} type="text" />
         </section>
 
+        <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
+          <h2 className="font-display font-bold text-ink-950">Analytics & verification</h2>
+          <p className="text-sm text-ink-600">
+            Enter tracking IDs and site-verification codes. They are injected site-wide after save
+            (public pages only — not required for admin).
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field
+              label="Google Analytics 4 ID"
+              name="ga4_measurement_id"
+              defaultValue={s.ga4_measurement_id}
+              placeholder="G-XXXXXXXXXX"
+            />
+            <Field
+              label="Google Tag Manager ID"
+              name="gtm_container_id"
+              defaultValue={s.gtm_container_id}
+              placeholder="GTM-XXXXXXX"
+            />
+          </div>
+          <p className="text-[11px] text-ink-500">
+            If GTM is set, use GTM to load GA (the GA4 field is skipped to avoid double-counting).
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field
+              label="Google Search Console verification"
+              name="google_site_verification"
+              defaultValue={s.google_site_verification}
+              placeholder="meta content=… value only"
+            />
+            <Field
+              label="Bing Webmaster verification"
+              name="bing_site_verification"
+              defaultValue={s.bing_site_verification}
+              placeholder="msvalidate.01 content value"
+            />
+          </div>
+          <Field
+            label="Facebook domain verification"
+            name="facebook_domain_verification"
+            defaultValue={s.facebook_domain_verification}
+            placeholder="facebook-domain-verification content value"
+          />
+          <TextArea
+            label="Custom head HTML / scripts"
+            name="custom_head_html"
+            defaultValue={s.custom_head_html}
+            rows={5}
+            hint="Paste extra <meta> or <script> tags for other analytics / verification tools. Injected in <head>."
+          />
+          <TextArea
+            label="Custom body HTML / scripts"
+            name="custom_body_html"
+            defaultValue={s.custom_body_html}
+            rows={4}
+            hint="Optional snippets placed at the start of <body> (chat widgets, pixel noscript tags, etc.)."
+          />
+        </section>
+
         <SubmitButton />
       </form>
     </div>

@@ -770,6 +770,13 @@ export function seedDatabase(db: Database.Database) {
       admin_password: "certko-admin",
       logo_primary: "/brand/certko-logo.png",
       logo_on_dark: "/brand/certko-logo-light.png",
+      ga4_measurement_id: "",
+      gtm_container_id: "",
+      google_site_verification: "",
+      bing_site_verification: "",
+      facebook_domain_verification: "",
+      custom_head_html: "",
+      custom_body_html: "",
     };
     const insSetting = db.prepare(
       "INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)"

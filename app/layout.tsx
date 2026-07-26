@@ -3,6 +3,7 @@ import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SiteIntegrations, { SiteIntegrationsBody } from "@/components/SiteIntegrations";
 import { getSettings } from "@/lib/db";
 import { getPage } from "@/lib/queries";
 import { buildJsonLd } from "@/lib/seo";
@@ -33,6 +34,13 @@ const display = Poppins({
 export async function generateMetadata(): Promise<Metadata> {
   const home = getPage("home");
   const settings = getSettings();
+  const google = (settings.google_site_verification || "").trim();
+  const bing = (settings.bing_site_verification || "").trim();
+  const facebook = (settings.facebook_domain_verification || "").trim();
+  const other: Record<string, string | string[]> = {};
+  if (bing) other["msvalidate.01"] = bing;
+  if (facebook) other["facebook-domain-verification"] = facebook;
+
   return {
     title: {
       default: home?.meta_title || "Certko | BIS Certification Intelligence",
@@ -48,6 +56,10 @@ export async function generateMetadata(): Promise<Metadata> {
       ],
       apple: [{ url: "/brand/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
       shortcut: "/favicon.ico",
+    },
+    verification: {
+      ...(google ? { google } : {}),
+      ...(Object.keys(other).length ? { other } : {}),
     },
     openGraph: {
       siteName: settings.site_name || "Certko",
@@ -67,6 +79,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${body.variable} ${display.variable} min-h-screen flex flex-col`}>
+        <SiteIntegrationsBody />
+        <SiteIntegrations />
         {orgJsonLd && (
           <script
             type="application/ld+json"
