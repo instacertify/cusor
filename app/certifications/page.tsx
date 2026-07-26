@@ -5,7 +5,7 @@ import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import Icon from "@/components/Icon";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
-import { getCertifications, getCertProducts } from "@/lib/queries";
+import { getCertifications, getCertificationCoveredProducts } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function CertificationsPage() {
   const certs = getCertifications().map((c) => {
-    const products = getCertProducts(c.id);
+    const products = getCertificationCoveredProducts(c);
     const regimes = [...new Set(products.map((p) => p.regime).filter(Boolean))];
     return { ...c, productCount: products.length, regimes };
   });

@@ -10,13 +10,28 @@ import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import CertProductCatalog from "@/components/CertProductCatalog";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
-import { getCertificationBySlug, getCertifications, getFaqs, getCertProducts } from "@/lib/queries";
+import {
+  getCertificationBySlug,
+  getCertifications,
+  getFaqs,
+  getCertificationCoveredProducts,
+} from "@/lib/queries";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+function catalogSubtitle(cert: { slug: string; name: string; full_name: string }) {
+  if (cert.slug === "bee") {
+    return `Full list of BEE star labelling product options — Mandatory and Voluntary. Filter by regime or search by product / standard, then open any row for star tables and guidance.`;
+  }
+  if (cert.slug === "bis") {
+    return `Full ISI Mark and CRS product catalogue from the Certko BIS database — filter by Mandatory, Upcoming, Voluntary or CRS, search by product / IS standard / category, then open any row for fees, labs and process guidance.`;
+  }
+  return `Full list of product options covered under ${cert.full_name || cert.name}. Grouped by regime where available; open any row for standards, testing costs and guidance.`;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -37,7 +52,7 @@ export default async function CertificationPage({ params }: Props) {
   if (!cert) notFound();
   const faqs = getFaqs(`cert:${cert.slug}`);
   const others = getCertifications().filter((c) => c.slug !== cert.slug);
-  const catalog = getCertProducts(cert.id);
+  const catalog = getCertificationCoveredProducts(cert);
 
   const jsonLd = buildJsonLd(enabledSchemaTypes(`cert:${cert.id}`, "cert"), {
     name: `${cert.name} Certification Support`,
@@ -113,39 +128,53 @@ export default async function CertificationPage({ params }: Props) {
       />
 
       {catalog.length > 0 && (
-        <>
-          <CertProductCatalog
-            items={catalog}
-            certSlug={cert.slug}
-            certName={cert.name}
-            title={`Products covered under ${cert.name}`}
-            subtitle={
-              cert.slug === "bee"
-                ? `Full list of BEE star labelling product options — Mandatory and Voluntary. Filter by regime or search by product / standard, then open any row for star tables and guidance.`
-                : `Full list of product options covered under ${cert.full_name || cert.name}. Grouped by regime where available; open any row for standards, testing costs and guidance.`
-            }
-          />
-          {cert.slug === "g-mark" && (
-            <p className="mt-4 text-sm text-ink-600">
-              <a
-                href="/legal/gmark-product-categories.pdf"
-                className="font-semibold text-butter-700 hover:text-butter-800 underline underline-offset-4"
-              >
-                Download GMARK categories &amp; standards matrix (PDF)
-              </a>
-            </p>
-          )}
-          {cert.slug === "bee" && (
-            <p className="mt-4 text-sm text-ink-600">
-              <a
-                href="/legal/bee-star-label-master-data-2026.pdf"
-                className="font-semibold text-butter-700 hover:text-butter-800 underline underline-offset-4"
-              >
-                Download BEE Star Label master data 2026 (PDF)
-              </a>
-            </p>
-          )}
-        </>
+        <CertProductCatalog
+          items={catalog}
+          certSlug={cert.slug}
+          certName={cert.name}
+          title={`Products covered under ${cert.name}`}
+          subtitle={catalogSubtitle(cert)}
+          pageSize={cert.slug === "bis" ? 48 : 200}
+          footerNote={
+            cert.slug === "bis" ? (
+              <p>
+                Prefer a spreadsheet-style view?{" "}
+                <Link
+                  href="/products/all?scheme=ISI"
+                  className="font-semibold text-butter-700 hover:text-butter-800 underline underline-offset-4"
+                >
+                  Open the full BIS product search table
+                </Link>{" "}
+                or{" "}
+                <Link
+                  href="/products"
+                  className="font-semibold text-butter-700 hover:text-butter-800 underline underline-offset-4"
+                >
+                  browse by category
+                </Link>
+                .
+              </p>
+            ) : cert.slug === "g-mark" ? (
+              <p>
+                <a
+                  href="/legal/gmark-product-categories.pdf"
+                  className="font-semibold text-butter-700 hover:text-butter-800 underline underline-offset-4"
+                >
+                  Download GMARK categories &amp; standards matrix (PDF)
+                </a>
+              </p>
+            ) : cert.slug === "bee" ? (
+              <p>
+                <a
+                  href="/legal/bee-star-label-master-data-2026.pdf"
+                  className="font-semibold text-butter-700 hover:text-butter-800 underline underline-offset-4"
+                >
+                  Download BEE Star Label master data 2026 (PDF)
+                </a>
+              </p>
+            ) : null
+          }
+        />
       )}
 
       {faqs.length > 0 && (

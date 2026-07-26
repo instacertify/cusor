@@ -467,6 +467,77 @@ export function getCertProducts(certificationId: number): CertProduct[] {
     .all(certificationId) as CertProduct[];
 }
 
+/** Short regime label for BIS product catalogue grouping / filters. */
+function bisRegimeLabel(scheme: string, qcoStatus: string): string {
+  if ((scheme || "").toUpperCase() === "CRS") return "CRS";
+  const q = (qcoStatus || "").toLowerCase();
+  if (q.includes("voluntary")) return "Voluntary";
+  if (q.includes("upcoming") || q.includes("deferred")) return "Upcoming";
+  if (q.includes("cdsco")) return "CDSCO";
+  if (q.includes("mandatory")) return "Mandatory";
+  return "ISI Mark";
+}
+
+/**
+ * Products shown on /certifications/bis — sourced from the main BIS products
+ * table (ISI Mark + CRS), not the smaller cert_products catalogue used by BEE/GMARK.
+ */
+export function getBisCoveredProducts(): CertProduct[] {
+  const cert = getDb()
+    .prepare("SELECT id, slug, name, region FROM certifications WHERE slug = 'bis'")
+    .get() as Pick<Certification, "id" | "slug" | "name" | "region"> | undefined;
+  if (!cert) return [];
+
+  const rows = getDb()
+    .prepare(
+      `${PRODUCT_SELECT}
+       WHERE p.scheme IN ('ISI', 'CRS')
+       ORDER BY
+         CASE p.scheme WHEN 'ISI' THEN 0 ELSE 1 END,
+         CASE
+           WHEN p.qco_status LIKE 'Mandatory%' THEN 0
+           WHEN p.qco_status LIKE 'Upcoming%' OR p.qco_status LIKE 'Notified%' THEN 1
+           WHEN p.qco_status LIKE 'Voluntary%' THEN 2
+           ELSE 3
+         END,
+         c.name, p.name`
+    )
+    .all() as Product[];
+
+  return rows.map((p, index) => ({
+    id: p.id,
+    certification_id: cert.id,
+    slug: p.slug,
+    name: p.name,
+    family: p.category_name || "",
+    regime: bisRegimeLabel(p.scheme, p.qco_status),
+    standards: p.standard || "",
+    summary: p.qco_status || p.scheme,
+    content: "",
+    image: p.image || "",
+    min_price: p.min_price,
+    max_price: p.max_price,
+    labs: "",
+    fee_note: "",
+    extras: JSON.stringify({
+      scheme: p.scheme,
+      qco_status: p.qco_status,
+      category_slug: p.category_slug || "",
+      href: `/product/${p.slug}`,
+    }),
+    sort: index + 1,
+    cert_slug: cert.slug,
+    cert_name: cert.name,
+    cert_region: cert.region,
+  }));
+}
+
+/** Catalogue for a certification page — BIS uses the main products DB. */
+export function getCertificationCoveredProducts(cert: Certification): CertProduct[] {
+  if (cert.slug === "bis") return getBisCoveredProducts();
+  return getCertProducts(cert.id);
+}
+
 export function getCertProductBySlug(
   certSlug: string,
   productSlug: string
