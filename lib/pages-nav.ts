@@ -20,6 +20,7 @@ export const RESERVED_PAGE_SLUGS = new Set([
   "qco",
   "robots.txt",
   "search",
+  "sitemap",
   "sitemap.xml",
   "testing",
   "uploads",

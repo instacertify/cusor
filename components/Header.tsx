@@ -44,6 +44,7 @@ export default async function Header() {
   const resourceItems = [
     ...cmsSubmenuItems,
     { href: "/blog", label: "Blog", detail: "Compliance insights & how-tos", icon: "file" },
+    { href: "/sitemap", label: "Sitemap", detail: "All main pages in one list", icon: "table" },
   ];
 
   // Keep unique hrefs (prefer earlier CMS entries)

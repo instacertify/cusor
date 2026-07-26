@@ -36,6 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/blog`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE}/labs`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE}/qco`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE}/sitemap`, changeFrequency: "weekly", priority: 0.4 },
     ...(excludedPages.has("contact")
       ? []
       : [{ url: `${BASE}/contact`, changeFrequency: "monthly" as const, priority: 0.6 }]),

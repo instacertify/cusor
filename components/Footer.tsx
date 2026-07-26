@@ -76,6 +76,7 @@ export default async function Footer() {
             <li><Link href="/qco" className="inline-flex min-h-9 items-center hover:text-butter-400">Upcoming QCOs</Link></li>
             <li><Link href="/blog" className="inline-flex min-h-9 items-center hover:text-butter-400">Blog</Link></li>
             <li><Link href="/contact" className="inline-flex min-h-9 items-center hover:text-butter-400">Contact</Link></li>
+            <li><Link href="/sitemap" className="inline-flex min-h-9 items-center hover:text-butter-400">Sitemap</Link></li>
             {footerPages.map((p) => (
               <li key={p.slug}>
                 <Link
@@ -159,6 +160,12 @@ export default async function Footer() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink-400 text-center sm:text-left">
           <span>© {new Date().getFullYear()} {settings.site_name}.com — All rights reserved.</span>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <Link href="/sitemap" className="inline-flex min-h-9 items-center hover:text-butter-400">
+              Sitemap
+            </Link>
+            <Link href="/sitemap.xml" className="inline-flex min-h-9 items-center hover:text-butter-400">
+              XML Sitemap
+            </Link>
             <Link href="/privacy" className="inline-flex min-h-9 items-center hover:text-butter-400">
               Privacy Policy
             </Link>
