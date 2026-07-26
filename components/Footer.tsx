@@ -18,6 +18,40 @@ export default function Footer() {
           <p className="text-xs leading-relaxed max-w-md text-ink-400">
             {settings.footer_text}
           </p>
+          <div className="pt-2">
+            <h3 className="text-white font-display font-semibold mb-3 text-sm uppercase tracking-wider">
+              Contact
+            </h3>
+            <ul className="space-y-2.5 text-sm">
+              <li>
+                <Link href="/contact" className="inline-flex min-h-9 items-center font-semibold text-butter-400 hover:text-butter-300">
+                  Contact page →
+                </Link>
+              </li>
+              {settings.contact_address ? (
+                <li className="text-ink-300 leading-relaxed max-w-xs">
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-ink-500 mb-1">
+                    Our address
+                  </span>
+                  {settings.contact_address}
+                </li>
+              ) : null}
+              {settings.contact_email ? (
+                <li>
+                  <a href={`mailto:${settings.contact_email}`} className="inline-flex min-h-9 items-center hover:text-butter-400 break-all">
+                    {settings.contact_email}
+                  </a>
+                </li>
+              ) : null}
+              {settings.contact_phone ? (
+                <li>
+                  <a href={`tel:${settings.contact_phone.replace(/\s+/g, "")}`} className="inline-flex min-h-9 items-center hover:text-butter-400">
+                    {settings.contact_phone}
+                  </a>
+                </li>
+              ) : null}
+            </ul>
+          </div>
         </div>
         <div>
           <h3 className="text-white font-display font-semibold mb-3 text-sm uppercase tracking-wider">
@@ -33,7 +67,7 @@ export default function Footer() {
             <li><Link href="/guide" className="inline-flex min-h-9 items-center hover:text-butter-400">Guide</Link></li>
             <li><Link href="/blog" className="inline-flex min-h-9 items-center hover:text-butter-400">Blog</Link></li>
             <li><Link href="/about" className="inline-flex min-h-9 items-center hover:text-butter-400">About</Link></li>
-            <li><Link href="/contact" className="inline-flex min-h-9 items-center hover:text-butter-400">Get Help</Link></li>
+            <li><Link href="/contact" className="inline-flex min-h-9 items-center hover:text-butter-400">Contact</Link></li>
           </ul>
         </div>
         <div>

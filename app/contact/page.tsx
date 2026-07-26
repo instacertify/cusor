@@ -54,13 +54,25 @@ export default async function ContactPage({ searchParams }: Props) {
               </div>
             ))}
           </div>
-          <p className="mt-8 text-sm text-ink-600">
-            Prefer email? Write to{" "}
-            <a href={`mailto:${settings.contact_email}`} className="font-bold text-butter-700">
-              {settings.contact_email}
-            </a>{" "}
-            or call {settings.contact_phone}.
-          </p>
+          <div className="mt-8 space-y-3 text-sm text-ink-600">
+            {settings.contact_address ? (
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-ink-500 mb-1">Our address</p>
+                <p className="text-ink-800 font-medium leading-relaxed">{settings.contact_address}</p>
+              </div>
+            ) : null}
+            <p>
+              Prefer email? Write to{" "}
+              <a href={`mailto:${settings.contact_email}`} className="font-bold text-butter-700">
+                {settings.contact_email}
+              </a>{" "}
+              or call{" "}
+              <a href={`tel:${(settings.contact_phone || "").replace(/\s+/g, "")}`} className="font-bold text-butter-700">
+                {settings.contact_phone}
+              </a>
+              .
+            </p>
+          </div>
         </div>
 
         <div className="bg-white rounded-2xl sm:rounded-3xl border border-cream-300 shadow-card-hover p-5 sm:p-8">

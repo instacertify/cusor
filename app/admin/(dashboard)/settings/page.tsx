@@ -98,6 +98,12 @@ export default async function SettingsPage({ searchParams }: Props) {
             <Field label="Contact Email" name="contact_email" defaultValue={s.contact_email} />
             <Field label="Contact Phone" name="contact_phone" defaultValue={s.contact_phone} />
           </div>
+          <TextArea
+            label="Office Address"
+            name="contact_address"
+            defaultValue={s.contact_address}
+            rows={3}
+          />
           <Field label="Admin Password" name="admin_password" defaultValue={s.admin_password} type="text" />
         </section>
 
