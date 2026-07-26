@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getDb } from "@/lib/db";
+import { ensureDbReady, getDb } from "@/lib/db";
 import type { Certification } from "@/lib/db";
 import { getCertProducts } from "@/lib/queries";
 import { saveCertProduct } from "../../../../actions";
@@ -9,12 +9,17 @@ import CertProductExpandableList from "@/components/admin/CertProductExpandableL
 
 export const dynamic = "force-dynamic";
 
+function includesQ(value: string | null | undefined, q: string): boolean {
+  return (value ?? "").toLowerCase().includes(q);
+}
+
 interface Props {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ saved?: string; error?: string; edit?: string; q?: string }>;
 }
 
 export default async function AdminCertificationProductsList({ params, searchParams }: Props) {
+  await ensureDbReady();
   const { id } = await params;
   const sp = await searchParams;
   const cert = getDb()
@@ -27,11 +32,11 @@ export default async function AdminCertificationProductsList({ params, searchPar
   const products = q
     ? allProducts.filter(
         (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.standards.toLowerCase().includes(q) ||
-          p.family.toLowerCase().includes(q) ||
-          p.regime.toLowerCase().includes(q) ||
-          p.slug.toLowerCase().includes(q)
+          includesQ(p.name, q) ||
+          includesQ(p.standards, q) ||
+          includesQ(p.family, q) ||
+          includesQ(p.regime, q) ||
+          includesQ(p.slug, q)
       )
     : allProducts;
   const initialOpenId = sp.edit ? Number(sp.edit) || null : null;

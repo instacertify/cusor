@@ -1,14 +1,15 @@
 import Link from "next/link";
-import { getSettings } from "@/lib/db";
+import { ensureDbReady, getSettings } from "@/lib/db";
 import RequestQuoteButton, { type QuoteKind, quoteLabel } from "./RequestQuoteButton";
 
-export default function CtaBanner({
+export default async function CtaBanner({
   subject,
   kind = "general",
 }: {
   subject?: string;
   kind?: QuoteKind;
 } = {}) {
+  await ensureDbReady();
   const settings = getSettings();
   const heading =
     kind === "test" && subject

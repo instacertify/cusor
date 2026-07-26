@@ -1,12 +1,13 @@
 import Script from "next/script";
-import { getSettings } from "@/lib/db";
+import { ensureDbReady, getSettings } from "@/lib/db";
 
 function sanitizeId(value: string): string {
   return value.replace(/[^A-Za-z0-9_-]/g, "");
 }
 
 /** GA / GTM / custom tracking snippets from Admin → Site Settings. */
-export default function SiteIntegrations() {
+export default async function SiteIntegrations() {
+  await ensureDbReady();
   const s = getSettings();
   const ga4 = sanitizeId((s.ga4_measurement_id || "").trim());
   const gtm = sanitizeId((s.gtm_container_id || "").trim());
@@ -45,7 +46,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   );
 }
 
-export function SiteIntegrationsBody() {
+export async function SiteIntegrationsBody() {
+  await ensureDbReady();
   const s = getSettings();
   const gtm = sanitizeId((s.gtm_container_id || "").trim());
   const customBody = (s.custom_body_html || "").trim();

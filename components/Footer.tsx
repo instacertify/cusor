@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Logo from "./Logo";
-import { getSettings } from "@/lib/db";
+import { ensureDbReady, getSettings } from "@/lib/db";
 import {
   getCategories,
   getCertifications,
@@ -9,7 +9,8 @@ import {
 } from "@/lib/queries";
 import { pagePublicPath } from "@/lib/pages-nav";
 
-export default function Footer() {
+export default async function Footer() {
+  await ensureDbReady();
   const settings = getSettings();
   const topCategories = getCategories().slice(0, 6);
   const certifications = getCertifications();

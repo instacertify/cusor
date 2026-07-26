@@ -10,14 +10,15 @@ import {
   getRoutableContentPages,
 } from "@/lib/queries";
 import { pagePublicPath } from "@/lib/pages-nav";
-import { getDb } from "@/lib/db";
+import { ensureDbReady, getDb } from "@/lib/db";
 import { getSeoExclusions } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 const BASE = "https://certko.com";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  await ensureDbReady();
   // entities excluded via the admin SEO tools (sitemap_include = 0)
   const excludedPages = getSeoExclusions("page");
   const excludedProducts = getSeoExclusions("product");

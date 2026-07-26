@@ -6,7 +6,7 @@ import FaqAccordion from "@/components/FaqAccordion";
 import CtaBanner from "@/components/CtaBanner";
 import HeroSlider from "@/components/HeroSlider";
 import TestimonialStrip from "@/components/TestimonialStrip";
-import { getSettings } from "@/lib/db";
+import { ensureDbReady, getSettings } from "@/lib/db";
 import {
   getCategories,
   getFeaturedProducts,
@@ -36,7 +36,8 @@ const HOW_IT_WORKS = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  await ensureDbReady();
   const settings = getSettings();
   const heroSlides = getActiveHeroSlides();
   const categories = getCategories();

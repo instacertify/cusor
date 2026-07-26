@@ -3,10 +3,12 @@ import Logo from "./Logo";
 import SearchBox from "./SearchBox";
 import MobileNav from "./MobileNav";
 import NavDropdown from "./NavDropdown";
+import { ensureDbReady } from "@/lib/db";
 import { getCertifications, getTestingCategories, getPagesForNav } from "@/lib/queries";
 import { pagePublicPath } from "@/lib/pages-nav";
 
-export default function Header() {
+export default async function Header() {
+  await ensureDbReady();
   const certs = getCertifications();
   const testingCats = getTestingCategories();
   const menuPages = getPagesForNav("menu");

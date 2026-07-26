@@ -1,3 +1,4 @@
+import { ensureDbReady } from "@/lib/db";
 import { getRandomFeaturedTestimonials, getTestimonials } from "@/lib/queries";
 import type { Testimonial } from "@/lib/db";
 
@@ -59,6 +60,7 @@ export default async function TestimonialStrip({
   heading?: string;
   className?: string;
 } = {}) {
+  await ensureDbReady();
   const items =
     variant === "full"
       ? (() => {

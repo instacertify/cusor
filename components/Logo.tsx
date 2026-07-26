@@ -1,4 +1,4 @@
-import { getSetting } from "@/lib/db";
+import { ensureDbReady, getSetting } from "@/lib/db";
 
 const DEFAULT_PRIMARY = "/brand/certko-logo.png";
 const DEFAULT_ON_DARK = "/brand/certko-logo-light.png";
@@ -7,7 +7,7 @@ const DEFAULT_ON_DARK = "/brand/certko-logo-light.png";
  * Official CERTKO PNG logo — transparent, no extra background/pill.
  * Paths come from admin Site Settings when customized.
  */
-export default function Logo({
+export default async function Logo({
   width = 200,
   withTagline = true,
   variant = "primary",
@@ -24,6 +24,7 @@ export default function Logo({
   priority?: boolean;
 }) {
   void withTagline;
+  await ensureDbReady();
   const height = Math.round(width * 0.28);
   const onDark = variant === "reverse" || variant === "onDark";
   const src = onDark

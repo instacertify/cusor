@@ -5,10 +5,21 @@ import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
+import { ensureDbReady } from "@/lib/db";
 import { getLabs, getLabStates, getCategories, countLabs, getFaqs } from "@/lib/queries";
 import { formatPriceRange, formatNumber } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
+
+function parseLabCategories(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? parsed.map(String) : [];
+  } catch {
+    return [];
+  }
+}
 
 export const metadata: Metadata = {
   title: "BIS Testing Labs Directory | 400+ Recognised Labs Across India",
@@ -23,6 +34,7 @@ interface Props {
 }
 
 export default async function LabsPage({ searchParams }: Props) {
+  await ensureDbReady();
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
   const { labs, total } = getLabs({
@@ -103,7 +115,7 @@ export default async function LabsPage({ searchParams }: Props) {
 
       <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {labs.map((lab) => {
-          const cats = JSON.parse(lab.categories) as string[];
+          const cats = parseLabCategories(lab.categories);
           return (
             <Link
               key={lab.id}

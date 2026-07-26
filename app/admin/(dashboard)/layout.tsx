@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/auth";
+import { ensureDbReady } from "@/lib/db";
 import { logout } from "../actions";
 import AdminNav from "@/components/admin/AdminNav";
 
@@ -12,6 +13,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  await ensureDbReady();
   if (!(await isAdmin())) redirect("/admin/login");
 
   return (

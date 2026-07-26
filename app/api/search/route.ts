@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ensureDbReady } from "@/lib/db";
 import {
   searchProducts,
   searchCertProducts,
@@ -11,7 +12,12 @@ import {
 
 export const dynamic = "force-dynamic";
 
+function includesQ(value: string | null | undefined, q: string): boolean {
+  return (value ?? "").toLowerCase().includes(q);
+}
+
 export async function GET(req: NextRequest) {
+  await ensureDbReady();
   const q = req.nextUrl.searchParams.get("q")?.trim() ?? "";
   if (q.length < 2) return NextResponse.json({ results: [] });
 
@@ -20,10 +26,10 @@ export async function GET(req: NextRequest) {
   const certifications = getCertifications()
     .filter(
       (c) =>
-        c.name.toLowerCase().includes(lq) ||
-        c.full_name.toLowerCase().includes(lq) ||
-        c.slug.includes(lq) ||
-        c.summary.toLowerCase().includes(lq)
+        includesQ(c.name, lq) ||
+        includesQ(c.full_name, lq) ||
+        includesQ(c.slug, lq) ||
+        includesQ(c.summary, lq)
     )
     .slice(0, 3)
     .map((c) => ({
@@ -48,7 +54,7 @@ export async function GET(req: NextRequest) {
   }));
 
   const categories = getCategories()
-    .filter((c) => c.name.toLowerCase().includes(lq))
+    .filter((c) => includesQ(c.name, lq))
     .slice(0, 2)
     .map((c) => ({
       type: "category" as const,
@@ -60,9 +66,9 @@ export async function GET(req: NextRequest) {
   const testingCategories = getTestingCategories()
     .filter(
       (c) =>
-        c.name.toLowerCase().includes(lq) ||
-        c.summary.toLowerCase().includes(lq) ||
-        c.slug.includes(lq)
+        includesQ(c.name, lq) ||
+        includesQ(c.summary, lq) ||
+        includesQ(c.slug, lq)
     )
     .slice(0, 2)
     .map((c) => ({

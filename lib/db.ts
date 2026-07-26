@@ -348,7 +348,7 @@ function runEnsures(db: SqliteDatabase) {
   ensureTestimonialsLibrary(db);
 }
 
-/** Call once on server start (instrumentation / root layout). */
+/** Call once on server start (instrumentation / root layout). Idempotent. */
 export async function ensureDbReady(): Promise<void> {
   try {
     const dbPath = resolveDbPath();
@@ -365,10 +365,17 @@ export async function ensureDbReady(): Promise<void> {
   }
 }
 
+/**
+ * Eager init: any server import of this module waits until SQLite is ready.
+ * Fixes Next.js parallel RSC (pages/Header can run before layout's await finishes),
+ * which previously threw "Database not ready" → intermittent 500/503 on Hostinger.
+ */
+await ensureDbReady();
+
 export function getDb(): SqliteDatabase {
   if (!isSqliteReady() || !g.__certkoDb) {
     throw new Error(
-      "Database not ready yet. The server is still starting — refresh in a moment."
+      "Database not ready yet. ensureDbReady() must complete before handling requests."
     );
   }
   return g.__certkoDb;

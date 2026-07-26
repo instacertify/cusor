@@ -6,16 +6,28 @@ import ProductCard from "@/components/ProductCard";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
+import { ensureDbReady } from "@/lib/db";
 import { getLabBySlug, getProductsForLab, getFaqs } from "@/lib/queries";
 import { formatPriceRange } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
+
+function parseLabCategories(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? parsed.map(String) : [];
+  } catch {
+    return [];
+  }
+}
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  await ensureDbReady();
   const { slug } = await params;
   const lab = getLabBySlug(slug);
   if (!lab) return {};
@@ -26,11 +38,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function LabDetailPage({ params }: Props) {
+  await ensureDbReady();
   const { slug } = await params;
   const lab = getLabBySlug(slug);
   if (!lab) notFound();
   const products = getProductsForLab(lab.id, 24);
-  const cats = JSON.parse(lab.categories) as string[];
+  const cats = parseLabCategories(lab.categories);
   const faqs = getFaqs("page:labs");
 
   const facts = [

@@ -63,15 +63,12 @@ export default function CertProductCatalog({
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
+    const has = (value: string | null | undefined) =>
+      (value ?? "").toLowerCase().includes(needle);
     return items.filter((i) => {
       if (regime !== "all" && i.regime !== regime) return false;
       if (!needle) return true;
-      return (
-        i.name.toLowerCase().includes(needle) ||
-        i.standards.toLowerCase().includes(needle) ||
-        i.family.toLowerCase().includes(needle) ||
-        i.regime.toLowerCase().includes(needle)
-      );
+      return has(i.name) || has(i.standards) || has(i.family) || has(i.regime);
     });
   }, [items, q, regime]);
 
