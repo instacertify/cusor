@@ -8,7 +8,8 @@ import {
   checkPassword,
   clearAdminSession,
 } from "@/lib/auth";
-import { CAPTCHA_COOKIE, verifyCaptchaToken } from "@/lib/captcha";
+import { CAPTCHA_COOKIE, createCaptchaChallenge, verifyCaptchaToken } from "@/lib/captcha";
+import { shouldUseSecureCookies } from "@/lib/cookie-secure";
 import {
   clearLoginFailures,
   getClientIp,
@@ -44,19 +45,29 @@ async function login(formData: FormData) {
 
   const password = String(formData.get("password") ?? "");
   const captcha = String(formData.get("captcha") ?? "");
+  const formToken = String(formData.get("captcha_token") ?? "").trim();
   const next = safeNextPath(String(formData.get("next") ?? "/admin"));
   const jar = await cookies();
-  const captchaToken = jar.get(CAPTCHA_COOKIE)?.value;
+  const cookieToken = jar.get(CAPTCHA_COOKIE)?.value;
+  // Prefer form token — works even when Secure cookies are dropped on HTTP
+  const captchaToken = formToken || cookieToken || "";
 
   if (!verifyCaptchaToken(captchaToken, captcha)) {
     recordLoginFailure(ip);
     logAdminEvent("login_fail", ip, "bad_captcha");
-    jar.delete(CAPTCHA_COOKIE);
+    try {
+      jar.delete(CAPTCHA_COOKIE);
+    } catch {
+      /* ignore */
+    }
     redirect("/admin/login?error=captcha");
   }
 
-  // One-time captcha
-  jar.delete(CAPTCHA_COOKIE);
+  try {
+    jar.delete(CAPTCHA_COOKIE);
+  } catch {
+    /* ignore */
+  }
 
   if (!(await checkPassword(password))) {
     const n = recordLoginFailure(ip);
@@ -88,14 +99,28 @@ export default async function AdminLoginPage({ searchParams }: Props) {
   const locked = sp.error === "locked";
   const next = safeNextPath(sp.next);
 
-  // Ensure stale sessions cannot linger on the login screen
   if (sp.error === "session") {
     await clearAdminSession();
   }
 
+  // Server-rendered captcha so the form works even if the client fetch fails
+  const challenge = createCaptchaChallenge();
+  const hdrs = await headers();
+  const jar = await cookies();
+  try {
+    jar.set(CAPTCHA_COOKIE, challenge.token, {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 10,
+      secure: shouldUseSecureCookies(hdrs),
+    });
+  } catch {
+    // Setting cookies during render can fail in some contexts — form token still works
+  }
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0b1220] text-cream-50">
-      {/* Atmosphere */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-90"
@@ -166,7 +191,14 @@ export default async function AdminLoginPage({ searchParams }: Props) {
                 Enter password and captcha to open the CMS.
               </p>
             </div>
-            <AdminLoginForm action={login} error={error} locked={locked} nextPath={next} />
+            <AdminLoginForm
+              action={login}
+              error={error}
+              locked={locked}
+              nextPath={next}
+              initialSvg={challenge.svg}
+              initialToken={challenge.token}
+            />
             <p className="mt-6 text-center text-[11px] text-cream-200/45">
               Unauthorized access is blocked. All login attempts are audited.
             </p>

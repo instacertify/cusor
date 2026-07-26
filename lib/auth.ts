@@ -1,8 +1,9 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { getSetting, setSetting } from "./db";
 import { ADMIN_COOKIE } from "./session-edge";
+import { shouldUseSecureCookies } from "./cookie-secure";
 
 export { ADMIN_COOKIE };
 
@@ -52,12 +53,13 @@ export async function requireAdmin(): Promise<void> {
 
 export async function setAdminSession(): Promise<void> {
   const store = await cookies();
+  const hdrs = await headers();
   store.set(ADMIN_COOKIE, createSessionToken(), {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * SESSION_DAYS,
-    secure: process.env.NODE_ENV === "production",
+    secure: shouldUseSecureCookies(hdrs),
   });
 }
 

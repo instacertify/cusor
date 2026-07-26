@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
 import { CAPTCHA_COOKIE, createCaptchaChallenge } from "@/lib/captcha";
+import { shouldUseSecureCookies } from "@/lib/cookie-secure";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(request: Request) {
   const { svg, token } = createCaptchaChallenge();
+  const secure = shouldUseSecureCookies(request.headers);
+
+  // Token is an HMAC of the answer hash — safe to return to the client for
+  // form submit when Secure cookies are unavailable on HTTP.
   const res = NextResponse.json({
     svg,
-    // hint only for accessibility — never the answer
+    token,
     alt: "Enter the characters shown in the image",
   });
   res.cookies.set(CAPTCHA_COOKIE, token, {
@@ -16,7 +21,7 @@ export async function GET() {
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 10,
-    secure: process.env.NODE_ENV === "production",
+    secure,
   });
   res.headers.set("Cache-Control", "no-store");
   return res;

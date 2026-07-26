@@ -9,23 +9,24 @@ function getSecret(): string {
   return process.env.CERTKO_SECRET || "certko-dev-secret-change-me";
 }
 
-export function createCaptchaChallenge(): { svg: string; token: string } {
+export function createCaptchaChallenge(): { svg: string; token: string; text: string } {
   const captcha = svgCaptcha.create({
-    size: 5,
-    ignoreChars: "0oO1ilI",
-    noise: 3,
+    size: 4,
+    ignoreChars: "0oO1ilI9gq",
+    noise: 2,
     color: true,
-    background: "#f4f1ea",
-    width: 180,
-    height: 56,
-    fontSize: 48,
+    background: "#f7f4ec",
+    width: 200,
+    height: 64,
+    fontSize: 52,
+    charPreset: "ABCDEFGHJKLMNPQRSTUVWXYZ23456789",
   });
   const answer = captcha.text.toLowerCase();
   const expires = String(Date.now() + CAPTCHA_TTL_MS);
   const answerHash = crypto.createHash("sha256").update(`${answer}:${getSecret()}`).digest("hex");
   const payload = `${expires}.${answerHash}`;
   const token = `${payload}.${signPayload(payload)}`;
-  return { svg: captcha.data, token };
+  return { svg: captcha.data, token, text: captcha.text };
 }
 
 export function verifyCaptchaToken(
@@ -50,7 +51,8 @@ export function verifyCaptchaToken(
   }
   if (Number(expires) < Date.now()) return false;
 
-  const normalized = userAnswer.trim().toLowerCase();
+  // Accept case-insensitive; strip spaces
+  const normalized = userAnswer.trim().toLowerCase().replace(/\s+/g, "");
   const got = crypto
     .createHash("sha256")
     .update(`${normalized}:${getSecret()}`)
