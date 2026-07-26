@@ -28,7 +28,7 @@ export default async function AdminLoginPage({ searchParams }: Props) {
     <div className="min-h-[70vh] flex items-center justify-center px-4">
       <div className="w-full max-w-sm bg-white rounded-3xl border border-cream-300 shadow-card-hover p-8">
         <div className="flex justify-center mb-6">
-          <Logo width={180} />
+          <Logo width={220} withTagline />
         </div>
         <h1 className="font-display text-xl font-bold text-ink-950 text-center">Content Admin</h1>
         <p className="text-sm text-ink-600 text-center mt-1 mb-6">

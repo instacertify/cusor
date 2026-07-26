@@ -53,12 +53,12 @@
 }
 
 :root {
-  --header-height: 3.5rem; /* h-14 */
+  --header-height: 4.25rem; /* logo + tagline */
 }
 
 @media (min-width: 640px) {
   :root {
-    --header-height: 4rem; /* h-16 */
+    --header-height: 5rem;
   }
 }
 

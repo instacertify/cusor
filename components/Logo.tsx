@@ -1,65 +1,95 @@
 /**
- * CERTKO primary logo — Brand Guidelines v1.0
- * Wordmark: CERT (Dark Navy #16263D) + KO (Golden Amber #F7C453)
- * Three arrows: Knowledge → Compliance → Global Market Access
- *
- * Minimum website width: 180px. Never stretch, rotate, recolor, or add shadows.
+ * CERTKO official logo
+ * - lowercase "certko": cert = Dark Navy #16263D, ko = Golden Amber #F7C453
+ * - three chevrons: 1st navy, 2nd + 3rd amber
+ * - tagline: COMPLIANCE. (navy) ASSURED. (amber)
  */
+
+const NAVY = "#16263D";
+const AMBER = "#F7C453";
+
 export default function Logo({
-  size = 40,
+  width = 200,
+  withTagline = true,
   variant = "primary",
-  width,
 }: {
-  /** Approximate wordmark height; width defaults to brand minimum 180px */
-  size?: number;
-  variant?: "primary" | "reverse";
-  /** Override rendered width (brand minimum is 180 on website) */
   width?: number;
+  /** Show COMPLIANCE. ASSURED. under the wordmark */
+  withTagline?: boolean;
+  /**
+   * primary — navy/amber on light surfaces
+   * onDark — same brand colors (as provided on black); use on black/near-black only
+   * reverse — cream + amber for navy footer strips
+   */
+  variant?: "primary" | "onDark" | "reverse";
 }) {
-  const navy = variant === "reverse" ? "#FAF6EE" : "#16263D";
-  const amber = "#F7C453";
-  const w = width ?? Math.max(180, Math.round(size * 4.5));
-  const h = Math.round(w * 0.22);
+  const cert =
+    variant === "reverse" ? "#FAF6EE" : NAVY;
+  const ko = AMBER;
+  const arrow1 = variant === "reverse" ? "#FAF6EE" : NAVY;
+  const arrow2 = AMBER;
+  const arrow3 = AMBER;
+  const compliance = variant === "reverse" ? "#FAF6EE" : NAVY;
+  const assured = AMBER;
+
+  const viewW = 280;
+  const viewH = withTagline ? 78 : 48;
+  const height = Math.round((width * viewH) / viewW);
 
   return (
     <svg
-      width={w}
-      height={h}
-      viewBox="0 0 180 40"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${viewW} ${viewH}`}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
-      aria-label="CERTKO"
+      aria-label="certko — Compliance. Assured."
     >
+      {/* lowercase wordmark */}
       <text
         x="0"
-        y="28"
+        y="36"
         fontFamily="var(--font-display), Poppins, Arial, Helvetica, sans-serif"
         fontWeight="600"
-        fontSize="26"
-        letterSpacing="-0.5"
+        fontSize="34"
+        letterSpacing="-0.8"
       >
-        <tspan fill={navy}>CERT</tspan>
-        <tspan fill={amber}>KO</tspan>
+        <tspan fill={cert}>cert</tspan>
+        <tspan fill={ko}>ko</tspan>
       </text>
-      {/* Three forward arrows — progress / knowledge → compliance → markets */}
+
+      {/* three chevrons — first navy, next two amber */}
       <g
-        stroke={amber}
-        strokeWidth="3.2"
+        fill="none"
+        strokeWidth="4.2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        fill="none"
-        transform="translate(118, 8)"
+        transform="translate(148, 12)"
       >
-        <path d="M2 2l8 10-8 10" opacity="0.4" />
-        <path d="M14 2l8 10-8 10" opacity="0.7" />
-        <path d="M26 2l8 10-8 10" />
+        <path d="M2 2l12 12-12 12" stroke={arrow1} />
+        <path d="M20 2l12 12-12 12" stroke={arrow2} />
+        <path d="M38 2l12 12-12 12" stroke={arrow3} />
       </g>
+
+      {withTagline && (
+        <text
+          x="0"
+          y="68"
+          fontFamily="var(--font-display), Poppins, Arial, Helvetica, sans-serif"
+          fontWeight="600"
+          fontSize="11"
+          letterSpacing="3.2"
+        >
+          <tspan fill={compliance}>COMPLIANCE. </tspan>
+          <tspan fill={assured}>ASSURED.</tspan>
+        </text>
+      )}
     </svg>
   );
 }
 
-/** CK monogram mark for favicon / compact UI (Dark Navy + Golden Amber). */
+/** CK monogram + three arrows for favicon / compact UI */
 export function LogoMark({
   size = 32,
   variant = "primary",
@@ -67,8 +97,8 @@ export function LogoMark({
   size?: number;
   variant?: "primary" | "reverse";
 }) {
-  const bg = variant === "reverse" ? "#FAF6EE" : "#16263D";
-  const letter = variant === "reverse" ? "#16263D" : "#FAF6EE";
+  const bg = variant === "reverse" ? "#FAF6EE" : NAVY;
+  const c = variant === "reverse" ? NAVY : "#FAF6EE";
   return (
     <svg
       width={size}
@@ -77,30 +107,24 @@ export function LogoMark({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
-      aria-label="CERTKO"
+      aria-label="certko"
     >
       <rect width="48" height="48" rx="10" fill={bg} />
       <text
         x="24"
-        y="25"
+        y="24"
         textAnchor="middle"
         fontFamily="var(--font-display), Poppins, Arial, Helvetica, sans-serif"
         fontWeight="600"
-        fontSize="18"
-        fill={letter}
+        fontSize="16"
+        fill={c}
       >
-        C<tspan fill="#F7C453">K</tspan>
+        c<tspan fill={AMBER}>k</tspan>
       </text>
-      <g
-        stroke="#F7C453"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      >
-        <path d="M14 33l3.5 3.5L14 40" opacity="0.4" />
-        <path d="M22 33l3.5 3.5L22 40" opacity="0.7" />
-        <path d="M30 33l3.5 3.5L30 40" />
+      <g fill="none" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 33l3.5 3.5L14 40" stroke={variant === "reverse" ? NAVY : "#FAF6EE"} />
+        <path d="M22 33l3.5 3.5L22 40" stroke={AMBER} />
+        <path d="M30 33l3.5 3.5L30 40" stroke={AMBER} />
       </g>
     </svg>
   );
