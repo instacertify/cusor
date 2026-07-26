@@ -4,10 +4,17 @@ import { getDb, getSettings } from "@/lib/db";
 import { ADMIN_NAV_GROUPS } from "@/lib/admin-nav";
 import { isMailConfigured } from "@/lib/mail";
 import { resolveColorScheme } from "@/lib/color-schemes";
+import { clearSiteCache } from "../actions";
+import { SavedBanner, SubmitButton } from "@/components/admin/Field";
 
 export const dynamic = "force-dynamic";
 
-export default function AdminDashboard() {
+interface Props {
+  searchParams: Promise<{ cache?: string }>;
+}
+
+export default async function AdminDashboard({ searchParams }: Props) {
+  const sp = await searchParams;
   const db = getDb();
   const settings = getSettings();
   const scheme = resolveColorScheme(settings.color_scheme);
@@ -75,7 +82,7 @@ export default function AdminDashboard() {
             Jump into organised admin areas — content, catalogue, blog, SEO and email.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="inline-flex items-center rounded-full bg-cream-100 border border-cream-300 px-3 py-1 font-semibold text-ink-700">
             Theme: {scheme.name}
           </span>
@@ -88,7 +95,21 @@ export default function AdminDashboard() {
           >
             SMTP: {mailReady ? "Ready" : "Needs setup"}
           </span>
+          <form action={clearSiteCache}>
+            <input type="hidden" name="next" value="/admin" />
+            <SubmitButton
+              label="Clear cache"
+              className="inline-flex items-center rounded-full bg-ink-900 hover:bg-ink-800 px-3 py-1.5 font-semibold text-white transition disabled:opacity-60 disabled:cursor-wait"
+            />
+          </form>
         </div>
+      </div>
+
+      <div className="mt-6">
+        <SavedBanner
+          saved={sp.cache ? "1" : undefined}
+          message="Done — site cache cleared. Public pages will rebuild with the latest content."
+        />
       </div>
 
       <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-4">

@@ -29,8 +29,14 @@ export default function SavedBanner({
     cleaned.current = true;
     try {
       const url = new URL(window.location.href);
-      if (url.searchParams.has("saved")) {
-        url.searchParams.delete("saved");
+      let changed = false;
+      for (const key of ["saved", "cache"]) {
+        if (url.searchParams.has(key)) {
+          url.searchParams.delete(key);
+          changed = true;
+        }
+      }
+      if (changed) {
         const qs = url.searchParams.toString();
         window.history.replaceState(
           null,

@@ -21,6 +21,41 @@ function revalidateSoon(path: string, type?: "layout" | "page") {
   });
 }
 
+const PUBLIC_CACHE_PATHS = [
+  "/",
+  "/products",
+  "/products/all",
+  "/certifications",
+  "/testing",
+  "/labs",
+  "/blog",
+  "/contact",
+  "/qco",
+  "/search",
+  "/sitemap",
+  "/sitemap.xml",
+  "/guide",
+  "/about",
+] as const;
+
+/** Manual “Clear cache” from admin — force public pages to rebuild. */
+export async function clearSiteCache(formData?: FormData) {
+  await requireAdmin();
+  const { clearGmarkCache } = await import("@/lib/gmark");
+  clearGmarkCache();
+
+  // Run synchronously so the Done confirmation means cache is already cleared.
+  revalidatePath("/", "layout");
+  for (const p of PUBLIC_CACHE_PATHS) {
+    revalidatePath(p);
+  }
+
+  logAdminEvent("cache_cleared", "", "manual_clear_cache");
+  const nextRaw = String(formData?.get("next") ?? "/admin/settings").trim();
+  const next = nextRaw.startsWith("/admin") ? nextRaw.split("?")[0] : "/admin/settings";
+  redirect(`${next}?cache=1`);
+}
+
 async function saveUploadedImage(file: File | null): Promise<string | null> {
   if (!file || file.size === 0) return null;
   const ext = path.extname(file.name).toLowerCase();

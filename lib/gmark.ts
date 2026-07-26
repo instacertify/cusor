@@ -12,6 +12,10 @@ export interface GmarkCategory {
 
 let cache: GmarkCategory[] | null = null;
 
+export function clearGmarkCache() {
+  cache = null;
+}
+
 export function getGmarkCategories(): GmarkCategory[] {
   if (cache) return cache;
   const file = path.join(process.cwd(), "data", "gmark_categories.json");
