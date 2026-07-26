@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 const PAGE_SCOPES = [
   { value: "global", label: "Homepage (global)" },
   { value: "page:products", label: "Products page" },
+  { value: "page:testing", label: "Product Testing (index)" },
   { value: "page:labs", label: "Labs pages" },
   { value: "page:qco", label: "QCO Alerts page" },
   { value: "page:contact", label: "Contact page" },
@@ -31,9 +32,28 @@ export default async function AdminFaqs({ searchParams }: Props) {
   const categories = getDb()
     .prepare("SELECT id, name FROM categories ORDER BY name")
     .all() as { id: number; name: string }[];
+  const testingCategories = getDb()
+    .prepare("SELECT id, slug, name FROM testing_categories ORDER BY sort, name")
+    .all() as { id: number; slug: string; name: string }[];
+  const testingServices = getDb()
+    .prepare(
+      `SELECT s.id, s.name, c.name AS category_name
+       FROM testing_services s
+       JOIN testing_categories c ON c.id = s.category_id
+       ORDER BY c.sort, s.sort, s.name`
+    )
+    .all() as { id: number; name: string; category_name: string }[];
   const scopeOptions = [
     ...PAGE_SCOPES,
-    ...categories.map((c) => ({ value: `category:${c.id}`, label: `Category: ${c.name}` })),
+    ...testingCategories.map((c) => ({
+      value: `testcat:${c.slug}`,
+      label: `Testing category: ${c.name}`,
+    })),
+    ...testingServices.map((s) => ({
+      value: `test:${s.id}`,
+      label: `Test: ${s.name} (${s.category_name})`,
+    })),
+    ...categories.map((c) => ({ value: `category:${c.id}`, label: `BIS Category: ${c.name}` })),
   ];
   const currentLabel = scopeOptions.find((s) => s.value === scope)?.label ?? scope;
 
@@ -41,8 +61,9 @@ export default async function AdminFaqs({ searchParams }: Props) {
     <div>
       <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">FAQs</h1>
       <p className="text-ink-600 text-sm mb-6">
-        Every public page has its own FAQ section. Pick a page to edit its FAQs.
-        Per-product FAQs are edited inside each product.
+        Every public page has its own FAQ section. Pick a page to edit its FAQs —
+        including Product Testing index, testing categories and individual tests.
+        You can also edit testing FAQs inside Admin → Product Testing.
       </p>
 
       <form action="/admin/faqs" method="GET" className="mb-6 flex items-center gap-3">

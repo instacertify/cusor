@@ -233,6 +233,46 @@ function defaultFaqs(categoryName: string): { question: string; answer: string }
   ];
 }
 
+function seedServiceFaqsIfEmpty(db: Database.Database) {
+  const services = db
+    .prepare("SELECT id, name, standards, test_type, accreditation FROM testing_services")
+    .all() as {
+    id: number;
+    name: string;
+    standards: string;
+    test_type: string;
+    accreditation: string;
+  }[];
+  const countFaq = db.prepare("SELECT COUNT(*) AS n FROM faqs WHERE scope = ?");
+  const insFaq = db.prepare(
+    "INSERT INTO faqs (scope, question, answer, sort) VALUES (?, ?, ?, ?)"
+  );
+
+  for (const s of services) {
+    const n = (countFaq.get(`test:${s.id}`) as { n: number }).n;
+    if (n > 0) continue;
+    const faqs = [
+      {
+        q: `What does “${s.name}” cover?`,
+        a: `${s.name} covers the key parameters for this product/test type${
+          s.standards ? ` under ${s.standards}` : ""
+        }. Review the writeup on this page for scope details, then request a quote for your exact sample.`,
+      },
+      {
+        q: "Which accreditation applies?",
+        a: s.accreditation
+          ? `This scope is typically run in ${s.accreditation} accredited laboratories. Confirm the exact lab and NABL scope on your quotation.`
+          : "Most Certko-mapped scopes use ISO/IEC 17025 / NABL accredited laboratories. Confirm on your quotation.",
+      },
+      {
+        q: "How do I get a quote for this test?",
+        a: "Use Get Expert Help / Contact with your product name, target market and any buyer specification. We map the lab, sample size and indicative turnaround.",
+      },
+    ];
+    faqs.forEach((f, i) => insFaq.run(`test:${s.id}`, f.q, f.a, i));
+  }
+}
+
 export function ensureTestingCatalog(db: Database.Database) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS testing_categories (
@@ -272,7 +312,10 @@ export function ensureTestingCatalog(db: Database.Database) {
   const count = (
     db.prepare("SELECT COUNT(*) AS n FROM testing_categories").get() as { n: number }
   ).n;
-  if (count > 0) return;
+  if (count > 0) {
+    seedServiceFaqsIfEmpty(db);
+    return;
+  }
 
   const insCat = db.prepare(
     `INSERT INTO testing_categories (slug, name, icon, summary, content, image, meta_title, meta_description, sort)
@@ -348,4 +391,5 @@ export function ensureTestingCatalog(db: Database.Database) {
     ].forEach((f, i) => insFaq.run("page:testing", f.q, f.a, i));
   });
   tx();
+  seedServiceFaqsIfEmpty(db);
 }

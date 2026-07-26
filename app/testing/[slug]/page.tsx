@@ -144,12 +144,9 @@ export default async function TestingCategoryPage({ params }: Props) {
         )}
       </section>
 
-      {faqs.length > 0 && (
-        <section className="mt-14">
-          <h2 className="font-display text-2xl font-semibold text-ink-950 mb-4">FAQs</h2>
-          <FaqAccordion faqs={faqs} />
-        </section>
-      )}
+      <section className="mt-14" id="faqs">
+        <FaqAccordion faqs={faqs} heading={`FAQs about ${cat.name}`} />
+      </section>
 
       {others.length > 0 && (
         <section className="mt-14">

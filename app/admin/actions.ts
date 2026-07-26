@@ -813,26 +813,45 @@ export async function saveTestingService(formData: FormData) {
       .get(categoryId, slug);
     if (clash) slug = `${slug}-${Date.now().toString(36)}`;
     const image = uploaded ?? "";
-    db.prepare(
-      `INSERT INTO testing_services
+    const res = db
+      .prepare(
+        `INSERT INTO testing_services
         (category_id, slug, name, product_category, standards, test_type, accreditation, summary, content, image, meta_title, meta_description, sort)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).run(
-      categoryId,
-      slug,
-      values.name,
-      values.product_category,
-      values.standards,
-      values.test_type,
-      values.accreditation,
-      values.summary,
-      values.content ||
-        `## ${values.name}\n\nDescribe the test method, sample requirements, turnaround and how Certko helps.`,
-      image,
-      values.meta_title || `${values.name} Testing | Certko`,
-      values.meta_description || values.summary,
-      values.sort
+      )
+      .run(
+        categoryId,
+        slug,
+        values.name,
+        values.product_category,
+        values.standards,
+        values.test_type,
+        values.accreditation,
+        values.summary,
+        values.content ||
+          `## ${values.name}\n\nDescribe the test method, sample requirements, turnaround and how Certko helps.`,
+        image,
+        values.meta_title || `${values.name} Testing | Certko`,
+        values.meta_description || values.summary,
+        values.sort
+      );
+    const newId = Number(res.lastInsertRowid);
+    const starterFaqs = [
+      [
+        `What does “${values.name}” cover?`,
+        `${values.name} covers the key parameters for this test${
+          values.standards ? ` under ${values.standards}` : ""
+        }. Edit this FAQ in admin with your exact scope notes.`,
+      ],
+      [
+        "How do I get a quote?",
+        "Use Contact / Get Expert Help with your product details for a mapped lab quote.",
+      ],
+    ];
+    const insFaq = db.prepare(
+      "INSERT INTO faqs (scope, question, answer, sort) VALUES (?, ?, ?, ?)"
     );
+    starterFaqs.forEach(([q, a], i) => insFaq.run(`test:${newId}`, q, a, i));
   }
 
   revalidatePath("/", "layout");

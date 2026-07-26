@@ -66,12 +66,9 @@ export default function TestingIndexPage() {
         ))}
       </div>
 
-      {faqs.length > 0 && (
-        <section className="mt-16">
-          <h2 className="font-display text-2xl font-semibold text-ink-950 mb-4">FAQs</h2>
-          <FaqAccordion faqs={faqs} />
-        </section>
-      )}
+      <section className="mt-16" id="faqs">
+        <FaqAccordion faqs={faqs} heading="Product Testing FAQs" />
+      </section>
 
       <div className="mt-16">
         <CtaBanner />

@@ -114,10 +114,14 @@ export default async function AdminTestingEdit({ params, searchParams }: Props) 
         </div>
       </section>
 
-      <section className="mt-10">
-        <h2 className="font-display text-xl font-bold text-ink-950 mb-4">
+      <section className="mt-10" id="faqs">
+        <h2 className="font-display text-xl font-bold text-ink-950 mb-1">
           {cat.name} FAQs ({faqs.length})
         </h2>
+        <p className="text-sm text-ink-600 mb-4">
+          These FAQs appear on the public category page. Each test below also has its own FAQ
+          editor. You can manage all testing FAQs from Admin → FAQs as well.
+        </p>
         <div className="space-y-4">
           {faqs.map((f) => (
             <div key={f.id} className="bg-white rounded-2xl border border-cream-300 shadow-card p-5">
