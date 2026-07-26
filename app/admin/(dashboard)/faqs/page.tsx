@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { saveFaq, deleteFaq } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton } from "@/components/admin/Field";
 import BulkImportLink from "@/components/admin/BulkImportLink";
+import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 
 export const dynamic = "force-dynamic";
 
@@ -104,11 +105,11 @@ export default async function AdminFaqs({ searchParams }: Props) {
               <TextArea label="Answer" name="answer" defaultValue={f.answer} rows={3} />
               <SubmitButton label="Save FAQ" />
             </form>
-            <form action={deleteFaq} className="mt-2">
+            <ConfirmDeleteForm action={deleteFaq} className="mt-2" itemLabel="this FAQ">
               <input type="hidden" name="id" value={f.id} />
               <input type="hidden" name="back" value={back} />
               <button className="text-xs font-semibold text-red-600 hover:text-red-700">Delete FAQ</button>
-            </form>
+            </ConfirmDeleteForm>
           </div>
         ))}
         {faqs.length === 0 && (

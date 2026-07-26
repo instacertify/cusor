@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getCertifications, getCertProductById } from "@/lib/queries";
 import { saveCertProduct, deleteCertProduct } from "../../../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 
 export const dynamic = "force-dynamic";
 
@@ -110,13 +111,17 @@ export default async function AdminCertProductEdit({ params, searchParams }: Pro
         <SubmitButton label="Save covered product" />
       </form>
 
-      <form action={deleteCertProduct} className="pt-6 border-t border-cream-300">
+      <ConfirmDeleteForm
+        action={deleteCertProduct}
+        className="pt-6 border-t border-cream-300"
+        itemLabel={`“${product.name}”`}
+      >
         <input type="hidden" name="id" value={product.id} />
         <input type="hidden" name="certification_id" value={product.certification_id} />
         <button className="text-sm font-semibold text-red-600 hover:text-red-700">
           Delete this covered product
         </button>
-      </form>
+      </ConfirmDeleteForm>
     </div>
   );
 }

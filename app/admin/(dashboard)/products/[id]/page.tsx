@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getProductById, getFaqs } from "@/lib/queries";
 import { saveProduct, saveFaq, deleteFaq, removeProductImage } from "../../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 
 export const dynamic = "force-dynamic";
 
@@ -119,11 +120,11 @@ export default async function AdminProductEdit({ params, searchParams }: Props) 
                   <SubmitButton label="Save FAQ" />
                 </div>
               </form>
-              <form action={deleteFaq} className="mt-2">
+              <ConfirmDeleteForm action={deleteFaq} className="mt-2" itemLabel="this FAQ">
                 <input type="hidden" name="id" value={f.id} />
                 <input type="hidden" name="back" value={back} />
                 <button className="text-xs font-semibold text-red-600 hover:text-red-700">Delete FAQ</button>
-              </form>
+              </ConfirmDeleteForm>
             </div>
           ))}
         </div>

@@ -12,6 +12,7 @@ import {
   deleteFaq,
 } from "../../../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 
 export const dynamic = "force-dynamic";
 
@@ -101,13 +102,13 @@ export default async function AdminTestingServiceEdit({ params, searchParams }: 
                   <TextArea label="Answer" name="answer" defaultValue={f.answer} rows={3} />
                   <SubmitButton label="Save FAQ" />
                 </form>
-                <form action={deleteFaq} className="mt-2">
+                <ConfirmDeleteForm action={deleteFaq} className="mt-2" itemLabel="this FAQ">
                   <input type="hidden" name="id" value={f.id} />
                   <input type="hidden" name="back" value={`${back}#faqs`} />
                   <button className="text-xs font-semibold text-red-600 hover:text-red-700">
                     Delete FAQ
                   </button>
-                </form>
+                </ConfirmDeleteForm>
               </div>
             ))}
           </div>
@@ -193,13 +194,17 @@ export default async function AdminTestingServiceEdit({ params, searchParams }: 
         <SubmitButton label="Save test details" />
       </form>
 
-      <form action={deleteTestingService} className="pt-6 border-t border-cream-300">
+      <ConfirmDeleteForm
+        action={deleteTestingService}
+        className="pt-6 border-t border-cream-300"
+        itemLabel={`“${service.name}” and its FAQs`}
+      >
         <input type="hidden" name="id" value={service.id} />
         <input type="hidden" name="category_id" value={service.category_id} />
         <button className="text-sm font-semibold text-red-600 hover:text-red-700">
           Delete this test and its FAQs
         </button>
-      </form>
+      </ConfirmDeleteForm>
     </div>
   );
 }

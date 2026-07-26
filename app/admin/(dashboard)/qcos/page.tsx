@@ -2,6 +2,7 @@ import { getUpcomingQcos } from "@/lib/queries";
 import { saveQco, deleteQco } from "../../actions";
 import { Field, SavedBanner, SubmitButton } from "@/components/admin/Field";
 import BulkImportLink from "@/components/admin/BulkImportLink";
+import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 
 export const dynamic = "force-dynamic";
 
@@ -55,10 +56,10 @@ export default async function AdminQcos({ searchParams }: Props) {
               </div>
               <SubmitButton label="Save" />
             </form>
-            <form action={deleteQco} className="mt-2">
+            <ConfirmDeleteForm action={deleteQco} className="mt-2" itemLabel={`QCO “${q.product}”`}>
               <input type="hidden" name="id" value={q.id} />
               <button className="text-xs font-semibold text-red-600 hover:text-red-700">Delete</button>
-            </form>
+            </ConfirmDeleteForm>
           </div>
         ))}
       </div>

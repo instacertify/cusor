@@ -11,6 +11,7 @@ import {
   saveTestingService,
 } from "../../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 
 export const dynamic = "force-dynamic";
 
@@ -204,11 +205,11 @@ export default async function AdminTestingEdit({ params, searchParams }: Props) 
                 <TextArea label="Answer" name="answer" defaultValue={f.answer} rows={3} />
                 <SubmitButton label="Save FAQ" />
               </form>
-              <form action={deleteFaq} className="mt-2">
+              <ConfirmDeleteForm action={deleteFaq} className="mt-2" itemLabel="this FAQ">
                 <input type="hidden" name="id" value={f.id} />
                 <input type="hidden" name="back" value={back} />
                 <button className="text-xs font-semibold text-red-600 hover:text-red-700">Delete FAQ</button>
-              </form>
+              </ConfirmDeleteForm>
             </div>
           ))}
         </div>
@@ -225,12 +226,16 @@ export default async function AdminTestingEdit({ params, searchParams }: Props) 
         </div>
       </section>
 
-      <form action={deleteTestingCategory} className="mt-12 pt-6 border-t border-cream-300">
+      <ConfirmDeleteForm
+        action={deleteTestingCategory}
+        className="mt-12 pt-6 border-t border-cream-300"
+        itemLabel={`“${cat.name}” and all its test pages`}
+      >
         <input type="hidden" name="id" value={cat.id} />
         <button className="text-sm font-semibold text-red-600 hover:text-red-700">
           Delete this category and all its test pages
         </button>
-      </form>
+      </ConfirmDeleteForm>
     </div>
   );
 }

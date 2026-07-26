@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getAuthorById } from "@/lib/queries";
 import { saveAuthor, deleteAuthor } from "../../../actions";
+import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 
 export const dynamic = "force-dynamic";
@@ -60,12 +61,16 @@ export default async function AdminAuthorEditPage({ params, searchParams }: Prop
         <SubmitButton label="Save author profile" />
       </form>
 
-      <form action={deleteAuthor} className="mt-4">
+      <ConfirmDeleteForm
+        action={deleteAuthor}
+        className="mt-4"
+        itemLabel={`author “${author.name}”`}
+      >
         <input type="hidden" name="id" value={author.id} />
         <button className="text-xs font-semibold text-red-600 hover:text-red-700">
           Delete author (posts reassign to another author)
         </button>
-      </form>
+      </ConfirmDeleteForm>
     </div>
   );
 }

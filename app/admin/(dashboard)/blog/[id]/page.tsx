@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPostById, getAuthors } from "@/lib/queries";
 import { savePost, deletePost } from "../../../actions";
+import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 
 export const dynamic = "force-dynamic";
@@ -102,12 +103,12 @@ export default async function AdminPostEdit({ params, searchParams }: Props) {
         <SubmitButton label={post.status === "published" ? "Save & Update Live Post" : "Save Draft"} />
       </form>
 
-      <form action={deletePost} className="mt-4">
+      <ConfirmDeleteForm action={deletePost} className="mt-4" itemLabel={`post “${post.title}”`}>
         <input type="hidden" name="id" value={post.id} />
         <button className="text-xs font-semibold text-red-600 hover:text-red-700">
           Delete this post permanently
         </button>
-      </form>
+      </ConfirmDeleteForm>
     </div>
   );
 }

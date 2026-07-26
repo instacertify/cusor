@@ -2,6 +2,7 @@ import { getTestimonials } from "@/lib/queries";
 import { saveTestimonial, deleteTestimonial } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton } from "@/components/admin/Field";
 import BulkImportLink from "@/components/admin/BulkImportLink";
+import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 
 export const dynamic = "force-dynamic";
 
@@ -35,10 +36,14 @@ export default async function AdminTestimonials({ searchParams }: Props) {
               <TextArea label="Quote" name="quote" defaultValue={t.quote} rows={3} />
               <SubmitButton label="Save" />
             </form>
-            <form action={deleteTestimonial} className="mt-2">
+            <ConfirmDeleteForm
+              action={deleteTestimonial}
+              className="mt-2"
+              itemLabel={`testimonial from “${t.name}”`}
+            >
               <input type="hidden" name="id" value={t.id} />
               <button className="text-xs font-semibold text-red-600 hover:text-red-700">Delete</button>
-            </form>
+            </ConfirmDeleteForm>
           </div>
         ))}
       </div>

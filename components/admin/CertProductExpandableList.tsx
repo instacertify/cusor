@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { CertProduct } from "@/lib/db";
 import { saveCertProduct, deleteCertProduct } from "@/app/admin/actions";
 import { Field, TextArea, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 
 export default function CertProductExpandableList({
   products,
@@ -128,13 +129,17 @@ export default function CertProductExpandableList({
                     </button>
                   </div>
                 </form>
-                <form action={deleteCertProduct} className="mt-3">
+                <ConfirmDeleteForm
+                  action={deleteCertProduct}
+                  className="mt-3"
+                  itemLabel={`“${p.name}”`}
+                >
                   <input type="hidden" name="id" value={p.id} />
                   <input type="hidden" name="certification_id" value={certificationId} />
                   <button className="text-xs font-semibold text-red-600 hover:text-red-700">
                     Delete this product
                   </button>
-                </form>
+                </ConfirmDeleteForm>
               </div>
             )}
           </li>

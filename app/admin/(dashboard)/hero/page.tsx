@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { getAllHeroSlides } from "@/lib/queries";
 import { saveHeroSlide, deleteHeroSlide } from "../../actions";
+import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 import { Field, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 
 export const dynamic = "force-dynamic";
@@ -97,10 +98,10 @@ export default async function AdminHeroPage({ searchParams }: Props) {
               ) : null}
               <SubmitButton label="Save slide" />
             </form>
-            <form action={deleteHeroSlide}>
+            <ConfirmDeleteForm action={deleteHeroSlide} itemLabel="this hero slide">
               <input type="hidden" name="id" value={s.id} />
               <button className="text-xs font-semibold text-red-600 hover:text-red-700">Delete slide</button>
-            </form>
+            </ConfirmDeleteForm>
           </div>
         ))}
         {slides.length === 0 ? (

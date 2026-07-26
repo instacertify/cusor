@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getPage } from "@/lib/queries";
 import { pagePublicPath } from "@/lib/pages-nav";
 import { savePage, deletePage } from "../../../actions";
+import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import PageNavPlacement from "@/components/admin/PageNavPlacement";
 
@@ -76,12 +77,12 @@ export default async function AdminPageEdit({ params, searchParams }: Props) {
       </form>
 
       {!PROTECTED.has(page.slug) ? (
-        <form action={deletePage} className="mt-4">
+        <ConfirmDeleteForm action={deletePage} className="mt-4" itemLabel={`page “${page.title}”`}>
           <input type="hidden" name="slug" value={page.slug} />
           <button className="text-xs font-semibold text-red-600 hover:text-red-700">
             Delete this page
           </button>
-        </form>
+        </ConfirmDeleteForm>
       ) : null}
     </div>
   );
