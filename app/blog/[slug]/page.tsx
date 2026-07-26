@@ -166,7 +166,7 @@ export default async function BlogPostPage({ params }: Props) {
       )}
 
       <div className="mt-16">
-        <CtaBanner />
+        <CtaBanner subject="BIS certification consulting" kind="certification" />
       </div>
     </div>
   );

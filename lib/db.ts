@@ -5,6 +5,7 @@ import { seedDatabase } from "./seed";
 import { ensureCertProductsCatalog } from "./seed-cert-products";
 import { ensureTestingCatalog } from "./seed-testing";
 import { ensureAuthorsCatalog } from "./authors";
+import { ensureSeoLocationPosts } from "./seed-seo-posts";
 import { ensurePagesNavColumns } from "./pages-nav";
 import { ensureHeroSlidesCatalog } from "./hero-slides";
 
@@ -297,6 +298,7 @@ function createDb(): Database.Database {
   ensureCertProductsCatalog(db);
   ensureTestingCatalog(db);
   ensureAuthorsCatalog(db);
+  ensureSeoLocationPosts(db);
   ensurePagesNavColumns(db);
   ensureHeroSlidesCatalog(db);
   return db;
@@ -310,6 +312,7 @@ export function getDb(): Database.Database {
     ensureCertProductsCatalog(global.__certkoDb);
     ensureTestingCatalog(global.__certkoDb);
     ensureAuthorsCatalog(global.__certkoDb);
+    ensureSeoLocationPosts(global.__certkoDb);
     ensurePagesNavColumns(global.__certkoDb);
     ensureHeroSlidesCatalog(global.__certkoDb);
   }
