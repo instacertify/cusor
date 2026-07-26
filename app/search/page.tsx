@@ -36,7 +36,7 @@ export default async function SearchPage({ searchParams }: Props) {
         {q ? `Results for “${q}”` : "Search"}
       </h1>
       <div className="mt-6 max-w-xl">
-        <SearchBox large placeholder="Search product, IS standard or lab…" />
+        <SearchBox large placeholder="Search product, IS standard, HSN code or lab…" />
       </div>
 
       {q && (

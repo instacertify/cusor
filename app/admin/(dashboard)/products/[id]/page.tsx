@@ -62,6 +62,12 @@ export default async function AdminProductEdit({ params, searchParams }: Props) 
               Featured on homepage
             </label>
           </div>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <Field label="HSN Code (4-digit)" name="hsn4" defaultValue={product.hsn4} placeholder="e.g. 8516" />
+            <Field label="HSN Code (8-digit)" name="hsn8" defaultValue={product.hsn8} placeholder="e.g. 85161000" />
+            <Field label="QCO Status" name="qco_status" defaultValue={product.qco_status} placeholder="e.g. Mandatory (QCO in force)" />
+          </div>
+          <Field label="Applicable QCO / Order" name="qco_order" defaultValue={product.qco_order} placeholder="Order name and effective date" />
           <ImageUpload current={product.image} label="Product Image" />
         </section>
 

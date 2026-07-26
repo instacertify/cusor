@@ -13,6 +13,7 @@ const NAV = [
   { href: "/admin/pages", label: "Pages", icon: "📄" },
   { href: "/admin/categories", label: "Categories", icon: "🗂️" },
   { href: "/admin/products", label: "Products", icon: "📦" },
+  { href: "/admin/qcos", label: "QCO Alerts", icon: "🔔" },
   { href: "/admin/faqs", label: "FAQs", icon: "❓" },
   { href: "/admin/testimonials", label: "Testimonials", icon: "⭐" },
   { href: "/admin/inquiries", label: "Inquiries", icon: "📥" },

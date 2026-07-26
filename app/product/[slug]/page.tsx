@@ -83,11 +83,19 @@ export default async function ProductPage({ params }: Props) {
   const facts = [
     { label: "IS Standard", value: product.standard || "—" },
     { label: "Scheme", value: product.scheme === "CRS" ? "CRS Registration" : "ISI Mark Licence" },
+    { label: "HSN Code", value: product.hsn8 || product.hsn4 || "—" },
     { label: "Test Cost Range", value: formatPriceRange(product.min_price, product.max_price) },
     { label: "Approved Labs", value: String(product.lab_count) },
     { label: "Typical Timeline", value: product.timeline },
-    { label: "Category", value: product.category_name ?? "" },
   ];
+
+  const qcoBadge = product.qco_status
+    ? product.qco_status.startsWith("Mandatory")
+      ? "bg-red-100 text-red-700"
+      : product.qco_status.startsWith("Upcoming") || product.qco_status.startsWith("Notified")
+      ? "bg-butter-300/60 text-butter-700"
+      : "bg-green-100 text-green-700"
+    : "";
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
@@ -105,7 +113,7 @@ export default async function ProductPage({ params }: Props) {
 
       <div className="grid lg:grid-cols-[1.5fr_1fr] gap-10">
         <div>
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2 mb-4">
             <span
               className={`text-xs font-bold uppercase tracking-wide rounded-full px-3 py-1 ${
                 product.scheme === "CRS"
@@ -115,6 +123,11 @@ export default async function ProductPage({ params }: Props) {
             >
               {product.scheme}
             </span>
+            {product.qco_status && (
+              <span className={`text-xs font-bold rounded-full px-3 py-1 ${qcoBadge}`}>
+                {product.qco_status}
+              </span>
+            )}
             <span className="text-xs font-semibold text-ink-500">{product.standard}</span>
           </div>
           <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-ink-950 tracking-tight leading-tight">
@@ -129,6 +142,12 @@ export default async function ProductPage({ params }: Props) {
               </div>
             ))}
           </div>
+
+          {product.qco_order && (
+            <p className="mt-4 bg-cream-100 border border-cream-300 rounded-2xl px-5 py-3.5 text-sm text-ink-700">
+              <span className="font-bold text-ink-950">Applicable order:</span> {product.qco_order}
+            </p>
+          )}
 
           <article
             className="prose-certko mt-8"

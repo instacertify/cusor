@@ -1,5 +1,5 @@
 import { getDb } from "./db";
-import type { Category, Product, Lab, Faq, PageRecord, Testimonial } from "./db";
+import type { Category, Product, Lab, Faq, PageRecord, Testimonial, Qco } from "./db";
 
 // ---------- categories ----------
 export function getCategories(): Category[] {
@@ -57,25 +57,35 @@ export function getRelatedProducts(product: Product, limit = 4): Product[] {
     .all(product.category_id, product.id, limit) as Product[];
 }
 
+const SEARCH_WHERE = `p.name LIKE @like OR p.standard LIKE @like OR c.name LIKE @like
+  OR (@hsn != '' AND (p.hsn4 LIKE @hsn OR p.hsn8 LIKE @hsn))`;
+
+function searchParamsFor(q: string) {
+  const trimmed = q.trim();
+  return {
+    like: `%${trimmed.replace(/\s+/g, "%")}%`,
+    // numeric queries also match HSN codes (prefix match)
+    hsn: /^\d{2,8}$/.test(trimmed) ? `${trimmed}%` : "",
+  };
+}
+
 export function searchProducts(q: string, limit = 30, offset = 0): Product[] {
-  const like = `%${q.trim().replace(/\s+/g, "%")}%`;
   return getDb()
     .prepare(
       `${PRODUCT_SELECT}
-       WHERE p.name LIKE ? OR p.standard LIKE ? OR c.name LIKE ?
-       ORDER BY p.lab_count DESC LIMIT ? OFFSET ?`
+       WHERE ${SEARCH_WHERE}
+       ORDER BY p.lab_count DESC LIMIT @limit OFFSET @offset`
     )
-    .all(like, like, like, limit, offset) as Product[];
+    .all({ ...searchParamsFor(q), limit, offset }) as Product[];
 }
 
 export function countSearchProducts(q: string): number {
-  const like = `%${q.trim().replace(/\s+/g, "%")}%`;
   const row = getDb()
     .prepare(
       `SELECT COUNT(*) AS n FROM products p JOIN categories c ON c.id = p.category_id
-       WHERE p.name LIKE ? OR p.standard LIKE ? OR c.name LIKE ?`
+       WHERE ${SEARCH_WHERE}`
     )
-    .get(like, like, like) as { n: number };
+    .get(searchParamsFor(q)) as { n: number };
   return row.n;
 }
 
@@ -177,4 +187,18 @@ export function getTestimonials(): Testimonial[] {
   return getDb()
     .prepare("SELECT * FROM testimonials ORDER BY sort, id")
     .all() as Testimonial[];
+}
+
+// ---------- upcoming QCOs ----------
+export function getUpcomingQcos(): Qco[] {
+  return getDb()
+    .prepare(
+      `SELECT * FROM qcos
+       ORDER BY substr(enforcement_date, 7, 4) || substr(enforcement_date, 4, 2) || substr(enforcement_date, 1, 2), sort`
+    )
+    .all() as Qco[];
+}
+
+export function getQcoById(id: number): Qco | undefined {
+  return getDb().prepare("SELECT * FROM qcos WHERE id = ?").get(id) as Qco | undefined;
 }

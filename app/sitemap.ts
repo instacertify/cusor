@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: BASE, changeFrequency: "weekly", priority: 1 },
     { url: `${BASE}/products`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${BASE}/labs`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE}/qco`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE}/guide`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE}/about`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE}/contact`, changeFrequency: "monthly", priority: 0.7 },

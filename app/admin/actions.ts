@@ -94,7 +94,8 @@ export async function saveProduct(formData: FormData) {
   getDb()
     .prepare(
       `UPDATE products SET name=?, standard=?, scheme=?, min_price=?, max_price=?, timeline=?,
-       description=?, featured=?, meta_title=?, meta_description=? ${image ? ", image=?" : ""} WHERE id=?`
+       description=?, featured=?, meta_title=?, meta_description=?, hsn4=?, hsn8=?, qco_status=?, qco_order=?
+       ${image ? ", image=?" : ""} WHERE id=?`
     )
     .run(
       ...[
@@ -108,6 +109,10 @@ export async function saveProduct(formData: FormData) {
         formData.get("featured") ? 1 : 0,
         String(formData.get("meta_title") ?? ""),
         String(formData.get("meta_description") ?? ""),
+        String(formData.get("hsn4") ?? "").trim(),
+        String(formData.get("hsn8") ?? "").trim(),
+        String(formData.get("qco_status") ?? "").trim(),
+        String(formData.get("qco_order") ?? "").trim(),
         ...(image ? [image] : []),
         id,
       ]
@@ -185,6 +190,43 @@ export async function deleteTestimonial(formData: FormData) {
   getDb().prepare("DELETE FROM testimonials WHERE id=?").run(Number(formData.get("id")));
   revalidatePath("/", "layout");
   redirect("/admin/testimonials?saved=1");
+}
+
+// ---------- upcoming QCOs ----------
+export async function saveQco(formData: FormData) {
+  await requireAdmin();
+  const id = formData.get("id") ? Number(formData.get("id")) : null;
+  const values = {
+    product: String(formData.get("product") ?? "").trim(),
+    ministry: String(formData.get("ministry") ?? "").trim(),
+    hsn4: String(formData.get("hsn4") ?? "").trim(),
+    hsn8: String(formData.get("hsn8") ?? "").trim(),
+    standard: String(formData.get("standard") ?? "").trim(),
+    enforcement_date: String(formData.get("enforcement_date") ?? "").trim(),
+    scheme: String(formData.get("scheme") ?? "ISI").trim(),
+  };
+  if (!values.product) redirect("/admin/qcos?error=1");
+  const db = getDb();
+  if (id) {
+    db.prepare(
+      `UPDATE qcos SET product=@product, ministry=@ministry, hsn4=@hsn4, hsn8=@hsn8,
+       standard=@standard, enforcement_date=@enforcement_date, scheme=@scheme WHERE id=@id`
+    ).run({ ...values, id });
+  } else {
+    db.prepare(
+      `INSERT INTO qcos (product, ministry, hsn4, hsn8, standard, enforcement_date, scheme)
+       VALUES (@product, @ministry, @hsn4, @hsn8, @standard, @enforcement_date, @scheme)`
+    ).run(values);
+  }
+  revalidatePath("/", "layout");
+  redirect("/admin/qcos?saved=1");
+}
+
+export async function deleteQco(formData: FormData) {
+  await requireAdmin();
+  getDb().prepare("DELETE FROM qcos WHERE id=?").run(Number(formData.get("id")));
+  revalidatePath("/", "layout");
+  redirect("/admin/qcos?saved=1");
 }
 
 // ---------- inquiries ----------

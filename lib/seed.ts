@@ -33,6 +33,37 @@ interface RawRow {
   price: number | null;
 }
 
+interface MasterStandard {
+  is_no: string;
+  title: string;
+  category: string;
+  hsn4: string;
+  hsn8: string;
+  status: string;
+  order: string;
+}
+interface UpcomingQco {
+  product: string;
+  ministry: string;
+  hsn4: string;
+  hsn8: string;
+  standard: string;
+  enforcement_date: string;
+  scheme: string;
+}
+
+/** Normalize an IS reference like "IS 1554 : Part 1 (1988)" or "IS 13450 : PART 2 : SEC 13"
+ *  into a comparable key such as "IS1554P1" / "IS13450P2S13". */
+export function normalizeIsNo(raw: string): string {
+  if (!raw) return "";
+  let s = raw.toUpperCase();
+  s = s.replace(/\(\d{4}(?:\.\d)?\)/g, ""); // (year)
+  s = s.replace(/:\s*\d{4}\b/g, ""); // :year
+  s = s.replace(/\bPART\b/g, "P").replace(/\bSEC(?:TION)?\b/g, "S");
+  s = s.replace(/[^A-Z0-9]/g, "");
+  return s;
+}
+
 const CATEGORY_META: Record<
   string,
   { icon: string; timeline: string; description: string }
@@ -456,6 +487,28 @@ export function seedDatabase(db: Database.Database) {
     rows: RawRow[];
   };
 
+  const masterPath = path.join(process.cwd(), "data", "bis_master_qco.json");
+  const masterData = fs.existsSync(masterPath)
+    ? (JSON.parse(fs.readFileSync(masterPath, "utf-8")) as {
+        standards: MasterStandard[];
+        crs: { standard: string; status: string }[];
+        upcoming: UpcomingQco[];
+      })
+    : { standards: [], crs: [], upcoming: [] };
+
+  // lookup: normalized IS number -> HSN / QCO facts
+  const qcoByIs = new Map<string, MasterStandard>();
+  for (const s of masterData.standards) {
+    const key = normalizeIsNo(s.is_no);
+    if (key && !qcoByIs.has(key)) qcoByIs.set(key, s);
+  }
+  const crsStandards = new Set(
+    masterData.crs
+      .flatMap((c) => c.standard.split("/"))
+      .map((s) => normalizeIsNo(s))
+      .filter(Boolean)
+  );
+
   const tx = db.transaction(() => {
     // ---- settings ----
     const defaults: Record<string, string> = {
@@ -463,12 +516,12 @@ export function seedDatabase(db: Database.Database) {
       tagline: "India's BIS certification intelligence platform",
       hero_heading: "Does Your Product Need BIS Certification?",
       hero_subheading:
-        "Check instantly, free. Search 1,400+ notified products to see the applicable IS standard, real lab testing costs, timelines and BIS-recognised labs near you.",
+        "Check instantly, free. Search 1,400+ notified products by name, IS standard or HSN code to see certification type, real lab testing costs, timelines and BIS-recognised labs near you.",
       contact_email: "hello@certko.com",
       contact_phone: "+91 98765 43210",
       footer_text:
         "Certko is an independent compliance intelligence platform. We are not affiliated with the Bureau of Indian Standards. Prices are indicative and exclude GST.",
-      announcement: "Updated July 2026 · 1,400+ products · 400+ BIS-recognised labs",
+      announcement: "Updated July 2026 · 1,400+ products · 400+ labs · 29 upcoming QCOs",
       cta_heading: "Need BIS certification help?",
       cta_text:
         "Connect with verified BIS consultants who handle the entire process — application, testing, inspection and licence grant. Free quote in 24 hours.",
@@ -564,8 +617,8 @@ export function seedDatabase(db: Database.Database) {
 
     // ---- products ----
     const insProd = db.prepare(
-      `INSERT INTO products (slug, name, standard, scheme, category_id, min_price, max_price, lab_count, timeline, description, image, featured, meta_title, meta_description)
-       VALUES (@slug, @name, @standard, @scheme, @category_id, @min_price, @max_price, @lab_count, @timeline, @description, @image, @featured, @meta_title, @meta_description)`
+      `INSERT INTO products (slug, name, standard, scheme, category_id, min_price, max_price, lab_count, timeline, description, image, featured, meta_title, meta_description, hsn4, hsn8, qco_status, qco_order)
+       VALUES (@slug, @name, @standard, @scheme, @category_id, @min_price, @max_price, @lab_count, @timeline, @description, @image, @featured, @meta_title, @meta_description, @hsn4, @hsn8, @qco_status, @qco_order)`
     );
     const prodIds = new Map<string, number>();
     const usedSlugs = new Set<string>();
@@ -580,7 +633,12 @@ export function seedDatabase(db: Database.Database) {
       while (usedSlugs.has(slug)) slug = slugify(`${displayName} ${p.standard}`) + `-${n++}`;
       usedSlugs.add(slug);
       const catMeta = CATEGORY_META[p.category] ?? { timeline: "8-16 weeks" };
-      const scheme = productScheme(p.category, p.standard);
+      const isKey = normalizeIsNo(p.standard);
+      const qcoInfo = qcoByIs.get(isKey);
+      let scheme = productScheme(p.category, p.standard);
+      if (crsStandards.has(isKey) || (qcoInfo?.status ?? "").includes("CRS")) {
+        scheme = "CRS";
+      }
       const key = `${p.category}|${p.standard}|${p.name}`;
       const res = insProd.run({
         slug,
@@ -600,6 +658,10 @@ export function seedDatabase(db: Database.Database) {
         featured: featuredKeys.has(key) ? 1 : 0,
         meta_title: `${displayName} BIS Certification | ${p.standard} | Cost & Labs | Certko`,
         meta_description: `BIS certification for ${displayName} under ${p.standard}: testing cost ${formatPriceRange(p.min_price, p.max_price)}, ${p.lab_count} approved labs, timeline ${catMeta.timeline}.`,
+        hsn4: qcoInfo?.hsn4 ?? "",
+        hsn8: qcoInfo?.hsn8 ?? "",
+        qco_status: qcoInfo?.status ?? "",
+        qco_order: qcoInfo?.order ?? "",
       });
       prodIds.set(key, Number(res.lastInsertRowid));
     }
@@ -669,6 +731,15 @@ export function seedDatabase(db: Database.Database) {
       "INSERT INTO testimonials (name, role, quote, rating, sort) VALUES (?, ?, ?, ?, ?)"
     );
     TESTIMONIALS.forEach((t, i) => insT.run(t.name, t.role, t.quote, t.rating, i));
+
+    // ---- upcoming QCOs ----
+    const insQ = db.prepare(
+      `INSERT INTO qcos (product, ministry, hsn4, hsn8, standard, enforcement_date, scheme, sort)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    );
+    masterData.upcoming.forEach((u, i) =>
+      insQ.run(u.product, u.ministry, u.hsn4, u.hsn8, u.standard, u.enforcement_date, u.scheme, i)
+    );
   });
 
   tx();

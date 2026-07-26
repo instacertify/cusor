@@ -13,7 +13,7 @@ interface Suggestion {
 
 export default function SearchBox({
   large = false,
-  placeholder = "Search product name or IS standard…",
+  placeholder = "Search product, IS standard or HSN code…",
 }: {
   large?: boolean;
   placeholder?: string;

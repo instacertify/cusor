@@ -11,6 +11,7 @@ import {
   getFaqs,
   getTestimonials,
   getPage,
+  getUpcomingQcos,
 } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
 
@@ -42,6 +43,7 @@ export default function HomePage() {
   const faqs = getFaqs("global");
   const testimonials = getTestimonials();
   const totalProducts = categories.reduce((s, c) => s + (c.product_count ?? 0), 0);
+  const upcomingQcos = getUpcomingQcos().slice(0, 3);
 
   const stats = [1, 2, 3, 4].map((i) => ({
     value: settings[`stat_${i}_value`],
@@ -163,6 +165,45 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+
+      {/* Upcoming QCOs teaser */}
+      {upcomingQcos.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-16">
+          <div className="bg-white rounded-3xl border border-cream-300 shadow-card p-8 sm:p-10">
+            <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+              <div>
+                <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink-950">
+                  🔔 Never Miss a New Mandatory Product
+                </h2>
+                <p className="text-ink-600 mt-2 max-w-2xl text-sm sm:text-base">
+                  New Quality Control Orders keep adding products to the mandatory BIS list.
+                  These deadlines are coming up next:
+                </p>
+              </div>
+              <Link href="/qco" className="text-sm font-bold text-butter-700 hover:text-butter-600 shrink-0">
+                View all upcoming QCOs →
+              </Link>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-4">
+              {upcomingQcos.map((q) => (
+                <Link
+                  key={q.id}
+                  href="/qco"
+                  className="group bg-cream-50 rounded-2xl border border-cream-300 p-5 hover:border-butter-500 transition"
+                >
+                  <div className="text-[11px] font-bold uppercase tracking-wide text-butter-700">
+                    Mandatory from {q.enforcement_date}
+                  </div>
+                  <div className="mt-1.5 font-display font-bold text-ink-950 leading-snug line-clamp-2 group-hover:text-butter-700 transition">
+                    {q.product}
+                  </div>
+                  <div className="mt-1 text-xs text-ink-500">{q.standard} · {q.scheme}</div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Testimonials */}
       <section className="bg-ink-950 text-white">

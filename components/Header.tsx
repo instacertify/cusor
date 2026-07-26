@@ -6,6 +6,7 @@ import MobileNav from "./MobileNav";
 const NAV = [
   { href: "/products", label: "Products" },
   { href: "/labs", label: "Labs" },
+  { href: "/qco", label: "QCO Alerts" },
   { href: "/guide", label: "Guide" },
   { href: "/about", label: "About" },
 ];
