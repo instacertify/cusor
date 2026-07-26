@@ -102,7 +102,7 @@ export default async function CertProductPage({ params }: Props) {
           )}
         </dl>
 
-        {product.labs && (
+        {product.labs && cert.slug !== "bee" && (
           <div className="mt-6 bg-cream-100 rounded-2xl border border-cream-200 p-5">
             <h2 className="font-display font-semibold text-ink-950">Indicative labs</h2>
             <p className="mt-2 text-sm text-ink-700 leading-relaxed">{product.labs}</p>
