@@ -14,6 +14,7 @@ import {
   getRelatedProducts,
 } from "@/lib/queries";
 import { formatPriceRange, formatINR } from "@/lib/format";
+import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -25,10 +26,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = getProductBySlug(slug);
   if (!product) return {};
-  return {
+  return buildMetadata(`product:${product.id}`, {
     title: product.meta_title || `${product.name} BIS Certification`,
     description: product.meta_description,
-  };
+    path: `/product/${product.slug}`,
+    image: product.image || product.category_image,
+  });
 }
 
 export default async function ProductPage({ params }: Props) {
@@ -41,44 +44,24 @@ export default async function ProductPage({ params }: Props) {
   const related = getRelatedProducts(product, 4);
   const heroImage = product.image || product.category_image || "";
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Service",
-        name: `BIS Certification for ${product.name}`,
-        description: product.meta_description,
-        provider: { "@type": "Organization", name: "Certko", url: "https://certko.com" },
-        areaServed: "IN",
-        ...(product.min_price
-          ? {
-              offers: {
-                "@type": "AggregateOffer",
-                priceCurrency: "INR",
-                lowPrice: product.min_price,
-                highPrice: product.max_price ?? product.min_price,
-              },
-            }
-          : {}),
-      },
-      {
-        "@type": "FAQPage",
-        mainEntity: faqs.map((f) => ({
-          "@type": "Question",
-          name: f.question,
-          acceptedAnswer: { "@type": "Answer", text: f.answer },
-        })),
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: "https://certko.com" },
-          { "@type": "ListItem", position: 2, name: product.category_name, item: `https://certko.com/category/${product.category_slug}` },
-          { "@type": "ListItem", position: 3, name: product.name },
-        ],
-      },
-    ],
-  };
+  const jsonLd = buildJsonLd(
+    enabledSchemaTypes(`product:${product.id}`, "product"),
+    {
+      name: `BIS Certification for ${product.name}`,
+      description: product.meta_description,
+      url: `${BASE_URL}/product/${product.slug}`,
+      image: heroImage,
+      faqs,
+      breadcrumbs: [
+        { name: "Home", url: "/" },
+        { name: product.category_name ?? "Products", url: `/category/${product.category_slug}` },
+        { name: product.name },
+      ],
+      offers: product.min_price
+        ? { low: product.min_price, high: product.max_price ?? product.min_price }
+        : null,
+    }
+  );
 
   const facts = [
     { label: "IS Standard", value: product.standard || "—" },
@@ -99,10 +82,12 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       <Breadcrumbs
         crumbs={[
           { label: "Products", href: "/products" },

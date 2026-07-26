@@ -261,6 +261,59 @@ export async function deleteQco(formData: FormData) {
   redirect("/admin/qcos?saved=1");
 }
 
+// ---------- SEO tools ----------
+export async function saveSeo(formData: FormData) {
+  await requireAdmin();
+  const { saveSeoMeta } = await import("@/lib/seo");
+  const { slugify } = await import("@/lib/format");
+  const entity = String(formData.get("entity") ?? "");
+  const [kind, id] = entity.split(":");
+  if (!kind || !id) redirect("/admin/seo");
+
+  saveSeoMeta(entity, {
+    title: String(formData.get("title") ?? "").trim(),
+    description: String(formData.get("description") ?? "").trim(),
+    focus_keyword: String(formData.get("focus_keyword") ?? "").trim(),
+    secondary_keywords: String(formData.get("secondary_keywords") ?? "").trim(),
+    og_title: String(formData.get("og_title") ?? "").trim(),
+    og_description: String(formData.get("og_description") ?? "").trim(),
+    og_image: String(formData.get("og_image") ?? "").trim(),
+    canonical: String(formData.get("canonical") ?? "").trim(),
+    robots_index: formData.get("robots_index") ? 1 : 0,
+    robots_follow: formData.get("robots_follow") ? 1 : 0,
+    robots_noarchive: formData.get("robots_noarchive") ? 1 : 0,
+    robots_nosnippet: formData.get("robots_nosnippet") ? 1 : 0,
+    sitemap_include: formData.get("sitemap_include") ? 1 : 0,
+    schema_types: JSON.stringify(formData.getAll("schema_types").map(String)),
+  });
+
+  // slug update for slug-editable entities
+  const newSlug = slugify(String(formData.get("slug") ?? ""));
+  const db = getDb();
+  const tables: Record<string, string> = {
+    product: "products",
+    category: "categories",
+    cert: "certifications",
+  };
+  const table = tables[kind];
+  if (table && newSlug) {
+    const current = db
+      .prepare(`SELECT slug FROM ${table} WHERE id = ?`)
+      .get(Number(id)) as { slug: string } | undefined;
+    if (current && current.slug !== newSlug) {
+      const taken = db
+        .prepare(`SELECT 1 FROM ${table} WHERE slug = ? AND id != ?`)
+        .get(newSlug, Number(id));
+      if (!taken) {
+        db.prepare(`UPDATE ${table} SET slug = ? WHERE id = ?`).run(newSlug, Number(id));
+      }
+    }
+  }
+
+  revalidatePath("/", "layout");
+  redirect(`/admin/seo/edit?entity=${encodeURIComponent(entity)}&saved=1`);
+}
+
 // ---------- inquiries ----------
 export async function setInquiryStatus(formData: FormData) {
   await requireAdmin();

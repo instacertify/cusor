@@ -8,6 +8,7 @@ import CtaBanner from "@/components/CtaBanner";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import { getCertificationBySlug, getCertifications, getFaqs } from "@/lib/queries";
+import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -19,10 +20,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const cert = getCertificationBySlug(slug);
   if (!cert) return {};
-  return {
+  return buildMetadata(`cert:${cert.id}`, {
     title: cert.meta_title || `${cert.name} Certification`,
     description: cert.meta_description || cert.summary,
-  };
+    path: `/certifications/${cert.slug}`,
+    image: cert.image,
+  });
 }
 
 export default async function CertificationPage({ params }: Props) {
@@ -32,33 +35,28 @@ export default async function CertificationPage({ params }: Props) {
   const faqs = getFaqs(`cert:${cert.slug}`);
   const others = getCertifications().filter((c) => c.slug !== cert.slug);
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Service",
-        name: `${cert.name} Certification Support`,
-        description: cert.summary,
-        provider: { "@type": "Organization", name: "Certko", url: "https://certko.com" },
-        areaServed: cert.region,
-      },
-      {
-        "@type": "FAQPage",
-        mainEntity: faqs.map((f) => ({
-          "@type": "Question",
-          name: f.question,
-          acceptedAnswer: { "@type": "Answer", text: f.answer },
-        })),
-      },
+  const jsonLd = buildJsonLd(enabledSchemaTypes(`cert:${cert.id}`, "cert"), {
+    name: `${cert.name} Certification Support`,
+    description: cert.summary,
+    url: `${BASE_URL}/certifications/${cert.slug}`,
+    image: cert.image,
+    faqs,
+    areaServed: cert.region,
+    breadcrumbs: [
+      { name: "Home", url: "/" },
+      { name: "Certifications", url: "/certifications" },
+      { name: cert.name },
     ],
-  };
+  });
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       <Breadcrumbs
         crumbs={[{ label: "Certifications", href: "/certifications" }, { label: cert.name }]}
       />

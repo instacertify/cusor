@@ -11,6 +11,7 @@ import {
   getProductsByCategory,
   getFaqs,
 } from "@/lib/queries";
+import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +23,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const category = getCategoryBySlug(slug);
   if (!category) return {};
-  return {
+  return buildMetadata(`category:${category.id}`, {
     title: `${category.name} — BIS Certification Requirements, Costs & Labs`,
     description: category.description,
-  };
+    path: `/category/${category.slug}`,
+    image: category.image,
+  });
 }
 
 export default async function CategoryPage({ params }: Props) {
@@ -35,8 +38,30 @@ export default async function CategoryPage({ params }: Props) {
   const products = getProductsByCategory(category.id);
   const faqs = getFaqs(`category:${category.id}`);
 
+  const jsonLd = buildJsonLd(
+    enabledSchemaTypes(`category:${category.id}`, "category"),
+    {
+      name: `${category.name} — BIS Certification`,
+      description: category.description,
+      url: `${BASE_URL}/category/${category.slug}`,
+      image: category.image,
+      faqs,
+      breadcrumbs: [
+        { name: "Home", url: "/" },
+        { name: "Products", url: "/products" },
+        { name: category.name },
+      ],
+    }
+  );
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       <Breadcrumbs
         crumbs={[{ label: "Products", href: "/products" }, { label: category.name }]}
       />

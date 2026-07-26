@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getSettings } from "@/lib/db";
 import { getPage } from "@/lib/queries";
+import { buildJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -34,9 +35,20 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const orgJsonLd = buildJsonLd(["Organization"], {
+    name: "Certko",
+    description: "",
+    url: "https://certko.com",
+  });
   return (
     <html lang="en">
       <body className={`${body.variable} ${display.variable} min-h-screen flex flex-col`}>
+        {orgJsonLd && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+          />
+        )}
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

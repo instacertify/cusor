@@ -6,6 +6,13 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import FaqAccordion from "@/components/FaqAccordion";
 import { getPage, getFaqs } from "@/lib/queries";
+import {
+  buildMetadata,
+  buildJsonLd,
+  enabledSchemaTypes,
+  analyzeMarkdown,
+  BASE_URL,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -20,10 +27,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!CONTENT_PAGES.has(pageSlug)) return {};
   const page = getPage(pageSlug);
   if (!page) return {};
-  return {
+  return buildMetadata(`page:${pageSlug}`, {
     title: page.meta_title || page.title,
     description: page.meta_description,
-  };
+    path: `/${pageSlug}`,
+    image: page.image,
+  });
 }
 
 export default async function ContentPage({ params }: Props) {
@@ -33,8 +42,25 @@ export default async function ContentPage({ params }: Props) {
   if (!page) notFound();
   const faqs = getFaqs(`page:${pageSlug}`);
 
+  const analysis = analyzeMarkdown(page.content);
+  const jsonLd = buildJsonLd(enabledSchemaTypes(`page:${pageSlug}`, "page"), {
+    name: page.hero_heading || page.title,
+    description: page.meta_description,
+    url: `${BASE_URL}/${pageSlug}`,
+    image: page.image,
+    faqs,
+    breadcrumbs: [{ name: "Home", url: "/" }, { name: page.title }],
+    howToSteps: analysis.headings.slice(0, 8),
+  });
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       <Breadcrumbs crumbs={[{ label: page.title }]} />
       <div className="grid lg:grid-cols-[1.4fr_1fr] gap-10 items-center">
         <div>

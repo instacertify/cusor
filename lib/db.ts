@@ -145,6 +145,24 @@ function createDb(): Database.Database {
       sort INTEGER NOT NULL DEFAULT 0
     );
 
+    CREATE TABLE IF NOT EXISTS seo_meta (
+      entity TEXT PRIMARY KEY,
+      title TEXT NOT NULL DEFAULT '',
+      description TEXT NOT NULL DEFAULT '',
+      focus_keyword TEXT NOT NULL DEFAULT '',
+      secondary_keywords TEXT NOT NULL DEFAULT '',
+      og_title TEXT NOT NULL DEFAULT '',
+      og_description TEXT NOT NULL DEFAULT '',
+      og_image TEXT NOT NULL DEFAULT '',
+      canonical TEXT NOT NULL DEFAULT '',
+      robots_index INTEGER NOT NULL DEFAULT 1,
+      robots_follow INTEGER NOT NULL DEFAULT 1,
+      robots_noarchive INTEGER NOT NULL DEFAULT 0,
+      robots_nosnippet INTEGER NOT NULL DEFAULT 0,
+      sitemap_include INTEGER NOT NULL DEFAULT 1,
+      schema_types TEXT NOT NULL DEFAULT ''
+    );
+
     CREATE TABLE IF NOT EXISTS inquiries (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
