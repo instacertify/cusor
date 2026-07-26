@@ -749,7 +749,7 @@ export function seedDatabase(db: Database.Database) {
     // ---- settings ----
     const defaults: Record<string, string> = {
       site_name: "Certko",
-      tagline: "India's BIS certification intelligence platform",
+      tagline: "Your trusted global compliance partner.",
       hero_heading: "Does Your Product Need BIS Certification?",
       hero_subheading:
         "Check instantly, free. Search 1,400+ notified products by name, IS standard or HSN code to see certification type, real lab testing costs, timelines and BIS-recognised labs near you.",

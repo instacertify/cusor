@@ -26,7 +26,7 @@ export default async function AdminCertificationEdit({ params, searchParams }: P
   return (
     <div>
       <div className="flex items-center justify-between gap-4 mb-6">
-        <h1 className="font-display text-3xl font-extrabold text-ink-950">Edit: {cert.name}</h1>
+        <h1 className="font-display text-3xl font-semibold text-ink-950">Edit: {cert.name}</h1>
         <Link href={`/certifications/${cert.slug}`} target="_blank" className="text-sm font-bold text-butter-700 shrink-0">
           View page ↗
         </Link>

@@ -15,7 +15,7 @@ export default async function AdminCategories({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-extrabold text-ink-950 mb-1">Categories</h1>
+      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Categories</h1>
       <p className="text-ink-600 text-sm mb-6">
         Edit category names, icons, descriptions, timelines and images.
       </p>

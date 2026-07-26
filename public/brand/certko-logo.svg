@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="40" viewBox="0 0 180 40" fill="none">
+  <text x="0" y="28" font-family="Poppins, Arial, Helvetica, sans-serif" font-weight="600" font-size="26" letter-spacing="-0.5">
+    <tspan fill="#16263D">CERT</tspan><tspan fill="#F7C453">KO</tspan>
+  </text>
+  <g stroke="#F7C453" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="translate(118, 8)">
+    <path d="M2 2l8 10-8 10" opacity="0.4"/>
+    <path d="M14 2l8 10-8 10" opacity="0.7"/>
+    <path d="M26 2l8 10-8 10"/>
+  </g>
+</svg>

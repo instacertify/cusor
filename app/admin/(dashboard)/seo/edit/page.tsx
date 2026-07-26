@@ -115,7 +115,7 @@ export default async function AdminSeoEdit({ searchParams }: Props) {
   return (
     <div>
       <div className="flex items-center justify-between gap-4 mb-1">
-        <h1 className="font-display text-2xl font-extrabold text-ink-950 leading-snug">
+        <h1 className="font-display text-2xl font-semibold text-ink-950 leading-snug">
           SEO: {data.name}
         </h1>
         <Link href={viewUrl} target="_blank" className="text-sm font-bold text-butter-700 shrink-0">

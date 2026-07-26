@@ -37,7 +37,7 @@ export default async function ContactPage({ searchParams }: Props) {
       <Breadcrumbs crumbs={[{ label: "Get Expert Help" }]} />
       <div className="grid lg:grid-cols-2 gap-12">
         <div>
-          <h1 className="font-display text-4xl font-extrabold text-ink-950 tracking-tight leading-tight">
+          <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
             {page?.hero_heading || "Talk to a BIS expert"}
           </h1>
           <p className="mt-4 text-lg text-ink-600 leading-relaxed">{page?.hero_subheading}</p>
@@ -115,7 +115,7 @@ export default async function ContactPage({ searchParams }: Props) {
                   className="w-full rounded-xl border border-cream-300 px-4 py-2.5 text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30"
                 />
               </div>
-              <button className="w-full bg-butter-500 hover:bg-butter-400 text-ink-950 font-bold rounded-xl px-6 py-3.5 transition shadow-butter">
+              <button className="w-full bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3.5 transition">
                 Get My Free Quote
               </button>
               <p className="text-[11px] text-ink-500 text-center">

@@ -56,16 +56,16 @@ export default function HomePage() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div
-          className="absolute inset-0 -z-10 bg-gradient-to-b from-butter-300/25 via-cream-100 to-cream-50"
+          className="absolute inset-0 -z-10 bg-cream-50"
           aria-hidden
         />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-14 pb-16 grid lg:grid-cols-[1.15fr_1fr] gap-10 items-center">
           <div className="animate-rise">
-            <p className="inline-flex items-center gap-2 bg-white/70 border border-cream-300 rounded-full px-4 py-1.5 text-xs font-semibold text-ink-700 mb-6">
+            <p className="inline-flex items-center gap-2 bg-white border border-cream-200 rounded-full px-4 py-1.5 text-xs font-semibold text-ink-700 mb-6">
               <span className="w-2 h-2 rounded-full bg-butter-500 animate-pulse" aria-hidden />
               {settings.announcement}
             </p>
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.4rem] font-extrabold leading-[1.08] tracking-tight text-ink-950">
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.5rem] font-semibold leading-[1.08] tracking-tight text-ink-950">
               {settings.hero_heading}
             </h1>
             <p className="mt-5 text-lg text-ink-700 max-w-xl leading-relaxed">
@@ -77,7 +77,7 @@ export default function HomePage() {
             <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4">
               {stats.map((s, i) => (
                 <div key={i} className="bg-white/70 border border-cream-300 rounded-2xl px-4 py-3">
-                  <div className="font-display text-2xl font-extrabold text-ink-950">{s.value}</div>
+                  <div className="font-display text-2xl font-semibold text-ink-950">{s.value}</div>
                   <div className="text-xs font-medium text-ink-600">{s.label}</div>
                 </div>
               ))}
@@ -105,7 +105,7 @@ export default function HomePage() {
         <div className="grid sm:grid-cols-3 gap-6">
           {HOW_IT_WORKS.map((s, i) => (
             <div key={i} className="relative bg-white rounded-3xl border border-cream-300 shadow-card p-7">
-              <span className="absolute top-6 right-6 font-display text-5xl font-extrabold text-cream-200" aria-hidden>
+              <span className="absolute top-6 right-6 font-display text-5xl font-semibold text-cream-200" aria-hidden>
                 {i + 1}
               </span>
               <span className="inline-flex w-14 h-14 rounded-2xl bg-butter-300/40 text-butter-700 items-center justify-center">

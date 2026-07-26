@@ -33,7 +33,12 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-cream-50/90 backdrop-blur border-b border-cream-200">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 flex items-center gap-3 h-16">
         <Link href="/" aria-label="Certko home" className="shrink-0">
-          <Logo size={34} />
+          <span className="hidden sm:block">
+            <Logo width={180} />
+          </span>
+          <span className="sm:hidden">
+            <Logo width={148} />
+          </span>
         </Link>
         <div className="hidden lg:block flex-1 max-w-sm mx-auto">
           <SearchBox />
@@ -54,7 +59,7 @@ export default function Header() {
           <NavDropdown label="Resources" items={resourceItems} />
           <Link
             href="/contact"
-            className="ml-2 bg-butter-500 hover:bg-butter-400 text-ink-950 text-sm font-bold rounded-xl px-4 py-2.5 shadow-butter transition"
+            className="ml-2 bg-butter-500 hover:bg-butter-400 text-ink-950 text-sm font-semibold rounded-xl px-4 py-2.5 transition"
           >
             Get Expert Help
           </Link>

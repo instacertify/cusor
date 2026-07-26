@@ -357,7 +357,7 @@ export default function SeoEditor({
       <aside className="lg:sticky lg:top-24 bg-white rounded-2xl border border-cream-300 shadow-card p-6">
         <h2 className="font-display font-bold text-ink-950 mb-3">SEO Analysis</h2>
         <div className="flex items-center gap-4 mb-4">
-          <div className={`font-display text-5xl font-extrabold ${scoreColor}`}>{analysis.score}</div>
+          <div className={`font-display text-5xl font-semibold ${scoreColor}`}>{analysis.score}</div>
           <div>
             <div className="text-xs font-bold uppercase tracking-wide text-ink-500">Score / 100</div>
             <div className={`text-sm font-bold ${scoreColor}`}>

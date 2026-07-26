@@ -55,7 +55,7 @@ export default async function AdminProducts({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-extrabold text-ink-950 mb-1">Products</h1>
+      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Products</h1>
       <p className="text-ink-600 text-sm mb-6">
         {total.toLocaleString("en-IN")} products. Edit fields, writeups, images and per-product FAQs.
       </p>

@@ -23,7 +23,7 @@ export default function ProductsPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
       <Breadcrumbs crumbs={[{ label: "Products" }]} />
-      <h1 className="font-display text-4xl font-extrabold text-ink-950 tracking-tight">
+      <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">
         BIS Mandatory Products Database
       </h1>
       <p className="mt-3 text-ink-600 max-w-2xl">

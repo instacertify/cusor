@@ -39,7 +39,7 @@ export default async function AdminFaqs({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-extrabold text-ink-950 mb-1">FAQs</h1>
+      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">FAQs</h1>
       <p className="text-ink-600 text-sm mb-6">
         Every public page has its own FAQ section. Pick a page to edit its FAQs.
         Per-product FAQs are edited inside each product.

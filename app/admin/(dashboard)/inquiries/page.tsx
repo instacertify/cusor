@@ -11,7 +11,7 @@ export default function AdminInquiries() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-extrabold text-ink-950 mb-1">Inquiries</h1>
+      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Inquiries</h1>
       <p className="text-ink-600 text-sm mb-6">
         Leads submitted through the “Get Expert Help” form.
       </p>

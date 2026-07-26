@@ -12,9 +12,7 @@ export default function Footer() {
     <footer className="mt-20 bg-ink-950 text-ink-300">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-14 grid gap-10 md:grid-cols-5">
         <div className="md:col-span-1 space-y-4">
-          <div className="bg-cream-50 inline-flex rounded-xl px-3 py-2">
-            <Logo size={28} />
-          </div>
+          <Logo width={160} variant="reverse" />
           <p className="text-sm leading-relaxed max-w-md">{settings.tagline}</p>
           <p className="text-xs leading-relaxed max-w-md text-ink-400">
             {settings.footer_text}

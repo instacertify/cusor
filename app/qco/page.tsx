@@ -37,7 +37,7 @@ export default function QcoPage() {
       <span className="text-xs font-bold uppercase tracking-wide bg-butter-300/50 text-butter-700 rounded-full px-3 py-1">
         {qcos.length} notified orders
       </span>
-      <h1 className="mt-3 font-display text-4xl font-extrabold text-ink-950 tracking-tight">
+      <h1 className="mt-3 font-display text-4xl font-semibold text-ink-950 tracking-tight">
         Upcoming QCOs — Products Becoming Mandatory
       </h1>
       <p className="mt-3 text-ink-600 max-w-2xl">
@@ -75,7 +75,7 @@ export default function QcoPage() {
               </div>
               <div className="sm:text-right">
                 <div className="text-[11px] font-bold uppercase tracking-wide text-ink-500">Mandatory from</div>
-                <div className="font-display text-lg font-extrabold text-ink-950">{q.enforcement_date}</div>
+                <div className="font-display text-lg font-semibold text-ink-950">{q.enforcement_date}</div>
                 <Link
                   href={`/contact?product=${encodeURIComponent(q.product.slice(0, 120))}`}
                   className="inline-flex mt-1 text-xs font-bold text-butter-700 hover:text-butter-600"

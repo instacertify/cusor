@@ -14,7 +14,7 @@ export default async function AdminTestimonials({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-extrabold text-ink-950 mb-1">Testimonials</h1>
+      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Testimonials</h1>
       <p className="text-ink-600 text-sm mb-6">Shown on the homepage trust section.</p>
       <SavedBanner saved={sp.saved} error={sp.error} />
 

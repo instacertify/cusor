@@ -26,7 +26,7 @@ export default async function AdminSeoIndex({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-extrabold text-ink-950 mb-1">SEO Tools</h1>
+      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">SEO Tools</h1>
       <p className="text-ink-600 text-sm mb-6">
         Titles, descriptions, slugs, keywords, social previews, canonical URLs, robots,
         schema markup, sitemap control and an SEO score — per page. {seoCount} page{seoCount === 1 ? " has" : "s have"} custom SEO settings so far.

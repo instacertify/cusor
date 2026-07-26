@@ -1,32 +1,55 @@
 @import "tailwindcss";
 
+/*
+ * CERTKO Brand Guidelines — Version 1.0
+ * Premium Global Compliance Brand
+ *
+ * Primary Navy   #16263D  — logo, header, headlines, navigation (trust/authority)
+ * Golden Amber   #F7C453  — KO highlight, CTAs, icons, links (success/premium)
+ * Premium Cream  #FAF6EE  — website backgrounds, documents (warmth/readability)
+ * Charcoal       #4B5563  — secondary text, UI labels
+ * Light Gray     #E9E6DE  — borders, tables, dividers
+ * White          #FFFFFF  — cards, contrast blocks (sparingly)
+ *
+ * Site color ratio: ~60% cream · ~30% navy · ~10% amber
+ * Avoid: excessive gradients, heavy shadows, orange accents
+ */
 @theme {
-  --color-cream-50: #fdfbf7;
-  --color-cream-100: #faf6ee;
-  --color-cream-200: #f3ecdd;
-  --color-cream-300: #e9dfc9;
+  /* cream surfaces */
+  --color-cream-50: #faf6ee;
+  --color-cream-100: #f3eee3;
+  --color-cream-200: #e9e6de;
+  --color-cream-300: #ddd8cc;
 
-  --color-ink-950: #101c2e;
-  --color-ink-900: #16263d;
-  --color-ink-800: #1e3352;
-  --color-ink-700: #2a4468;
-  --color-ink-600: #3d5a84;
-  --color-ink-500: #5b7aa5;
-  --color-ink-400: #8aa3c2;
-  --color-ink-300: #b7c8dd;
+  /* navy + charcoal text scale */
+  --color-ink-950: #16263d;
+  --color-ink-900: #1c304c;
+  --color-ink-800: #2a3f5c;
+  --color-ink-700: #3a516e;
+  --color-ink-600: #4b5563;
+  --color-ink-500: #6b7280;
+  --color-ink-400: #9aa3b2;
+  --color-ink-300: #c5ccd6;
 
-  --color-butter-300: #ffd98a;
-  --color-butter-400: #f7c453;
-  --color-butter-500: #eead2b;
-  --color-butter-600: #d9930f;
-  --color-butter-700: #b47408;
+  /* golden amber accent scale (legacy "butter" token names) */
+  --color-butter-300: #fbe6a8;
+  --color-butter-400: #f9d06e;
+  --color-butter-500: #f7c453;
+  --color-butter-600: #e0ad3a;
+  --color-butter-700: #b8891f;
+  --color-butter-800: #8a6614;
+
+  /* amber hover aliases (no orange in brand system) */
+  --color-accent-400: #f9d06e;
+  --color-accent-500: #e0ad3a;
+  --color-accent-600: #b8891f;
 
   --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-display), ui-sans-serif, system-ui, sans-serif;
 
-  --shadow-butter: 0 10px 40px -12px rgb(217 147 15 / 0.25);
-  --shadow-card: 0 2px 12px -2px rgb(16 28 46 / 0.08), 0 1px 3px rgb(16 28 46 / 0.05);
-  --shadow-card-hover: 0 16px 40px -12px rgb(16 28 46 / 0.18);
+  --shadow-butter: 0 6px 20px -8px rgb(22 38 61 / 0.18);
+  --shadow-card: 0 1px 3px rgb(22 38 61 / 0.06);
+  --shadow-card-hover: 0 8px 24px -10px rgb(22 38 61 / 0.14);
 }
 
 body {
@@ -45,20 +68,28 @@ body {
 .prose-certko {
   color: var(--color-ink-800);
   line-height: 1.75;
+  font-size: 1.125rem; /* brand body: Inter 18px */
 }
 .prose-certko h2 {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.5rem;
+  font-weight: 600;
+  font-size: 1.75rem;
   color: var(--color-ink-950);
   margin: 2rem 0 0.75rem;
 }
 .prose-certko h3 {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.15rem;
+  font-weight: 500;
+  font-size: 1.35rem;
   color: var(--color-ink-950);
   margin: 1.5rem 0 0.5rem;
+}
+.prose-certko h4 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.15rem;
+  color: var(--color-ink-950);
+  margin: 1.25rem 0 0.5rem;
 }
 .prose-certko p {
   margin: 0.75rem 0;
@@ -78,7 +109,7 @@ body {
 }
 .prose-certko strong {
   color: var(--color-ink-950);
-  font-weight: 650;
+  font-weight: 600;
 }
 .prose-certko a {
   color: var(--color-butter-700);

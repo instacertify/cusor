@@ -49,7 +49,7 @@ export default async function LabDetailPage({ params }: Props) {
           <span className="text-xs font-bold uppercase tracking-wide bg-butter-300/50 text-butter-700 rounded-full px-3 py-1">
             BIS Recognised
           </span>
-          <h1 className="mt-3 font-display text-3xl sm:text-4xl font-extrabold text-ink-950 tracking-tight leading-tight">
+          <h1 className="mt-3 font-display text-3xl sm:text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
             {lab.name}
           </h1>
           <div className="mt-4 flex flex-wrap gap-1.5">

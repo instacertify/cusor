@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -9,10 +9,18 @@ import { buildJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-const body = Inter({ subsets: ["latin"], variable: "--font-body" });
-const display = Plus_Jakarta_Sans({
+// CERTKO brand typography: Poppins (500/600) display, Inter (400/500/600) body
+const body = Inter({
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-body",
+  display: "swap",
+});
+const display = Poppins({
+  subsets: ["latin"],
+  weight: ["500", "600"],
   variable: "--font-display",
+  display: "swap",
 });
 
 export async function generateMetadata(): Promise<Metadata> {

@@ -118,7 +118,7 @@ export default async function SearchPage({ searchParams }: Props) {
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
       <Breadcrumbs crumbs={[{ label: "Search" }]} />
-      <h1 className="font-display text-4xl font-extrabold text-ink-950 tracking-tight">
+      <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">
         {q ? `Results for “${q}”` : tab === "labs" ? "Find a Testing Lab" : "Search"}
       </h1>
       <div className="mt-6 max-w-xl">

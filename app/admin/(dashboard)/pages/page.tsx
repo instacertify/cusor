@@ -9,7 +9,7 @@ export default function AdminPagesList() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-extrabold text-ink-950 mb-1">Pages</h1>
+      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Pages</h1>
       <p className="text-ink-600 text-sm mb-6">
         Edit page headings, SEO metadata, content writeups and images.
       </p>

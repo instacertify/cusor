@@ -71,7 +71,7 @@ export default async function CategoryPage({ params }: Props) {
             <span className="w-16 h-16 rounded-2xl bg-butter-300/40 text-butter-700 flex items-center justify-center shrink-0">
               <Icon name={category.icon} size={34} />
             </span>
-            <h1 className="font-display text-4xl font-extrabold text-ink-950 tracking-tight">
+            <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">
               {category.name}
             </h1>
           </div>

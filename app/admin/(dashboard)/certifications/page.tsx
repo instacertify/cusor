@@ -16,7 +16,7 @@ export default async function AdminCertifications({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-extrabold text-ink-950 mb-1">Certifications</h1>
+      <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Certifications</h1>
       <p className="text-ink-600 text-sm mb-6">
         Certification programme pages shown in the header menu, footer and at /certifications.
         New certifications appear in the menu automatically.

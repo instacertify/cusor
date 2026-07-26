@@ -20,7 +20,7 @@ export default async function AdminPageEdit({ params, searchParams }: Props) {
   return (
     <div>
       <div className="flex items-center justify-between gap-4 mb-1">
-        <h1 className="font-display text-3xl font-extrabold text-ink-950">Edit: {page.title}</h1>
+        <h1 className="font-display text-3xl font-semibold text-ink-950">Edit: {page.title}</h1>
         <Link
           href={slug === "home" ? "/" : `/${slug}`}
           target="_blank"

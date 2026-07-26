@@ -115,7 +115,7 @@ export default async function ProductPage({ params }: Props) {
             )}
             <span className="text-xs font-semibold text-ink-500">{product.standard}</span>
           </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-ink-950 tracking-tight leading-tight">
+          <h1 className="font-display text-3xl sm:text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
             {product.name} — BIS Certification
           </h1>
 
@@ -184,7 +184,7 @@ export default async function ProductPage({ params }: Props) {
             </p>
             <Link
               href={`/contact?product=${encodeURIComponent(product.name)}`}
-              className="mt-5 inline-flex bg-butter-500 hover:bg-butter-400 text-ink-950 font-bold rounded-xl px-5 py-2.5 text-sm transition"
+              className="mt-5 inline-flex bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-5 py-2.5 text-sm transition"
             >
               Get a Free Quote
             </Link>

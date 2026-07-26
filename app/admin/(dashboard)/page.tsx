@@ -20,7 +20,7 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-extrabold text-ink-950">Dashboard</h1>
+      <h1 className="font-display text-3xl font-semibold text-ink-950">Dashboard</h1>
       <p className="text-ink-600 mt-1 text-sm">
         Manage every field, writeup, image and FAQ shown on the public site.
       </p>
@@ -31,7 +31,7 @@ export default function AdminDashboard() {
             href={s.href}
             className="bg-white rounded-2xl border border-cream-300 shadow-card hover:shadow-card-hover transition p-5"
           >
-            <div className="font-display text-3xl font-extrabold text-ink-950">{s.value.toLocaleString("en-IN")}</div>
+            <div className="font-display text-3xl font-semibold text-ink-950">{s.value.toLocaleString("en-IN")}</div>
             <div className="text-sm font-medium text-ink-600 mt-1">{s.label}</div>
           </Link>
         ))}

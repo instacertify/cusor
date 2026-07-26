@@ -73,7 +73,7 @@ export default async function CertificationPage({ params }: Props) {
               <Icon name={cert.icon} size={34} />
             </span>
             <div>
-              <h1 className="font-display text-4xl font-extrabold text-ink-950 tracking-tight leading-tight">
+              <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
                 {cert.name}
               </h1>
               <p className="text-sm font-semibold text-ink-500 mt-1">{cert.full_name}</p>
@@ -82,7 +82,7 @@ export default async function CertificationPage({ params }: Props) {
           <p className="mt-5 text-lg text-ink-600 leading-relaxed">{cert.summary}</p>
           <Link
             href={`/contact?product=${encodeURIComponent(cert.name + " certification")}`}
-            className="mt-6 inline-flex items-center gap-2 bg-butter-500 hover:bg-butter-400 text-ink-950 font-bold rounded-xl px-6 py-3 text-sm transition shadow-butter"
+            className="mt-6 inline-flex items-center gap-2 bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3 text-sm transition"
           >
             Get a Free {cert.name} Quote <Icon name="arrow-right" size={16} />
           </Link>

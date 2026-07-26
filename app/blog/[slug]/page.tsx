@@ -68,7 +68,7 @@ export default async function BlogPostPage({ params }: Props) {
         <p className="text-xs font-semibold text-ink-500">
           {formatDate(post.published_at)} · {post.author}
         </p>
-        <h1 className="mt-2 font-display text-3xl sm:text-4xl font-extrabold text-ink-950 tracking-tight leading-tight">
+        <h1 className="mt-2 font-display text-3xl sm:text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
           {post.title}
         </h1>
         <p className="mt-4 text-lg text-ink-600 leading-relaxed">{post.excerpt}</p>

@@ -88,7 +88,7 @@ export default async function ContentPage({ params }: Props) {
         }
       >
         <div>
-          <h1 className="font-display text-4xl font-extrabold text-ink-950 tracking-tight leading-tight">
+          <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
             {page.hero_heading || page.title}
           </h1>
           {page.hero_subheading && (

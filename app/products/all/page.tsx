@@ -74,7 +74,7 @@ export default async function ProductsTablePage({ searchParams }: Props) {
       <Breadcrumbs
         crumbs={[{ label: "Products", href: "/products" }, { label: "Search Table" }]}
       />
-      <h1 className="font-display text-4xl font-extrabold text-ink-950 tracking-tight">
+      <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">
         BIS Product Search Table
       </h1>
       <p className="mt-3 text-ink-600 max-w-3xl">
