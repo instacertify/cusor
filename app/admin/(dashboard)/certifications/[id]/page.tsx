@@ -11,12 +11,13 @@ import {
   saveCertProduct,
 } from "../../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import CertProductExpandableList from "@/components/admin/CertProductExpandableList";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; edit?: string }>;
 }
 
 export default async function AdminCertificationEdit({ params, searchParams }: Props) {
@@ -29,6 +30,7 @@ export default async function AdminCertificationEdit({ params, searchParams }: P
   const faqs = getFaqs(`cert:${cert.slug}`);
   const products = getCertProducts(cert.id);
   const back = `/admin/certifications/${cert.id}`;
+  const initialOpenId = sp.edit ? Number(sp.edit) || null : null;
 
   return (
     <div>
@@ -44,8 +46,8 @@ export default async function AdminCertificationEdit({ params, searchParams }: P
             {cert.name}
           </h1>
           <p className="text-sm text-ink-600 mt-1">
-            {products.length} product{products.length === 1 ? "" : "s"} covered under this
-            certification.
+            {products.length} product{products.length === 1 ? "" : "s"} in the list — click{" "}
+            <strong>Edit</strong> on a row to enlarge and update that option.
           </p>
         </div>
         <Link
@@ -60,9 +62,14 @@ export default async function AdminCertificationEdit({ params, searchParams }: P
 
       <section className="mb-10 bg-white rounded-2xl border border-cream-300 shadow-card overflow-hidden">
         <div className="px-5 py-4 border-b border-cream-200 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-display text-xl font-bold text-ink-950">
-            Products covered ({products.length})
-          </h2>
+          <div>
+            <h2 className="font-display text-xl font-bold text-ink-950">
+              Product list ({products.length})
+            </h2>
+            <p className="text-xs text-ink-500 mt-0.5">
+              Compact list view · Edit expands the full fields for that product only
+            </p>
+          </div>
           <a
             href="#add-product"
             className="text-sm font-bold bg-butter-500 hover:bg-butter-400 text-ink-950 rounded-xl px-4 py-2 transition"
@@ -70,43 +77,13 @@ export default async function AdminCertificationEdit({ params, searchParams }: P
             + Add covered product
           </a>
         </div>
-        {products.length === 0 ? (
-          <p className="px-5 py-5 text-sm text-ink-600">
-            No products yet. Add BEE schemes, GMARK categories, SABER product families, or any other
-            items covered under <strong>{cert.name}</strong>.
-          </p>
-        ) : (
-          <ul className="divide-y divide-cream-100">
-            {products.map((p) => (
-              <li
-                key={p.id}
-                className="flex flex-wrap items-center gap-3 px-5 py-3 hover:bg-cream-50"
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold text-ink-950 truncate">{p.name}</span>
-                  <span className="block text-xs text-ink-500 truncate">
-                    /certifications/{cert.slug}/products/{p.slug}
-                    {p.standards ? ` · ${p.standards}` : ""}
-                    {p.regime ? ` · ${p.regime}` : ""}
-                  </span>
-                </span>
-                <Link
-                  href={`/certifications/${cert.slug}/products/${p.slug}`}
-                  target="_blank"
-                  className="text-xs font-bold text-ink-600"
-                >
-                  View ↗
-                </Link>
-                <Link
-                  href={`/admin/certifications/product/${p.id}`}
-                  className="text-xs font-bold text-butter-700"
-                >
-                  Edit product →
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+        <CertProductExpandableList
+          products={products}
+          certificationId={cert.id}
+          certSlug={cert.slug}
+          hideLabs={cert.slug === "bee"}
+          initialOpenId={initialOpenId}
+        />
       </section>
 
       <section
@@ -121,6 +98,7 @@ export default async function AdminCertificationEdit({ params, searchParams }: P
         </p>
         <form action={saveCertProduct} className="space-y-3">
           <input type="hidden" name="certification_id" value={cert.id} />
+          <input type="hidden" name="return_to" value="cert" />
           <div className="grid sm:grid-cols-2 gap-3">
             <Field label="Product name" name="name" required placeholder="e.g. Room Air Conditioner" />
             <Field label="Slug (optional)" name="slug" placeholder="auto from name" />
@@ -136,7 +114,8 @@ export default async function AdminCertificationEdit({ params, searchParams }: P
             <Field label="Max testing price (INR)" name="max_price" type="number" />
           </div>
           <TextArea label="Summary" name="summary" rows={2} />
-          <TextArea label="Labs (indicative)" name="labs" rows={2} />
+          {cert.slug !== "bee" && <TextArea label="Labs (indicative)" name="labs" rows={2} />}
+          {cert.slug === "bee" && <input type="hidden" name="labs" value="" />}
           <TextArea label="Fee note" name="fee_note" rows={2} />
           <TextArea label="Content (Markdown)" name="content" rows={4} />
           <TextArea

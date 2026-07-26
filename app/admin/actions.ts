@@ -720,8 +720,13 @@ export async function saveCertProduct(formData: FormData) {
   if (returnTo === "list") {
     redirect("/admin/certifications?saved=1");
   }
+  // Stay on the certification list and keep the edited row expanded
+  if (returnTo === "cert" || returnTo === "" || returnTo === "expand") {
+    const editQs = savedId ? `&edit=${savedId}` : "";
+    redirect(`/admin/certifications/${certificationId}?saved=1${editQs}#product-${savedId || ""}`);
+  }
   if (savedId) {
-    redirect(`/admin/certifications/product/${savedId}?saved=1`);
+    redirect(`/admin/certifications/${certificationId}?saved=1&edit=${savedId}#product-${savedId}`);
   }
   redirect(`/admin/certifications/${certificationId}?saved=1`);
 }

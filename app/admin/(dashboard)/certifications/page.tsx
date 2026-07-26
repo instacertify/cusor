@@ -244,10 +244,10 @@ export default async function AdminCertifications({ searchParams }: Props) {
                       View ↗
                     </Link>
                     <Link
-                      href={`/admin/certifications/product/${p.id}`}
+                      href={`/admin/certifications/${c.id}?edit=${p.id}#product-${p.id}`}
                       className="text-xs font-bold text-butter-700"
                     >
-                      Edit product →
+                      Edit →
                     </Link>
                   </li>
                 ))}
