@@ -3,6 +3,8 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import FaqAccordion from "@/components/FaqAccordion";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import Icon from "@/components/Icon";
+import ContactForm from "@/components/ContactForm";
+import ContactThankYou from "@/components/ContactThankYou";
 import { getPage, getFaqs } from "@/lib/queries";
 import { ensureDbReady, getSettings } from "@/lib/db";
 
@@ -33,6 +35,7 @@ export default async function ContactPage({ searchParams }: Props) {
   const page = getPage("contact");
   const settings = getSettings();
   const faqs = getFaqs("page:contact");
+  const initiallySent = sp.sent === "1" || sp.sent === "true";
   const errorMessage =
     sp.error === "save"
       ? "We could not save your request just now. Please try again, or email us directly."
@@ -87,85 +90,14 @@ export default async function ContactPage({ searchParams }: Props) {
         </div>
 
         <div className="bg-white rounded-2xl sm:rounded-3xl border border-cream-300 shadow-card-hover p-5 sm:p-8">
-          {sp.sent ? (
-            <div className="text-center py-12 sm:py-14 px-2" role="status" aria-live="polite">
-              <span className="inline-flex w-16 h-16 rounded-full bg-green-100 text-green-700 items-center justify-center">
-                <Icon name="check" size={32} strokeWidth={2.5} />
-              </span>
-              <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink-950 mt-4">
-                Thank you!
-              </h2>
-              <p className="text-ink-700 mt-3 text-base leading-relaxed max-w-md mx-auto">
-                Someone from our team will reach out as soon as possible.
-              </p>
-              <p className="text-ink-500 mt-3 text-sm max-w-md mx-auto">
-                We typically reply within 24 hours with the mapped standard and a free quote.
-              </p>
-              <a
-                href="/"
-                className="mt-8 inline-flex items-center justify-center min-h-11 rounded-xl bg-butter-500 hover:bg-butter-400 px-5 text-sm font-semibold text-ink-950 transition"
-              >
-                Back to home
-              </a>
-            </div>
+          {initiallySent ? (
+            <ContactThankYou />
           ) : (
-            <form action="/api/contact" method="post" className="space-y-4">
-              {errorMessage ? (
-                <p className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
-                  {errorMessage}
-                </p>
-              ) : null}
-              <div>
-                <label htmlFor="name" className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">Your Name *</label>
-                <input id="name" name="name" required autoComplete="name" className="w-full rounded-xl border border-cream-300 px-4 py-3 text-base sm:text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30 min-h-11" />
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">Email *</label>
-                  <input id="email" name="email" type="email" required autoComplete="email" inputMode="email" className="w-full rounded-xl border border-cream-300 px-4 py-3 text-base sm:text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30 min-h-11" />
-                </div>
-                <div>
-                  <label htmlFor="phone" className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">Phone</label>
-                  <input id="phone" name="phone" type="tel" autoComplete="tel" inputMode="tel" className="w-full rounded-xl border border-cream-300 px-4 py-3 text-base sm:text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30 min-h-11" />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="product" className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">
-                  {sp.intent === "test"
-                    ? "Test / service"
-                    : sp.intent === "certification"
-                    ? "Certification / scheme"
-                    : "Product / test / certification"}
-                </label>
-                <input
-                  id="product"
-                  name="product"
-                  defaultValue={sp.product ?? ""}
-                  placeholder="e.g. LED lamp safety test, BIS certification, BEE RAC…"
-                  className="w-full rounded-xl border border-cream-300 px-4 py-3 text-base sm:text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30 min-h-11"
-                />
-              </div>
-              <div>
-                <label htmlFor="message" className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">Tell us more</label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows={4}
-                  placeholder="Manufacturing location, import or domestic, sample availability, timeline…"
-                  className="w-full rounded-xl border border-cream-300 px-4 py-3 text-base sm:text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30"
-                />
-              </div>
-              <button className="w-full min-h-12 bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3.5 transition">
-                {sp.intent === "test"
-                  ? "Request a quote for this test"
-                  : sp.intent === "certification"
-                  ? "Request a quote for this certification"
-                  : "Request a free quote"}
-              </button>
-              <p className="text-[11px] text-ink-500 text-center">
-                No spam. Your details are only used to respond to this request.
-              </p>
-            </form>
+            <ContactForm
+              product={sp.product ?? ""}
+              intent={sp.intent}
+              errorMessage={errorMessage}
+            />
           )}
         </div>
       </div>
