@@ -1,4 +1,4 @@
-import type Database from "better-sqlite3";
+import type { SqliteDatabase } from "./sqlite";
 import { slugify } from "./format";
 
 interface SeedService {
@@ -255,7 +255,7 @@ function defaultFaqs(categoryName: string): { question: string; answer: string }
   ];
 }
 
-function backfillTimelineAndSampleSize(db: Database.Database) {
+function backfillTimelineAndSampleSize(db: SqliteDatabase) {
   const rows = db
     .prepare("SELECT id, test_type, timeline, sample_size FROM testing_services")
     .all() as { id: number; test_type: string; timeline: string; sample_size: string }[];
@@ -269,7 +269,7 @@ function backfillTimelineAndSampleSize(db: Database.Database) {
   }
 }
 
-function seedServiceFaqsIfEmpty(db: Database.Database) {
+function seedServiceFaqsIfEmpty(db: SqliteDatabase) {
   const services = db
     .prepare("SELECT id, name, standards, test_type, accreditation FROM testing_services")
     .all() as {
@@ -309,7 +309,7 @@ function seedServiceFaqsIfEmpty(db: Database.Database) {
   }
 }
 
-export function ensureTestingCatalog(db: Database.Database) {
+export function ensureTestingCatalog(db: SqliteDatabase) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS testing_categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

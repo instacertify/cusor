@@ -1,6 +1,6 @@
-import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
+import { openDatabase, type SqliteDatabase } from "./sqlite";
 import { seedDatabase } from "./seed";
 import { ensureCertProductsCatalog } from "./seed-cert-products";
 import { ensureTestingCatalog } from "./seed-testing";
@@ -14,12 +14,12 @@ const DB_DIR = path.join(process.cwd(), "data");
 const DB_PATH = path.join(DB_DIR, "certko.db");
 
 declare global {
-  var __certkoDb: Database.Database | undefined;
+  var __certkoDb: SqliteDatabase | undefined;
 }
 
-function createDb(): Database.Database {
+function createDb(): SqliteDatabase {
   fs.mkdirSync(DB_DIR, { recursive: true });
-  const db = new Database(DB_PATH);
+  const db = openDatabase(DB_PATH);
   db.pragma("journal_mode = WAL");
   db.pragma("foreign_keys = ON");
 
@@ -316,7 +316,7 @@ function createDb(): Database.Database {
   return db;
 }
 
-export function getDb(): Database.Database {
+export function getDb(): SqliteDatabase {
   if (!global.__certkoDb) {
     global.__certkoDb = createDb();
   } else {

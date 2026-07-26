@@ -1,4 +1,4 @@
-import type Database from "better-sqlite3";
+import type { SqliteDatabase } from "./sqlite";
 
 /** Extra library quotes for existing DBs (idempotent by name). */
 const EXTRA_TESTIMONIALS = [
@@ -58,7 +58,7 @@ const EXTRA_TESTIMONIALS = [
   },
 ];
 
-export function ensureTestimonialsLibrary(db: Database.Database) {
+export function ensureTestimonialsLibrary(db: SqliteDatabase) {
   const cols = db.prepare("PRAGMA table_info(testimonials)").all() as { name: string }[];
   if (!cols.some((c) => c.name === "featured")) {
     db.exec(

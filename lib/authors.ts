@@ -1,9 +1,9 @@
-import type Database from "better-sqlite3";
+import type { SqliteDatabase } from "./sqlite";
 
 const DEFAULT_BIO =
   "Certko helps manufacturers navigate BIS, QCO and export certifications with clear process guidance, lab coordination and documentation support.";
 
-export function ensureAuthorsCatalog(db: Database.Database) {
+export function ensureAuthorsCatalog(db: SqliteDatabase) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS authors (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

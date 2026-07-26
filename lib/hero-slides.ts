@@ -1,4 +1,4 @@
-import type Database from "better-sqlite3";
+import type { SqliteDatabase } from "./sqlite";
 import path from "path";
 
 export const HERO_IMAGE_EXTS = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".avif", ".bmp"];
@@ -12,7 +12,7 @@ export function mediaTypeFromPath(filePath: string): "image" | "gif" | "video" {
   return "image";
 }
 
-export function ensureHeroSlidesCatalog(db: Database.Database) {
+export function ensureHeroSlidesCatalog(db: SqliteDatabase) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS hero_slides (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

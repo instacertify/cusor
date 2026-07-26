@@ -1,4 +1,4 @@
-import type Database from "better-sqlite3";
+import type { SqliteDatabase } from "./sqlite";
 import fs from "fs";
 import path from "path";
 import { slugify } from "./format";
@@ -27,7 +27,7 @@ interface GmarkRow {
   gso_nb: string;
 }
 
-export function ensureCertProductsCatalog(db: Database.Database) {
+export function ensureCertProductsCatalog(db: SqliteDatabase) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS cert_products (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,7 +58,7 @@ export function ensureCertProductsCatalog(db: Database.Database) {
 }
 
 /** BEE catalogue should not surface indicative lab text. */
-function stripBeeIndicativeLabs(db: Database.Database) {
+function stripBeeIndicativeLabs(db: SqliteDatabase) {
   const bee = db.prepare("SELECT id FROM certifications WHERE slug = 'bee'").get() as
     | { id: number }
     | undefined;
@@ -82,7 +82,7 @@ function stripBeeIndicativeLabs(db: Database.Database) {
   tx();
 }
 
-function seedBeeIfEmpty(db: Database.Database) {
+function seedBeeIfEmpty(db: SqliteDatabase) {
   const bee = db.prepare("SELECT id FROM certifications WHERE slug = 'bee'").get() as
     | { id: number }
     | undefined;
@@ -129,7 +129,7 @@ function seedBeeIfEmpty(db: Database.Database) {
   tx();
 }
 
-function seedGmarkIfEmpty(db: Database.Database) {
+function seedGmarkIfEmpty(db: SqliteDatabase) {
   const gmark = db.prepare("SELECT id FROM certifications WHERE slug = 'g-mark'").get() as
     | { id: number }
     | undefined;

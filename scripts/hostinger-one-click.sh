@@ -11,7 +11,7 @@ APP_DIR="/var/www/certko"
 REPO_URL="${REPO_URL:-https://github.com/instacertify/cusor.git}"
 REPO_BRANCH="${REPO_BRANCH:-main}"
 APP_PORT="${APP_PORT:-3000}"
-NODE_MAJOR="${NODE_MAJOR:-20}"
+NODE_MAJOR="${NODE_MAJOR:-22}"
 
 red() { printf '\033[31m%s\033[0m\n' "$*"; }
 green() { printf '\033[32m%s\033[0m\n' "$*"; }
@@ -55,7 +55,7 @@ echo
 green "1/8 Updating system packages…"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
-apt-get install -y git curl ca-certificates build-essential ufw nginx openssl
+apt-get install -y git curl ca-certificates ufw nginx openssl
 
 echo
 green "2/8 Installing Node.js ${NODE_MAJOR}…"

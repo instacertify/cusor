@@ -1,4 +1,4 @@
-import type Database from "better-sqlite3";
+import type { SqliteDatabase } from "./sqlite";
 
 /** App routes that cannot be claimed by CMS page slugs */
 export const RESERVED_PAGE_SLUGS = new Set([
@@ -44,7 +44,7 @@ export function isRoutableContentPage(slug: string): boolean {
   return true;
 }
 
-export function ensurePagesNavColumns(db: Database.Database) {
+export function ensurePagesNavColumns(db: SqliteDatabase) {
   const cols = db.prepare("PRAGMA table_info(pages)").all() as { name: string }[];
   const names = new Set(cols.map((c) => c.name));
   const add = (name: string, ddl: string) => {

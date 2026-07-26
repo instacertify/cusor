@@ -1,4 +1,4 @@
-import type Database from "better-sqlite3";
+import type { SqliteDatabase } from "./sqlite";
 
 export type SeoPostSeed = {
   slug: string;
@@ -417,7 +417,7 @@ ${leadCta("global exporters to India")}`,
   },
 ];
 
-export function ensureSeoLocationPosts(db: Database.Database) {
+export function ensureSeoLocationPosts(db: SqliteDatabase) {
   const author = db
     .prepare("SELECT id, name FROM authors ORDER BY sort, id LIMIT 1")
     .get() as { id: number; name: string } | undefined;

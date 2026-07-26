@@ -1,4 +1,4 @@
-import type Database from "better-sqlite3";
+import type { SqliteDatabase } from "./sqlite";
 import fs from "fs";
 import path from "path";
 import { slugify, formatPriceRange } from "./format";
@@ -699,7 +699,7 @@ We aggregate official BIS laboratory scope data, clean it, and publish it free â
 
 Lab scope and pricing data is compiled from official BIS laboratory recognition records. Prices are indicative, exclude GST, and should be confirmed directly with the laboratory. Certko is an independent information platform and is not affiliated with the Bureau of Indian Standards.`;
 
-export function seedDatabase(db: Database.Database) {
+export function seedDatabase(db: SqliteDatabase) {
   const dataPath = path.join(process.cwd(), "data", "bis_dataset.json");
   const raw = JSON.parse(fs.readFileSync(dataPath, "utf-8")) as {
     products: RawProduct[];
