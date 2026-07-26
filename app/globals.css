@@ -201,6 +201,11 @@ html[data-color-scheme="ink"] {
 }
 
 html {
+  /*
+   * Trim ~6% of the default 16px root so rem/Tailwind UI doesn't feel
+   * browser-zoomed at 105–110%. Forms on touch devices stay ≥16px below.
+   */
+  font-size: 93.75%; /* 15px when the browser default is 16px */
   overflow-x: clip;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -210,6 +215,8 @@ body {
   background: var(--color-cream-50);
   color: var(--color-ink-950);
   font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
   padding-left: env(safe-area-inset-left);
@@ -231,6 +238,13 @@ video {
   [role="button"] {
     -webkit-tap-highlight-color: rgb(247 196 83 / 0.25);
   }
+
+  /* Keep controls at true 16px so iOS does not zoom the page on focus */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 ::selection {
@@ -241,8 +255,8 @@ video {
 /* prose styling for CMS markdown content */
 .prose-certko {
   color: var(--color-ink-800);
-  line-height: 1.75;
-  font-size: 1.125rem; /* brand body: Inter 18px */
+  line-height: 1.7;
+  font-size: 1.0625rem; /* ~16px at 15px root — readable without feeling zoomed */
 }
 .prose-certko h2 {
   font-family: var(--font-display);

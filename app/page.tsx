@@ -65,10 +65,10 @@ export default async function HomePage() {
               <span className="w-2 h-2 rounded-full bg-butter-500 animate-pulse shrink-0" aria-hidden />
               <span className="truncate">{settings.announcement}</span>
             </p>
-            <h1 className="font-display text-[1.85rem] leading-[1.12] sm:text-5xl lg:text-[3.5rem] font-semibold sm:leading-[1.08] tracking-tight text-ink-950">
+            <h1 className="font-display text-[1.7rem] leading-[1.12] sm:text-4xl lg:text-[3.1rem] font-semibold sm:leading-[1.08] tracking-tight text-ink-950">
               {settings.hero_heading}
             </h1>
-            <p className="mt-4 sm:mt-5 text-base sm:text-lg text-ink-700 max-w-xl leading-relaxed">
+            <p className="mt-4 sm:mt-5 text-sm sm:text-base text-ink-700 max-w-xl leading-relaxed">
               {settings.hero_subheading}
             </p>
             <div className="mt-6 sm:mt-8 max-w-xl">
