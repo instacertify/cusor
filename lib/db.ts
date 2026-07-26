@@ -2,6 +2,7 @@ import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
 import { seedDatabase } from "./seed";
+import { ensureCertProductsCatalog } from "./seed-cert-products";
 
 const DB_DIR = path.join(process.cwd(), "data");
 const DB_PATH = path.join(DB_DIR, "certko.db");
@@ -189,6 +190,28 @@ function createDb(): Database.Database {
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       status TEXT NOT NULL DEFAULT 'new'
     );
+
+    CREATE TABLE IF NOT EXISTS cert_products (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      certification_id INTEGER NOT NULL REFERENCES certifications(id) ON DELETE CASCADE,
+      slug TEXT NOT NULL,
+      name TEXT NOT NULL,
+      family TEXT NOT NULL DEFAULT '',
+      regime TEXT NOT NULL DEFAULT '',
+      standards TEXT NOT NULL DEFAULT '',
+      summary TEXT NOT NULL DEFAULT '',
+      content TEXT NOT NULL DEFAULT '',
+      image TEXT NOT NULL DEFAULT '',
+      min_price INTEGER,
+      max_price INTEGER,
+      labs TEXT NOT NULL DEFAULT '',
+      fee_note TEXT NOT NULL DEFAULT '',
+      extras TEXT NOT NULL DEFAULT '{}',
+      sort INTEGER NOT NULL DEFAULT 0,
+      UNIQUE(certification_id, slug)
+    );
+    CREATE INDEX IF NOT EXISTS idx_cert_products_cert ON cert_products(certification_id);
+    CREATE INDEX IF NOT EXISTS idx_cert_products_name ON cert_products(name);
   `);
 
   const count = (
@@ -197,12 +220,16 @@ function createDb(): Database.Database {
   if (count === 0) {
     seedDatabase(db);
   }
+  ensureCertProductsCatalog(db);
   return db;
 }
 
 export function getDb(): Database.Database {
   if (!global.__certkoDb) {
     global.__certkoDb = createDb();
+  } else {
+    // Keep catalog migrations/seeds idempotent across hot reloads
+    ensureCertProductsCatalog(global.__certkoDb);
   }
   return global.__certkoDb;
 }
@@ -370,4 +397,26 @@ export interface Inquiry {
   message: string;
   created_at: string;
   status: string;
+}
+
+export interface CertProduct {
+  id: number;
+  certification_id: number;
+  slug: string;
+  name: string;
+  family: string;
+  regime: string;
+  standards: string;
+  summary: string;
+  content: string;
+  image: string;
+  min_price: number | null;
+  max_price: number | null;
+  labs: string;
+  fee_note: string;
+  extras: string;
+  sort: number;
+  cert_slug?: string;
+  cert_name?: string;
+  cert_region?: string;
 }

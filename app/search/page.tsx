@@ -8,24 +8,26 @@ import Icon from "@/components/Icon";
 import {
   searchProducts,
   countSearchProducts,
+  searchCertProducts,
   getLabs,
   getLabStates,
   getFaqs,
   getLabsForProduct,
+  getCertifications,
 } from "@/lib/queries";
 import { formatNumber, formatPriceRange, formatINR } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Search BIS Products, Standards & Labs",
+  title: "Search Certifications, Products & Testing Labs",
   description:
-    "Search Certko's database of 1,400+ BIS notified products, IS standards and 400+ recognised testing labs.",
+    "Search Certko for BIS, BEE, GMARK, CE, FCC, SABER and WPC certifications, product schemes, standards and testing labs.",
 };
 
 const PAGE_SIZE = 24;
 
-type Tab = "all" | "products" | "labs";
+type Tab = "all" | "products" | "certs" | "labs";
 
 interface Props {
   searchParams: Promise<{ q?: string; page?: string; type?: string; state?: string }>;
@@ -35,17 +37,37 @@ export default async function SearchPage({ searchParams }: Props) {
   const sp = await searchParams;
   const q = (sp.q ?? "").trim();
   const page = Math.max(1, Number(sp.page) || 1);
-  const tab: Tab = sp.type === "labs" ? "labs" : sp.type === "products" ? "products" : "all";
+  const tab: Tab =
+    sp.type === "labs"
+      ? "labs"
+      : sp.type === "products"
+      ? "products"
+      : sp.type === "certs"
+      ? "certs"
+      : "all";
   const state = (sp.state ?? "").trim();
   const faqs = getFaqs("page:search");
+  const lq = q.toLowerCase();
 
-  // products
+  // products (BIS master)
   const productLimit = tab === "all" ? 8 : PAGE_SIZE;
   const products = q
     ? searchProducts(q, productLimit, tab === "products" ? (page - 1) * PAGE_SIZE : 0)
     : [];
   const productTotal = q ? countSearchProducts(q) : 0;
   const productPages = Math.ceil(productTotal / PAGE_SIZE);
+
+  // certification programmes + BEE/GMARK catalogue products
+  const certProgrammes = q
+    ? getCertifications().filter(
+        (c) =>
+          c.name.toLowerCase().includes(lq) ||
+          c.full_name.toLowerCase().includes(lq) ||
+          c.summary.toLowerCase().includes(lq) ||
+          c.slug.includes(lq)
+      )
+    : getCertifications();
+  const certProducts = q ? searchCertProducts(q, tab === "certs" ? 40 : 8) : [];
 
   // labs (labs tab searches even without q, supports state filter + pagination)
   const labLimit = tab === "labs" ? PAGE_SIZE : 6;
@@ -61,8 +83,12 @@ export default async function SearchPage({ searchParams }: Props) {
   const labPages = Math.ceil(labTotal / PAGE_SIZE);
   const states = tab === "labs" ? getLabStates() : [];
 
-  // best match: certification + lab testing details for the top product
-  const best = tab !== "labs" && page === 1 && products.length > 0 ? products[0] : null;
+  // best match: prefer catalogue hit, else BIS product
+  const bestCertProduct =
+    (tab === "all" || tab === "certs") && page === 1 && certProducts.length > 0
+      ? certProducts[0]
+      : null;
+  const best = !bestCertProduct && tab !== "labs" && page === 1 && products.length > 0 ? products[0] : null;
   const bestLabs = best ? getLabsForProduct(best.id).slice(0, 5) : [];
 
   const tabHref = (t: Tab, extra: Record<string, string | undefined> = {}) => {
@@ -76,7 +102,13 @@ export default async function SearchPage({ searchParams }: Props) {
 
   const TABS: { key: Tab; label: string; count?: number; icon: string }[] = [
     { key: "all", label: "All Results", icon: "search" },
-    { key: "products", label: "Find a Product", count: q ? productTotal : undefined, icon: "box" },
+    {
+      key: "certs",
+      label: "Find a Certification",
+      count: q ? certProgrammes.length + certProducts.length : getCertifications().length,
+      icon: "award",
+    },
+    { key: "products", label: "BIS Products", count: q ? productTotal : undefined, icon: "box" },
     { key: "labs", label: "Find a Lab", count: tab === "labs" ? labTotal : undefined, icon: "microscope" },
   ];
 
@@ -178,14 +210,101 @@ export default async function SearchPage({ searchParams }: Props) {
         </>
       )}
 
+      {/* ---- Certifications tab / all ---- */}
+      {(tab === "certs" || (tab === "all" && q)) && (
+        <section className="mt-8">
+          {(tab === "certs" || certProgrammes.length > 0 || certProducts.length > 0) && (
+            <>
+              <h2 className="font-display text-xl font-semibold text-ink-950">
+                Certifications &amp; Schemes
+              </h2>
+              {tab === "certs" && !q && (
+                <p className="mt-2 text-sm text-ink-600">
+                  Browse every certification programme, or type your product to see matching BEE / GMARK schemes.
+                </p>
+              )}
+              <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {certProgrammes.map((c) => (
+                  <Link
+                    key={c.id}
+                    href={`/certifications/${c.slug}`}
+                    className="bg-white rounded-2xl border border-cream-300 p-5 hover:border-butter-500 transition"
+                  >
+                    <div className="text-xs font-semibold uppercase tracking-wide text-butter-700">{c.region}</div>
+                    <div className="mt-1 font-display font-semibold text-ink-950">{c.name}</div>
+                    <p className="mt-2 text-sm text-ink-600 line-clamp-2">{c.summary}</p>
+                  </Link>
+                ))}
+              </div>
+              {certProducts.length > 0 && (
+                <>
+                  <h3 className="mt-8 font-display text-lg font-semibold text-ink-950">
+                    Matching certification products
+                  </h3>
+                  <div className="mt-4 grid sm:grid-cols-2 gap-3">
+                    {certProducts.map((p) => (
+                      <Link
+                        key={`${p.cert_slug}-${p.id}`}
+                        href={`/certifications/${p.cert_slug}/products/${p.slug}`}
+                        className="bg-white rounded-2xl border border-cream-300 p-4 hover:border-butter-500 transition"
+                      >
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-butter-700">
+                          {p.cert_name}
+                          {p.regime ? ` · ${p.regime}` : ""}
+                        </div>
+                        <div className="mt-1 font-semibold text-ink-950">{p.name}</div>
+                        <div className="mt-1 text-xs font-mono text-ink-500 line-clamp-1">{p.standards}</div>
+                        <div className="mt-2 text-xs text-ink-600">
+                          {formatPriceRange(p.min_price, p.max_price)} testing
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </section>
+      )}
+
       {/* ---- Products / All tabs ---- */}
-      {tab !== "labs" && q && (
+      {tab !== "labs" && tab !== "certs" && q && (
         <>
+          {bestCertProduct && (
+            <section className="mt-8 bg-white rounded-3xl border border-cream-300 shadow-card-hover overflow-hidden">
+              <div className="px-6 py-4 bg-cream-100 border-b border-cream-200 flex items-center gap-2">
+                <Icon name="award" size={18} className="text-butter-700" />
+                <h2 className="font-display font-bold text-ink-950">Best Match — Likely Certification</h2>
+              </div>
+              <div className="p-6">
+                <div className="text-xs font-semibold uppercase tracking-wide text-butter-700">
+                  {bestCertProduct.cert_name}
+                  {bestCertProduct.regime ? ` · ${bestCertProduct.regime}` : ""}
+                </div>
+                <Link
+                  href={`/certifications/${bestCertProduct.cert_slug}/products/${bestCertProduct.slug}`}
+                  className="mt-2 block font-display text-xl font-semibold text-ink-950 hover:text-butter-700"
+                >
+                  {bestCertProduct.name}
+                </Link>
+                <p className="mt-2 text-sm text-ink-600 font-mono">{bestCertProduct.standards}</p>
+                <p className="mt-3 text-sm text-ink-700">
+                  Indicative testing: {formatPriceRange(bestCertProduct.min_price, bestCertProduct.max_price)}
+                </p>
+                <Link
+                  href={`/certifications/${bestCertProduct.cert_slug}/products/${bestCertProduct.slug}`}
+                  className="mt-4 inline-flex text-sm font-semibold text-butter-700"
+                >
+                  View certification details →
+                </Link>
+              </div>
+            </section>
+          )}
           {best && (
             <section className="mt-8 bg-white rounded-3xl border border-cream-300 shadow-card-hover overflow-hidden">
               <div className="px-6 py-4 bg-cream-100 border-b border-cream-200 flex items-center gap-2">
                 <Icon name="award" size={18} className="text-butter-700" />
-                <h2 className="font-display font-bold text-ink-950">Best Match — Certification & Lab Testing</h2>
+                <h2 className="font-display font-bold text-ink-950">Best Match — BIS Certification & Lab Testing</h2>
               </div>
               <div className="p-6 grid lg:grid-cols-2 gap-8">
                 <div>

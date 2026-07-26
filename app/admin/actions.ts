@@ -203,7 +203,7 @@ export async function createCertification(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   if (!name) redirect("/admin/certifications?error=1");
   const db = getDb();
-  let slug = slugify(name);
+  let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
   let n = 2;
   while (db.prepare("SELECT 1 FROM certifications WHERE slug = ?").get(slug)) {
     slug = `${slugify(name)}-${n++}`;
@@ -211,6 +211,8 @@ export async function createCertification(formData: FormData) {
   const maxSort = (
     db.prepare("SELECT COALESCE(MAX(sort), 0) AS m FROM certifications").get() as { m: number }
   ).m;
+  const image = (await saveUploadedImage(formData.get("image_file") as File | null)) ?? "";
+  const summary = String(formData.get("summary") ?? "").trim();
   const res = db
     .prepare(
       `INSERT INTO certifications (slug, name, full_name, region, icon, summary, content, image, meta_title, meta_description, sort)
@@ -222,11 +224,11 @@ export async function createCertification(formData: FormData) {
       String(formData.get("full_name") ?? "").trim(),
       String(formData.get("region") ?? "").trim(),
       String(formData.get("icon") ?? "award").trim() || "award",
-      String(formData.get("summary") ?? "").trim(),
+      summary,
       `## About ${name}\n\nWrite the certification overview here — what it covers, when it is mandatory, the process, and how Certko helps.`,
-      "",
+      image,
       `${name} Certification | Process, Cost & Help | Certko`,
-      String(formData.get("summary") ?? "").trim(),
+      summary,
       maxSort + 1
     );
   revalidatePath("/", "layout");
@@ -242,6 +244,7 @@ export async function deleteCertification(formData: FormData) {
     | undefined;
   if (cert) {
     db.prepare("DELETE FROM faqs WHERE scope = ?").run(`cert:${cert.slug}`);
+    db.prepare("DELETE FROM cert_products WHERE certification_id = ?").run(id);
     db.prepare("DELETE FROM certifications WHERE id = ?").run(id);
   }
   revalidatePath("/", "layout");
@@ -250,29 +253,197 @@ export async function deleteCertification(formData: FormData) {
 
 export async function saveCertification(formData: FormData) {
   await requireAdmin();
+  const { slugify } = await import("@/lib/format");
   const id = Number(formData.get("id"));
-  const image = await saveUploadedImage(formData.get("image_file") as File | null);
-  getDb()
-    .prepare(
-      `UPDATE certifications SET name=?, full_name=?, region=?, icon=?, summary=?, content=?, meta_title=?, meta_description=?
-       ${image ? ", image=?" : ""} WHERE id=?`
-    )
-    .run(
-      ...[
-        String(formData.get("name") ?? ""),
-        String(formData.get("full_name") ?? ""),
-        String(formData.get("region") ?? ""),
-        String(formData.get("icon") ?? "award"),
-        String(formData.get("summary") ?? ""),
-        String(formData.get("content") ?? ""),
-        String(formData.get("meta_title") ?? ""),
-        String(formData.get("meta_description") ?? ""),
-        ...(image ? [image] : []),
-        id,
-      ]
+  const db = getDb();
+  const current = db.prepare("SELECT slug, image FROM certifications WHERE id = ?").get(id) as
+    | { slug: string; image: string }
+    | undefined;
+  if (!current) redirect("/admin/certifications?error=1");
+
+  let slug = slugify(String(formData.get("slug") ?? "").trim() || current.slug);
+  const clash = db
+    .prepare("SELECT id FROM certifications WHERE slug = ? AND id != ?")
+    .get(slug, id) as { id: number } | undefined;
+  if (clash) slug = `${slug}-${id}`;
+
+  const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
+  const clearImage = formData.get("clear_image") === "1";
+  const image = uploaded ?? (clearImage ? "" : current.image);
+  const sort = Number(formData.get("sort") ?? 0) || 0;
+
+  db.prepare(
+    `UPDATE certifications SET slug=?, name=?, full_name=?, region=?, icon=?, summary=?, content=?, image=?, meta_title=?, meta_description=?, sort=?
+     WHERE id=?`
+  ).run(
+    slug,
+    String(formData.get("name") ?? ""),
+    String(formData.get("full_name") ?? ""),
+    String(formData.get("region") ?? ""),
+    String(formData.get("icon") ?? "award"),
+    String(formData.get("summary") ?? ""),
+    String(formData.get("content") ?? ""),
+    image,
+    String(formData.get("meta_title") ?? ""),
+    String(formData.get("meta_description") ?? ""),
+    sort,
+    id
+  );
+
+  if (current.slug !== slug) {
+    db.prepare("UPDATE faqs SET scope = ? WHERE scope = ?").run(
+      `cert:${slug}`,
+      `cert:${current.slug}`
     );
+  }
+
   revalidatePath("/", "layout");
   redirect(`/admin/certifications/${id}?saved=1`);
+}
+
+export async function saveCertProduct(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const db = getDb();
+  const id = formData.get("id") ? Number(formData.get("id")) : null;
+  const certificationId = Number(formData.get("certification_id"));
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name || !certificationId) {
+    redirect(`/admin/certifications/${certificationId || ""}?error=1`);
+  }
+  let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
+  const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
+  const clearImage = formData.get("clear_image") === "1";
+  const minPrice = formData.get("min_price") ? Number(formData.get("min_price")) : null;
+  const maxPrice = formData.get("max_price") ? Number(formData.get("max_price")) : null;
+  const values = {
+    certification_id: certificationId,
+    slug,
+    name,
+    family: String(formData.get("family") ?? "").trim(),
+    regime: String(formData.get("regime") ?? "").trim(),
+    standards: String(formData.get("standards") ?? "").trim(),
+    summary: String(formData.get("summary") ?? "").trim(),
+    content: String(formData.get("content") ?? "").trim(),
+    labs: String(formData.get("labs") ?? "").trim(),
+    fee_note: String(formData.get("fee_note") ?? "").trim(),
+    extras: String(formData.get("extras") ?? "{}").trim() || "{}",
+    min_price: Number.isFinite(minPrice as number) ? minPrice : null,
+    max_price: Number.isFinite(maxPrice as number) ? maxPrice : null,
+    sort: Number(formData.get("sort") ?? 0) || 0,
+  };
+
+  if (id) {
+    const current = db.prepare("SELECT image, slug FROM cert_products WHERE id = ?").get(id) as
+      | { image: string; slug: string }
+      | undefined;
+    const image = uploaded ?? (clearImage ? "" : current?.image ?? "");
+    const clash = db
+      .prepare(
+        "SELECT id FROM cert_products WHERE certification_id = ? AND slug = ? AND id != ?"
+      )
+      .get(certificationId, slug, id);
+    if (clash) slug = `${slug}-${id}`;
+    db.prepare(
+      `UPDATE cert_products SET slug=?, name=?, family=?, regime=?, standards=?, summary=?, content=?, image=?,
+        min_price=?, max_price=?, labs=?, fee_note=?, extras=?, sort=? WHERE id=?`
+    ).run(
+      slug,
+      values.name,
+      values.family,
+      values.regime,
+      values.standards,
+      values.summary,
+      values.content,
+      image,
+      values.min_price,
+      values.max_price,
+      values.labs,
+      values.fee_note,
+      values.extras,
+      values.sort,
+      id
+    );
+  } else {
+    let n = 2;
+    while (
+      db
+        .prepare("SELECT 1 FROM cert_products WHERE certification_id = ? AND slug = ?")
+        .get(certificationId, slug)
+    ) {
+      slug = `${slugify(name)}-${n++}`;
+    }
+    db.prepare(
+      `INSERT INTO cert_products
+        (certification_id, slug, name, family, regime, standards, summary, content, image, min_price, max_price, labs, fee_note, extras, sort)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(
+      certificationId,
+      slug,
+      values.name,
+      values.family,
+      values.regime,
+      values.standards,
+      values.summary,
+      values.content,
+      uploaded ?? "",
+      values.min_price,
+      values.max_price,
+      values.labs,
+      values.fee_note,
+      values.extras,
+      values.sort
+    );
+  }
+  revalidatePath("/", "layout");
+  redirect(`/admin/certifications/${certificationId}?saved=1`);
+}
+
+export async function deleteCertProduct(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  const certificationId = Number(formData.get("certification_id"));
+  getDb().prepare("DELETE FROM cert_products WHERE id = ?").run(id);
+  revalidatePath("/", "layout");
+  redirect(`/admin/certifications/${certificationId}?saved=1`);
+}
+
+export async function saveEntityImage(formData: FormData) {
+  await requireAdmin();
+  const entity = String(formData.get("entity") ?? "");
+  const id = String(formData.get("id") ?? "");
+  const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
+  const clearImage = formData.get("clear_image") === "1";
+  const db = getDb();
+
+  if (entity === "page") {
+    const current = db.prepare("SELECT image FROM pages WHERE slug = ?").get(id) as
+      | { image: string }
+      | undefined;
+    const image = uploaded ?? (clearImage ? "" : current?.image ?? "");
+    db.prepare("UPDATE pages SET image = ? WHERE slug = ?").run(image, id);
+  } else if (entity === "category") {
+    const current = db.prepare("SELECT image FROM categories WHERE id = ?").get(Number(id)) as
+      | { image: string }
+      | undefined;
+    const image = uploaded ?? (clearImage ? "" : current?.image ?? "");
+    db.prepare("UPDATE categories SET image = ? WHERE id = ?").run(image, Number(id));
+  } else if (entity === "cert") {
+    const current = db.prepare("SELECT image FROM certifications WHERE id = ?").get(Number(id)) as
+      | { image: string }
+      | undefined;
+    const image = uploaded ?? (clearImage ? "" : current?.image ?? "");
+    db.prepare("UPDATE certifications SET image = ? WHERE id = ?").run(image, Number(id));
+  } else if (entity === "product") {
+    const current = db.prepare("SELECT image FROM products WHERE id = ?").get(Number(id)) as
+      | { image: string }
+      | undefined;
+    const image = uploaded ?? (clearImage ? "" : current?.image ?? "");
+    db.prepare("UPDATE products SET image = ? WHERE id = ?").run(image, Number(id));
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/admin/media?saved=1");
 }
 
 // ---------- upcoming QCOs ----------

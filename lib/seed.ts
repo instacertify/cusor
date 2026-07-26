@@ -750,21 +750,21 @@ export function seedDatabase(db: Database.Database) {
     const defaults: Record<string, string> = {
       site_name: "Certko",
       tagline: "Your trusted global compliance partner.",
-      hero_heading: "Does Your Product Need BIS Certification?",
+      hero_heading: "Which Certification Does Your Product Need?",
       hero_subheading:
-        "Check instantly, free. Search 1,400+ notified products by name, IS standard or HSN code to see certification type, real lab testing costs, timelines and BIS-recognised labs near you.",
+        "Search by product name, standard or HSN to map BIS, BEE, GMARK, CE, FCC, SABER, WPC and more — with testing costs, labs and expert help in one place.",
       contact_email: "info@certko.com",
       contact_phone: "+91-9999118039",
       footer_text:
-        "Certko is an independent compliance intelligence platform. We are not affiliated with the Bureau of Indian Standards. Prices are indicative and exclude GST.",
-      announcement: "Updated July 2026 · 1,400+ products · 400+ labs · 29 upcoming QCOs",
-      cta_heading: "Need BIS certification help?",
+        "Certko is an independent compliance intelligence and product-testing guidance platform operated by Instacertify Labs Private Limited. We are not a government authority. Prices and schedules are indicative — always verify with the relevant regulator and laboratory.",
+      announcement: "Updated July 2026 · BIS · BEE · GMARK · CE · FCC · SABER · WPC · 400+ labs",
+      cta_heading: "Need certification or testing help?",
       cta_text:
-        "Connect with verified BIS consultants who handle the entire process — application, testing, inspection and licence grant. Free quote in 24 hours.",
-      stat_1_value: "1,400+", stat_1_label: "Products Covered",
-      stat_2_value: "400+", stat_2_label: "Testing Labs",
-      stat_3_value: "33", stat_3_label: "Product Categories",
-      stat_4_value: "Free", stat_4_label: "BIS Checker Tool",
+        "Connect with verified compliance consultants who handle certification, lab testing, inspection and registration end-to-end across India and export markets. Free quote in 24 hours.",
+      stat_1_value: "1,400+", stat_1_label: "BIS Products",
+      stat_2_value: "35", stat_2_label: "BEE Schemes",
+      stat_3_value: "7+", stat_3_label: "Certifications",
+      stat_4_value: "Free", stat_4_label: "Product Checker",
       admin_password: "certko-admin",
     };
     const insSetting = db.prepare(

@@ -7,9 +7,8 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
-import GmarkCategories from "@/components/GmarkCategories";
-import { getCertificationBySlug, getCertifications, getFaqs } from "@/lib/queries";
-import { getGmarkCategories } from "@/lib/gmark";
+import CertProductCatalog from "@/components/CertProductCatalog";
+import { getCertificationBySlug, getCertifications, getFaqs, getCertProducts } from "@/lib/queries";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +35,7 @@ export default async function CertificationPage({ params }: Props) {
   if (!cert) notFound();
   const faqs = getFaqs(`cert:${cert.slug}`);
   const others = getCertifications().filter((c) => c.slug !== cert.slug);
+  const catalog = getCertProducts(cert.id);
 
   const jsonLd = buildJsonLd(enabledSchemaTypes(`cert:${cert.id}`, "cert"), {
     name: `${cert.name} Certification Support`,
@@ -105,17 +105,34 @@ export default async function CertificationPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: marked.parse(cert.content) as string }}
       />
 
-      {cert.slug === "g-mark" && (
+      {catalog.length > 0 && (
         <>
-          <GmarkCategories items={getGmarkCategories()} />
-          <p className="mt-4 text-sm text-ink-600">
-            <a
-              href="/legal/gmark-product-categories.pdf"
-              className="font-semibold text-butter-700 hover:text-butter-800 underline underline-offset-4"
-            >
-              Download GMARK categories &amp; standards matrix (PDF)
-            </a>
-          </p>
+          <CertProductCatalog
+            items={catalog}
+            certSlug={cert.slug}
+            title={`${cert.name} Product Catalogue`}
+            subtitle={`Searchable products and schemes under ${cert.full_name || cert.name}. Open any row for standards, indicative testing costs and guidance.`}
+          />
+          {cert.slug === "g-mark" && (
+            <p className="mt-4 text-sm text-ink-600">
+              <a
+                href="/legal/gmark-product-categories.pdf"
+                className="font-semibold text-butter-700 hover:text-butter-800 underline underline-offset-4"
+              >
+                Download GMARK categories &amp; standards matrix (PDF)
+              </a>
+            </p>
+          )}
+          {cert.slug === "bee" && (
+            <p className="mt-4 text-sm text-ink-600">
+              <a
+                href="/legal/bee-star-label-master-data-2026.pdf"
+                className="font-semibold text-butter-700 hover:text-butter-800 underline underline-offset-4"
+              >
+                Download BEE Star Label master data 2026 (PDF)
+              </a>
+            </p>
+          )}
         </>
       )}
 

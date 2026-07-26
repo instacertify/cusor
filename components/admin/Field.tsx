@@ -89,10 +89,12 @@ export function ImageUpload({
   current,
   name = "image_file",
   label = "Image",
+  allowClear = true,
 }: {
   current?: string;
   name?: string;
   label?: string;
+  allowClear?: boolean;
 }) {
   return (
     <div>
@@ -116,6 +118,12 @@ export function ImageUpload({
         accept="image/*"
         className="block w-full text-sm text-ink-700 file:mr-3 file:rounded-lg file:border-0 file:bg-cream-200 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink-800 hover:file:bg-cream-300"
       />
+      {allowClear && current ? (
+        <label className="mt-2 flex items-center gap-2 text-xs text-ink-600">
+          <input type="checkbox" name="clear_image" value="1" className="rounded border-cream-300" />
+          Remove current image
+        </label>
+      ) : null}
       <p className="text-[11px] text-ink-500 mt-1">Upload PNG/JPG/WebP to replace the current image.</p>
     </div>
   );

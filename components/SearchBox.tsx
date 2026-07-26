@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 interface Suggestion {
-  type: "product" | "category" | "lab" | "certification";
+  type: "product" | "category" | "lab" | "certification" | "cert-product";
   name: string;
   detail: string;
   href: string;
@@ -13,7 +13,7 @@ interface Suggestion {
 
 export default function SearchBox({
   large = false,
-  placeholder = "Search product, IS standard or HSN code…",
+  placeholder = "Search product or certification — BIS, BEE, GMARK, CE…",
 }: {
   large?: boolean;
   placeholder?: string;
@@ -144,6 +144,8 @@ export default function SearchBox({
                 className={`shrink-0 text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 ${
                   r.type === "product"
                     ? "bg-butter-300/50 text-butter-700"
+                    : r.type === "cert-product"
+                    ? "bg-butter-300/40 text-butter-800"
                     : r.type === "lab"
                     ? "bg-ink-300/30 text-ink-700"
                     : r.type === "certification"
@@ -151,7 +153,11 @@ export default function SearchBox({
                     : "bg-cream-200 text-ink-600"
                 }`}
               >
-                {r.type === "certification" ? "cert" : r.type}
+                {r.type === "certification"
+                  ? "cert"
+                  : r.type === "cert-product"
+                  ? "scheme"
+                  : r.type}
               </span>
             </Link>
           ))}

@@ -22,17 +22,17 @@ const HOW_IT_WORKS = [
   {
     icon: "search",
     title: "Check Your Product",
-    text: "Search by product name, IS standard or HSN code. Instantly see which certification is required, under which scheme, and what it costs.",
+    text: "Search by product name, standard or HSN. See whether you need BIS, BEE, GMARK, CE, FCC, SABER, WPC or another route — and what testing typically costs.",
   },
   {
     icon: "microscope",
-    title: "Compare Testing Labs",
-    text: "Browse 400+ BIS-recognised laboratories. Compare locations, scopes and real reported test prices before you commit.",
+    title: "Compare Testing Options",
+    text: "Review indicative lab charges, recognised laboratories and scheme notes before you commit budget or a production timeline.",
   },
   {
     icon: "handshake",
     title: "Get Expert Help",
-    text: "Hand the paperwork to a vetted compliance consultant who manages testing, inspection and licence grant. Free quote in 24 hours.",
+    text: "Hand certification and testing coordination to a vetted consultant — application, lab booking, inspection readiness and grant. Free quote in 24 hours.",
   },
 ];
 
@@ -72,7 +72,7 @@ export default function HomePage() {
               {settings.hero_subheading}
             </p>
             <div className="mt-6 sm:mt-8 max-w-xl">
-              <SearchBox large placeholder="Search product, IS or HSN…" />
+              <SearchBox large placeholder="Search your product or certification…" />
             </div>
             <div className="mt-8 sm:mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               {stats.map((s, i) => (
@@ -125,8 +125,10 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
           <div className="flex items-end justify-between mb-6 sm:mb-8 gap-4">
             <div className="min-w-0">
-              <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950">Popular Products</h2>
-              <p className="text-ink-600 mt-2 text-sm sm:text-base">The most searched BIS certification requirements.</p>
+              <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950">Popular BIS Products</h2>
+              <p className="text-ink-600 mt-2 text-sm sm:text-base">
+                Frequently searched Indian BIS requirements — also explore BEE, GMARK and export certifications.
+              </p>
             </div>
             <Link href="/products" className="hidden sm:inline-flex text-sm font-semibold text-butter-700 hover:text-butter-600 shrink-0">
               Browse all {formatNumber(totalProducts)} products →
@@ -159,9 +161,13 @@ export default function HomePage() {
 
       {/* Categories */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
-        <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950">Browse by Category</h2>
+        <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950">Browse BIS Categories</h2>
         <p className="text-ink-600 mt-2 mb-6 sm:mb-8 text-sm sm:text-base">
-          Find BIS requirements across {categories.length} notified product categories.
+          Indian BIS notified categories — or{" "}
+          <Link href="/certifications" className="font-semibold text-butter-700">
+            browse all certifications
+          </Link>{" "}
+          for BEE, GMARK, CE, FCC and more.
         </p>
         <div className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {categories.slice(0, 12).map((c) => (

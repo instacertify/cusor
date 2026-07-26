@@ -252,6 +252,13 @@ const PATHS: Record<string, ReactNode> = {
       <path d="M12 3l1 2.5h-2zM12 21l1-2.5h-2zM3 12l2.5 1v-2zM21 12l-2.5 1v-2zM5.6 5.6l2.4 1.1-1.3 1.3zM18.4 18.4L16 17.3l1.3-1.3zM18.4 5.6l-1.1 2.4-1.3-1.3zM5.6 18.4l1.1-2.4 1.3 1.3z" />
     </>
   ),
+  image: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <circle cx="9" cy="10" r="1.5" />
+      <path d="M3 16l5-4 4 3 3-2 6 4" />
+    </>
+  ),
   folder: (
     <path d="M3 6a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
   ),

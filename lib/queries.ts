@@ -9,6 +9,7 @@ import type {
   Qco,
   Certification,
   Post,
+  CertProduct,
 } from "./db";
 
 // ---------- categories ----------
@@ -317,4 +318,58 @@ export function getCertificationBySlug(slug: string): Certification | undefined 
   return getDb()
     .prepare("SELECT * FROM certifications WHERE slug = ?")
     .get(slug) as Certification | undefined;
+}
+
+// ---------- cert products (BEE, GMARK, future catalogues) ----------
+export function getCertProducts(certificationId: number): CertProduct[] {
+  return getDb()
+    .prepare(
+      `SELECT cp.*, c.slug AS cert_slug, c.name AS cert_name, c.region AS cert_region
+       FROM cert_products cp
+       JOIN certifications c ON c.id = cp.certification_id
+       WHERE cp.certification_id = ?
+       ORDER BY cp.sort, cp.name`
+    )
+    .all(certificationId) as CertProduct[];
+}
+
+export function getCertProductBySlug(
+  certSlug: string,
+  productSlug: string
+): CertProduct | undefined {
+  return getDb()
+    .prepare(
+      `SELECT cp.*, c.slug AS cert_slug, c.name AS cert_name, c.region AS cert_region
+       FROM cert_products cp
+       JOIN certifications c ON c.id = cp.certification_id
+       WHERE c.slug = ? AND cp.slug = ?`
+    )
+    .get(certSlug, productSlug) as CertProduct | undefined;
+}
+
+export function searchCertProducts(q: string, limit = 8): CertProduct[] {
+  const like = `%${q}%`;
+  return getDb()
+    .prepare(
+      `SELECT cp.*, c.slug AS cert_slug, c.name AS cert_name, c.region AS cert_region
+       FROM cert_products cp
+       JOIN certifications c ON c.id = cp.certification_id
+       WHERE cp.name LIKE ? OR cp.standards LIKE ? OR cp.family LIKE ? OR c.name LIKE ?
+       ORDER BY
+         CASE WHEN cp.name LIKE ? THEN 0 ELSE 1 END,
+         cp.sort, cp.name
+       LIMIT ?`
+    )
+    .all(like, like, like, like, `${q}%`, limit) as CertProduct[];
+}
+
+export function countCertProducts(certificationId?: number): number {
+  if (certificationId) {
+    return (
+      getDb()
+        .prepare("SELECT COUNT(*) AS n FROM cert_products WHERE certification_id = ?")
+        .get(certificationId) as { n: number }
+    ).n;
+  }
+  return (getDb().prepare("SELECT COUNT(*) AS n FROM cert_products").get() as { n: number }).n;
 }
