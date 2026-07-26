@@ -392,6 +392,19 @@ export function getTestimonials(): Testimonial[] {
     .all() as Testimonial[];
 }
 
+/** Random featured testimonials from the CMS library (for sitewide trust strips). */
+export function getRandomFeaturedTestimonials(limit = 2): Testimonial[] {
+  const n = Math.max(1, Math.min(12, Math.floor(limit) || 2));
+  return getDb()
+    .prepare(
+      `SELECT * FROM testimonials
+       WHERE featured = 1
+       ORDER BY RANDOM()
+       LIMIT ?`
+    )
+    .all(n) as Testimonial[];
+}
+
 // ---------- hero slider ----------
 export function getActiveHeroSlides(): HeroSlide[] {
   return getDb()

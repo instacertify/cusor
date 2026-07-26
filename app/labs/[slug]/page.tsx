@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ProductCard from "@/components/ProductCard";
 import CtaBanner from "@/components/CtaBanner";
+import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import { getLabBySlug, getProductsForLab, getFaqs } from "@/lib/queries";
 import { formatPriceRange } from "@/lib/format";
@@ -112,6 +113,7 @@ export default async function LabDetailPage({ params }: Props) {
       </div>
 
       <div className="mt-14">
+        <TestimonialStrip />
         <CtaBanner />
       </div>
     </div>

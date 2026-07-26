@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import FaqAccordion from "@/components/FaqAccordion";
+import TestimonialStrip from "@/components/TestimonialStrip";
 import Icon from "@/components/Icon";
 import { getPage, getFaqs } from "@/lib/queries";
 import { getSettings } from "@/lib/db";
@@ -148,7 +149,11 @@ export default async function ContactPage({ searchParams }: Props) {
         </div>
       </div>
 
-      <div className="mt-16 max-w-3xl">
+      <div className="mt-10 -mx-4 sm:-mx-6">
+        <TestimonialStrip />
+      </div>
+
+      <div className="mt-10 max-w-3xl">
         <FaqAccordion faqs={faqs} heading="Before You Ask" />
       </div>
     </div>

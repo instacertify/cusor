@@ -36,7 +36,7 @@ export const BULK_ENTITIES: BulkEntityDef[] = [
   {
     id: "testimonials",
     label: "Testimonials",
-    description: "Homepage trust quotes",
+    description: "Trust quotes — featured ones rotate randomly across the site",
     adminHref: "/admin/testimonials",
     group: "Site & brand",
     columns: [
@@ -44,6 +44,7 @@ export const BULK_ENTITIES: BulkEntityDef[] = [
       { key: "role", header: "role", example: "Export Manager, Noida" },
       { key: "quote", header: "quote", required: true, example: "Certko helped us map BIS CRS in days." },
       { key: "rating", header: "rating", example: 5 },
+      { key: "featured", header: "featured", example: 1 },
     ],
   },
   {
@@ -340,19 +341,26 @@ export function importBulkRows(entityId: BulkEntity, rows: Record<string, unknow
           const quote = cell(row, "quote");
           const role = cell(row, "role");
           const rating = Math.min(5, Math.max(1, num(row, "rating") ?? 5));
+          const featuredRaw = cell(row, "featured").toLowerCase();
+          const featured =
+            featuredRaw === "" || featuredRaw === "1" || featuredRaw === "true" || featuredRaw === "yes"
+              ? 1
+              : 0;
           const existing = db
             .prepare("SELECT id FROM testimonials WHERE name = ? AND quote = ?")
             .get(name, quote) as { id: number } | undefined;
           if (existing) {
-            db.prepare("UPDATE testimonials SET role=?, rating=? WHERE id=?").run(role, rating, existing.id);
+            db.prepare("UPDATE testimonials SET role=?, rating=?, featured=? WHERE id=?").run(
+              role,
+              rating,
+              featured,
+              existing.id
+            );
             result.updated++;
           } else {
-            db.prepare("INSERT INTO testimonials (name, role, quote, rating) VALUES (?, ?, ?, ?)").run(
-              name,
-              role,
-              quote,
-              rating
-            );
+            db.prepare(
+              "INSERT INTO testimonials (name, role, quote, rating, featured) VALUES (?, ?, ?, ?, ?)"
+            ).run(name, role, quote, rating, featured);
             result.created++;
           }
           break;

@@ -8,6 +8,7 @@ import { ensureAuthorsCatalog } from "./authors";
 import { ensureSeoLocationPosts } from "./seed-seo-posts";
 import { ensurePagesNavColumns } from "./pages-nav";
 import { ensureHeroSlidesCatalog } from "./hero-slides";
+import { ensureTestimonialsLibrary } from "./seed-testimonials";
 
 const DB_DIR = path.join(process.cwd(), "data");
 const DB_PATH = path.join(DB_DIR, "certko.db");
@@ -127,7 +128,8 @@ function createDb(): Database.Database {
       role TEXT NOT NULL DEFAULT '',
       quote TEXT NOT NULL,
       rating INTEGER NOT NULL DEFAULT 5,
-      sort INTEGER NOT NULL DEFAULT 0
+      sort INTEGER NOT NULL DEFAULT 0,
+      featured INTEGER NOT NULL DEFAULT 1
     );
 
     CREATE TABLE IF NOT EXISTS certifications (
@@ -310,6 +312,7 @@ function createDb(): Database.Database {
   ensureSeoLocationPosts(db);
   ensurePagesNavColumns(db);
   ensureHeroSlidesCatalog(db);
+  ensureTestimonialsLibrary(db);
   return db;
 }
 
@@ -324,6 +327,7 @@ export function getDb(): Database.Database {
     ensureSeoLocationPosts(global.__certkoDb);
     ensurePagesNavColumns(global.__certkoDb);
     ensureHeroSlidesCatalog(global.__certkoDb);
+    ensureTestimonialsLibrary(global.__certkoDb);
   }
   return global.__certkoDb;
 }
@@ -471,6 +475,7 @@ export interface Testimonial {
   quote: string;
   rating: number;
   sort: number;
+  featured: number;
 }
 
 export interface Author {

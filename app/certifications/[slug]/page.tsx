@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { marked } from "marked";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
+import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import CertProductCatalog from "@/components/CertProductCatalog";
@@ -177,6 +178,7 @@ export default async function CertificationPage({ params }: Props) {
       </section>
 
       <div className="mt-16">
+        <TestimonialStrip />
         <CtaBanner subject={cert.name} kind="certification" />
       </div>
     </div>

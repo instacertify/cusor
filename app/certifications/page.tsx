@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
+import TestimonialStrip from "@/components/TestimonialStrip";
 import Icon from "@/components/Icon";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { getCertifications, getCertProducts } from "@/lib/queries";
@@ -72,6 +73,7 @@ export default function CertificationsPage() {
       </div>
 
       <div className="mt-16">
+        <TestimonialStrip />
         <CtaBanner />
       </div>
     </div>

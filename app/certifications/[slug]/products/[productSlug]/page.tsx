@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { marked } from "marked";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
+import TestimonialStrip from "@/components/TestimonialStrip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { getCertificationBySlug, getCertProductBySlug } from "@/lib/queries";
 import { formatPriceRange } from "@/lib/format";
@@ -136,6 +137,7 @@ export default async function CertProductPage({ params }: Props) {
       </div>
 
       <div className="mt-14">
+        <TestimonialStrip />
         <CtaBanner subject={`${product.name} — ${cert.name}`} kind="certification" />
       </div>
     </div>

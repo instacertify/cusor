@@ -7,6 +7,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import ProductCard from "@/components/ProductCard";
 import FaqAccordion from "@/components/FaqAccordion";
 import CtaBanner from "@/components/CtaBanner";
+import TestimonialStrip from "@/components/TestimonialStrip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import {
   getProductBySlug,
@@ -268,6 +269,7 @@ export default async function ProductPage({ params }: Props) {
       )}
 
       <div className="mt-16">
+        <TestimonialStrip />
         <CtaBanner subject={product.name} kind="product" />
       </div>
     </div>

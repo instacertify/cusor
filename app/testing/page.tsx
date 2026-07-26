@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
+import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import SearchBox from "@/components/SearchBox";
@@ -76,6 +77,7 @@ export default function TestingIndexPage() {
       </section>
 
       <div className="mt-16">
+        <TestimonialStrip />
         <CtaBanner subject="Product Testing" kind="test" />
       </div>
     </div>

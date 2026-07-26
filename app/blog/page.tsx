@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
+import TestimonialStrip from "@/components/TestimonialStrip";
 import AuthorByline from "@/components/AuthorByline";
 import { getPublishedPosts } from "@/lib/queries";
 
@@ -78,6 +79,7 @@ export default function BlogIndexPage() {
       </div>
 
       <div className="mt-16">
+        <TestimonialStrip />
         <CtaBanner />
       </div>
     </div>

@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { marked } from "marked";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
+import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
@@ -172,6 +173,7 @@ export default async function TestingServicePage({ params }: Props) {
       )}
 
       <div className="mt-16">
+        <TestimonialStrip />
         <CtaBanner subject={svc.name} kind="test" />
       </div>
     </div>

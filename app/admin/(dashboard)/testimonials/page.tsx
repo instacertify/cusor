@@ -13,6 +13,7 @@ interface Props {
 export default async function AdminTestimonials({ searchParams }: Props) {
   const sp = await searchParams;
   const testimonials = getTestimonials();
+  const featuredCount = testimonials.filter((t) => t.featured).length;
 
   return (
     <div>
@@ -20,7 +21,11 @@ export default async function AdminTestimonials({ searchParams }: Props) {
         <h1 className="font-display text-3xl font-semibold text-ink-950">Testimonials</h1>
         <BulkImportLink entity="testimonials" />
       </div>
-      <p className="text-ink-600 text-sm mb-6">Shown on the homepage trust section. Add one below or bulk-upload via Excel.</p>
+      <p className="text-ink-600 text-sm mb-6">
+        Library for the sitewide trust sections. Mark quotes as <strong>Featured</strong> to include
+        them in the random rotation on certifications, testing, products, blog, contact and more.{" "}
+        {featuredCount} featured of {testimonials.length} total.
+      </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
 
       <div className="space-y-4">
@@ -34,6 +39,19 @@ export default async function AdminTestimonials({ searchParams }: Props) {
                 <Field label="Rating (1-5)" name="rating" type="number" defaultValue={t.rating} />
               </div>
               <TextArea label="Quote" name="quote" defaultValue={t.quote} rows={3} />
+              <label className="flex items-center gap-2 text-sm text-ink-800">
+                <input type="hidden" name="featured" value="0" />
+                <input
+                  type="checkbox"
+                  name="featured"
+                  value="1"
+                  defaultChecked={Boolean(t.featured)}
+                  className="rounded border-cream-300"
+                />
+                <span>
+                  <strong>Featured</strong> — include in random sitewide rotation
+                </span>
+              </label>
               <SubmitButton label="Save" />
             </form>
             <ConfirmDeleteForm
@@ -57,6 +75,19 @@ export default async function AdminTestimonials({ searchParams }: Props) {
             <Field label="Rating (1-5)" name="rating" type="number" defaultValue={5} />
           </div>
           <TextArea label="Quote" name="quote" rows={3} />
+          <label className="flex items-center gap-2 text-sm text-ink-800">
+            <input type="hidden" name="featured" value="0" />
+            <input
+              type="checkbox"
+              name="featured"
+              value="1"
+              defaultChecked
+              className="rounded border-cream-300"
+            />
+            <span>
+              <strong>Featured</strong> — include in random sitewide rotation
+            </span>
+          </label>
           <SubmitButton label="Add" />
         </form>
       </div>

@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { marked } from "marked";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
+import TestimonialStrip from "@/components/TestimonialStrip";
 import AuthorByline from "@/components/AuthorByline";
 import Icon from "@/components/Icon";
 import { getPostBySlug, getPublishedPosts } from "@/lib/queries";
@@ -166,6 +167,7 @@ export default async function BlogPostPage({ params }: Props) {
       )}
 
       <div className="mt-16">
+        <TestimonialStrip />
         <CtaBanner subject="BIS certification consulting" kind="certification" />
       </div>
     </div>

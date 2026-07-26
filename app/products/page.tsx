@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
+import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import { getCategories, getFaqs } from "@/lib/queries";
@@ -72,6 +73,7 @@ export default function ProductsPage() {
       </div>
 
       <div className="mt-16">
+        <TestimonialStrip />
         <CtaBanner />
       </div>
     </div>

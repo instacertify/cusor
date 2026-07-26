@@ -4,6 +4,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
+import TestimonialStrip from "@/components/TestimonialStrip";
 import { getAuthorBySlug, getPublishedPostsByAuthor } from "@/lib/queries";
 import { buildMetadata } from "@/lib/seo";
 
@@ -131,6 +132,7 @@ export default async function AuthorProfilePage({ params }: Props) {
       </section>
 
       <div className="mt-16">
+        <TestimonialStrip />
         <CtaBanner />
       </div>
     </div>

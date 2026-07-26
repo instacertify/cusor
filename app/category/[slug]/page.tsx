@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ProductCard from "@/components/ProductCard";
 import CtaBanner from "@/components/CtaBanner";
+import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import {
@@ -109,6 +110,7 @@ export default async function CategoryPage({ params }: Props) {
       )}
 
       <div className="mt-16">
+        <TestimonialStrip />
         <CtaBanner subject={category.name} kind="product" />
       </div>
     </div>

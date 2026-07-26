@@ -430,16 +430,17 @@ export async function saveTestimonial(formData: FormData) {
   const role = String(formData.get("role") ?? "").trim();
   const quote = String(formData.get("quote") ?? "").trim();
   const rating = Math.min(5, Math.max(1, Number(formData.get("rating") ?? 5)));
+  const featured = formData.getAll("featured").map(String).includes("1") ? 1 : 0;
   if (!name || !quote) redirect("/admin/testimonials?error=1");
   const db = getDb();
   if (id) {
-    db.prepare("UPDATE testimonials SET name=?, role=?, quote=?, rating=? WHERE id=?").run(
-      name, role, quote, rating, id
-    );
+    db.prepare(
+      "UPDATE testimonials SET name=?, role=?, quote=?, rating=?, featured=? WHERE id=?"
+    ).run(name, role, quote, rating, featured, id);
   } else {
-    db.prepare("INSERT INTO testimonials (name, role, quote, rating) VALUES (?, ?, ?, ?)").run(
-      name, role, quote, rating
-    );
+    db.prepare(
+      "INSERT INTO testimonials (name, role, quote, rating, featured) VALUES (?, ?, ?, ?, ?)"
+    ).run(name, role, quote, rating, featured);
   }
   revalidatePath("/", "layout");
   redirect("/admin/testimonials?saved=1");

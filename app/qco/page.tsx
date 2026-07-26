@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
+import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import { getUpcomingQcos, getFaqs } from "@/lib/queries";
 
@@ -99,6 +100,7 @@ export default function QcoPage() {
       </div>
 
       <div className="mt-14">
+        <TestimonialStrip />
         <CtaBanner />
       </div>
     </div>

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { marked } from "marked";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
+import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import { getPage, getFaqs } from "@/lib/queries";
 import { isRoutableContentPage } from "@/lib/pages-nav";
@@ -121,6 +122,7 @@ export default async function ContentPage({ params }: Props) {
 
       {!LEGAL_PDF[pageSlug] && (
         <div className="mt-16">
+          <TestimonialStrip />
           <CtaBanner />
         </div>
       )}

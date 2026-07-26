@@ -5,12 +5,12 @@ import ProductCard from "@/components/ProductCard";
 import FaqAccordion from "@/components/FaqAccordion";
 import CtaBanner from "@/components/CtaBanner";
 import HeroSlider from "@/components/HeroSlider";
+import TestimonialStrip from "@/components/TestimonialStrip";
 import { getSettings } from "@/lib/db";
 import {
   getCategories,
   getFeaturedProducts,
   getFaqs,
-  getTestimonials,
   getUpcomingQcos,
   getActiveHeroSlides,
 } from "@/lib/queries";
@@ -42,7 +42,6 @@ export default function HomePage() {
   const categories = getCategories();
   const featured = getFeaturedProducts(8);
   const faqs = getFaqs("global");
-  const testimonials = getTestimonials();
   const totalProducts = categories.reduce((s, c) => s + (c.product_count ?? 0), 0);
   const upcomingQcos = getUpcomingQcos().slice(0, 3);
 
@@ -228,33 +227,7 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* Testimonials */}
-      <section className="bg-ink-950 text-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
-          <h2 className="font-display text-2xl sm:text-3xl font-semibold text-center px-2 leading-snug">
-            Trusted by Importers & Manufacturers Across India
-          </h2>
-          <div className="grid md:grid-cols-3 gap-4 sm:gap-6 mt-8 sm:mt-10">
-            {testimonials.map((t) => (
-              <figure key={t.id} className="bg-ink-900 rounded-2xl sm:rounded-3xl border border-ink-800 p-5 sm:p-7 flex flex-col gap-4">
-                <div className="text-butter-400 tracking-wider" aria-label={`${t.rating} star rating`}>
-                  {"★".repeat(t.rating)}
-                </div>
-                <blockquote className="text-sm leading-relaxed text-ink-300">“{t.quote}”</blockquote>
-                <figcaption className="mt-auto flex items-center gap-3">
-                  <span className="w-10 h-10 rounded-full bg-butter-500 text-ink-950 font-display font-bold flex items-center justify-center">
-                    {t.name.charAt(0)}
-                  </span>
-                  <span>
-                    <span className="block text-sm font-semibold">{t.name}</span>
-                    <span className="block text-xs text-ink-400">{t.role}</span>
-                  </span>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
+      <TestimonialStrip variant="full" count={3} />
 
       {/* FAQ */}
       <section className="mx-auto max-w-3xl px-4 sm:px-6 py-16">

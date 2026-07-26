@@ -612,6 +612,7 @@ const TESTIMONIALS = [
     quote:
       "Certko showed me the exact IS standard, real lab prices and a shortlist of labs near my warehouse in one evening. The certification quote I got through them was 30% below what I had been offered elsewhere.",
     rating: 5,
+    featured: 1,
   },
   {
     name: "Meera K.",
@@ -619,6 +620,7 @@ const TESTIMONIALS = [
     quote:
       "After the Toys QCO, we were lost. Certko's team mapped our full range to the right standards, coordinated testing and we had our ISI licence before the enforcement deadline.",
     rating: 5,
+    featured: 1,
   },
   {
     name: "Arvind S.",
@@ -626,6 +628,7 @@ const TESTIMONIALS = [
     quote:
       "The lab directory alone is worth it — verified scopes, contact details and indicative pricing for hundreds of BIS labs. Our compliance team uses Certko every week.",
     rating: 5,
+    featured: 1,
   },
 ];
 
@@ -1076,9 +1079,11 @@ export function seedDatabase(db: Database.Database) {
 
     // ---- testimonials ----
     const insT = db.prepare(
-      "INSERT INTO testimonials (name, role, quote, rating, sort) VALUES (?, ?, ?, ?, ?)"
+      "INSERT INTO testimonials (name, role, quote, rating, sort, featured) VALUES (?, ?, ?, ?, ?, ?)"
     );
-    TESTIMONIALS.forEach((t, i) => insT.run(t.name, t.role, t.quote, t.rating, i));
+    TESTIMONIALS.forEach((t, i) =>
+      insT.run(t.name, t.role, t.quote, t.rating, i, t.featured ?? 1)
+    );
 
     // ---- upcoming QCOs ----
     const insQ = db.prepare(
