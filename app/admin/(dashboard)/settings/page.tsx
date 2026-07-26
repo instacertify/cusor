@@ -38,8 +38,9 @@ export default async function SettingsPage({ searchParams }: Props) {
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Color scheme</h2>
           <p className="text-sm text-ink-600">
-            Choose the sitewide palette for backgrounds, text, buttons and accents.
-            Current: <strong className="text-ink-950">{colorScheme.name}</strong>.
+            Tap a palette to select it, then click <strong>Save Changes</strong> at the bottom.
+            Applies sitewide to backgrounds, text, buttons and accents. Current:{" "}
+            <strong className="text-ink-950">{colorScheme.name}</strong>.
           </p>
           <ColorSchemePicker value={colorScheme.id} />
         </section>
