@@ -133,6 +133,20 @@ export default async function TestingCategoryPage({ params }: Props) {
                 </p>
               )}
               <p className="text-sm text-ink-600 line-clamp-3">{s.summary}</p>
+              {(s.timeline || s.sample_size) && (
+                <div className="mt-1 space-y-1 text-xs text-ink-700">
+                  {s.timeline ? (
+                    <p>
+                      <span className="font-bold text-ink-500">Timeline:</span> {s.timeline}
+                    </p>
+                  ) : null}
+                  {s.sample_size ? (
+                    <p>
+                      <span className="font-bold text-ink-500">Sample:</span> {s.sample_size}
+                    </p>
+                  ) : null}
+                </div>
+              )}
               <span className="mt-auto pt-2 text-sm font-bold text-butter-700 inline-flex items-center gap-1.5">
                 View test <Icon name="arrow-right" size={14} />
               </span>

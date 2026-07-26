@@ -104,6 +104,18 @@ export default async function AdminTestingEdit({ params, searchParams }: Props) 
               />
               <Field label="Sort" name="sort" type="number" defaultValue={String(services.length + 1)} />
             </div>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <Field
+                label="Testing timeline"
+                name="timeline"
+                placeholder="e.g. 7–12 working days"
+              />
+              <Field
+                label="Sample size required"
+                name="sample_size"
+                placeholder="e.g. 5 production units / 250 g"
+              />
+            </div>
             <TextArea label="Summary" name="summary" rows={2} />
             <TextArea label="Content writeup (Markdown)" name="content" rows={5} />
             <Field label="Meta Title" name="meta_title" />
@@ -203,6 +215,20 @@ function TestingServiceEditor({
         <div className="grid sm:grid-cols-2 gap-3">
           <Field label="Accreditation" name="accreditation" defaultValue={service.accreditation} />
           <Field label="Sort" name="sort" type="number" defaultValue={String(service.sort)} />
+        </div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <Field
+            label="Testing timeline"
+            name="timeline"
+            defaultValue={service.timeline}
+            placeholder="e.g. 7–12 working days"
+          />
+          <Field
+            label="Sample size required"
+            name="sample_size"
+            defaultValue={service.sample_size}
+            placeholder="e.g. 5 production units / 250 g"
+          />
         </div>
         <TextArea label="Summary" name="summary" defaultValue={service.summary} rows={2} />
         <TextArea label="Content writeup (Markdown)" name="content" defaultValue={service.content} rows={6} />

@@ -75,7 +75,15 @@ export async function GET(req: NextRequest) {
   const testingServices = searchTestingServices(q, 4).map((s) => ({
     type: "testing-service" as const,
     name: s.name,
-    detail: `${s.category_name}${s.standards ? ` · ${s.standards}` : ""}${s.test_type ? ` · ${s.test_type}` : ""}`,
+    detail: [
+      s.category_name,
+      s.standards,
+      s.test_type,
+      s.timeline ? `Timeline ${s.timeline}` : "",
+      s.sample_size ? `Sample ${s.sample_size}` : "",
+    ]
+      .filter(Boolean)
+      .join(" · "),
     href: `/testing/${s.category_slug}/${s.slug}`,
   }));
 

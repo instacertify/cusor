@@ -104,6 +104,18 @@ export default async function TestingServicePage({ params }: Props) {
                 <dd className="mt-1 font-semibold text-ink-900">{svc.accreditation}</dd>
               </div>
             )}
+            {svc.timeline && (
+              <div className="rounded-xl border border-butter-300 bg-butter-300/20 px-4 py-3">
+                <dt className="text-xs font-bold uppercase tracking-wide text-butter-700">Testing timeline</dt>
+                <dd className="mt-1 font-semibold text-ink-900">{svc.timeline}</dd>
+              </div>
+            )}
+            {svc.sample_size && (
+              <div className="rounded-xl border border-butter-300 bg-butter-300/20 px-4 py-3">
+                <dt className="text-xs font-bold uppercase tracking-wide text-butter-700">Sample size required</dt>
+                <dd className="mt-1 font-semibold text-ink-900">{svc.sample_size}</dd>
+              </div>
+            )}
           </dl>
 
           <Link

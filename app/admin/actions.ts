@@ -773,6 +773,8 @@ export async function saveTestingService(formData: FormData) {
     test_type: String(formData.get("test_type") ?? "").trim(),
     accreditation:
       String(formData.get("accreditation") ?? "").trim() || "ISO/IEC 17025 / NABL",
+    timeline: String(formData.get("timeline") ?? "").trim(),
+    sample_size: String(formData.get("sample_size") ?? "").trim(),
     summary: String(formData.get("summary") ?? "").trim(),
     content: String(formData.get("content") ?? "").trim(),
     meta_title: String(formData.get("meta_title") ?? "").trim(),
@@ -791,7 +793,7 @@ export async function saveTestingService(formData: FormData) {
     if (clash) slug = `${slug}-${id}`;
     db.prepare(
       `UPDATE testing_services SET slug=?, name=?, product_category=?, standards=?, test_type=?, accreditation=?,
-        summary=?, content=?, image=?, meta_title=?, meta_description=?, sort=? WHERE id=?`
+        timeline=?, sample_size=?, summary=?, content=?, image=?, meta_title=?, meta_description=?, sort=? WHERE id=?`
     ).run(
       slug,
       values.name,
@@ -799,6 +801,8 @@ export async function saveTestingService(formData: FormData) {
       values.standards,
       values.test_type,
       values.accreditation,
+      values.timeline,
+      values.sample_size,
       values.summary,
       values.content,
       image,
@@ -816,8 +820,8 @@ export async function saveTestingService(formData: FormData) {
     const res = db
       .prepare(
         `INSERT INTO testing_services
-        (category_id, slug, name, product_category, standards, test_type, accreditation, summary, content, image, meta_title, meta_description, sort)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        (category_id, slug, name, product_category, standards, test_type, accreditation, timeline, sample_size, summary, content, image, meta_title, meta_description, sort)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         categoryId,
@@ -827,6 +831,8 @@ export async function saveTestingService(formData: FormData) {
         values.standards,
         values.test_type,
         values.accreditation,
+        values.timeline || "7–15 working days",
+        values.sample_size || "As advised by the testing laboratory",
         values.summary,
         values.content ||
           `## ${values.name}\n\nDescribe the test method, sample requirements, turnaround and how Certko helps.`,

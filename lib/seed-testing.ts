@@ -7,9 +7,31 @@ interface SeedService {
   standards?: string;
   test_type?: string;
   accreditation?: string;
+  timeline?: string;
+  sample_size?: string;
   summary?: string;
   content?: string;
   sort?: number;
+}
+
+function defaultsForTestType(testType = ""): { timeline: string; sample_size: string } {
+  const t = testType.toLowerCase();
+  if (t.includes("emc")) {
+    return { timeline: "12–18 working days", sample_size: "2–3 production units + accessories" };
+  }
+  if (t.includes("safety") || t.includes("electrical")) {
+    return { timeline: "10–15 working days", sample_size: "5–10 production units (lab-confirmed)" };
+  }
+  if (t.includes("micro")) {
+    return { timeline: "5–10 working days", sample_size: "As per FSSAI / lab sampling plan" };
+  }
+  if (t.includes("physical") || t.includes("mechanical")) {
+    return { timeline: "7–14 working days", sample_size: "Specimen set as per standard (lab-confirmed)" };
+  }
+  if (t.includes("heavy") || t.includes("composition") || t.includes("chemical")) {
+    return { timeline: "7–12 working days", sample_size: "100–500 g representative sample (or as per IS)" };
+  }
+  return { timeline: "7–15 working days", sample_size: "As advised by the testing laboratory" };
 }
 
 interface SeedCategory {
@@ -233,6 +255,20 @@ function defaultFaqs(categoryName: string): { question: string; answer: string }
   ];
 }
 
+function backfillTimelineAndSampleSize(db: Database.Database) {
+  const rows = db
+    .prepare("SELECT id, test_type, timeline, sample_size FROM testing_services")
+    .all() as { id: number; test_type: string; timeline: string; sample_size: string }[];
+  const upd = db.prepare(
+    "UPDATE testing_services SET timeline = ?, sample_size = ? WHERE id = ?"
+  );
+  for (const row of rows) {
+    if (row.timeline && row.sample_size) continue;
+    const d = defaultsForTestType(row.test_type);
+    upd.run(row.timeline || d.timeline, row.sample_size || d.sample_size, row.id);
+  }
+}
+
 function seedServiceFaqsIfEmpty(db: Database.Database) {
   const services = db
     .prepare("SELECT id, name, standards, test_type, accreditation FROM testing_services")
@@ -297,6 +333,8 @@ export function ensureTestingCatalog(db: Database.Database) {
       standards TEXT NOT NULL DEFAULT '',
       test_type TEXT NOT NULL DEFAULT '',
       accreditation TEXT NOT NULL DEFAULT 'ISO/IEC 17025 / NABL',
+      timeline TEXT NOT NULL DEFAULT '',
+      sample_size TEXT NOT NULL DEFAULT '',
       summary TEXT NOT NULL DEFAULT '',
       content TEXT NOT NULL DEFAULT '',
       image TEXT NOT NULL DEFAULT '',
@@ -308,6 +346,18 @@ export function ensureTestingCatalog(db: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_testing_services_cat ON testing_services(category_id);
     CREATE INDEX IF NOT EXISTS idx_testing_services_name ON testing_services(name);
   `);
+
+  // Migrate existing DBs that predate timeline / sample_size columns
+  const cols = db.prepare("PRAGMA table_info(testing_services)").all() as { name: string }[];
+  const colNames = new Set(cols.map((c) => c.name));
+  if (!colNames.has("timeline")) {
+    db.exec("ALTER TABLE testing_services ADD COLUMN timeline TEXT NOT NULL DEFAULT ''");
+  }
+  if (!colNames.has("sample_size")) {
+    db.exec("ALTER TABLE testing_services ADD COLUMN sample_size TEXT NOT NULL DEFAULT ''");
+  }
+
+  backfillTimelineAndSampleSize(db);
 
   const count = (
     db.prepare("SELECT COUNT(*) AS n FROM testing_categories").get() as { n: number }
@@ -323,9 +373,9 @@ export function ensureTestingCatalog(db: Database.Database) {
   );
   const insSvc = db.prepare(
     `INSERT INTO testing_services
-      (category_id, slug, name, product_category, standards, test_type, accreditation, summary, content, image, meta_title, meta_description, sort)
+      (category_id, slug, name, product_category, standards, test_type, accreditation, timeline, sample_size, summary, content, image, meta_title, meta_description, sort)
      VALUES
-      (@category_id, @slug, @name, @product_category, @standards, @test_type, @accreditation, @summary, @content, '', @meta_title, @meta_description, @sort)`
+      (@category_id, @slug, @name, @product_category, @standards, @test_type, @accreditation, @timeline, @sample_size, @summary, @content, '', @meta_title, @meta_description, @sort)`
   );
   const insFaq = db.prepare(
     `INSERT INTO faqs (scope, question, answer, sort) VALUES (?, ?, ?, ?)`
@@ -351,6 +401,7 @@ export function ensureTestingCatalog(db: Database.Database) {
         const summary =
           svc.summary ||
           `${svc.name} testing${svc.standards ? ` under ${svc.standards}` : ""}.`;
+        const defaults = defaultsForTestType(svc.test_type || "");
         insSvc.run({
           category_id: categoryId,
           slug: svcSlug,
@@ -359,6 +410,8 @@ export function ensureTestingCatalog(db: Database.Database) {
           standards: svc.standards || "",
           test_type: svc.test_type || "",
           accreditation: svc.accreditation || "ISO/IEC 17025 / NABL",
+          timeline: svc.timeline || defaults.timeline,
+          sample_size: svc.sample_size || defaults.sample_size,
           summary,
           content:
             svc.content ||

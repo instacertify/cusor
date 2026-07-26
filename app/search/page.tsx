@@ -282,6 +282,12 @@ export default async function SearchPage({ searchParams }: Props) {
                     <div className="mt-1 text-xs font-mono text-ink-500 line-clamp-1">
                       {s.standards || s.product_category}
                     </div>
+                    {(s.timeline || s.sample_size) && (
+                      <div className="mt-2 text-xs text-ink-600 space-y-0.5">
+                        {s.timeline ? <div>Timeline: {s.timeline}</div> : null}
+                        {s.sample_size ? <div>Sample: {s.sample_size}</div> : null}
+                      </div>
+                    )}
                   </Link>
                 ))}
               </div>

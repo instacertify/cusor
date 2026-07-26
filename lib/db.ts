@@ -236,6 +236,8 @@ function createDb(): Database.Database {
       standards TEXT NOT NULL DEFAULT '',
       test_type TEXT NOT NULL DEFAULT '',
       accreditation TEXT NOT NULL DEFAULT 'ISO/IEC 17025 / NABL',
+      timeline TEXT NOT NULL DEFAULT '',
+      sample_size TEXT NOT NULL DEFAULT '',
       summary TEXT NOT NULL DEFAULT '',
       content TEXT NOT NULL DEFAULT '',
       image TEXT NOT NULL DEFAULT '',
@@ -480,6 +482,8 @@ export interface TestingService {
   standards: string;
   test_type: string;
   accreditation: string;
+  timeline: string;
+  sample_size: string;
   summary: string;
   content: string;
   image: string;
