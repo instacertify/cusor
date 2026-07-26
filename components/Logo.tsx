@@ -1,8 +1,6 @@
-import Image from "next/image";
-
 /**
- * Official CERTKO PNG logo
- * cert (navy) + ko (amber) + three chevrons + COMPLIANCE. ASSURED.
+ * Official CERTKO PNG logo — always served as the raw PNG file
+ * (no SVG wordmark, no Next image optimizer).
  */
 export default function Logo({
   width = 200,
@@ -11,32 +9,31 @@ export default function Logo({
   priority = false,
 }: {
   width?: number;
-  /** Kept for API compatibility; PNG includes the tagline */
+  /** API compat — PNG already includes COMPLIANCE. ASSURED. */
   withTagline?: boolean;
-  /**
-   * primary — official PNG on light surfaces
-   * reverse / onDark — same artwork on a light pill when placed on navy/black
-   */
+  /** reverse/onDark: light pill so navy/amber PNG reads on dark footers */
   variant?: "primary" | "onDark" | "reverse";
   priority?: boolean;
 }) {
-  // Official asset aspect ≈ 1416×391 (~3.62:1)
+  void withTagline;
   const height = Math.round(width * 0.276);
-  const needsPill = variant === "reverse" || variant === "onDark";
+  const onDark = variant === "reverse" || variant === "onDark";
 
   const img = (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
       src="/brand/certko-logo.png"
       alt="certko — Compliance. Assured."
       width={width}
       height={height}
-      priority={priority}
-      className="h-auto w-auto max-w-full object-contain object-left"
+      decoding="async"
+      {...(priority ? { fetchPriority: "high" as const } : { loading: "lazy" as const })}
+      className="block h-auto max-w-full object-contain object-left"
       style={{ width, height: "auto" }}
     />
   );
 
-  if (needsPill) {
+  if (onDark) {
     return (
       <span className="inline-flex rounded-xl bg-cream-50 px-2.5 py-2">
         {img}
@@ -47,20 +44,18 @@ export default function Logo({
   return img;
 }
 
-/** Compact CK mark for places that need a square icon */
-export function LogoMark({
-  size = 32,
-}: {
-  size?: number;
-  variant?: "primary" | "reverse";
-}) {
+/** Square CK favicon mark */
+export function LogoMark({ size = 32 }: { size?: number; variant?: "primary" | "reverse" }) {
   return (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
       src="/brand/certko-favicon.png"
       alt="certko"
       width={size}
       height={size}
-      className="rounded-[22%]"
+      className="block rounded-[22%]"
+      loading="lazy"
+      decoding="async"
     />
   );
 }
