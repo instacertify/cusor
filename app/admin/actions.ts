@@ -556,6 +556,109 @@ export async function deleteQco(formData: FormData) {
   redirect("/admin/qcos?saved=1");
 }
 
+// ---------- authors ----------
+function resolveAuthorFromForm(formData: FormData): { id: number; name: string } {
+  const db = getDb();
+  const authorId = Number(formData.get("author_id"));
+  if (authorId) {
+    const row = db.prepare("SELECT id, name FROM authors WHERE id = ?").get(authorId) as
+      | { id: number; name: string }
+      | undefined;
+    if (row) return row;
+  }
+  const fallback = db
+    .prepare("SELECT id, name FROM authors ORDER BY sort, id LIMIT 1")
+    .get() as { id: number; name: string } | undefined;
+  if (fallback) return fallback;
+  const res = db
+    .prepare(
+      `INSERT INTO authors (slug, name, title, bio) VALUES ('certko-team', 'Certko Team', 'Compliance consultants', '')`
+    )
+    .run();
+  return { id: Number(res.lastInsertRowid), name: "Certko Team" };
+}
+
+export async function saveAuthor(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const id = formData.get("id") ? Number(formData.get("id")) : null;
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) redirect("/admin/authors?error=1");
+
+  const db = getDb();
+  let slug = slugify(String(formData.get("slug") ?? "")) || slugify(name);
+  let candidate = slug;
+  let n = 2;
+  while (
+    db
+      .prepare(
+        id
+          ? "SELECT 1 FROM authors WHERE slug = ? AND id != ?"
+          : "SELECT 1 FROM authors WHERE slug = ?"
+      )
+      .get(...(id ? [candidate, id] : [candidate]))
+  ) {
+    candidate = `${slug}-${n++}`;
+  }
+  slug = candidate;
+
+  const image = await saveUploadedImage(formData.get("image_file") as File | null);
+  const values = {
+    slug,
+    name,
+    title: String(formData.get("title") ?? "").trim(),
+    bio: String(formData.get("bio") ?? "").trim(),
+    email: String(formData.get("email") ?? "").trim(),
+  };
+
+  if (id) {
+    const existing = db.prepare("SELECT image FROM authors WHERE id = ?").get(id) as
+      | { image: string }
+      | undefined;
+    if (!existing) redirect("/admin/authors");
+    let nextImage = existing.image;
+    if (image) nextImage = image;
+    else if (formData.get("clear_image") === "1") nextImage = "";
+    db.prepare(
+      `UPDATE authors SET slug=@slug, name=@name, title=@title, bio=@bio, email=@email, image=@image WHERE id=@id`
+    ).run({ ...values, image: nextImage, id });
+    db.prepare("UPDATE posts SET author = ? WHERE author_id = ?").run(name, id);
+    revalidatePath("/", "layout");
+    redirect(`/admin/authors/${id}?saved=1`);
+  }
+
+  const res = db
+    .prepare(
+      `INSERT INTO authors (slug, name, title, bio, email, image)
+       VALUES (@slug, @name, @title, @bio, @email, @image)`
+    )
+    .run({ ...values, image: image || "" });
+  revalidatePath("/", "layout");
+  redirect(`/admin/authors/${Number(res.lastInsertRowid)}?saved=1`);
+}
+
+export async function deleteAuthor(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  const db = getDb();
+  const total = (db.prepare("SELECT COUNT(*) AS n FROM authors").get() as { n: number }).n;
+  if (total <= 1) redirect("/admin/authors?error=1");
+
+  const fallback = db
+    .prepare("SELECT id, name FROM authors WHERE id != ? ORDER BY sort, id LIMIT 1")
+    .get(id) as { id: number; name: string } | undefined;
+  if (fallback) {
+    db.prepare("UPDATE posts SET author_id = ?, author = ? WHERE author_id = ?").run(
+      fallback.id,
+      fallback.name,
+      id
+    );
+  }
+  db.prepare("DELETE FROM authors WHERE id = ?").run(id);
+  revalidatePath("/", "layout");
+  redirect("/admin/authors?saved=1");
+}
+
 // ---------- blog posts ----------
 export async function createPost(formData: FormData) {
   await requireAdmin();
@@ -568,12 +671,13 @@ export async function createPost(formData: FormData) {
   while (db.prepare("SELECT 1 FROM posts WHERE slug = ?").get(slug)) {
     slug = `${slugify(title)}-${n++}`;
   }
+  const author = resolveAuthorFromForm(formData);
   const res = db
     .prepare(
-      `INSERT INTO posts (slug, title, excerpt, content, author, status, meta_title, meta_description)
-       VALUES (?, ?, '', 'Write your post here using **Markdown** — ## headings, lists, links and tables are supported.', ?, 'draft', ?, '')`
+      `INSERT INTO posts (slug, title, excerpt, content, author, author_id, status, meta_title, meta_description)
+       VALUES (?, ?, '', 'Write your post here using **Markdown** — ## headings, lists, links and tables are supported.', ?, ?, 'draft', ?, '')`
     )
-    .run(slug, title, String(formData.get("author") ?? "Certko Team").trim() || "Certko Team", `${title} | Certko Blog`);
+    .run(slug, title, author.name, author.id, `${title} | Certko Blog`);
   redirect(`/admin/blog/${Number(res.lastInsertRowid)}?saved=1`);
 }
 
@@ -602,9 +706,10 @@ export async function savePost(formData: FormData) {
     status === "published"
       ? existing.published_at ?? new Date().toISOString().slice(0, 10)
       : existing.published_at;
+  const author = resolveAuthorFromForm(formData);
 
   db.prepare(
-    `UPDATE posts SET slug=?, title=?, excerpt=?, content=?, author=?, status=?, published_at=?,
+    `UPDATE posts SET slug=?, title=?, excerpt=?, content=?, author=?, author_id=?, status=?, published_at=?,
      meta_title=?, meta_description=? ${image ? ", image=?" : ""} WHERE id=?`
   ).run(
     ...[
@@ -612,7 +717,8 @@ export async function savePost(formData: FormData) {
       String(formData.get("title") ?? "").trim(),
       String(formData.get("excerpt") ?? "").trim(),
       String(formData.get("content") ?? ""),
-      String(formData.get("author") ?? "").trim() || "Certko Team",
+      author.name,
+      author.id,
       status,
       publishedAt,
       String(formData.get("meta_title") ?? "").trim(),

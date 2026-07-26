@@ -4,6 +4,7 @@ import {
   getLabs,
   getCertifications,
   getPublishedPosts,
+  getAuthors,
   getTestingCategories,
   getAllTestingServices,
 } from "@/lib/queries";
@@ -99,6 +100,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     }));
 
+  const authors = getAuthors().map((a) => ({
+    url: `${BASE}/authors/${a.slug}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.5,
+  }));
+
   return [
     ...staticPages,
     ...categories,
@@ -106,6 +113,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...testingCategories,
     ...testingServices,
     ...posts,
+    ...authors,
     ...products,
     ...labPages,
   ];

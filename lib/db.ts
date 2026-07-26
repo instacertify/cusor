@@ -4,6 +4,7 @@ import fs from "fs";
 import { seedDatabase } from "./seed";
 import { ensureCertProductsCatalog } from "./seed-cert-products";
 import { ensureTestingCatalog } from "./seed-testing";
+import { ensureAuthorsCatalog } from "./authors";
 
 const DB_DIR = path.join(process.cwd(), "data");
 const DB_PATH = path.join(DB_DIR, "certko.db");
@@ -147,6 +148,18 @@ function createDb(): Database.Database {
       sort INTEGER NOT NULL DEFAULT 0
     );
 
+    CREATE TABLE IF NOT EXISTS authors (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      slug TEXT UNIQUE NOT NULL,
+      name TEXT NOT NULL,
+      title TEXT NOT NULL DEFAULT '',
+      bio TEXT NOT NULL DEFAULT '',
+      image TEXT NOT NULL DEFAULT '',
+      email TEXT NOT NULL DEFAULT '',
+      sort INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS posts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       slug TEXT UNIQUE NOT NULL,
@@ -155,6 +168,7 @@ function createDb(): Database.Database {
       content TEXT NOT NULL DEFAULT '',
       image TEXT NOT NULL DEFAULT '',
       author TEXT NOT NULL DEFAULT 'Certko Team',
+      author_id INTEGER REFERENCES authors(id),
       status TEXT NOT NULL DEFAULT 'draft',
       published_at TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -162,6 +176,7 @@ function createDb(): Database.Database {
       meta_description TEXT NOT NULL DEFAULT ''
     );
     CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status);
+    CREATE INDEX IF NOT EXISTS idx_posts_author ON posts(author_id);
 
     CREATE TABLE IF NOT EXISTS seo_meta (
       entity TEXT PRIMARY KEY,
@@ -258,6 +273,7 @@ function createDb(): Database.Database {
   }
   ensureCertProductsCatalog(db);
   ensureTestingCatalog(db);
+  ensureAuthorsCatalog(db);
   return db;
 }
 
@@ -268,6 +284,7 @@ export function getDb(): Database.Database {
     // Keep catalog migrations/seeds idempotent across hot reloads
     ensureCertProductsCatalog(global.__certkoDb);
     ensureTestingCatalog(global.__certkoDb);
+    ensureAuthorsCatalog(global.__certkoDb);
   }
   return global.__certkoDb;
 }
@@ -411,6 +428,19 @@ export interface Testimonial {
   sort: number;
 }
 
+export interface Author {
+  id: number;
+  slug: string;
+  name: string;
+  title: string;
+  bio: string;
+  image: string;
+  email: string;
+  sort: number;
+  created_at: string;
+  post_count?: number;
+}
+
 export interface Post {
   id: number;
   slug: string;
@@ -419,11 +449,17 @@ export interface Post {
   content: string;
   image: string;
   author: string;
+  author_id: number | null;
   status: string;
   published_at: string | null;
   created_at: string;
   meta_title: string;
   meta_description: string;
+  author_slug?: string | null;
+  author_name?: string | null;
+  author_title?: string | null;
+  author_image?: string | null;
+  author_bio?: string | null;
 }
 
 export interface Inquiry {

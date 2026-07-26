@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getPostById } from "@/lib/queries";
+import { getPostById, getAuthors } from "@/lib/queries";
 import { savePost, deletePost } from "../../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 
@@ -16,6 +16,8 @@ export default async function AdminPostEdit({ params, searchParams }: Props) {
   const sp = await searchParams;
   const post = getPostById(Number(id));
   if (!post) notFound();
+  const authors = getAuthors();
+  const selectedAuthorId = post.author_id ?? authors[0]?.id ?? "";
 
   return (
     <div>
@@ -38,7 +40,29 @@ export default async function AdminPostEdit({ params, searchParams }: Props) {
           <Field label="Title" name="title" defaultValue={post.title} required />
           <div className="grid sm:grid-cols-3 gap-4">
             <Field label="URL Slug (/blog/…)" name="slug" defaultValue={post.slug} />
-            <Field label="Author" name="author" defaultValue={post.author} />
+            <div>
+              <label htmlFor="author_id" className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">
+                Author
+              </label>
+              <select
+                id="author_id"
+                name="author_id"
+                defaultValue={selectedAuthorId}
+                required
+                className="w-full rounded-xl border border-cream-300 px-3 py-2.5 text-sm bg-white outline-none focus:border-butter-500"
+              >
+                {authors.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-[11px] text-ink-500">
+                <Link href="/admin/authors" className="font-semibold text-butter-700 hover:underline">
+                  Create / edit author profiles
+                </Link>
+              </p>
+            </div>
             <div>
               <label htmlFor="status" className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">
                 Status

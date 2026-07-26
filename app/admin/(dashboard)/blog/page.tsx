@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getAllPosts } from "@/lib/queries";
+import { getAllPosts, getAuthors } from "@/lib/queries";
 import { createPost } from "../../actions";
 import { Field, SavedBanner, SubmitButton } from "@/components/admin/Field";
 
@@ -12,12 +12,17 @@ interface Props {
 export default async function AdminBlog({ searchParams }: Props) {
   const sp = await searchParams;
   const posts = getAllPosts();
+  const authors = getAuthors();
+  const defaultAuthorId = authors[0]?.id ?? "";
 
   return (
     <div>
       <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Blog</h1>
       <p className="text-ink-600 text-sm mb-6">
-        Write articles in Markdown, save drafts and publish to /blog.
+        Write articles in Markdown, pick an author profile, then publish to /blog.{" "}
+        <Link href="/admin/authors" className="font-semibold text-butter-700 hover:underline">
+          Manage authors →
+        </Link>
       </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
 
@@ -25,7 +30,24 @@ export default async function AdminBlog({ searchParams }: Props) {
         <h2 className="font-display font-bold text-ink-950 mb-3">Start a New Post</h2>
         <form action={createPost} className="grid sm:grid-cols-[2fr_1fr_auto] gap-3 items-end">
           <Field label="Post Title" name="title" required placeholder="e.g. How to pick a BIS testing lab" />
-          <Field label="Author" name="author" defaultValue="Certko Team" />
+          <div>
+            <label htmlFor="author_id" className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">
+              Author
+            </label>
+            <select
+              id="author_id"
+              name="author_id"
+              defaultValue={defaultAuthorId}
+              required
+              className="w-full rounded-xl border border-cream-300 px-3 py-2.5 text-sm bg-white outline-none focus:border-butter-500"
+            >
+              {authors.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <SubmitButton label="Create Draft" />
         </form>
       </div>
@@ -45,7 +67,9 @@ export default async function AdminBlog({ searchParams }: Props) {
               <tr key={p.id} className="border-b border-cream-100 last:border-0 hover:bg-cream-50">
                 <td className="px-5 py-3">
                   <span className="font-semibold text-ink-950 line-clamp-1">{p.title}</span>
-                  <span className="block text-xs text-ink-500">/blog/{p.slug} · {p.author}</span>
+                  <span className="block text-xs text-ink-500">
+                    /blog/{p.slug} · {p.author_name || p.author}
+                  </span>
                 </td>
                 <td className="px-5 py-3">
                   <span

@@ -9,6 +9,7 @@ import type {
   Qco,
   Certification,
   Post,
+  Author,
   CertProduct,
   TestingCategory,
   TestingService,
@@ -248,31 +249,97 @@ export function getProductsForLab(labId: number, limit = 50): Product[] {
     .all(labId, limit) as Product[];
 }
 
+// ---------- authors ----------
+const POST_AUTHOR_SELECT = `
+  p.*,
+  a.slug AS author_slug,
+  a.name AS author_name,
+  a.title AS author_title,
+  a.image AS author_image,
+  a.bio AS author_bio
+`;
+
+export function getAuthors(): Author[] {
+  return getDb()
+    .prepare(
+      `SELECT a.*,
+        (SELECT COUNT(*) FROM posts p WHERE p.author_id = a.id) AS post_count
+       FROM authors a
+       ORDER BY a.sort, a.name`
+    )
+    .all() as Author[];
+}
+
+export function getAuthorById(id: number): Author | undefined {
+  return getDb().prepare("SELECT * FROM authors WHERE id = ?").get(id) as
+    | Author
+    | undefined;
+}
+
+export function getAuthorBySlug(slug: string): Author | undefined {
+  return getDb().prepare("SELECT * FROM authors WHERE slug = ?").get(slug) as
+    | Author
+    | undefined;
+}
+
+export function getPublishedPostsByAuthor(authorId: number, limit = 50): Post[] {
+  return getDb()
+    .prepare(
+      `SELECT ${POST_AUTHOR_SELECT}
+       FROM posts p
+       LEFT JOIN authors a ON a.id = p.author_id
+       WHERE p.status = 'published' AND p.author_id = ?
+       ORDER BY p.published_at DESC, p.id DESC
+       LIMIT ?`
+    )
+    .all(authorId, limit) as Post[];
+}
+
 // ---------- blog posts ----------
 export function getPublishedPosts(limit = 50, offset = 0): Post[] {
   return getDb()
     .prepare(
-      "SELECT * FROM posts WHERE status = 'published' ORDER BY published_at DESC, id DESC LIMIT ? OFFSET ?"
+      `SELECT ${POST_AUTHOR_SELECT}
+       FROM posts p
+       LEFT JOIN authors a ON a.id = p.author_id
+       WHERE p.status = 'published'
+       ORDER BY p.published_at DESC, p.id DESC
+       LIMIT ? OFFSET ?`
     )
     .all(limit, offset) as Post[];
 }
 
 export function getPostBySlug(slug: string): Post | undefined {
-  return getDb().prepare("SELECT * FROM posts WHERE slug = ?").get(slug) as
-    | Post
-    | undefined;
+  return getDb()
+    .prepare(
+      `SELECT ${POST_AUTHOR_SELECT}
+       FROM posts p
+       LEFT JOIN authors a ON a.id = p.author_id
+       WHERE p.slug = ?`
+    )
+    .get(slug) as Post | undefined;
 }
 
 export function getAllPosts(): Post[] {
   return getDb()
-    .prepare("SELECT * FROM posts ORDER BY id DESC")
+    .prepare(
+      `SELECT ${POST_AUTHOR_SELECT}
+       FROM posts p
+       LEFT JOIN authors a ON a.id = p.author_id
+       ORDER BY p.id DESC`
+    )
     .all() as Post[];
 }
 
 export function getPostById(id: number): Post | undefined {
-  return getDb().prepare("SELECT * FROM posts WHERE id = ?").get(id) as
-    | Post
-    | undefined;
+  return getDb()
+    .prepare(
+      `SELECT ${POST_AUTHOR_SELECT}
+       FROM posts p
+       LEFT JOIN authors a ON a.id = p.author_id
+       WHERE p.id = ?`
+    )
+    .get(id) as Post | undefined;
 }
 
 // ---------- faqs ----------

@@ -20,6 +20,7 @@ const NAV = [
   { href: "/admin/products", label: "BIS Products", icon: "box" },
   { href: "/admin/qcos", label: "QCO Alerts", icon: "bell" },
   { href: "/admin/blog", label: "Blog", icon: "file" },
+  { href: "/admin/authors", label: "Authors", icon: "star" },
   { href: "/admin/seo", label: "SEO Tools", icon: "chart" },
   { href: "/admin/faqs", label: "FAQs", icon: "help" },
   { href: "/admin/testimonials", label: "Testimonials", icon: "star" },
