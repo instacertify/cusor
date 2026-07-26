@@ -5,6 +5,7 @@ import CtaBanner from "@/components/CtaBanner";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import SearchBox from "@/components/SearchBox";
+import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { getFaqs, getTestingCategories } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -42,27 +43,31 @@ export default function TestingIndexPage() {
 
       <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {categories.map((c) => (
-          <Link
+          <div
             key={c.id}
-            href={`/testing/${c.slug}`}
             className="group bg-white rounded-3xl border border-cream-300 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition p-6 flex flex-col gap-3"
           >
-            <div className="flex items-center justify-between">
-              <span className="w-12 h-12 rounded-xl bg-butter-300/40 text-butter-700 flex items-center justify-center">
-                <Icon name={c.icon} size={26} />
+            <Link href={`/testing/${c.slug}`} className="flex flex-col gap-3 min-w-0">
+              <div className="flex items-center justify-between">
+                <span className="w-12 h-12 rounded-xl bg-butter-300/40 text-butter-700 flex items-center justify-center">
+                  <Icon name={c.icon} size={26} />
+                </span>
+                <span className="text-xs font-bold bg-cream-200 text-ink-700 rounded-full px-3 py-1">
+                  {c.service_count ?? 0} test{(c.service_count ?? 0) === 1 ? "" : "s"}
+                </span>
+              </div>
+              <h2 className="font-display text-xl font-bold text-ink-950 group-hover:text-butter-700 transition">
+                {c.name}
+              </h2>
+              <p className="text-sm text-ink-600 leading-relaxed line-clamp-3">{c.summary}</p>
+              <span className="text-sm font-bold text-butter-700 inline-flex items-center gap-1.5">
+                Browse tests <Icon name="arrow-right" size={15} />
               </span>
-              <span className="text-xs font-bold bg-cream-200 text-ink-700 rounded-full px-3 py-1">
-                {c.service_count ?? 0} test{(c.service_count ?? 0) === 1 ? "" : "s"}
-              </span>
+            </Link>
+            <div className="mt-auto pt-2 border-t border-cream-200">
+              <RequestQuoteButton subject={c.name} kind="test" variant="compact" short />
             </div>
-            <h2 className="font-display text-xl font-bold text-ink-950 group-hover:text-butter-700 transition">
-              {c.name}
-            </h2>
-            <p className="text-sm text-ink-600 leading-relaxed line-clamp-3">{c.summary}</p>
-            <span className="mt-auto pt-2 text-sm font-bold text-butter-700 inline-flex items-center gap-1.5">
-              Browse tests <Icon name="arrow-right" size={15} />
-            </span>
-          </Link>
+          </div>
         ))}
       </div>
 
@@ -71,7 +76,7 @@ export default function TestingIndexPage() {
       </section>
 
       <div className="mt-16">
-        <CtaBanner />
+        <CtaBanner subject="Product Testing" kind="test" />
       </div>
     </div>
   );

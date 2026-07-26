@@ -7,6 +7,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
+import RequestQuoteButton from "@/components/RequestQuoteButton";
 import {
   getFaqs,
   getTestingCategories,
@@ -86,12 +87,9 @@ export default async function TestingCategoryPage({ params }: Props) {
             </div>
           </div>
           <p className="mt-5 text-lg text-ink-600 leading-relaxed">{cat.summary}</p>
-          <Link
-            href={`/contact?product=${encodeURIComponent(cat.name + " testing")}`}
-            className="mt-6 inline-flex items-center gap-2 bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3 text-sm transition"
-          >
-            Get a Testing Quote <Icon name="arrow-right" size={16} />
-          </Link>
+          <div className="mt-6">
+            <RequestQuoteButton subject={cat.name} kind="test" />
+          </div>
         </div>
         {cat.image ? (
           <Image
@@ -121,36 +119,40 @@ export default async function TestingCategoryPage({ params }: Props) {
         </p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {services.map((s) => (
-            <Link
+            <div
               key={s.id}
-              href={`/testing/${cat.slug}/${s.slug}`}
               className="bg-white rounded-2xl border border-cream-300 shadow-card hover:shadow-card-hover transition p-5 flex flex-col gap-2"
             >
-              <h3 className="font-display font-bold text-ink-950">{s.name}</h3>
-              {(s.test_type || s.standards) && (
-                <p className="text-xs font-semibold text-ink-500">
-                  {[s.test_type, s.standards].filter(Boolean).join(" · ")}
-                </p>
-              )}
-              <p className="text-sm text-ink-600 line-clamp-3">{s.summary}</p>
-              {(s.timeline || s.sample_size) && (
-                <div className="mt-1 space-y-1 text-xs text-ink-700">
-                  {s.timeline ? (
-                    <p>
-                      <span className="font-bold text-ink-500">Timeline:</span> {s.timeline}
-                    </p>
-                  ) : null}
-                  {s.sample_size ? (
-                    <p>
-                      <span className="font-bold text-ink-500">Sample:</span> {s.sample_size}
-                    </p>
-                  ) : null}
-                </div>
-              )}
-              <span className="mt-auto pt-2 text-sm font-bold text-butter-700 inline-flex items-center gap-1.5">
-                View test <Icon name="arrow-right" size={14} />
-              </span>
-            </Link>
+              <Link href={`/testing/${cat.slug}/${s.slug}`} className="flex flex-col gap-2 min-w-0">
+                <h3 className="font-display font-bold text-ink-950">{s.name}</h3>
+                {(s.test_type || s.standards) && (
+                  <p className="text-xs font-semibold text-ink-500">
+                    {[s.test_type, s.standards].filter(Boolean).join(" · ")}
+                  </p>
+                )}
+                <p className="text-sm text-ink-600 line-clamp-3">{s.summary}</p>
+                {(s.timeline || s.sample_size) && (
+                  <div className="mt-1 space-y-1 text-xs text-ink-700">
+                    {s.timeline ? (
+                      <p>
+                        <span className="font-bold text-ink-500">Timeline:</span> {s.timeline}
+                      </p>
+                    ) : null}
+                    {s.sample_size ? (
+                      <p>
+                        <span className="font-bold text-ink-500">Sample:</span> {s.sample_size}
+                      </p>
+                    ) : null}
+                  </div>
+                )}
+                <span className="text-sm font-bold text-butter-700 inline-flex items-center gap-1.5">
+                  View test <Icon name="arrow-right" size={14} />
+                </span>
+              </Link>
+              <div className="mt-auto pt-2 border-t border-cream-200">
+                <RequestQuoteButton subject={s.name} kind="test" variant="compact" short />
+              </div>
+            </div>
           ))}
         </div>
         {services.length === 0 && (
@@ -183,7 +185,7 @@ export default async function TestingCategoryPage({ params }: Props) {
       )}
 
       <div className="mt-16">
-        <CtaBanner />
+        <CtaBanner subject={cat.name} kind="test" />
       </div>
     </div>
   );

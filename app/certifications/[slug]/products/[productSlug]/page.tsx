@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { marked } from "marked";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
+import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { getCertificationBySlug, getCertProductBySlug } from "@/lib/queries";
 import { formatPriceRange } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
@@ -121,12 +122,10 @@ export default async function CertProductPage({ params }: Props) {
         )}
 
         <div className="mt-8 flex flex-col sm:flex-row gap-3">
-          <Link
-            href={`/contact?product=${encodeURIComponent(product.name + " — " + cert.name)}`}
-            className="inline-flex items-center justify-center min-h-11 bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3 text-sm transition"
-          >
-            Get help for this product
-          </Link>
+          <RequestQuoteButton
+            subject={`${product.name} — ${cert.name}`}
+            kind="certification"
+          />
           <Link
             href={`/certifications/${cert.slug}`}
             className="inline-flex items-center justify-center min-h-11 border border-cream-300 bg-white text-ink-900 font-semibold rounded-xl px-6 py-3 text-sm transition"
@@ -137,7 +136,7 @@ export default async function CertProductPage({ params }: Props) {
       </div>
 
       <div className="mt-14">
-        <CtaBanner />
+        <CtaBanner subject={`${product.name} — ${cert.name}`} kind="certification" />
       </div>
     </div>
   );

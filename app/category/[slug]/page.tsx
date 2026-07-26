@@ -109,7 +109,7 @@ export default async function CategoryPage({ params }: Props) {
       )}
 
       <div className="mt-16">
-        <CtaBanner />
+        <CtaBanner subject={category.name} kind="product" />
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
+import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { getFaqs, getTestingServiceBySlug, getTestingServices } from "@/lib/queries";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
@@ -118,12 +119,9 @@ export default async function TestingServicePage({ params }: Props) {
             )}
           </dl>
 
-          <Link
-            href={`/contact?product=${encodeURIComponent(svc.name + " testing")}`}
-            className="mt-6 inline-flex items-center gap-2 bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3 text-sm transition"
-          >
-            Request this test <Icon name="arrow-right" size={16} />
-          </Link>
+          <div className="mt-6">
+            <RequestQuoteButton subject={svc.name} kind="test" />
+          </div>
         </div>
         {svc.image ? (
           <Image
@@ -161,21 +159,23 @@ export default async function TestingServicePage({ params }: Props) {
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {siblings.map((s) => (
-              <Link
+              <div
                 key={s.id}
-                href={`/testing/${svc.category_slug}/${s.slug}`}
-                className="bg-white rounded-2xl border border-cream-300 p-4 hover:border-butter-500 transition"
+                className="bg-white rounded-2xl border border-cream-300 p-4 hover:border-butter-500 transition flex flex-col gap-2"
               >
-                <span className="block font-semibold text-ink-950 text-sm">{s.name}</span>
-                <span className="text-xs text-ink-500">{s.standards || s.test_type}</span>
-              </Link>
+                <Link href={`/testing/${svc.category_slug}/${s.slug}`}>
+                  <span className="block font-semibold text-ink-950 text-sm">{s.name}</span>
+                  <span className="text-xs text-ink-500">{s.standards || s.test_type}</span>
+                </Link>
+                <RequestQuoteButton subject={s.name} kind="test" variant="compact" short />
+              </div>
             ))}
           </div>
         </section>
       )}
 
       <div className="mt-16">
-        <CtaBanner />
+        <CtaBanner subject={svc.name} kind="test" />
       </div>
     </div>
   );

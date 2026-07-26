@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 interface Props {
-  searchParams: Promise<{ sent?: string; error?: string; product?: string }>;
+  searchParams: Promise<{ sent?: string; error?: string; product?: string; intent?: string }>;
 }
 
 const PROMISES = [
@@ -108,12 +108,18 @@ export default async function ContactPage({ searchParams }: Props) {
                 </div>
               </div>
               <div>
-                <label htmlFor="product" className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">Product</label>
+                <label htmlFor="product" className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">
+                  {sp.intent === "test"
+                    ? "Test / service"
+                    : sp.intent === "certification"
+                    ? "Certification / scheme"
+                    : "Product / test / certification"}
+                </label>
                 <input
                   id="product"
                   name="product"
                   defaultValue={sp.product ?? ""}
-                  placeholder="e.g. LED luminaires, plywood, PVC pipes…"
+                  placeholder="e.g. LED lamp safety test, BIS certification, BEE RAC…"
                   className="w-full rounded-xl border border-cream-300 px-4 py-3 text-base sm:text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30 min-h-11"
                 />
               </div>
@@ -123,12 +129,16 @@ export default async function ContactPage({ searchParams }: Props) {
                   id="message"
                   name="message"
                   rows={4}
-                  placeholder="Manufacturing location, import or domestic, timeline…"
+                  placeholder="Manufacturing location, import or domestic, sample availability, timeline…"
                   className="w-full rounded-xl border border-cream-300 px-4 py-3 text-base sm:text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30"
                 />
               </div>
               <button className="w-full min-h-12 bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3.5 transition">
-                Get My Free Quote
+                {sp.intent === "test"
+                  ? "Request a quote for this test"
+                  : sp.intent === "certification"
+                  ? "Request a quote for this certification"
+                  : "Request a free quote"}
               </button>
               <p className="text-[11px] text-ink-500 text-center">
                 No spam. Your details are only used to respond to this request.

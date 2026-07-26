@@ -5,6 +5,7 @@ import ProductCard from "@/components/ProductCard";
 import SearchBox from "@/components/SearchBox";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
+import RequestQuoteButton from "@/components/RequestQuoteButton";
 import {
   searchProducts,
   countSearchProducts,
@@ -249,17 +250,19 @@ export default async function SearchPage({ searchParams }: Props) {
           )}
           <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {testingCategories.map((c) => (
-              <Link
+              <div
                 key={c.id}
-                href={`/testing/${c.slug}`}
-                className="bg-white rounded-2xl border border-cream-300 p-5 hover:border-butter-500 transition"
+                className="bg-white rounded-2xl border border-cream-300 p-5 hover:border-butter-500 transition flex flex-col gap-3"
               >
-                <div className="text-xs font-semibold uppercase tracking-wide text-butter-700">
-                  {c.service_count ?? 0} tests
-                </div>
-                <div className="mt-1 font-display font-semibold text-ink-950">{c.name}</div>
-                <p className="mt-2 text-sm text-ink-600 line-clamp-2">{c.summary}</p>
-              </Link>
+                <Link href={`/testing/${c.slug}`}>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-butter-700">
+                    {c.service_count ?? 0} tests
+                  </div>
+                  <div className="mt-1 font-display font-semibold text-ink-950">{c.name}</div>
+                  <p className="mt-2 text-sm text-ink-600 line-clamp-2">{c.summary}</p>
+                </Link>
+                <RequestQuoteButton subject={c.name} kind="test" variant="compact" short />
+              </div>
             ))}
           </div>
           {uniqueTestingServices.length > 0 && (
@@ -269,26 +272,28 @@ export default async function SearchPage({ searchParams }: Props) {
               </h3>
               <div className="mt-4 grid sm:grid-cols-2 gap-3">
                 {uniqueTestingServices.map((s) => (
-                  <Link
+                  <div
                     key={s.id}
-                    href={`/testing/${s.category_slug}/${s.slug}`}
-                    className="bg-white rounded-2xl border border-cream-300 p-4 hover:border-butter-500 transition"
+                    className="bg-white rounded-2xl border border-cream-300 p-4 hover:border-butter-500 transition flex flex-col gap-2"
                   >
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-butter-700">
-                      {s.category_name}
-                      {s.test_type ? ` · ${s.test_type}` : ""}
-                    </div>
-                    <div className="mt-1 font-semibold text-ink-950">{s.name}</div>
-                    <div className="mt-1 text-xs font-mono text-ink-500 line-clamp-1">
-                      {s.standards || s.product_category}
-                    </div>
-                    {(s.timeline || s.sample_size) && (
-                      <div className="mt-2 text-xs text-ink-600 space-y-0.5">
-                        {s.timeline ? <div>Timeline: {s.timeline}</div> : null}
-                        {s.sample_size ? <div>Sample: {s.sample_size}</div> : null}
+                    <Link href={`/testing/${s.category_slug}/${s.slug}`}>
+                      <div className="text-[11px] font-semibold uppercase tracking-wide text-butter-700">
+                        {s.category_name}
+                        {s.test_type ? ` · ${s.test_type}` : ""}
                       </div>
-                    )}
-                  </Link>
+                      <div className="mt-1 font-semibold text-ink-950">{s.name}</div>
+                      <div className="mt-1 text-xs font-mono text-ink-500 line-clamp-1">
+                        {s.standards || s.product_category}
+                      </div>
+                      {(s.timeline || s.sample_size) && (
+                        <div className="mt-2 text-xs text-ink-600 space-y-0.5">
+                          {s.timeline ? <div>Timeline: {s.timeline}</div> : null}
+                          {s.sample_size ? <div>Sample: {s.sample_size}</div> : null}
+                        </div>
+                      )}
+                    </Link>
+                    <RequestQuoteButton subject={s.name} kind="test" variant="compact" short />
+                  </div>
                 ))}
               </div>
             </>
@@ -318,15 +323,17 @@ export default async function SearchPage({ searchParams }: Props) {
               )}
               <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {certProgrammes.map((c) => (
-                  <Link
+                  <div
                     key={c.id}
-                    href={`/certifications/${c.slug}`}
-                    className="bg-white rounded-2xl border border-cream-300 p-5 hover:border-butter-500 transition"
+                    className="bg-white rounded-2xl border border-cream-300 p-5 hover:border-butter-500 transition flex flex-col gap-3"
                   >
-                    <div className="text-xs font-semibold uppercase tracking-wide text-butter-700">{c.region}</div>
-                    <div className="mt-1 font-display font-semibold text-ink-950">{c.name}</div>
-                    <p className="mt-2 text-sm text-ink-600 line-clamp-2">{c.summary}</p>
-                  </Link>
+                    <Link href={`/certifications/${c.slug}`}>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-butter-700">{c.region}</div>
+                      <div className="mt-1 font-display font-semibold text-ink-950">{c.name}</div>
+                      <p className="mt-2 text-sm text-ink-600 line-clamp-2">{c.summary}</p>
+                    </Link>
+                    <RequestQuoteButton subject={c.name} kind="certification" variant="compact" short />
+                  </div>
                 ))}
               </div>
               {certProducts.length > 0 && (
@@ -336,21 +343,28 @@ export default async function SearchPage({ searchParams }: Props) {
                   </h3>
                   <div className="mt-4 grid sm:grid-cols-2 gap-3">
                     {certProducts.map((p) => (
-                      <Link
+                      <div
                         key={`${p.cert_slug}-${p.id}`}
-                        href={`/certifications/${p.cert_slug}/products/${p.slug}`}
-                        className="bg-white rounded-2xl border border-cream-300 p-4 hover:border-butter-500 transition"
+                        className="bg-white rounded-2xl border border-cream-300 p-4 hover:border-butter-500 transition flex flex-col gap-2"
                       >
-                        <div className="text-[11px] font-semibold uppercase tracking-wide text-butter-700">
-                          {p.cert_name}
-                          {p.regime ? ` · ${p.regime}` : ""}
-                        </div>
-                        <div className="mt-1 font-semibold text-ink-950">{p.name}</div>
-                        <div className="mt-1 text-xs font-mono text-ink-500 line-clamp-1">{p.standards}</div>
-                        <div className="mt-2 text-xs text-ink-600">
-                          {formatPriceRange(p.min_price, p.max_price)} testing
-                        </div>
-                      </Link>
+                        <Link href={`/certifications/${p.cert_slug}/products/${p.slug}`}>
+                          <div className="text-[11px] font-semibold uppercase tracking-wide text-butter-700">
+                            {p.cert_name}
+                            {p.regime ? ` · ${p.regime}` : ""}
+                          </div>
+                          <div className="mt-1 font-semibold text-ink-950">{p.name}</div>
+                          <div className="mt-1 text-xs font-mono text-ink-500 line-clamp-1">{p.standards}</div>
+                          <div className="mt-2 text-xs text-ink-600">
+                            {formatPriceRange(p.min_price, p.max_price)} testing
+                          </div>
+                        </Link>
+                        <RequestQuoteButton
+                          subject={`${p.name} — ${p.cert_name}`}
+                          kind="certification"
+                          variant="compact"
+                          short
+                        />
+                      </div>
                     ))}
                   </div>
                 </>
@@ -384,12 +398,20 @@ export default async function SearchPage({ searchParams }: Props) {
                 <p className="mt-3 text-sm text-ink-700">
                   Indicative testing: {formatPriceRange(bestCertProduct.min_price, bestCertProduct.max_price)}
                 </p>
-                <Link
-                  href={`/certifications/${bestCertProduct.cert_slug}/products/${bestCertProduct.slug}`}
-                  className="mt-4 inline-flex text-sm font-semibold text-butter-700"
-                >
-                  View certification details →
-                </Link>
+                <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:items-center">
+                  <Link
+                    href={`/certifications/${bestCertProduct.cert_slug}/products/${bestCertProduct.slug}`}
+                    className="inline-flex text-sm font-semibold text-butter-700"
+                  >
+                    View certification details →
+                  </Link>
+                  <RequestQuoteButton
+                    subject={`${bestCertProduct.name} — ${bestCertProduct.cert_name}`}
+                    kind="certification"
+                    variant="compact"
+                    short
+                  />
+                </div>
               </div>
             </section>
           )}
@@ -432,9 +454,12 @@ export default async function SearchPage({ searchParams }: Props) {
                       <dd className="font-semibold text-ink-950">{best.timeline}</dd>
                     </div>
                   </dl>
-                  <Link href={`/product/${best.slug}`} className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-butter-700 hover:text-butter-600">
-                    Full certification details <Icon name="arrow-right" size={15} />
-                  </Link>
+                  <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:items-center">
+                    <Link href={`/product/${best.slug}`} className="inline-flex items-center gap-1.5 text-sm font-bold text-butter-700 hover:text-butter-600">
+                      Full certification details <Icon name="arrow-right" size={15} />
+                    </Link>
+                    <RequestQuoteButton subject={best.name} kind="certification" variant="compact" short />
+                  </div>
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-ink-950 mb-3 flex items-center gap-2">

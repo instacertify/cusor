@@ -4,15 +4,18 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { CertProduct } from "@/lib/db";
 import { formatPriceRange } from "@/lib/format";
+import RequestQuoteButton from "./RequestQuoteButton";
 
 export default function CertProductCatalog({
   items,
   certSlug,
+  certName,
   title,
   subtitle,
 }: {
   items: CertProduct[];
   certSlug: string;
+  certName?: string;
   title: string;
   subtitle?: string;
 }) {
@@ -74,31 +77,40 @@ export default function CertProductCatalog({
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {filtered.map((item) => (
-          <Link
+          <div
             key={item.id}
-            href={`/certifications/${certSlug}/products/${item.slug}`}
-            className="block bg-white rounded-2xl border border-cream-300 p-4 sm:p-5 hover:border-butter-500 transition"
+            className="bg-white rounded-2xl border border-cream-300 p-4 sm:p-5 hover:border-butter-500 transition flex flex-col gap-3"
           >
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="font-semibold text-ink-950 leading-snug">{item.name}</h3>
-              {item.regime && (
-                <span
-                  className={`shrink-0 text-[10px] font-semibold uppercase tracking-wide rounded-full px-2 py-0.5 ${
-                    item.regime.toLowerCase().includes("mandatory")
-                      ? "bg-red-100 text-red-700"
-                      : "bg-cream-200 text-ink-700"
-                  }`}
-                >
-                  {item.regime}
-                </span>
-              )}
+            <Link href={`/certifications/${certSlug}/products/${item.slug}`} className="block min-w-0">
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="font-semibold text-ink-950 leading-snug">{item.name}</h3>
+                {item.regime && (
+                  <span
+                    className={`shrink-0 text-[10px] font-semibold uppercase tracking-wide rounded-full px-2 py-0.5 ${
+                      item.regime.toLowerCase().includes("mandatory")
+                        ? "bg-red-100 text-red-700"
+                        : "bg-cream-200 text-ink-700"
+                    }`}
+                  >
+                    {item.regime}
+                  </span>
+                )}
+              </div>
+              <p className="mt-2 text-xs text-ink-500 font-mono line-clamp-2">{item.standards}</p>
+              <div className="mt-3 flex items-center justify-between text-xs text-ink-600">
+                <span>{formatPriceRange(item.min_price, item.max_price)} testing</span>
+                <span className="font-semibold text-butter-700">View details →</span>
+              </div>
+            </Link>
+            <div className="pt-2 border-t border-cream-200">
+              <RequestQuoteButton
+                subject={certName ? `${item.name} — ${certName}` : item.name}
+                kind="certification"
+                variant="compact"
+                short
+              />
             </div>
-            <p className="mt-2 text-xs text-ink-500 font-mono line-clamp-2">{item.standards}</p>
-            <div className="mt-3 flex items-center justify-between text-xs text-ink-600">
-              <span>{formatPriceRange(item.min_price, item.max_price)} testing</span>
-              <span className="font-semibold text-butter-700">View details →</span>
-            </div>
-          </Link>
+          </div>
         ))}
         {filtered.length === 0 && (
           <p className="sm:col-span-2 text-sm text-ink-500 text-center py-8">

@@ -7,6 +7,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import ProductCard from "@/components/ProductCard";
 import FaqAccordion from "@/components/FaqAccordion";
 import CtaBanner from "@/components/CtaBanner";
+import RequestQuoteButton from "@/components/RequestQuoteButton";
 import {
   getProductBySlug,
   getLabsForProduct,
@@ -182,12 +183,9 @@ export default async function ProductPage({ params }: Props) {
             <p className="mt-2 text-sm text-ink-300 leading-relaxed">
               Our experts handle the application, coordinate testing for {product.standard || "your standard"} and manage the inspection. Free quote in 24 hours.
             </p>
-            <Link
-              href={`/contact?product=${encodeURIComponent(product.name)}`}
-              className="mt-5 inline-flex bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-5 py-2.5 text-sm transition"
-            >
-              Get a Free Quote
-            </Link>
+            <div className="mt-5">
+              <RequestQuoteButton subject={product.name} kind="product" short className="w-full" />
+            </div>
           </div>
         </aside>
       </div>
@@ -270,7 +268,7 @@ export default async function ProductPage({ params }: Props) {
       )}
 
       <div className="mt-16">
-        <CtaBanner />
+        <CtaBanner subject={product.name} kind="product" />
       </div>
     </div>
   );

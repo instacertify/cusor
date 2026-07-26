@@ -8,6 +8,7 @@ import CtaBanner from "@/components/CtaBanner";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import CertProductCatalog from "@/components/CertProductCatalog";
+import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { getCertificationBySlug, getCertifications, getFaqs, getCertProducts } from "@/lib/queries";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
@@ -82,12 +83,9 @@ export default async function CertificationPage({ params }: Props) {
             </div>
           </div>
           <p className="mt-5 text-lg text-ink-600 leading-relaxed">{cert.summary}</p>
-          <Link
-            href={`/contact?product=${encodeURIComponent(cert.name + " certification")}`}
-            className="mt-6 inline-flex items-center gap-2 bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3 text-sm transition"
-          >
-            Get a Free {cert.name} Quote <Icon name="arrow-right" size={16} />
-          </Link>
+          <div className="mt-6">
+            <RequestQuoteButton subject={cert.name} kind="certification" />
+          </div>
         </div>
         {cert.image ? (
           <Image
@@ -110,6 +108,7 @@ export default async function CertificationPage({ params }: Props) {
           <CertProductCatalog
             items={catalog}
             certSlug={cert.slug}
+            certName={cert.name}
             title={`${cert.name} Product Catalogue`}
             subtitle={`Searchable products and schemes under ${cert.full_name || cert.name}. Open any row for standards, indicative testing costs and guidance.`}
           />
@@ -146,25 +145,27 @@ export default async function CertificationPage({ params }: Props) {
         <h2 className="font-display text-2xl font-bold text-ink-950 mb-6">Other Certifications</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {others.map((c) => (
-            <Link
+            <div
               key={c.id}
-              href={`/certifications/${c.slug}`}
-              className="group bg-white rounded-2xl border border-cream-300 shadow-card hover:shadow-card-hover transition p-4 flex items-center gap-3"
+              className="bg-white rounded-2xl border border-cream-300 shadow-card hover:shadow-card-hover transition p-4 flex flex-col gap-2"
             >
-              <span className="w-9 h-9 rounded-lg bg-cream-100 text-ink-700 flex items-center justify-center shrink-0 group-hover:bg-butter-300/40 group-hover:text-butter-700 transition">
-                <Icon name={c.icon} size={19} />
-              </span>
-              <span>
-                <span className="block text-sm font-bold text-ink-950 group-hover:text-butter-700 transition">{c.name}</span>
-                <span className="block text-[11px] text-ink-500">{c.region}</span>
-              </span>
-            </Link>
+              <Link href={`/certifications/${c.slug}`} className="group flex items-center gap-3">
+                <span className="w-9 h-9 rounded-lg bg-cream-100 text-ink-700 flex items-center justify-center shrink-0 group-hover:bg-butter-300/40 group-hover:text-butter-700 transition">
+                  <Icon name={c.icon} size={19} />
+                </span>
+                <span>
+                  <span className="block text-sm font-bold text-ink-950 group-hover:text-butter-700 transition">{c.name}</span>
+                  <span className="block text-[11px] text-ink-500">{c.region}</span>
+                </span>
+              </Link>
+              <RequestQuoteButton subject={c.name} kind="certification" variant="compact" short />
+            </div>
           ))}
         </div>
       </section>
 
       <div className="mt-16">
-        <CtaBanner />
+        <CtaBanner subject={cert.name} kind="certification" />
       </div>
     </div>
   );
