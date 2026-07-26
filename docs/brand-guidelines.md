@@ -46,26 +46,29 @@ Avoid: overly corporate, overly playful, generic consulting appearance, excessiv
 - **Primary:** Poppins SemiBold / Medium (500, 600) — headlines, hero, navigation, buttons
 - **Secondary:** Inter Regular / Medium (400, 500, 600) — body, forms, blogs, reports
 
-## Logo Meaning
+## Logo
 
-- **CERT** — Certification, Compliance, Confidence (Dark Navy)
-- **KO** — Knowledge + Operations (Golden Amber)
-- **Three arrows** — Knowledge → Compliance → Global Market Access (also speed, progress, continuous improvement)
+Official lockup (use everywhere):
+
+- Lowercase **certko** — `cert` Dark Navy `#16263D`, `ko` Golden Amber `#F7C453`
+- **Three chevrons** to the right — 1st navy, 2nd + 3rd amber
+- Tagline **COMPLIANCE. ASSURED.** — `COMPLIANCE.` navy, `ASSURED.` amber (uppercase, tracked)
+
+Meaning: CERT = certification / compliance / confidence; KO = Knowledge + Operations; arrows = progress toward market access.
 
 ### Logo usage
 
-- Always Dark Navy + Golden Amber
-- Never stretch, rotate, add shadows/outlines, recolor, or place on busy backgrounds
+- Always Dark Navy + Golden Amber (never recolor, stretch, rotate, or add shadows)
+- On cream/white: primary lockup; on navy footer: place on a cream plate so colors stay exact
 - Clear space = height of lowercase “o”
-- Minimum website width: **180 px**; print: 35 mm
-- Favicon: **CK monogram** with three arrows, 32×32 (legible at 16 / 32 / 48)
+- Website minimum ~180 px wide (with tagline)
+- Favicon: lowercase **ck** monogram + three arrows
 
 ### Implementation
 
-- Wordmark: `components/Logo.tsx`
-- CK mark helper: `LogoMark` in `components/Logo.tsx`
+- Component: `components/Logo.tsx` (+ `LogoMark`)
 - Favicon: `app/icon.svg`
-- Static assets: `public/brand/certko-logo.svg`, `public/brand/certko-ck-favicon.svg`
+- Static: `public/brand/certko-logo.svg`, `certko-logo-light.svg`, `certko-ck-favicon.svg`
 - Tokens: `app/globals.css`
 
 ## UI Style
