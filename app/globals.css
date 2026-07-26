@@ -62,6 +62,144 @@
   }
 }
 
+/* ---------- Admin-selectable site color schemes ---------- */
+/* Utilities use var(--color-*), so overriding on <html> recolors the whole site. */
+
+html[data-color-scheme="ocean"] {
+  --color-cream-50: #f2f7f6;
+  --color-cream-100: #e6f0ee;
+  --color-cream-200: #d5e4e1;
+  --color-cream-300: #c0d4d0;
+  --color-ink-950: #0f3d4c;
+  --color-ink-900: #164a5c;
+  --color-ink-800: #1f5c70;
+  --color-ink-700: #2a7085;
+  --color-ink-600: #3d7a8a;
+  --color-ink-500: #5b8f9c;
+  --color-ink-400: #8ab0ba;
+  --color-ink-300: #c2d5da;
+  --color-butter-300: #a8ebe4;
+  --color-butter-400: #5fd9cd;
+  --color-butter-500: #2ec4b6;
+  --color-butter-600: #22a99d;
+  --color-butter-700: #1a857c;
+  --color-butter-800: #145f59;
+  --color-accent-400: #5fd9cd;
+  --color-accent-500: #22a99d;
+  --color-accent-600: #1a857c;
+  --shadow-butter: 0 6px 20px -8px rgb(15 61 76 / 0.18);
+  --shadow-card: 0 1px 3px rgb(15 61 76 / 0.06);
+  --shadow-card-hover: 0 8px 24px -10px rgb(15 61 76 / 0.14);
+}
+
+html[data-color-scheme="forest"] {
+  --color-cream-50: #f4f7f1;
+  --color-cream-100: #e9efe3;
+  --color-cream-200: #dce5d4;
+  --color-cream-300: #c9d5bd;
+  --color-ink-950: #1f3d2a;
+  --color-ink-900: #274a33;
+  --color-ink-800: #325c40;
+  --color-ink-700: #406f50;
+  --color-ink-600: #4f7a5c;
+  --color-ink-500: #6b8f76;
+  --color-ink-400: #97b09e;
+  --color-ink-300: #c5d4c9;
+  --color-butter-300: #c8e6a0;
+  --color-butter-400: #9ed15f;
+  --color-butter-500: #7cb342;
+  --color-butter-600: #689f38;
+  --color-butter-700: #558b2f;
+  --color-butter-800: #3d6620;
+  --color-accent-400: #9ed15f;
+  --color-accent-500: #689f38;
+  --color-accent-600: #558b2f;
+  --shadow-butter: 0 6px 20px -8px rgb(31 61 42 / 0.18);
+  --shadow-card: 0 1px 3px rgb(31 61 42 / 0.06);
+  --shadow-card-hover: 0 8px 24px -10px rgb(31 61 42 / 0.14);
+}
+
+html[data-color-scheme="slate"] {
+  --color-cream-50: #f5f7fa;
+  --color-cream-100: #eef1f6;
+  --color-cream-200: #e2e8f0;
+  --color-cream-300: #cbd5e1;
+  --color-ink-950: #1e293b;
+  --color-ink-900: #273548;
+  --color-ink-800: #334155;
+  --color-ink-700: #475569;
+  --color-ink-600: #64748b;
+  --color-ink-500: #78879c;
+  --color-ink-400: #94a3b8;
+  --color-ink-300: #cbd5e1;
+  --color-butter-300: #bae6fd;
+  --color-butter-400: #7dd3fc;
+  --color-butter-500: #38bdf8;
+  --color-butter-600: #0ea5e9;
+  --color-butter-700: #0284c7;
+  --color-butter-800: #0369a1;
+  --color-accent-400: #7dd3fc;
+  --color-accent-500: #0ea5e9;
+  --color-accent-600: #0284c7;
+  --shadow-butter: 0 6px 20px -8px rgb(30 41 59 / 0.18);
+  --shadow-card: 0 1px 3px rgb(30 41 59 / 0.06);
+  --shadow-card-hover: 0 8px 24px -10px rgb(30 41 59 / 0.14);
+}
+
+html[data-color-scheme="copper"] {
+  --color-cream-50: #f7f1e8;
+  --color-cream-100: #efe6d8;
+  --color-cream-200: #e4d8c6;
+  --color-cream-300: #d5c5ad;
+  --color-ink-950: #2c241c;
+  --color-ink-900: #3a3026;
+  --color-ink-800: #4a3d31;
+  --color-ink-700: #5c4d3e;
+  --color-ink-600: #6b5b4b;
+  --color-ink-500: #857564;
+  --color-ink-400: #a89886;
+  --color-ink-300: #d0c3b4;
+  --color-butter-300: #f0c3a8;
+  --color-butter-400: #e59a6f;
+  --color-butter-500: #d97745;
+  --color-butter-600: #c26133;
+  --color-butter-700: #a04d28;
+  --color-butter-800: #78391d;
+  --color-accent-400: #e59a6f;
+  --color-accent-500: #c26133;
+  --color-accent-600: #a04d28;
+  --shadow-butter: 0 6px 20px -8px rgb(44 36 28 / 0.18);
+  --shadow-card: 0 1px 3px rgb(44 36 28 / 0.06);
+  --shadow-card-hover: 0 8px 24px -10px rgb(44 36 28 / 0.14);
+}
+
+html[data-color-scheme="ink"] {
+  --color-cream-50: #f3f4f6;
+  --color-cream-100: #e5e7eb;
+  --color-cream-200: #d1d5db;
+  --color-cream-300: #c4c9d1;
+  --color-ink-950: #111827;
+  --color-ink-900: #1f2937;
+  --color-ink-800: #374151;
+  --color-ink-700: #4b5563;
+  --color-ink-600: #6b7280;
+  --color-ink-500: #7b8494;
+  --color-ink-400: #9ca3af;
+  --color-ink-300: #d1d5db;
+  --color-butter-300: #bfdbfe;
+  --color-butter-400: #93c5fd;
+  --color-butter-500: #60a5fa;
+  --color-butter-600: #3b82f6;
+  --color-butter-700: #2563eb;
+  --color-butter-800: #1d4ed8;
+  --color-accent-400: #93c5fd;
+  --color-accent-500: #3b82f6;
+  --color-accent-600: #2563eb;
+  --shadow-butter: 0 6px 20px -8px rgb(17 24 39 / 0.18);
+  --shadow-card: 0 1px 3px rgb(17 24 39 / 0.06);
+  --shadow-card-hover: 0 8px 24px -10px rgb(17 24 39 / 0.14);
+}
+
 html {
   overflow-x: clip;
   -webkit-text-size-adjust: 100%;

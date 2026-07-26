@@ -7,15 +7,20 @@ import SiteIntegrations, { SiteIntegrationsBody } from "@/components/SiteIntegra
 import { getSettings } from "@/lib/db";
 import { getPage } from "@/lib/queries";
 import { buildJsonLd } from "@/lib/seo";
+import { resolveColorScheme } from "@/lib/color-schemes";
 
 export const dynamic = "force-dynamic";
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  themeColor: "#16263D",
-  viewportFit: "cover",
-};
+export async function generateViewport(): Promise<Viewport> {
+  const settings = getSettings();
+  const scheme = resolveColorScheme(settings.color_scheme);
+  return {
+    width: "device-width",
+    initialScale: 1,
+    themeColor: scheme.themeColor,
+    viewportFit: "cover",
+  };
+}
 
 // CERTKO brand typography: Poppins (500/600) display, Inter (400/500/600) body
 const body = Inter({
@@ -71,13 +76,15 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const settings = getSettings();
+  const scheme = resolveColorScheme(settings.color_scheme);
   const orgJsonLd = buildJsonLd(["Organization"], {
     name: "Certko",
     description: "",
     url: "https://certko.com",
   });
   return (
-    <html lang="en">
+    <html lang="en" data-color-scheme={scheme.id}>
       <body className={`${body.variable} ${display.variable} min-h-screen flex flex-col`}>
         <SiteIntegrationsBody />
         <SiteIntegrations />

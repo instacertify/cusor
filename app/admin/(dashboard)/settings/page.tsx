@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { getSettings } from "@/lib/db";
 import { isMailConfigured } from "@/lib/mail";
+import { resolveColorScheme } from "@/lib/color-schemes";
 import { saveSettings } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import ColorSchemePicker from "@/components/ColorSchemePicker";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +21,7 @@ export default async function SettingsPage({ searchParams }: Props) {
   const logoPrimary = s.logo_primary || DEFAULT_LOGO_PRIMARY;
   const logoOnDark = s.logo_on_dark || DEFAULT_LOGO_ON_DARK;
   const mailReady = isMailConfigured();
+  const colorScheme = resolveColorScheme(s.color_scheme);
 
   return (
     <div>
@@ -28,6 +31,15 @@ export default async function SettingsPage({ searchParams }: Props) {
       </p>
       <SavedBanner saved={sp.saved} />
       <form action={saveSettings} className="space-y-8">
+        <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
+          <h2 className="font-display font-bold text-ink-950">Color scheme</h2>
+          <p className="text-sm text-ink-600">
+            Choose the sitewide palette for backgrounds, text, buttons and accents.
+            Current: <strong className="text-ink-950">{colorScheme.name}</strong>.
+          </p>
+          <ColorSchemePicker value={colorScheme.id} />
+        </section>
+
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Brand</h2>
           <div className="grid sm:grid-cols-2 gap-4">

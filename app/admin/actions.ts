@@ -63,6 +63,13 @@ export async function saveSettings(formData: FormData) {
     }
   }
 
+  // Keep invalid scheme values from breaking the public theme
+  const scheme = String(formData.get("color_scheme") ?? "").trim();
+  if (scheme) {
+    const { isColorSchemeId, DEFAULT_COLOR_SCHEME } = await import("@/lib/color-schemes");
+    setSetting("color_scheme", isColorSchemeId(scheme) ? scheme : DEFAULT_COLOR_SCHEME);
+  }
+
   revalidatePath("/", "layout");
   redirect("/admin/settings?saved=1");
 }

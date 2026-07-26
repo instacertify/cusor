@@ -778,6 +778,7 @@ export function seedDatabase(db: Database.Database) {
       admin_password: "certko-admin",
       logo_primary: "/brand/certko-logo.png",
       logo_on_dark: "/brand/certko-logo-light.png",
+      color_scheme: "certko",
       ga4_measurement_id: "",
       gtm_container_id: "",
       google_site_verification: "",
