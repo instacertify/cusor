@@ -753,7 +753,7 @@ export function seedDatabase(db: Database.Database) {
       hero_heading: "Which Certification Does Your Product Need?",
       hero_subheading:
         "Search by product name, standard or HSN to map BIS, BEE, GMARK, CE, FCC, SABER, WPC and more — with testing costs, labs and expert help in one place.",
-      contact_email: "contact@instacertify.com",
+      contact_email: "info@certko.com",
       contact_phone: "+91-9999118039",
       contact_address:
         "A-34, 4th Floor, Sector 63A, Noida, Gautam Buddha Nagar, Uttar Pradesh – 201301",
