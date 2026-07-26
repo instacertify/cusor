@@ -45,10 +45,10 @@ export default function CtaBanner({
               </Link>
             )}
             <Link
-              href="/guide"
+              href="/blog"
               className="inline-flex items-center justify-center min-h-11 border border-ink-600 hover:border-butter-500 text-cream-50 font-semibold rounded-xl px-6 py-3 text-sm transition"
             >
-              Read the Guide
+              Read the Blog
             </Link>
           </div>
         </div>
