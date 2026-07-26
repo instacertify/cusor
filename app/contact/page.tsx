@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import FaqAccordion from "@/components/FaqAccordion";
+import Icon from "@/components/Icon";
 import { getPage, getFaqs } from "@/lib/queries";
 import { getSettings } from "@/lib/db";
 import { submitInquiry } from "./actions";
@@ -20,9 +21,9 @@ interface Props {
 }
 
 const PROMISES = [
-  { icon: "⚡", title: "24-hour response", text: "A BIS specialist replies with a mapped standard and full cost estimate within one working day." },
-  { icon: "🧾", title: "Transparent quotes", text: "Lab charges, government fees and consultant fees itemised separately — no bundled surprises." },
-  { icon: "🛠️", title: "End-to-end handling", text: "Application, technical file, lab coordination, factory inspection readiness and licence grant." },
+  { icon: "zap", title: "24-hour response", text: "A compliance specialist replies with a mapped standard and full cost estimate within one working day." },
+  { icon: "clipboard", title: "Transparent quotes", text: "Lab charges, government fees and consultant fees itemised separately — no bundled surprises." },
+  { icon: "cog", title: "End-to-end handling", text: "Application, technical file, lab coordination, factory inspection readiness and licence grant." },
 ];
 
 export default async function ContactPage({ searchParams }: Props) {
@@ -43,7 +44,9 @@ export default async function ContactPage({ searchParams }: Props) {
           <div className="mt-8 space-y-5">
             {PROMISES.map((p) => (
               <div key={p.title} className="flex gap-4">
-                <span className="text-2xl shrink-0" aria-hidden>{p.icon}</span>
+                <span className="shrink-0 w-11 h-11 rounded-xl bg-butter-300/40 text-butter-700 flex items-center justify-center">
+                  <Icon name={p.icon} size={22} />
+                </span>
                 <div>
                   <h3 className="font-display font-bold text-ink-950">{p.title}</h3>
                   <p className="text-sm text-ink-600">{p.text}</p>
@@ -63,7 +66,9 @@ export default async function ContactPage({ searchParams }: Props) {
         <div className="bg-white rounded-3xl border border-cream-300 shadow-card-hover p-8">
           {sp.sent ? (
             <div className="text-center py-14">
-              <span className="text-5xl" aria-hidden>✅</span>
+              <span className="inline-flex w-16 h-16 rounded-full bg-green-100 text-green-700 items-center justify-center">
+                <Icon name="check" size={32} strokeWidth={2.5} />
+              </span>
               <h2 className="font-display text-2xl font-bold text-ink-950 mt-4">Request received!</h2>
               <p className="text-ink-600 mt-2 text-sm">
                 Our team will reply within 24 hours with a mapped standard and a free quote.

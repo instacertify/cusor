@@ -196,6 +196,34 @@ export async function deleteTestimonial(formData: FormData) {
   redirect("/admin/testimonials?saved=1");
 }
 
+// ---------- certifications ----------
+export async function saveCertification(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  const image = await saveUploadedImage(formData.get("image_file") as File | null);
+  getDb()
+    .prepare(
+      `UPDATE certifications SET name=?, full_name=?, region=?, icon=?, summary=?, content=?, meta_title=?, meta_description=?
+       ${image ? ", image=?" : ""} WHERE id=?`
+    )
+    .run(
+      ...[
+        String(formData.get("name") ?? ""),
+        String(formData.get("full_name") ?? ""),
+        String(formData.get("region") ?? ""),
+        String(formData.get("icon") ?? "award"),
+        String(formData.get("summary") ?? ""),
+        String(formData.get("content") ?? ""),
+        String(formData.get("meta_title") ?? ""),
+        String(formData.get("meta_description") ?? ""),
+        ...(image ? [image] : []),
+        id,
+      ]
+    );
+  revalidatePath("/", "layout");
+  redirect(`/admin/certifications/${id}?saved=1`);
+}
+
 // ---------- upcoming QCOs ----------
 export async function saveQco(formData: FormData) {
   await requireAdmin();

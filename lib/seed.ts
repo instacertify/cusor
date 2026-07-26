@@ -2,6 +2,7 @@ import type Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
 import { slugify, formatPriceRange } from "./format";
+import { CERTIFICATIONS } from "./seed-certifications";
 
 interface RawProduct {
   category: string;
@@ -85,191 +86,191 @@ const CATEGORY_META: Record<
   { icon: string; timeline: string; description: string }
 > = {
   "Automotive & Cycle Components": {
-    icon: "🚲",
+    icon: "car",
     timeline: "10-18 weeks",
     description:
       "Wheel rims, cycle frames, chains, forks and other vehicle components covered by mandatory Indian Standards for road safety.",
   },
   "Cables & Wires": {
-    icon: "🔌",
+    icon: "cable",
     timeline: "8-14 weeks",
     description:
       "Power cables, winding wires, conductors, conduit systems and photovoltaic cables requiring ISI mark certification.",
   },
   "Cement & Construction Materials": {
-    icon: "🧱",
+    icon: "beam",
     timeline: "14-26 weeks",
     description:
       "Cement varieties, aggregates, bricks and structural construction inputs under long-standing BIS quality control orders.",
   },
   Chemicals: {
-    icon: "🧪",
+    icon: "flask",
     timeline: "8-14 weeks",
     description:
       "Industrial chemicals, acids and technical-grade compounds notified under BIS mandatory certification.",
   },
   "Electrical & Electronics": {
-    icon: "💻",
+    icon: "cpu",
     timeline: "6-12 weeks",
     description:
       "IT hardware, consumer electronics and electronic components covered under CRS registration and ISI marking.",
   },
   "Electrical Appliances": {
-    icon: "⚡",
+    icon: "plug",
     timeline: "8-14 weeks",
     description:
       "Household and commercial electrical appliances — heaters, irons, kitchen machines — tested to IS 302 series safety standards.",
   },
   "Fire Safety Products": {
-    icon: "🧯",
+    icon: "flame",
     timeline: "10-16 weeks",
     description:
       "Fire extinguishers, fire survival cables, hoses and suppression equipment requiring BIS conformity.",
   },
   "Food, Dairy & Beverages": {
-    icon: "🥛",
+    icon: "cup",
     timeline: "8-14 weeks",
     description:
       "Milk powder, packaged water, food-grade equipment and beverage products under mandatory quality orders.",
   },
   Footwear: {
-    icon: "👟",
+    icon: "shoe",
     timeline: "10-16 weeks",
     description:
       "Leather, rubber and PVC footwear covered by the footwear Quality Control Order and IS 15298 series.",
   },
   "Furniture & Storage": {
-    icon: "🪑",
+    icon: "chair",
     timeline: "8-14 weeks",
     description: "Steel furniture, racking and storage systems notified for BIS certification.",
   },
   "Glass & Ceramics": {
-    icon: "🏺",
+    icon: "glass",
     timeline: "10-16 weeks",
     description:
       "Safety glass, glassware, ceramic tiles and sanitaryware requiring ISI mark before sale in India.",
   },
   "Hardware & Fittings": {
-    icon: "🔩",
+    icon: "wrench",
     timeline: "8-12 weeks",
     description: "Builder hardware, fasteners and fittings under BIS standard marks.",
   },
   Helmets: {
-    icon: "🪖",
+    icon: "helmet",
     timeline: "10-16 weeks",
     description:
       "Protective helmets for two-wheeler riders and industrial use — one of the most strictly enforced ISI categories.",
   },
   "LPG & Gas Equipment": {
-    icon: "🔥",
+    icon: "cylinder",
     timeline: "12-20 weeks",
     description:
       "LPG cylinders, valves, regulators and gas stoves requiring BIS certification for safe domestic use.",
   },
   "Leather Products": {
-    icon: "🧳",
+    icon: "briefcase",
     timeline: "8-14 weeks",
     description: "Leather goods and components notified under BIS quality control orders.",
   },
   "Machinery, Tools & Instruments": {
-    icon: "⚙️",
+    icon: "cog",
     timeline: "10-18 weeks",
     description:
       "Industrial machinery, power tools and measuring instruments covered by mandatory Indian Standards.",
   },
   "Medical Devices & Textiles": {
-    icon: "🩺",
+    icon: "medical",
     timeline: "10-18 weeks",
     description:
       "Medical equipment, diagnostic devices and medical textiles requiring BIS conformity assessment.",
   },
   "Non-Ferrous Metals": {
-    icon: "🥇",
+    icon: "ingot",
     timeline: "8-14 weeks",
     description:
       "Aluminium, copper and alloy products — sheets, foils, rods — under BIS metal quality orders.",
   },
   Others: {
-    icon: "📦",
+    icon: "box",
     timeline: "8-16 weeks",
     description:
       "Additional notified products spanning batteries, appliances and specialised industrial goods.",
   },
   "Paints, Coatings & Adhesives": {
-    icon: "🎨",
+    icon: "paint",
     timeline: "8-14 weeks",
     description: "Paints, varnishes, coatings and adhesives requiring ISI certification.",
   },
   "Paper & Packaging": {
-    icon: "📄",
+    icon: "file",
     timeline: "8-12 weeks",
     description:
       "Paper, boards, sacks and packaging material under BIS mandatory certification.",
   },
   "Pesticides & Agro-Chemicals": {
-    icon: "🌾",
+    icon: "leaf",
     timeline: "10-16 weeks",
     description:
       "Crop protection chemicals and agro inputs notified under BIS quality control.",
   },
   "Petroleum & Lubricants": {
-    icon: "🛢️",
+    icon: "fuel",
     timeline: "8-14 weeks",
     description: "Fuels, lubricants and petroleum products requiring conformity to Indian Standards.",
   },
   "Pressure Cookers": {
-    icon: "🍲",
+    icon: "pot",
     timeline: "10-14 weeks",
     description:
       "Domestic pressure cookers and parts — a strictly enforced consumer safety category under IS 2347.",
   },
   "PVC & Plastic Products": {
-    icon: "🧴",
+    icon: "bottle",
     timeline: "8-14 weeks",
     description:
       "PVC pipes, plastic feeding bottles, water tanks and moulded products under mandatory BIS orders.",
   },
   "Pumps, Valves & Irrigation": {
-    icon: "🚰",
+    icon: "droplet",
     timeline: "10-16 weeks",
     description:
       "Pumps, valves, sprinklers and irrigation equipment covered by ISI mark schemes.",
   },
   "Rubber Products": {
-    icon: "🛞",
+    icon: "tire",
     timeline: "10-16 weeks",
     description: "Tyres, tubes, hoses and technical rubber goods requiring BIS certification.",
   },
   "Safety & PPE": {
-    icon: "🦺",
+    icon: "shield",
     timeline: "10-16 weeks",
     description:
       "Personal protective equipment — eye protectors, gloves, safety boots — under IS safety standards.",
   },
   "Soaps, Detergents & Cosmetics": {
-    icon: "🧼",
+    icon: "sparkles",
     timeline: "8-12 weeks",
     description: "Household and personal care products notified for BIS conformity.",
   },
   "Steel Products": {
-    icon: "🏗️",
+    icon: "beam",
     timeline: "12-20 weeks",
     description:
       "Structural steel, sheets, strips, bars and wire products under the steel Quality Control Orders.",
   },
   Textiles: {
-    icon: "🧵",
+    icon: "spool",
     timeline: "8-14 weeks",
     description: "Textile products and technical fabrics requiring Indian Standard conformity.",
   },
   Toys: {
-    icon: "🧸",
+    icon: "blocks",
     timeline: "10-16 weeks",
     description:
       "Electric and non-electric toys — mandatory ISI marking under the Toys Quality Control Order 2020.",
   },
   "Wood & Plywood Products": {
-    icon: "🪵",
+    icon: "tree",
     timeline: "8-14 weeks",
     description:
       "Plywood, boards, laminates and wood products covered by BIS certification requirements.",
@@ -760,7 +761,7 @@ export function seedDatabase(db: Database.Database) {
     const catIds = new Map<string, number>();
     catNames.forEach((name, i) => {
       const meta = CATEGORY_META[name] ?? {
-        icon: "📦",
+        icon: "box",
         timeline: "8-16 weeks",
         description: `${name} products notified under BIS mandatory certification.`,
       };
@@ -945,6 +946,28 @@ export function seedDatabase(db: Database.Database) {
     masterData.upcoming.forEach((u, i) =>
       insQ.run(u.product, u.ministry, u.hsn4, u.hsn8, u.standard, u.enforcement_date, u.scheme, i)
     );
+
+    // ---- certifications ----
+    const insCert = db.prepare(
+      `INSERT INTO certifications (slug, name, full_name, region, icon, summary, content, image, meta_title, meta_description, sort)
+       VALUES (@slug, @name, @full_name, @region, @icon, @summary, @content, @image, @meta_title, @meta_description, @sort)`
+    );
+    CERTIFICATIONS.forEach((c, i) => {
+      insCert.run({
+        slug: c.slug,
+        name: c.name,
+        full_name: c.full_name,
+        region: c.region,
+        icon: c.icon,
+        summary: c.summary,
+        content: c.content,
+        image: `/images/certifications/${c.slug}.png`,
+        meta_title: `${c.name} Certification | ${c.full_name} | Process, Cost & Help | Certko`,
+        meta_description: c.summary,
+        sort: i,
+      });
+      c.faqs.forEach((f, j) => insFaq.run(`cert:${c.slug}`, f.question, f.answer, j));
+    });
   });
 
   tx();

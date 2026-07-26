@@ -34,7 +34,7 @@ export default async function AdminCategoryEdit({ params, searchParams }: Props)
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <div className="grid sm:grid-cols-[1fr_120px] gap-4">
             <Field label="Category Name" name="name" defaultValue={category.name} required />
-            <Field label="Icon (emoji)" name="icon" defaultValue={category.icon} />
+            <Field label="Icon name" name="icon" defaultValue={category.icon} placeholder="e.g. cpu, flask, beam" />
           </div>
           <TextArea label="Description" name="description" defaultValue={category.description} rows={3} />
           <Field label="Typical Timeline" name="timeline" defaultValue={category.timeline} placeholder="e.g. 10-16 weeks" />

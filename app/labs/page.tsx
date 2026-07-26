@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import FaqAccordion from "@/components/FaqAccordion";
+import Icon from "@/components/Icon";
 import { getLabs, getLabStates, getCategories, countLabs, getFaqs } from "@/lib/queries";
 import { formatPriceRange, formatNumber } from "@/lib/format";
 
@@ -84,7 +85,7 @@ export default async function LabsPage({ searchParams }: Props) {
           <option value="">All Categories</option>
           {categories.map((c) => (
             <option key={c.id} value={c.name}>
-              {c.icon} {c.name}
+              {c.name}
             </option>
           ))}
         </select>
@@ -111,8 +112,9 @@ export default async function LabsPage({ searchParams }: Props) {
               <h2 className="font-display font-bold text-ink-950 leading-snug line-clamp-2 group-hover:text-butter-700 transition">
                 {lab.name}
               </h2>
-              <p className="text-xs text-ink-500">
-                📍 {[lab.city, lab.state].filter(Boolean).join(", ") || "India"}
+              <p className="text-xs text-ink-500 flex items-center gap-1.5">
+                <Icon name="pin" size={13} className="shrink-0" />
+                {[lab.city, lab.state].filter(Boolean).join(", ") || "India"}
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {cats.slice(0, 3).map((c) => (

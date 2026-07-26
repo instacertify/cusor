@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import Icon from "@/components/Icon";
 import SearchBox from "@/components/SearchBox";
 import ProductCard from "@/components/ProductCard";
 import FaqAccordion from "@/components/FaqAccordion";
@@ -19,19 +20,19 @@ export const dynamic = "force-dynamic";
 
 const HOW_IT_WORKS = [
   {
-    icon: "🔍",
+    icon: "search",
     title: "Check Your Product",
-    text: "Search by product name or IS standard. Instantly see whether BIS certification is required, under which scheme, and what it costs.",
+    text: "Search by product name, IS standard or HSN code. Instantly see which certification is required, under which scheme, and what it costs.",
   },
   {
-    icon: "🔬",
+    icon: "microscope",
     title: "Compare Testing Labs",
     text: "Browse 400+ BIS-recognised laboratories. Compare locations, scopes and real reported test prices before you commit.",
   },
   {
-    icon: "🤝",
+    icon: "handshake",
     title: "Get Expert Help",
-    text: "Hand the paperwork to a vetted BIS consultant who manages testing, inspection and licence grant. Free quote in 24 hours.",
+    text: "Hand the paperwork to a vetted compliance consultant who manages testing, inspection and licence grant. Free quote in 24 hours.",
   },
 ];
 
@@ -107,7 +108,9 @@ export default function HomePage() {
               <span className="absolute top-6 right-6 font-display text-5xl font-extrabold text-cream-200" aria-hidden>
                 {i + 1}
               </span>
-              <span className="text-4xl" aria-hidden>{s.icon}</span>
+              <span className="inline-flex w-14 h-14 rounded-2xl bg-butter-300/40 text-butter-700 items-center justify-center">
+                <Icon name={s.icon} size={28} />
+              </span>
               <h3 className="font-display text-lg font-bold text-ink-950 mt-4 mb-2">{s.title}</h3>
               <p className="text-sm text-ink-600 leading-relaxed">{s.text}</p>
             </div>
@@ -142,7 +145,8 @@ export default function HomePage() {
               href="/products/all"
               className="inline-flex items-center gap-2 bg-white border border-cream-300 hover:border-butter-500 text-ink-950 text-sm font-bold rounded-xl px-5 py-3 shadow-card transition"
             >
-              🔎 Open the full search table — standards, HSN, QCO status, fees & labs
+              <Icon name="table" size={18} className="text-butter-700" />
+              Open the full search table — standards, HSN, QCO status, fees & labs
             </Link>
           </div>
         </div>
@@ -159,7 +163,9 @@ export default function HomePage() {
               href={`/category/${c.slug}`}
               className="group bg-white rounded-2xl border border-cream-300 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition p-5 flex items-center gap-3"
             >
-              <span className="text-3xl" aria-hidden>{c.icon}</span>
+              <span className="shrink-0 w-11 h-11 rounded-xl bg-cream-100 text-ink-700 flex items-center justify-center group-hover:bg-butter-300/40 group-hover:text-butter-700 transition">
+                <Icon name={c.icon} size={24} />
+              </span>
               <span>
                 <span className="block font-semibold text-ink-950 text-sm group-hover:text-butter-700 transition">{c.name}</span>
                 <span className="block text-xs text-ink-500">{c.product_count} products</span>
@@ -180,8 +186,11 @@ export default function HomePage() {
           <div className="bg-white rounded-3xl border border-cream-300 shadow-card p-8 sm:p-10">
             <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
               <div>
-                <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink-950">
-                  🔔 Never Miss a New Mandatory Product
+                <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink-950 flex items-center gap-3">
+                  <span className="inline-flex w-10 h-10 rounded-xl bg-butter-300/40 text-butter-700 items-center justify-center">
+                    <Icon name="bell" size={22} />
+                  </span>
+                  Never Miss a New Mandatory Product
                 </h2>
                 <p className="text-ink-600 mt-2 max-w-2xl text-sm sm:text-base">
                   New Quality Control Orders keep adding products to the mandatory BIS list.

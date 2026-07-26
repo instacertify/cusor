@@ -1,5 +1,14 @@
 import { getDb } from "./db";
-import type { Category, Product, Lab, Faq, PageRecord, Testimonial, Qco } from "./db";
+import type {
+  Category,
+  Product,
+  Lab,
+  Faq,
+  PageRecord,
+  Testimonial,
+  Qco,
+  Certification,
+} from "./db";
 
 // ---------- categories ----------
 export function getCategories(): Category[] {
@@ -267,4 +276,17 @@ export function getUpcomingQcos(): Qco[] {
 
 export function getQcoById(id: number): Qco | undefined {
   return getDb().prepare("SELECT * FROM qcos WHERE id = ?").get(id) as Qco | undefined;
+}
+
+// ---------- certifications ----------
+export function getCertifications(): Certification[] {
+  return getDb()
+    .prepare("SELECT * FROM certifications ORDER BY sort, id")
+    .all() as Certification[];
+}
+
+export function getCertificationBySlug(slug: string): Certification | undefined {
+  return getDb()
+    .prepare("SELECT * FROM certifications WHERE slug = ?")
+    .get(slug) as Certification | undefined;
 }

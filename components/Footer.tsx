@@ -25,6 +25,8 @@ export default function Footer() {
           </h3>
           <ul className="space-y-2 text-sm">
             <li><Link href="/products" className="hover:text-butter-400">All Products</Link></li>
+            <li><Link href="/products/all" className="hover:text-butter-400">Product Search Table</Link></li>
+            <li><Link href="/certifications" className="hover:text-butter-400">Certifications</Link></li>
             <li><Link href="/labs" className="hover:text-butter-400">Testing Labs</Link></li>
             <li><Link href="/qco" className="hover:text-butter-400">Upcoming QCOs</Link></li>
             <li><Link href="/guide" className="hover:text-butter-400">Certification Guide</Link></li>
@@ -40,7 +42,7 @@ export default function Footer() {
             {topCategories.map((c) => (
               <li key={c.id}>
                 <Link href={`/category/${c.slug}`} className="hover:text-butter-400">
-                  {c.icon} {c.name}
+                  {c.name}
                 </Link>
               </li>
             ))}

@@ -99,9 +99,9 @@ export default async function AdminProducts({ searchParams }: Props) {
               <tr key={p.id} className="border-b border-cream-100 last:border-0 hover:bg-cream-50">
                 <td className="px-5 py-3">
                   <span className="font-semibold text-ink-950 line-clamp-1">{p.name}</span>
-                  <span className="block text-xs text-ink-500">{p.standard} · {p.scheme}{p.featured ? " · ⭐ featured" : ""}</span>
+                  <span className="block text-xs text-ink-500">{p.standard} · {p.scheme}{p.featured ? " · featured" : ""}</span>
                 </td>
-                <td className="px-5 py-3 text-ink-600 text-xs">{p.category_icon} {p.category_name}</td>
+                <td className="px-5 py-3 text-ink-600 text-xs">{p.category_name}</td>
                 <td className="px-5 py-3 text-ink-700">{formatPriceRange(p.min_price, p.max_price)}</td>
                 <td className="px-5 py-3 text-ink-700">{p.lab_count}</td>
                 <td className="px-5 py-3 text-right">

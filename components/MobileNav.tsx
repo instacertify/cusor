@@ -3,15 +3,17 @@
 import { useState } from "react";
 import Link from "next/link";
 import SearchBox from "./SearchBox";
+import Icon from "./Icon";
 
-export default function MobileNav({
-  nav,
-}: {
-  nav: { href: string; label: string }[];
-}) {
+interface Group {
+  label: string;
+  items: { href: string; label: string }[];
+}
+
+export default function MobileNav({ groups }: { groups: Group[] }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="md:hidden ml-auto">
+    <div className="lg:hidden ml-auto">
       <button
         aria-label="Toggle menu"
         onClick={() => setOpen(!open)}
@@ -26,17 +28,27 @@ export default function MobileNav({
         </svg>
       </button>
       {open && (
-        <div className="absolute left-0 right-0 top-16 bg-cream-50 border-b border-cream-200 shadow-card-hover p-4 space-y-3">
+        <div className="absolute left-0 right-0 top-16 max-h-[80vh] overflow-y-auto bg-cream-50 border-b border-cream-200 shadow-card-hover p-4 space-y-4">
           <SearchBox />
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setOpen(false)}
-              className="block px-2 py-2 rounded-lg font-medium text-ink-800 hover:bg-cream-200"
-            >
-              {item.label}
-            </Link>
+          {groups.map((group, gi) => (
+            <div key={gi}>
+              {group.label && (
+                <p className="px-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-ink-500">
+                  {group.label}
+                </p>
+              )}
+              {group.items.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center justify-between px-2 py-2 rounded-lg font-medium text-ink-800 hover:bg-cream-200"
+                >
+                  {item.label}
+                  <Icon name="arrow-right" size={14} className="text-ink-400" />
+                </Link>
+              ))}
+            </div>
           ))}
         </div>
       )}

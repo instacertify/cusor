@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Icon from "@/components/Icon";
 import { isAdmin } from "@/lib/auth";
 import { logout } from "../actions";
 
@@ -8,15 +9,16 @@ export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false } };
 
 const NAV = [
-  { href: "/admin", label: "Dashboard", icon: "📊" },
-  { href: "/admin/settings", label: "Site Settings", icon: "⚙️" },
-  { href: "/admin/pages", label: "Pages", icon: "📄" },
-  { href: "/admin/categories", label: "Categories", icon: "🗂️" },
-  { href: "/admin/products", label: "Products", icon: "📦" },
-  { href: "/admin/qcos", label: "QCO Alerts", icon: "🔔" },
-  { href: "/admin/faqs", label: "FAQs", icon: "❓" },
-  { href: "/admin/testimonials", label: "Testimonials", icon: "⭐" },
-  { href: "/admin/inquiries", label: "Inquiries", icon: "📥" },
+  { href: "/admin", label: "Dashboard", icon: "chart" },
+  { href: "/admin/settings", label: "Site Settings", icon: "settings" },
+  { href: "/admin/pages", label: "Pages", icon: "file" },
+  { href: "/admin/certifications", label: "Certifications", icon: "award" },
+  { href: "/admin/categories", label: "Categories", icon: "folder" },
+  { href: "/admin/products", label: "Products", icon: "box" },
+  { href: "/admin/qcos", label: "QCO Alerts", icon: "bell" },
+  { href: "/admin/faqs", label: "FAQs", icon: "help" },
+  { href: "/admin/testimonials", label: "Testimonials", icon: "star" },
+  { href: "/admin/inquiries", label: "Inquiries", icon: "inbox" },
 ];
 
 export default async function AdminLayout({
@@ -39,13 +41,13 @@ export default async function AdminLayout({
               href={item.href}
               className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-ink-800 hover:bg-cream-100"
             >
-              <span aria-hidden>{item.icon}</span> {item.label}
+              <Icon name={item.icon} size={17} className="text-ink-500" /> {item.label}
             </Link>
           ))}
         </nav>
         <form action={logout} className="mt-3 border-t border-cream-200 pt-3">
           <button className="w-full text-left flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50">
-            <span aria-hidden>🚪</span> Sign Out
+            <Icon name="logout" size={17} /> Sign Out
           </button>
         </form>
       </aside>

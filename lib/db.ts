@@ -37,7 +37,7 @@ function createDb(): Database.Database {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       slug TEXT UNIQUE NOT NULL,
       name TEXT NOT NULL,
-      icon TEXT NOT NULL DEFAULT '📦',
+      icon TEXT NOT NULL DEFAULT 'box',
       description TEXT NOT NULL DEFAULT '',
       image TEXT NOT NULL DEFAULT '',
       timeline TEXT NOT NULL DEFAULT '8-16 weeks',
@@ -115,6 +115,21 @@ function createDb(): Database.Database {
       role TEXT NOT NULL DEFAULT '',
       quote TEXT NOT NULL,
       rating INTEGER NOT NULL DEFAULT 5,
+      sort INTEGER NOT NULL DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS certifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      slug TEXT UNIQUE NOT NULL,
+      name TEXT NOT NULL,
+      full_name TEXT NOT NULL DEFAULT '',
+      region TEXT NOT NULL DEFAULT '',
+      icon TEXT NOT NULL DEFAULT 'award',
+      summary TEXT NOT NULL DEFAULT '',
+      content TEXT NOT NULL DEFAULT '',
+      image TEXT NOT NULL DEFAULT '',
+      meta_title TEXT NOT NULL DEFAULT '',
+      meta_description TEXT NOT NULL DEFAULT '',
       sort INTEGER NOT NULL DEFAULT 0
     );
 
@@ -223,6 +238,21 @@ export interface Product {
   category_slug?: string;
   category_icon?: string;
   category_image?: string;
+}
+
+export interface Certification {
+  id: number;
+  slug: string;
+  name: string;
+  full_name: string;
+  region: string;
+  icon: string;
+  summary: string;
+  content: string;
+  image: string;
+  meta_title: string;
+  meta_description: string;
+  sort: number;
 }
 
 export interface Qco {

@@ -99,7 +99,7 @@ export default async function ProductsTablePage({ searchParams }: Props) {
         <select name="category" defaultValue={sp.category ?? ""} className="rounded-xl border border-cream-300 px-3 py-2.5 text-sm bg-white outline-none">
           <option value="">All categories</option>
           {categories.map((c) => (
-            <option key={c.id} value={c.id}>{c.icon} {c.name} ({c.product_count})</option>
+            <option key={c.id} value={c.id}>{c.name} ({c.product_count})</option>
           ))}
         </select>
         <select name="status" defaultValue={sp.status ?? ""} className="rounded-xl border border-cream-300 px-3 py-2.5 text-sm bg-white outline-none">
@@ -150,7 +150,7 @@ export default async function ProductsTablePage({ searchParams }: Props) {
                     {p.name}
                   </Link>
                   <span className="block text-[11px] text-ink-500 mt-0.5">
-                    {p.category_icon} {p.category_name} · {p.scheme}
+                    {p.category_name} · {p.scheme}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-ink-700 whitespace-nowrap">{p.standard || "—"}</td>

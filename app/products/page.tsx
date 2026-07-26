@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import FaqAccordion from "@/components/FaqAccordion";
+import Icon from "@/components/Icon";
 import { getCategories, getFaqs } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
 
@@ -34,7 +35,8 @@ export default function ProductsPage() {
         href="/products/all"
         className="mt-5 inline-flex items-center gap-2 bg-ink-900 hover:bg-ink-800 text-white text-sm font-bold rounded-xl px-5 py-3 transition"
       >
-        🔎 Open the full product search table
+        <Icon name="table" size={18} />
+        Open the full product search table
       </Link>
 
       <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -45,7 +47,9 @@ export default function ProductsPage() {
             className="group bg-white rounded-3xl border border-cream-300 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition p-6 flex flex-col gap-3"
           >
             <div className="flex items-center justify-between">
-              <span className="text-4xl" aria-hidden>{c.icon}</span>
+              <span className="w-12 h-12 rounded-xl bg-cream-100 text-ink-700 flex items-center justify-center group-hover:bg-butter-300/40 group-hover:text-butter-700 transition">
+                <Icon name={c.icon} size={26} />
+              </span>
               <span className="text-xs font-bold bg-butter-300/50 text-butter-700 rounded-full px-3 py-1">
                 {c.product_count} products
               </span>
