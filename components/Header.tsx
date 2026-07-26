@@ -55,7 +55,7 @@ export default async function Header() {
   });
 
   return (
-    <header className="sticky top-0 z-50 bg-cream-50/95 backdrop-blur border-b border-cream-200 pt-[env(safe-area-inset-top)]">
+    <header className="sticky top-0 z-50 isolate bg-cream-50/95 backdrop-blur border-b border-cream-200 pt-[env(safe-area-inset-top)]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 flex items-center gap-2 sm:gap-3 min-h-[4.25rem] sm:min-h-[5rem] py-2">
         <Link href="/" aria-label="certko home" className="shrink-0 min-w-0">
           <span className="hidden sm:block">
@@ -105,11 +105,23 @@ export default async function Header() {
         </nav>
         <MobileNav
           groups={[
-            { label: "Products", items: productItems },
-            { label: "Certifications", items: certItems },
+            {
+              label: "Products",
+              items: productItems.map(({ href, label }) => ({ href, label })),
+            },
+            {
+              label: "Certifications",
+              items: [
+                { href: "/certifications", label: "All certifications" },
+                ...certItems.map(({ href, label }) => ({ href, label })),
+              ],
+            },
             {
               label: "Product Testing",
-              items: [{ href: "/testing", label: "Search all tests" }, ...testingItems],
+              items: [
+                { href: "/testing", label: "Search all tests" },
+                ...testingItems.map(({ href, label }) => ({ href, label })),
+              ],
             },
             {
               label: "Labs & Resources",
@@ -119,8 +131,11 @@ export default async function Header() {
                   href: pagePublicPath(p.slug),
                   label: p.nav_label || p.title,
                 })),
-                ...uniqueResources,
-              ],
+                ...uniqueResources.map(({ href, label }) => ({ href, label })),
+              ].filter(
+                (item, index, arr) =>
+                  arr.findIndex((other) => other.href === item.href) === index
+              ),
             },
             { label: "", items: [{ href: "/contact", label: "Get Expert Help" }] },
           ]}
