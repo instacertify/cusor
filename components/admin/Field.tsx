@@ -61,21 +61,7 @@ export function TextArea({
   );
 }
 
-export function SavedBanner({ saved, error }: { saved?: string; error?: string }) {
-  if (error) {
-    return (
-      <p className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 mb-5">
-        Something went wrong — please check required fields.
-      </p>
-    );
-  }
-  if (!saved) return null;
-  return (
-    <p className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl px-4 py-3 mb-5">
-      ✓ Changes saved and live on the site.
-    </p>
-  );
-}
+export { default as SavedBanner } from "./SavedBanner";
 
 export function SubmitButton({ label = "Save Changes" }: { label?: string }) {
   return (

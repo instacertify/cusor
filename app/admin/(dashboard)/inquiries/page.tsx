@@ -1,10 +1,16 @@
 import { getDb } from "@/lib/db";
 import type { Inquiry } from "@/lib/db";
 import { setInquiryStatus } from "../../actions";
+import { SavedBanner } from "@/components/admin/Field";
 
 export const dynamic = "force-dynamic";
 
-export default function AdminInquiries() {
+interface Props {
+  searchParams: Promise<{ saved?: string }>;
+}
+
+export default async function AdminInquiries({ searchParams }: Props) {
+  const sp = await searchParams;
   const inquiries = getDb()
     .prepare("SELECT * FROM inquiries ORDER BY id DESC LIMIT 200")
     .all() as Inquiry[];
@@ -15,6 +21,11 @@ export default function AdminInquiries() {
       <p className="text-ink-600 text-sm mb-6">
         Leads submitted through the “Get Expert Help” form.
       </p>
+
+      <SavedBanner
+        saved={sp.saved}
+        message="Done — inquiry status updated."
+      />
 
       {inquiries.length === 0 ? (
         <p className="text-sm text-ink-500 bg-white rounded-2xl border border-cream-300 p-6">

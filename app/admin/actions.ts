@@ -1118,7 +1118,7 @@ export async function setInquiryStatus(formData: FormData) {
   const id = Number(formData.get("id"));
   const status = String(formData.get("status") ?? "new");
   getDb().prepare("UPDATE inquiries SET status=? WHERE id=?").run(status, id);
-  redirect("/admin/inquiries");
+  redirect("/admin/inquiries?saved=1");
 }
 
 // ---------- product testing ----------

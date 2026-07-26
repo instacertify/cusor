@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import SavedBanner from "./SavedBanner";
 
 type Props = {
   action: (formData: FormData) => Promise<void>;
@@ -70,11 +71,10 @@ export default function ChangeCredentialsForm({
         });
       }}
     >
-      {saved && (
-        <p className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-          Login credentials updated. Use your new login ID and password next time.
-        </p>
-      )}
+      <SavedBanner
+        saved={saved}
+        message="Done — login credentials updated. Use your new login ID and password next time."
+      />
       {(localError || error) && (
         <p
           className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
