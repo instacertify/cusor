@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream-50: #fdfbf7;
+  --color-cream-100: #faf6ee;
+  --color-cream-200: #f3ecdd;
+  --color-cream-300: #e9dfc9;
+
+  --color-ink-950: #101c2e;
+  --color-ink-900: #16263d;
+  --color-ink-800: #1e3352;
+  --color-ink-700: #2a4468;
+  --color-ink-600: #3d5a84;
+  --color-ink-500: #5b7aa5;
+  --color-ink-400: #8aa3c2;
+  --color-ink-300: #b7c8dd;
+
+  --color-butter-300: #ffd98a;
+  --color-butter-400: #f7c453;
+  --color-butter-500: #eead2b;
+  --color-butter-600: #d9930f;
+  --color-butter-700: #b47408;
+
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-butter: 0 10px 40px -12px rgb(217 147 15 / 0.25);
+  --shadow-card: 0 2px 12px -2px rgb(16 28 46 / 0.08), 0 1px 3px rgb(16 28 46 / 0.05);
+  --shadow-card-hover: 0 16px 40px -12px rgb(16 28 46 / 0.18);
+}
+
+body {
+  background: var(--color-cream-50);
+  color: var(--color-ink-950);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-butter-300);
+  color: var(--color-ink-950);
+}
+
+/* prose styling for CMS markdown content */
+.prose-certko {
+  color: var(--color-ink-800);
+  line-height: 1.75;
+}
+.prose-certko h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--color-ink-950);
+  margin: 2rem 0 0.75rem;
+}
+.prose-certko h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: var(--color-ink-950);
+  margin: 1.5rem 0 0.5rem;
+}
+.prose-certko p {
+  margin: 0.75rem 0;
+}
+.prose-certko ul,
+.prose-certko ol {
+  margin: 0.75rem 0 0.75rem 1.5rem;
+}
+.prose-certko ul {
+  list-style: disc;
+}
+.prose-certko ol {
+  list-style: decimal;
+}
+.prose-certko li {
+  margin: 0.35rem 0;
+}
+.prose-certko strong {
+  color: var(--color-ink-950);
+  font-weight: 650;
+}
+.prose-certko a {
+  color: var(--color-butter-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-certko table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.925rem;
+}
+.prose-certko th,
+.prose-certko td {
+  border: 1px solid var(--color-cream-300);
+  padding: 0.55rem 0.8rem;
+  text-align: left;
+}
+.prose-certko th {
+  background: var(--color-cream-100);
+  font-weight: 600;
+  color: var(--color-ink-950);
+}
+.prose-certko blockquote {
+  border-left: 3px solid var(--color-butter-500);
+  padding-left: 1rem;
+  font-style: italic;
+  margin: 1rem 0;
+}
+.prose-certko code {
+  background: var(--color-cream-200);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.875em;
+}
+
+/* subtle entrance animation */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-rise {
+  animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}

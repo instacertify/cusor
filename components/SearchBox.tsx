@@ -1,0 +1,162 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+
+interface Suggestion {
+  type: "product" | "category" | "lab";
+  name: string;
+  detail: string;
+  href: string;
+}
+
+export default function SearchBox({
+  large = false,
+  placeholder = "Search product name or IS standard…",
+}: {
+  large?: boolean;
+  placeholder?: string;
+}) {
+  const [q, setQ] = useState("");
+  const [results, setResults] = useState<Suggestion[]>([]);
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(-1);
+  const router = useRouter();
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const query = q.trim();
+    const ctrl = new AbortController();
+    const t = setTimeout(async () => {
+      if (query.length < 2) {
+        setResults([]);
+        setOpen(false);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
+          signal: ctrl.signal,
+        });
+        const data = await res.json();
+        setResults(data.results ?? []);
+        setOpen(true);
+        setActive(-1);
+      } catch {
+        /* aborted */
+      }
+    }, 150);
+    return () => {
+      clearTimeout(t);
+      ctrl.abort();
+    };
+  }, [q]);
+
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (!boxRef.current?.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  function submit() {
+    if (active >= 0 && results[active]) {
+      router.push(results[active].href);
+    } else if (q.trim()) {
+      router.push(`/search?q=${encodeURIComponent(q.trim())}`);
+    }
+    setOpen(false);
+  }
+
+  return (
+    <div ref={boxRef} className="relative w-full">
+      <div
+        className={`flex items-center gap-2 bg-white rounded-2xl border border-cream-300 focus-within:border-butter-500 focus-within:ring-4 focus-within:ring-butter-300/30 transition ${
+          large ? "px-5 py-4 shadow-butter" : "px-4 py-2.5 shadow-card"
+        }`}
+      >
+        <svg
+          width={large ? 22 : 18}
+          height={large ? 22 : 18}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          className="text-ink-400 shrink-0"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="M21 21l-4.3-4.3" strokeLinecap="round" />
+        </svg>
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onFocus={() => results.length && setOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") submit();
+            if (e.key === "ArrowDown") {
+              e.preventDefault();
+              setActive((a) => Math.min(a + 1, results.length - 1));
+            }
+            if (e.key === "ArrowUp") {
+              e.preventDefault();
+              setActive((a) => Math.max(a - 1, -1));
+            }
+            if (e.key === "Escape") setOpen(false);
+          }}
+          placeholder={placeholder}
+          aria-label="Search products, standards and labs"
+          className={`w-full bg-transparent outline-none placeholder:text-ink-400 text-ink-950 ${
+            large ? "text-lg" : "text-sm"
+          }`}
+        />
+        {large && (
+          <button
+            onClick={submit}
+            className="shrink-0 bg-ink-900 hover:bg-ink-800 text-white font-semibold rounded-xl px-5 py-2.5 text-sm transition"
+          >
+            Check Now
+          </button>
+        )}
+      </div>
+
+      {open && results.length > 0 && (
+        <div className="absolute z-40 mt-2 w-full bg-white rounded-2xl border border-cream-300 shadow-card-hover overflow-hidden">
+          {results.map((r, i) => (
+            <Link
+              key={r.href}
+              href={r.href}
+              onClick={() => setOpen(false)}
+              className={`flex items-center justify-between gap-3 px-4 py-3 text-sm border-b border-cream-200 last:border-0 hover:bg-cream-100 ${
+                i === active ? "bg-cream-100" : ""
+              }`}
+            >
+              <span className="truncate">
+                <span className="font-medium text-ink-950">{r.name}</span>
+                <span className="block text-xs text-ink-500 truncate">{r.detail}</span>
+              </span>
+              <span
+                className={`shrink-0 text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 ${
+                  r.type === "product"
+                    ? "bg-butter-300/50 text-butter-700"
+                    : r.type === "lab"
+                    ? "bg-ink-300/30 text-ink-700"
+                    : "bg-cream-200 text-ink-600"
+                }`}
+              >
+                {r.type}
+              </span>
+            </Link>
+          ))}
+          <Link
+            href={`/search?q=${encodeURIComponent(q.trim())}`}
+            onClick={() => setOpen(false)}
+            className="block px-4 py-3 text-sm font-semibold text-butter-700 hover:bg-cream-100"
+          >
+            See all results for “{q.trim()}” →
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
