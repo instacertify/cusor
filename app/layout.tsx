@@ -5,7 +5,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SiteIntegrations, { SiteIntegrationsBody } from "@/components/SiteIntegrations";
-import { getSettings } from "@/lib/db";
+import { ensureDbReady, getSettings } from "@/lib/db";
 import { getPage } from "@/lib/queries";
 import { buildJsonLd } from "@/lib/seo";
 import { resolveColorScheme } from "@/lib/color-schemes";
@@ -13,6 +13,7 @@ import { resolveColorScheme } from "@/lib/color-schemes";
 export const dynamic = "force-dynamic";
 
 export async function generateViewport(): Promise<Viewport> {
+  await ensureDbReady();
   const settings = getSettings();
   const scheme = resolveColorScheme(settings.color_scheme);
   return {
@@ -38,6 +39,7 @@ const display = Poppins({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
+  await ensureDbReady();
   const home = getPage("home");
   const settings = getSettings();
   const google = (settings.google_site_verification || "").trim();
@@ -77,6 +79,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  await ensureDbReady();
   const settings = getSettings();
   const scheme = resolveColorScheme(settings.color_scheme);
   const pathname = (await headers()).get("x-pathname") || "";

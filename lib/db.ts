@@ -1,6 +1,10 @@
 import path from "path";
-import fs from "fs";
-import { openDatabase, type SqliteDatabase } from "./sqlite";
+import {
+  ensureSqliteReady,
+  getSqliteDb,
+  isSqliteReady,
+  type SqliteDatabase,
+} from "./sqlite";
 import { seedDatabase } from "./seed";
 import { ensureCertProductsCatalog } from "./seed-cert-products";
 import { ensureTestingCatalog } from "./seed-testing";
@@ -13,13 +17,14 @@ import { ensureTestimonialsLibrary } from "./seed-testimonials";
 const DB_DIR = path.join(process.cwd(), "data");
 const DB_PATH = path.join(DB_DIR, "certko.db");
 
-declare global {
-  var __certkoDb: SqliteDatabase | undefined;
-}
+type DbGlobal = typeof globalThis & {
+  __certkoDb?: SqliteDatabase;
+  __certkoDbBootstrapped?: boolean;
+};
 
-function createDb(): SqliteDatabase {
-  fs.mkdirSync(DB_DIR, { recursive: true });
-  const db = openDatabase(DB_PATH);
+const g = globalThis as DbGlobal;
+
+function bootstrapSchema(db: SqliteDatabase): void {
   db.pragma("journal_mode = WAL");
   db.pragma("foreign_keys = ON");
 
@@ -313,23 +318,36 @@ function createDb(): SqliteDatabase {
   ensurePagesNavColumns(db);
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
-  return db;
+}
+
+function runEnsures(db: SqliteDatabase) {
+  ensureCertProductsCatalog(db);
+  ensureTestingCatalog(db);
+  ensureAuthorsCatalog(db);
+  ensureSeoLocationPosts(db);
+  ensurePagesNavColumns(db);
+  ensureHeroSlidesCatalog(db);
+  ensureTestimonialsLibrary(db);
+}
+
+/** Call once on server start (instrumentation / root layout). */
+export async function ensureDbReady(): Promise<void> {
+  await ensureSqliteReady(DB_PATH);
+  if (!g.__certkoDbBootstrapped || !g.__certkoDb) {
+    const db = getSqliteDb();
+    bootstrapSchema(db);
+    g.__certkoDb = db;
+    g.__certkoDbBootstrapped = true;
+  }
 }
 
 export function getDb(): SqliteDatabase {
-  if (!global.__certkoDb) {
-    global.__certkoDb = createDb();
-  } else {
-    // Keep catalog migrations/seeds idempotent across hot reloads
-    ensureCertProductsCatalog(global.__certkoDb);
-    ensureTestingCatalog(global.__certkoDb);
-    ensureAuthorsCatalog(global.__certkoDb);
-    ensureSeoLocationPosts(global.__certkoDb);
-    ensurePagesNavColumns(global.__certkoDb);
-    ensureHeroSlidesCatalog(global.__certkoDb);
-    ensureTestimonialsLibrary(global.__certkoDb);
+  if (!isSqliteReady() || !g.__certkoDb) {
+    throw new Error(
+      "Database not ready yet. The server is still starting — refresh in a moment."
+    );
   }
-  return global.__certkoDb;
+  return g.__certkoDb;
 }
 
 export function getSetting(key: string, fallback = ""): string {

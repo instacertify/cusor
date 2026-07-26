@@ -3,8 +3,8 @@
 BIS / product certification website with a full CMS admin backend.
 
 **Repo:** https://github.com/instacertify/cusor  
-**Stack:** Next.js 16 · React 19 · SQLite (Node 22 built-in `node:sqlite`) · Tailwind  
-**Requires:** Node.js **22+** (no native SQLite compile / Python needed for deploy)
+**Stack:** Next.js 16 · React 19 · SQLite (`sql.js` WASM — no native compile) · Tailwind  
+**Requires:** Node.js **18+** (no Python / node-gyp for deploy)
 
 ---
 
