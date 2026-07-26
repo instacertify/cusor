@@ -57,8 +57,8 @@ bash scripts/hostinger-one-click.sh
 2. **Branch** — press Enter for `main` (or type your branch)
 3. **SSL** — type `y` for free HTTPS (only if DNS already points to this VPS)
 
-The script installs **Node 22**, builds Certko, starts PM2, configures Nginx, and optionally SSL.  
-SQLite uses Node’s built-in driver (no Python / `node-gyp` / `better-sqlite3`).
+The script installs Node, builds Certko, starts PM2, configures Nginx, and optionally SSL.  
+SQLite uses **sql.js** (pure WASM — no Python / `node-gyp` / native modules).
 
 ---
 

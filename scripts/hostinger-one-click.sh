@@ -11,7 +11,7 @@ APP_DIR="/var/www/certko"
 REPO_URL="${REPO_URL:-https://github.com/instacertify/cusor.git}"
 REPO_BRANCH="${REPO_BRANCH:-main}"
 APP_PORT="${APP_PORT:-3000}"
-NODE_MAJOR="${NODE_MAJOR:-22}"
+NODE_MAJOR="${NODE_MAJOR:-20}"
 
 red() { printf '\033[31m%s\033[0m\n' "$*"; }
 green() { printf '\033[32m%s\033[0m\n' "$*"; }
