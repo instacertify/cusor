@@ -1,5 +1,6 @@
 import { getSettings } from "@/lib/db";
-import { saveSettings } from "../../actions";
+import { isMailConfigured } from "@/lib/mail";
+import { saveSettings, sendTestLeadEmailAction } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +9,7 @@ const DEFAULT_LOGO_PRIMARY = "/brand/certko-logo.png";
 const DEFAULT_LOGO_ON_DARK = "/brand/certko-logo-light.png";
 
 interface Props {
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; mail?: string; mail_error?: string }>;
 }
 
 export default async function SettingsPage({ searchParams }: Props) {
@@ -16,6 +17,7 @@ export default async function SettingsPage({ searchParams }: Props) {
   const s = getSettings();
   const logoPrimary = s.logo_primary || DEFAULT_LOGO_PRIMARY;
   const logoOnDark = s.logo_on_dark || DEFAULT_LOGO_ON_DARK;
+  const mailReady = isMailConfigured();
 
   return (
     <div>
@@ -24,6 +26,16 @@ export default async function SettingsPage({ searchParams }: Props) {
         Brand fields, hero copy, stats and contact details shown across the site.
       </p>
       <SavedBanner saved={sp.saved} />
+      {sp.mail === "sent" && (
+        <p className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl px-4 py-3 mb-5">
+          Test lead email sent to {s.lead_notify_email || "contact@instacertify.com"}.
+        </p>
+      )}
+      {sp.mail === "error" && (
+        <p className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 mb-5">
+          Could not send test email: {sp.mail_error || "check SMTP App Password and try again."}
+        </p>
+      )}
       <form action={saveSettings} className="space-y-8">
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Brand</h2>
@@ -108,6 +120,77 @@ export default async function SettingsPage({ searchParams }: Props) {
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div>
+              <h2 className="font-display font-bold text-ink-950">Lead email (Google Workspace)</h2>
+              <p className="text-sm text-ink-600 mt-1">
+                When someone submits Contact / Request a quote on certko.com, notify this inbox.
+                Status:{" "}
+                <span className={mailReady ? "font-semibold text-green-700" : "font-semibold text-amber-700"}>
+                  {mailReady ? "SMTP configured" : "SMTP App Password still needed"}
+                </span>
+              </p>
+            </div>
+          </div>
+          <Field
+            label="Notify email (lead inbox)"
+            name="lead_notify_email"
+            defaultValue={s.lead_notify_email || "contact@instacertify.com"}
+            placeholder="contact@instacertify.com"
+          />
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field
+              label="SMTP host"
+              name="smtp_host"
+              defaultValue={s.smtp_host || "smtp.gmail.com"}
+            />
+            <Field
+              label="SMTP port"
+              name="smtp_port"
+              defaultValue={s.smtp_port || "587"}
+              placeholder="587"
+            />
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field
+              label="SMTP username (Google Workspace)"
+              name="smtp_user"
+              defaultValue={s.smtp_user || "contact@instacertify.com"}
+            />
+            <Field
+              label="SMTP App Password"
+              name="smtp_pass"
+              type="password"
+              defaultValue=""
+              placeholder={s.smtp_pass ? "•••••••• (saved — leave blank to keep)" : "Google App Password"}
+            />
+          </div>
+          <Field
+            label="From address"
+            name="smtp_from"
+            defaultValue={s.smtp_from || s.smtp_user || "contact@instacertify.com"}
+          />
+          <input type="hidden" name="smtp_enabled" value="0" />
+          <label className="flex items-center gap-2 text-sm text-ink-700">
+            <input
+              type="checkbox"
+              name="smtp_enabled"
+              value="1"
+              defaultChecked={(s.smtp_enabled ?? "1") !== "0"}
+              className="rounded border-cream-300"
+            />
+            Enable lead email notifications
+          </label>
+          <p className="text-[11px] text-ink-500 leading-relaxed">
+            Google Workspace setup: Google Account → Security → 2-Step Verification → App passwords →
+            create one for Mail, then paste it above. You can also set env vars{" "}
+            <code className="bg-cream-100 px-1 rounded">SMTP_PASS</code>,{" "}
+            <code className="bg-cream-100 px-1 rounded">SMTP_USER</code>,{" "}
+            <code className="bg-cream-100 px-1 rounded">LEAD_NOTIFY_EMAIL</code>.
+          </p>
+        </section>
+
+        <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Analytics & verification</h2>
           <p className="text-sm text-ink-600">
             Enter tracking IDs and site-verification codes. They are injected site-wide after save
@@ -167,6 +250,18 @@ export default async function SettingsPage({ searchParams }: Props) {
         </section>
 
         <SubmitButton />
+      </form>
+
+      <form action={sendTestLeadEmailAction} className="mt-4">
+        <button
+          type="submit"
+          className="rounded-full border border-ink-900 px-6 py-2.5 text-sm font-semibold text-ink-900 hover:bg-cream-100 transition-colors"
+        >
+          Send test lead email
+        </button>
+        <p className="mt-2 text-xs text-ink-500">
+          Uses saved SMTP settings (or SMTP_* env vars). Does not change Site Settings.
+        </p>
       </form>
     </div>
   );

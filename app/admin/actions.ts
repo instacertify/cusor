@@ -29,16 +29,27 @@ const LOGO_DEFAULTS = {
   logo_on_dark: "/brand/certko-logo-light.png",
 } as const;
 
+const SECRET_SETTINGS = new Set(["smtp_pass"]);
+
 // ---------- settings ----------
 export async function saveSettings(formData: FormData) {
   await requireAdmin();
+  // Checkbox: hidden 0 + optional checked 1 — prefer enabled when present
+  setSetting(
+    "smtp_enabled",
+    formData.getAll("smtp_enabled").map(String).includes("1") ? "1" : "0"
+  );
+
   for (const [key, value] of formData.entries()) {
     if (
       typeof value === "string" &&
       !key.startsWith("$") &&
       !key.startsWith("clear_") &&
-      !key.endsWith("_file")
+      !key.endsWith("_file") &&
+      key !== "smtp_enabled"
     ) {
+      // Keep existing secret if the password field is left blank
+      if (SECRET_SETTINGS.has(key) && value.trim() === "") continue;
       setSetting(key, value);
     }
   }
@@ -54,6 +65,18 @@ export async function saveSettings(formData: FormData) {
 
   revalidatePath("/", "layout");
   redirect("/admin/settings?saved=1");
+}
+
+export async function sendTestLeadEmailAction() {
+  await requireAdmin();
+  const { sendTestLeadEmail } = await import("@/lib/mail");
+  const result = await sendTestLeadEmail();
+  revalidatePath("/admin/settings");
+  redirect(
+    result.ok
+      ? "/admin/settings?mail=sent"
+      : `/admin/settings?mail=error&mail_error=${encodeURIComponent(result.error || "send failed")}`
+  );
 }
 
 // ---------- pages ----------

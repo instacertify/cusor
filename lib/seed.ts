@@ -753,10 +753,17 @@ export function seedDatabase(db: Database.Database) {
       hero_heading: "Which Certification Does Your Product Need?",
       hero_subheading:
         "Search by product name, standard or HSN to map BIS, BEE, GMARK, CE, FCC, SABER, WPC and more — with testing costs, labs and expert help in one place.",
-      contact_email: "info@certko.com",
+      contact_email: "contact@instacertify.com",
       contact_phone: "+91-9999118039",
       contact_address:
         "A-34, 4th Floor, Sector 63A, Noida, Gautam Buddha Nagar, Uttar Pradesh – 201301",
+      lead_notify_email: "contact@instacertify.com",
+      smtp_enabled: "1",
+      smtp_host: "smtp.gmail.com",
+      smtp_port: "587",
+      smtp_user: "contact@instacertify.com",
+      smtp_pass: "",
+      smtp_from: "contact@instacertify.com",
       footer_text:
         "Certko is an independent compliance intelligence and product-testing guidance platform operated by Instacertify Labs Private Limited. We are not a government authority. Prices and schedules are indicative — always verify with the relevant regulator and laboratory.",
       announcement: "Updated July 2026 · BIS · BEE · GMARK · CE · FCC · SABER · WPC · 400+ labs",
