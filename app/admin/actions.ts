@@ -986,8 +986,17 @@ export async function createTestingCategory(formData: FormData) {
   const maxSort = (
     db.prepare("SELECT COALESCE(MAX(sort), 0) AS m FROM testing_categories").get() as { m: number }
   ).m;
+  const sortRaw = String(formData.get("sort") ?? "").trim();
+  const sort = sortRaw ? Number(sortRaw) || maxSort + 1 : maxSort + 1;
   const image = (await saveUploadedImage(formData.get("image_file") as File | null)) ?? "";
   const summary = String(formData.get("summary") ?? "").trim();
+  const content =
+    String(formData.get("content") ?? "").trim() ||
+    `## About ${name}\n\nDescribe the testing category, typical products, standards and how Certko helps arrange accredited labs.`;
+  const metaTitle =
+    String(formData.get("meta_title") ?? "").trim() ||
+    `${name} | Product Testing Services | Certko`;
+  const metaDescription = String(formData.get("meta_description") ?? "").trim() || summary;
   const res = db
     .prepare(
       `INSERT INTO testing_categories (slug, name, icon, summary, content, image, meta_title, meta_description, sort)
@@ -998,11 +1007,11 @@ export async function createTestingCategory(formData: FormData) {
       name,
       String(formData.get("icon") ?? "microscope").trim() || "microscope",
       summary,
-      `## About ${name}\n\nDescribe the testing category, typical products, standards and how Certko helps arrange accredited labs.`,
+      content,
       image,
-      `${name} | Product Testing Services | Certko`,
-      summary,
-      maxSort + 1
+      metaTitle,
+      metaDescription,
+      sort
     );
   revalidatePath("/", "layout");
   redirect(`/admin/testing/${Number(res.lastInsertRowid)}?saved=1`);
@@ -1087,9 +1096,13 @@ export async function saveTestingService(formData: FormData) {
   const id = formData.get("id") ? Number(formData.get("id")) : null;
   const categoryId = Number(formData.get("category_id"));
   const name = String(formData.get("name") ?? "").trim();
+  const returnTo = String(formData.get("return_to") ?? "").trim();
   if (!name || !categoryId) {
     redirect(categoryId ? `/admin/testing/${categoryId}?error=1` : "/admin/testing?error=1");
   }
+  const catExists = db.prepare("SELECT id FROM testing_categories WHERE id = ?").get(categoryId);
+  if (!catExists) redirect("/admin/testing?error=1");
+
   let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
   const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
   const clearImage = formData.get("clear_image") === "1";
@@ -1111,18 +1124,20 @@ export async function saveTestingService(formData: FormData) {
   };
 
   if (id) {
-    const current = db.prepare("SELECT image, slug FROM testing_services WHERE id = ?").get(id) as
-      | { image: string; slug: string }
-      | undefined;
-    const image = uploaded ?? (clearImage ? "" : current?.image ?? "");
+    const current = db
+      .prepare("SELECT image, slug, category_id FROM testing_services WHERE id = ?")
+      .get(id) as { image: string; slug: string; category_id: number } | undefined;
+    if (!current) redirect(`/admin/testing/${categoryId}?error=1`);
+    const image = uploaded ?? (clearImage ? "" : current.image ?? "");
     const clash = db
       .prepare("SELECT id FROM testing_services WHERE category_id = ? AND slug = ? AND id != ?")
       .get(categoryId, slug, id);
     if (clash) slug = `${slug}-${id}`;
     db.prepare(
-      `UPDATE testing_services SET slug=?, name=?, product_category=?, standards=?, test_type=?, accreditation=?,
+      `UPDATE testing_services SET category_id=?, slug=?, name=?, product_category=?, standards=?, test_type=?, accreditation=?,
         timeline=?, sample_size=?, summary=?, content=?, image=?, meta_title=?, meta_description=?, sort=? WHERE id=?`
     ).run(
+      categoryId,
       slug,
       values.name,
       values.product_category,
@@ -1189,6 +1204,9 @@ export async function saveTestingService(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
+  if (returnTo === "list" || returnTo === "/admin/testing") {
+    redirect("/admin/testing?saved=1");
+  }
   redirect(`/admin/testing/${categoryId}?saved=1`);
 }
 
