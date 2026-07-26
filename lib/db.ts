@@ -1,3 +1,4 @@
+import fs from "fs";
 import path from "path";
 import {
   ensureSqliteReady,
@@ -14,8 +15,24 @@ import { ensurePagesNavColumns } from "./pages-nav";
 import { ensureHeroSlidesCatalog } from "./hero-slides";
 import { ensureTestimonialsLibrary } from "./seed-testimonials";
 
-const DB_DIR = path.join(process.cwd(), "data");
-const DB_PATH = path.join(DB_DIR, "certko.db");
+/** Prefer ./data; fall back to /tmp when the app dir is not writable (some Node hosts). */
+function resolveDbPath(): string {
+  const preferredDir = path.join(process.cwd(), "data");
+  const preferred = path.join(preferredDir, "certko.db");
+  try {
+    fs.mkdirSync(preferredDir, { recursive: true });
+    fs.accessSync(preferredDir, fs.constants.W_OK);
+    return preferred;
+  } catch {
+    const fallbackDir = path.join("/tmp", "certko-data");
+    fs.mkdirSync(fallbackDir, { recursive: true });
+    console.warn(
+      "[certko] data/ is not writable; using",
+      path.join(fallbackDir, "certko.db")
+    );
+    return path.join(fallbackDir, "certko.db");
+  }
+}
 
 type DbGlobal = typeof globalThis & {
   __certkoDb?: SqliteDatabase;
@@ -25,7 +42,8 @@ type DbGlobal = typeof globalThis & {
 const g = globalThis as DbGlobal;
 
 function bootstrapSchema(db: SqliteDatabase): void {
-  db.pragma("journal_mode = WAL");
+  // DELETE is safest for sql.js file-export persistence (WAL needs OS sidecar files)
+  db.pragma("journal_mode = DELETE");
   db.pragma("foreign_keys = ON");
 
   db.exec(`
@@ -332,12 +350,18 @@ function runEnsures(db: SqliteDatabase) {
 
 /** Call once on server start (instrumentation / root layout). */
 export async function ensureDbReady(): Promise<void> {
-  await ensureSqliteReady(DB_PATH);
-  if (!g.__certkoDbBootstrapped || !g.__certkoDb) {
-    const db = getSqliteDb();
-    bootstrapSchema(db);
-    g.__certkoDb = db;
-    g.__certkoDbBootstrapped = true;
+  try {
+    const dbPath = resolveDbPath();
+    await ensureSqliteReady(dbPath);
+    if (!g.__certkoDbBootstrapped || !g.__certkoDb) {
+      const db = getSqliteDb();
+      bootstrapSchema(db);
+      g.__certkoDb = db;
+      g.__certkoDbBootstrapped = true;
+    }
+  } catch (err) {
+    console.error("[certko] ensureDbReady failed:", err);
+    throw err;
   }
 }
 

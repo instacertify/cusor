@@ -1,10 +1,11 @@
 /**
- * SQLite via sql.js (pure WASM/JS) — no native compile, no Python, no node-gyp.
- * Works on Hostinger Node hosting and similar constrained environments.
+ * SQLite via sql.js (pure JS) — no native compile, no Python, no node-gyp.
+ * Uses sql-asm.js by default so Hostinger / constrained hosts never need a .wasm file.
  */
 import fs from "fs";
 import path from "path";
-import initSqlJs, { type Database as SqlJsDatabase, type Statement } from "sql.js";
+import { createRequire } from "module";
+import type { Database as SqlJsDatabase, Statement, SqlJsStatic } from "sql.js";
 
 export type SqliteRunResult = {
   lastInsertRowid: number | bigint;
@@ -39,6 +40,7 @@ type SqlGlobal = typeof globalThis & {
 };
 
 const g = globalThis as SqlGlobal;
+const requireFromCwd = createRequire(path.join(process.cwd(), "package.json"));
 
 function isNamedParams(value: unknown): value is Record<string, unknown> {
   return (
@@ -145,7 +147,12 @@ function wrapDatabase(raw: SqlJsDatabase, filePath: string): Engine {
     },
 
     pragma(source: string) {
-      eng.raw.run(`PRAGMA ${source}`);
+      try {
+        eng.raw.run(`PRAGMA ${source}`);
+      } catch (err) {
+        // sql.js may reject some file-oriented pragmas (e.g. WAL) — non-fatal
+        console.warn("[certko] pragma ignored:", source, err);
+      }
     },
 
     transaction<T>(fn: () => T) {
@@ -180,24 +187,57 @@ function wrapDatabase(raw: SqlJsDatabase, filePath: string): Engine {
   return eng;
 }
 
+/** Load sql.js without depending on a separate .wasm file (Hostinger-safe). */
+async function loadSqlEngine(): Promise<SqlJsStatic> {
+  // 1) Prefer asm.js — single JS file, no WebAssembly binary required
+  try {
+    const initAsm = requireFromCwd("sql.js/dist/sql-asm.js") as (
+      config?: Record<string, unknown>
+    ) => Promise<SqlJsStatic>;
+    return await initAsm();
+  } catch (asmErr) {
+    console.warn("[certko] sql-asm.js failed, falling back to wasm:", asmErr);
+  }
+
+  // 2) Fallback: wasm binary from package or locateFile
+  const initWasm = requireFromCwd("sql.js") as (
+    config?: Record<string, unknown>
+  ) => Promise<SqlJsStatic>;
+
+  const candidates = [
+    (() => {
+      try {
+        return path.join(
+          path.dirname(requireFromCwd.resolve("sql.js/package.json")),
+          "dist",
+          "sql-wasm.wasm"
+        );
+      } catch {
+        return null;
+      }
+    })(),
+    path.join(process.cwd(), "node_modules", "sql.js", "dist", "sql-wasm.wasm"),
+    path.join(process.cwd(), "vendor", "sql-wasm.wasm"),
+  ].filter((p): p is string => Boolean(p));
+
+  for (const wasmPath of candidates) {
+    if (!fs.existsSync(wasmPath)) continue;
+    const wasmBinary = fs.readFileSync(wasmPath).buffer;
+    return await initWasm({ wasmBinary });
+  }
+
+  throw new Error(
+    `sql.js failed to load (asm + wasm). Checked: ${candidates.join(", ") || "(none)"}`
+  );
+}
+
 export async function ensureSqliteReady(filePath: string): Promise<SqliteDatabase> {
   if (g.__certkoSqlEngine && g.__certkoSqlEngine.filePath === filePath) {
     return g.__certkoSqlEngine.wrapper;
   }
   if (!g.__certkoSqlInit) {
     g.__certkoSqlInit = (async () => {
-      const wasmPath = path.join(
-        process.cwd(),
-        "node_modules",
-        "sql.js",
-        "dist",
-        "sql-wasm.wasm"
-      );
-      if (!fs.existsSync(wasmPath)) {
-        throw new Error(`sql.js wasm missing at ${wasmPath}`);
-      }
-      const wasmBinary = fs.readFileSync(wasmPath).buffer;
-      const SQL = await initSqlJs({ wasmBinary });
+      const SQL = await loadSqlEngine();
 
       fs.mkdirSync(path.dirname(filePath), { recursive: true });
       let raw: SqlJsDatabase;
@@ -208,6 +248,7 @@ export async function ensureSqliteReady(filePath: string): Promise<SqliteDatabas
         raw = new SQL.Database();
       }
       g.__certkoSqlEngine = wrapDatabase(raw, filePath);
+      console.info("[certko] SQLite ready via sql.js at", filePath);
     })();
   }
 
@@ -215,6 +256,7 @@ export async function ensureSqliteReady(filePath: string): Promise<SqliteDatabas
     await g.__certkoSqlInit;
   } catch (err) {
     g.__certkoSqlInit = undefined;
+    console.error("[certko] SQLite init failed:", err);
     throw err;
   }
 

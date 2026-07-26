@@ -58,7 +58,7 @@ bash scripts/hostinger-one-click.sh
 3. **SSL** — type `y` for free HTTPS (only if DNS already points to this VPS)
 
 The script installs Node, builds Certko, starts PM2, configures Nginx, and optionally SSL.  
-SQLite uses **sql.js** (pure WASM — no Python / `node-gyp` / native modules).
+SQLite uses **sql.js** (`sql-asm.js` — pure JS, no Python / `node-gyp` / native modules / `.wasm`).
 
 ---
 
@@ -127,3 +127,30 @@ certbot --nginx -d yourdomain.com -d www.yourdomain.com
 8. Optional Let’s Encrypt HTTPS  
 
 That’s the whole deploy.
+
+---
+
+## Hostinger Node.js Web Apps panel (optional)
+
+If you deploy from hPanel **Node.js** (GitHub build) instead of VPS SSH:
+
+| Setting | Value |
+|---------|--------|
+| Framework | Next.js |
+| Node.js | **20.x** or **22.x** |
+| Root | `./` |
+| Install | `npm install` (or `npm ci`) |
+| Build | `npm run build` |
+| Start | `npm start` (uses `$PORT` automatically) |
+| Output directory | **leave empty** (do not set `out`) |
+
+Environment variables:
+
+- `CERTKO_SECRET` — long random string  
+- `COOKIE_SECURE=1` — when the site is on HTTPS  
+
+If the browser shows **Application error** with a digest like `ERROR 1358233113`, open **Deployments → Logs** (runtime/server logs). The real message is there (digest alone is not enough). Common causes:
+
+1. Old deploy still on `better-sqlite3` / Python — redeploy latest `main`  
+2. Wrong output directory (`out`) — clear it  
+3. App can’t write `data/` — latest code falls back to `/tmp/certko-data`
