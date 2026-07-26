@@ -1,4 +1,4 @@
-export type IconStyleId = "colorful" | "plain" | "3d";
+export type IconStyleId = "outline" | "original" | "3d";
 
 export interface IconStyleOption {
   id: IconStyleId;
@@ -6,36 +6,46 @@ export interface IconStyleOption {
   description: string;
 }
 
-export const DEFAULT_ICON_STYLE: IconStyleId = "3d";
+export const DEFAULT_ICON_STYLE: IconStyleId = "original";
 
 export const ICON_STYLES: IconStyleOption[] = [
   {
+    id: "outline",
+    name: "No-color outline",
+    description: "Simple ink outline icons — no colored fill or chip background.",
+  },
+  {
+    id: "original",
+    name: "Original color",
+    description: "Icons keep their soft original colors in flat chips.",
+  },
+  {
     id: "3d",
-    name: "3D icons",
-    description: "Embossed chips with depth, gloss and a slight tilt.",
-  },
-  {
-    id: "colorful",
-    name: "Colorful icons",
-    description: "Each icon gets a soft distinct color chip across the site.",
-  },
-  {
-    id: "plain",
-    name: "Plain icons",
-    description: "Monochrome brand chips — cream / amber only.",
+    name: "Original color 3D",
+    description: "Same original colors with embossed 3D depth, gloss and tilt.",
   },
 ];
 
+/** Map legacy saved values to the current three styles. */
+function normalizeIconStyle(value: string): string {
+  const v = value.trim().toLowerCase();
+  if (v === "plain" || v === "no-color" || v === "monochrome") return "outline";
+  if (v === "colorful" || v === "color" || v === "coloured") return "original";
+  return v;
+}
+
 export function isIconStyleId(value: string): value is IconStyleId {
-  return value === "colorful" || value === "plain" || value === "3d";
+  const v = normalizeIconStyle(value);
+  return v === "outline" || v === "original" || v === "3d";
 }
 
 export function resolveIconStyle(value?: string | null): IconStyleId {
-  const v = (value || "").trim().toLowerCase();
-  return isIconStyleId(v) ? v : DEFAULT_ICON_STYLE;
+  const v = normalizeIconStyle(value || "");
+  if (v === "outline" || v === "original" || v === "3d") return v;
+  return DEFAULT_ICON_STYLE;
 }
 
-/** Stable 0–11 hue bucket from an icon name (for colorful / 3d mode CSS). */
+/** Stable 0–11 hue bucket from an icon name (for original / 3d mode CSS). */
 export function iconHue(name: string): number {
   const s = (name || "box").trim().toLowerCase();
   let h = 0;

@@ -183,8 +183,8 @@ export async function saveSettings(formData: FormData) {
 
   const iconStyle = String(formData.get("icon_style") ?? "").trim();
   if (iconStyle) {
-    const { isIconStyleId, DEFAULT_ICON_STYLE } = await import("@/lib/icon-style");
-    setSetting("icon_style", isIconStyleId(iconStyle) ? iconStyle : DEFAULT_ICON_STYLE);
+    const { resolveIconStyle } = await import("@/lib/icon-style");
+    setSetting("icon_style", resolveIconStyle(iconStyle));
   }
 
   revalidatePath("/", "layout");

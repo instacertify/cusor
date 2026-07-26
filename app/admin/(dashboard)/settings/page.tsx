@@ -52,8 +52,8 @@ export default async function SettingsPage({ searchParams }: Props) {
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Icon style</h2>
           <p className="text-sm text-ink-600">
-            Choose 3D, colorful or plain icons for category chips, certifications, testing and
-            navigation across the whole website. Current:{" "}
+            Choose no-color outline, original color, or original color 3D icons for chips across
+            the whole website. Current:{" "}
             <strong className="text-ink-950">{iconStyleLabel(iconStyle)}</strong>.
           </p>
           <IconStylePicker value={iconStyle} />
