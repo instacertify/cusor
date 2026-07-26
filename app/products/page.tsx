@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
-import { getCategories } from "@/lib/queries";
+import FaqAccordion from "@/components/FaqAccordion";
+import { getCategories, getFaqs } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 export default function ProductsPage() {
   const categories = getCategories();
   const total = categories.reduce((s, c) => s + (c.product_count ?? 0), 0);
+  const faqs = getFaqs("page:products");
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
@@ -25,9 +27,15 @@ export default function ProductsPage() {
       </h1>
       <p className="mt-3 text-ink-600 max-w-2xl">
         {formatNumber(total)} products requiring BIS certification across{" "}
-        {categories.length} categories — each mapped to its IS standard, real
-        lab testing costs and approved laboratories.
+        {categories.length} categories — each mapped to its IS standard, HSN code,
+        QCO status, marking fees, real lab testing costs and approved laboratories.
       </p>
+      <Link
+        href="/products/all"
+        className="mt-5 inline-flex items-center gap-2 bg-ink-900 hover:bg-ink-800 text-white text-sm font-bold rounded-xl px-5 py-3 transition"
+      >
+        🔎 Open the full product search table
+      </Link>
 
       <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {categories.map((c) => (
@@ -53,6 +61,10 @@ export default function ProductsPage() {
             </span>
           </Link>
         ))}
+      </div>
+
+      <div className="mt-16 max-w-3xl">
+        <FaqAccordion faqs={faqs} heading="Product Database FAQs" />
       </div>
 
       <div className="mt-16">

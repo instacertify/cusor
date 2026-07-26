@@ -63,7 +63,13 @@ function createDb(): Database.Database {
       hsn4 TEXT NOT NULL DEFAULT '',
       hsn8 TEXT NOT NULL DEFAULT '',
       qco_status TEXT NOT NULL DEFAULT '',
-      qco_order TEXT NOT NULL DEFAULT ''
+      qco_order TEXT NOT NULL DEFAULT '',
+      fee_large INTEGER,
+      fee_medium INTEGER,
+      fee_small INTEGER,
+      fee_micro INTEGER,
+      unit_info TEXT NOT NULL DEFAULT '',
+      testing_charges TEXT NOT NULL DEFAULT ''
     );
     CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
     CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
@@ -207,6 +213,12 @@ export interface Product {
   hsn8: string;
   qco_status: string;
   qco_order: string;
+  fee_large: number | null;
+  fee_medium: number | null;
+  fee_small: number | null;
+  fee_micro: number | null;
+  unit_info: string;
+  testing_charges: string;
   category_name?: string;
   category_slug?: string;
   category_icon?: string;

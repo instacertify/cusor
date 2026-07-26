@@ -137,6 +137,14 @@ export default function HomePage() {
               Browse all {formatNumber(totalProducts)} products →
             </Link>
           </div>
+          <div className="mt-8 text-center">
+            <Link
+              href="/products/all"
+              className="inline-flex items-center gap-2 bg-white border border-cream-300 hover:border-butter-500 text-ink-950 text-sm font-bold rounded-xl px-5 py-3 shadow-card transition"
+            >
+              🔎 Open the full search table — standards, HSN, QCO status, fees & labs
+            </Link>
+          </div>
         </div>
       </section>
 

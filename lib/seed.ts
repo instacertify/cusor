@@ -52,6 +52,22 @@ interface UpcomingQco {
   scheme: string;
 }
 
+interface FeeRecord {
+  is_no: string;
+  title: string;
+  category: string;
+  hsn4: string;
+  hsn8: string;
+  status: string;
+  order: string;
+  fee_large: number | null;
+  fee_medium: number | null;
+  fee_small: number | null;
+  fee_micro: number | null;
+  unit_info: string;
+  testing_charges: string;
+}
+
 /** Normalize an IS reference like "IS 1554 : Part 1 (1988)" or "IS 13450 : PART 2 : SEC 13"
  *  into a comparable key such as "IS1554P1" / "IS13450P2S13". */
 export function normalizeIsNo(raw: string): string {
@@ -388,6 +404,133 @@ const GLOBAL_FAQS: { question: string; answer: string }[] = [
   },
 ];
 
+const PAGE_FAQS: Record<string, { question: string; answer: string }[]> = {
+  products: [
+    {
+      question: "How do I find out if my product needs BIS certification?",
+      answer:
+        "Search the table by product name, IS standard number or HSN code. Each entry shows the QCO status: 'Mandatory' means you need certification before selling, 'Upcoming' means a deadline has been notified, and 'Voluntary' means the ISI mark is optional.",
+    },
+    {
+      question: "What does the test cost range on each product mean?",
+      answer:
+        "It is the real reported sample-testing charge range across BIS-recognised laboratories approved for that standard, excluding GST. Total certification cost additionally includes BIS application and marking fees, which are listed on each product page.",
+    },
+    {
+      question: "What is the difference between marking fee and testing charges?",
+      answer:
+        "Testing charges are paid to the laboratory for sample testing. The marking fee is an annual fee paid to BIS for using the Standard Mark, and it varies by unit size — large, medium, small and micro enterprises pay different slabs.",
+    },
+    {
+      question: "My product is not in the list. Does that mean BIS is not required?",
+      answer:
+        "Not necessarily. New Quality Control Orders are notified frequently. Check the Upcoming QCOs page, or send us the product details through the contact form — we will map it to the correct standard within 24 hours, free.",
+    },
+  ],
+  labs: [
+    {
+      question: "Are all labs in this directory approved by BIS?",
+      answer:
+        "Yes. The directory is compiled from official BIS laboratory recognition records. Each lab page lists its BIS lab code, recognition validity date and the categories it is approved to test.",
+    },
+    {
+      question: "How should I choose between labs for my product?",
+      answer:
+        "Compare three things: whether the lab's scope covers your exact IS standard, the indicative test charge, and turnaround/location. A nearby lab reduces sample logistics cost; a lab with a bigger scope may bundle multiple standards in one submission.",
+    },
+    {
+      question: "Are the prices shown final quotes?",
+      answer:
+        "No — they are indicative reported charges excluding GST. Final quotes depend on the number of models, varieties and optional tests. Always confirm directly with the laboratory or ask Certko to collect quotes for you.",
+    },
+    {
+      question: "Can Certko coordinate testing with a lab on my behalf?",
+      answer:
+        "Yes. Our consultants handle sample submission, test witnessing, report follow-up and any retesting, as part of the end-to-end certification service. Request a free quote from the contact page.",
+    },
+  ],
+  qco: [
+    {
+      question: "What is a Quality Control Order (QCO)?",
+      answer:
+        "A QCO is a government order that makes BIS certification mandatory for a product. Once a QCO's enforcement date passes, the product cannot be manufactured, imported, stored or sold in India without the ISI mark or CRS registration.",
+    },
+    {
+      question: "When should I start the certification process for an upcoming QCO?",
+      answer:
+        "Start 3-6 months before the enforcement date. ISI licences involve documentation, lab testing and a factory inspection, and labs get congested as deadlines approach. Starting early avoids stock-outs and import blockages.",
+    },
+    {
+      question: "Do enforcement dates ever change?",
+      answer:
+        "Yes — enforcement dates are extended from time to time, often with separate timelines for small and micro enterprises. We track the official BIS list, but always verify against the latest gazette notification before making final decisions.",
+    },
+    {
+      question: "What happens if I keep selling after the enforcement date without certification?",
+      answer:
+        "Selling a QCO-notified product without BIS certification violates the BIS Act, 2016 — penalties include stock seizure, fines and marketplace delisting. Imports can be held at customs.",
+    },
+  ],
+  contact: [
+    {
+      question: "What happens after I submit this form?",
+      answer:
+        "A BIS specialist reviews your product details, maps the applicable IS standard and scheme, and replies within 24 hours with an itemised cost estimate covering lab testing, BIS fees and consulting.",
+    },
+    {
+      question: "Is the quote really free?",
+      answer:
+        "Yes. The standard mapping and cost estimate are free with no obligation. You only pay if you engage us to manage the certification.",
+    },
+    {
+      question: "Do you help foreign manufacturers?",
+      answer:
+        "Yes. We support overseas factories under the Foreign Manufacturers Certification Scheme (FMCS) and CRS, including acting as or arranging an Authorised Indian Representative (AIR).",
+    },
+  ],
+  guide: [
+    {
+      question: "How long does an ISI mark licence take end-to-end?",
+      answer:
+        "Typically 10-26 weeks depending on the product: documentation (1-2 weeks), lab testing (4-10 weeks), factory inspection scheduling and clearing BIS queries make up the rest. CRS registrations are faster, usually 6-10 weeks.",
+    },
+    {
+      question: "Do I need in-house testing equipment for an ISI licence?",
+      answer:
+        "Yes, for most products. BIS verifies during the factory inspection that you can perform the routine quality-control tests required by the standard. The required equipment list depends on the specific IS standard.",
+    },
+    {
+      question: "Can one licence cover multiple products or factories?",
+      answer:
+        "A licence is per standard per manufacturing location. Multiple varieties under the same standard can usually be included in one licence, but each factory needs its own application.",
+    },
+  ],
+  about: [
+    {
+      question: "Where does Certko's data come from?",
+      answer:
+        "From official BIS records: laboratory recognition scopes, the mandatory certification list, marking-fee schedules and the upcoming QCO list. We clean, join and publish it in a searchable form, refreshed regularly.",
+    },
+    {
+      question: "Is Certko affiliated with the Bureau of Indian Standards?",
+      answer:
+        "No. Certko is an independent compliance-intelligence platform. Licences are always issued by BIS itself; we provide data and consulting support around the process.",
+    },
+  ],
+  search: [
+    {
+      question: "What can I search for?",
+      answer:
+        "Product names (e.g. 'pressure cooker'), IS standard numbers (e.g. 'IS 302'), HSN codes (e.g. '8516'), product categories and laboratory names — all from the same search box.",
+    },
+    {
+      question: "Why does an HSN code return several products?",
+      answer:
+        "One HSN heading often covers multiple notified products, each with its own IS standard. Open each result to see which standard matches your exact product variant.",
+    },
+  ],
+};
+
 const TESTIMONIALS = [
   {
     name: "Rohan T.",
@@ -502,6 +645,25 @@ export function seedDatabase(db: Database.Database) {
     const key = normalizeIsNo(s.is_no);
     if (key && !qcoByIs.has(key)) qcoByIs.set(key, s);
   }
+
+  // lookup: normalized IS number -> marking fees / unit rates (refreshed sheet, takes priority)
+  const feesPath = path.join(process.cwd(), "data", "bis_fees.json");
+  const feesData = fs.existsSync(feesPath)
+    ? (JSON.parse(fs.readFileSync(feesPath, "utf-8")) as FeeRecord[])
+    : [];
+  const feesByIs = new Map<string, FeeRecord>();
+  const feesByBase = new Map<string, FeeRecord>();
+  const baseOf = (key: string) => key.match(/^((?:IS|SP|ER)\d+)/)?.[1] ?? "";
+  for (const f of feesData) {
+    const key = normalizeIsNo(f.is_no);
+    if (!key) continue;
+    if (!feesByIs.has(key)) feesByIs.set(key, f);
+    const base = baseOf(key);
+    // fallback per standard family; prefer the plain base-number entry when present
+    if (base && (base === key || !feesByBase.has(base))) feesByBase.set(base, f);
+  }
+  const lookupFees = (isKey: string): FeeRecord | undefined =>
+    feesByIs.get(isKey) ?? feesByBase.get(baseOf(isKey));
   const crsStandards = new Set(
     masterData.crs
       .flatMap((c) => c.standard.split("/"))
@@ -617,8 +779,8 @@ export function seedDatabase(db: Database.Database) {
 
     // ---- products ----
     const insProd = db.prepare(
-      `INSERT INTO products (slug, name, standard, scheme, category_id, min_price, max_price, lab_count, timeline, description, image, featured, meta_title, meta_description, hsn4, hsn8, qco_status, qco_order)
-       VALUES (@slug, @name, @standard, @scheme, @category_id, @min_price, @max_price, @lab_count, @timeline, @description, @image, @featured, @meta_title, @meta_description, @hsn4, @hsn8, @qco_status, @qco_order)`
+      `INSERT INTO products (slug, name, standard, scheme, category_id, min_price, max_price, lab_count, timeline, description, image, featured, meta_title, meta_description, hsn4, hsn8, qco_status, qco_order, fee_large, fee_medium, fee_small, fee_micro, unit_info, testing_charges)
+       VALUES (@slug, @name, @standard, @scheme, @category_id, @min_price, @max_price, @lab_count, @timeline, @description, @image, @featured, @meta_title, @meta_description, @hsn4, @hsn8, @qco_status, @qco_order, @fee_large, @fee_medium, @fee_small, @fee_micro, @unit_info, @testing_charges)`
     );
     const prodIds = new Map<string, number>();
     const usedSlugs = new Set<string>();
@@ -635,8 +797,10 @@ export function seedDatabase(db: Database.Database) {
       const catMeta = CATEGORY_META[p.category] ?? { timeline: "8-16 weeks" };
       const isKey = normalizeIsNo(p.standard);
       const qcoInfo = qcoByIs.get(isKey);
+      const feeInfo = lookupFees(isKey);
       let scheme = productScheme(p.category, p.standard);
-      if (crsStandards.has(isKey) || (qcoInfo?.status ?? "").includes("CRS")) {
+      const status = feeInfo?.status || qcoInfo?.status || "";
+      if (crsStandards.has(isKey) || status.includes("CRS")) {
         scheme = "CRS";
       }
       const key = `${p.category}|${p.standard}|${p.name}`;
@@ -658,10 +822,16 @@ export function seedDatabase(db: Database.Database) {
         featured: featuredKeys.has(key) ? 1 : 0,
         meta_title: `${displayName} BIS Certification | ${p.standard} | Cost & Labs | Certko`,
         meta_description: `BIS certification for ${displayName} under ${p.standard}: testing cost ${formatPriceRange(p.min_price, p.max_price)}, ${p.lab_count} approved labs, timeline ${catMeta.timeline}.`,
-        hsn4: qcoInfo?.hsn4 ?? "",
-        hsn8: qcoInfo?.hsn8 ?? "",
-        qco_status: qcoInfo?.status ?? "",
-        qco_order: qcoInfo?.order ?? "",
+        hsn4: feeInfo?.hsn4 || qcoInfo?.hsn4 || "",
+        hsn8: feeInfo?.hsn8 || qcoInfo?.hsn8 || "",
+        qco_status: status,
+        qco_order: feeInfo?.order || qcoInfo?.order || "",
+        fee_large: feeInfo?.fee_large ?? null,
+        fee_medium: feeInfo?.fee_medium ?? null,
+        fee_small: feeInfo?.fee_small ?? null,
+        fee_micro: feeInfo?.fee_micro ?? null,
+        unit_info: feeInfo?.unit_info ?? "",
+        testing_charges: feeInfo?.testing_charges ?? "",
       });
       prodIds.set(key, Number(res.lastInsertRowid));
     }
@@ -712,6 +882,41 @@ export function seedDatabase(db: Database.Database) {
       "INSERT INTO faqs (scope, question, answer, sort) VALUES (?, ?, ?, ?)"
     );
     GLOBAL_FAQS.forEach((f, i) => insFaq.run("global", f.question, f.answer, i));
+    for (const [pageSlug, faqs] of Object.entries(PAGE_FAQS)) {
+      faqs.forEach((f, i) => insFaq.run(`page:${pageSlug}`, f.question, f.answer, i));
+    }
+    // per-category FAQs generated from the data
+    for (const name of catNames) {
+      const catId = catIds.get(name)!;
+      const catProducts = raw.products.filter((p) => p.category === name);
+      const prices = catProducts.flatMap((p) =>
+        [p.min_price, p.max_price].filter((x): x is number => x != null)
+      );
+      const meta = CATEGORY_META[name] ?? { timeline: "8-16 weeks" };
+      const priceRange =
+        prices.length > 0
+          ? formatPriceRange(Math.min(...prices), Math.max(...prices))
+          : "on request";
+      const catFaqs = [
+        {
+          question: `Which ${name} products need BIS certification?`,
+          answer: `Certko currently tracks ${catProducts.length} notified ${name} products, each mapped to its IS standard. Open any product to see its QCO status — mandatory, upcoming or voluntary — along with HSN code and applicable order.`,
+        },
+        {
+          question: `How much does BIS testing cost for ${name} products?`,
+          answer: `Reported laboratory test charges in this category range from ${priceRange} (excluding GST), depending on the standard, the lab and the number of models tested. Annual BIS marking fees apply on top and are listed on each product page.`,
+        },
+        {
+          question: `How long does BIS certification take for ${name}?`,
+          answer: `Most ${name} applications complete in ${meta.timeline}, covering documentation, sample testing at a BIS-recognised lab and, for ISI licences, the factory inspection.`,
+        },
+        {
+          question: `Can Certko manage the whole process for my ${name} product?`,
+          answer: `Yes — our consultants handle standard mapping, application drafting, lab coordination and inspection readiness end-to-end. Request a free quote and we respond within 24 hours.`,
+        },
+      ];
+      catFaqs.forEach((f, i) => insFaq.run(`category:${catId}`, f.question, f.answer, i));
+    }
     // per-product FAQs for featured products only (others generated on the fly if needed)
     for (const p of raw.products) {
       const key = `${p.category}|${p.standard}|${p.name}`;

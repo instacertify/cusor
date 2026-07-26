@@ -89,6 +89,72 @@ export function countSearchProducts(q: string): number {
   return row.n;
 }
 
+export interface ProductTableFilter {
+  q?: string;
+  categoryId?: number;
+  qcoStatus?: string;
+  scheme?: string;
+  sort?: string;
+  limit?: number;
+  offset?: number;
+}
+
+const TABLE_SORTS: Record<string, string> = {
+  labs: "p.lab_count DESC, p.name",
+  name: "p.name",
+  price_low: "p.min_price IS NULL, p.min_price ASC",
+  price_high: "p.max_price IS NULL, p.max_price DESC",
+  fee: "p.fee_large IS NULL, p.fee_large DESC",
+};
+
+export function queryProductsTable(
+  filter: ProductTableFilter
+): { products: Product[]; total: number } {
+  const clauses: string[] = [];
+  const params: Record<string, string | number> = {};
+  if (filter.q?.trim()) {
+    const sp = searchParamsFor(filter.q);
+    clauses.push(`(${SEARCH_WHERE})`);
+    params.like = sp.like;
+    params.hsn = sp.hsn;
+  }
+  if (filter.categoryId) {
+    clauses.push("p.category_id = @categoryId");
+    params.categoryId = filter.categoryId;
+  }
+  if (filter.qcoStatus) {
+    clauses.push("p.qco_status = @qcoStatus");
+    params.qcoStatus = filter.qcoStatus;
+  }
+  if (filter.scheme) {
+    clauses.push("p.scheme = @scheme");
+    params.scheme = filter.scheme;
+  }
+  const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+  const orderBy = TABLE_SORTS[filter.sort ?? ""] ?? TABLE_SORTS.labs;
+  const total = (
+    getDb()
+      .prepare(
+        `SELECT COUNT(*) AS n FROM products p JOIN categories c ON c.id = p.category_id ${where}`
+      )
+      .get(params) as { n: number }
+  ).n;
+  const products = getDb()
+    .prepare(
+      `${PRODUCT_SELECT} ${where} ORDER BY ${orderBy} LIMIT @limit OFFSET @offset`
+    )
+    .all({ ...params, limit: filter.limit ?? 25, offset: filter.offset ?? 0 }) as Product[];
+  return { products, total };
+}
+
+export function getQcoStatuses(): { qco_status: string; n: number }[] {
+  return getDb()
+    .prepare(
+      "SELECT qco_status, COUNT(*) AS n FROM products WHERE qco_status != '' GROUP BY qco_status ORDER BY n DESC"
+    )
+    .all() as { qco_status: string; n: number }[];
+}
+
 export function countProducts(): number {
   return (getDb().prepare("SELECT COUNT(*) AS n FROM products").get() as { n: number }).n;
 }

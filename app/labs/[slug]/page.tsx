@@ -4,7 +4,8 @@ import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ProductCard from "@/components/ProductCard";
 import CtaBanner from "@/components/CtaBanner";
-import { getLabBySlug, getProductsForLab } from "@/lib/queries";
+import FaqAccordion from "@/components/FaqAccordion";
+import { getLabBySlug, getProductsForLab, getFaqs } from "@/lib/queries";
 import { formatPriceRange } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +30,7 @@ export default async function LabDetailPage({ params }: Props) {
   if (!lab) notFound();
   const products = getProductsForLab(lab.id, 24);
   const cats = JSON.parse(lab.categories) as string[];
+  const faqs = getFaqs("page:labs");
 
   const facts = [
     { label: "Location", value: [lab.city, lab.state].filter(Boolean).join(", ") || "India" },
@@ -103,6 +105,10 @@ export default async function LabDetailPage({ params }: Props) {
         <Link href="/labs" className="text-sm font-bold text-butter-700 hover:text-butter-600">
           ← Back to all labs
         </Link>
+      </div>
+
+      <div className="mt-14 max-w-3xl">
+        <FaqAccordion faqs={faqs} heading="Testing Labs FAQs" />
       </div>
 
       <div className="mt-14">

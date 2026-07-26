@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
-import { getLabs, getLabStates, getCategories, countLabs } from "@/lib/queries";
+import FaqAccordion from "@/components/FaqAccordion";
+import { getLabs, getLabStates, getCategories, countLabs, getFaqs } from "@/lib/queries";
 import { formatPriceRange, formatNumber } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +33,7 @@ export default async function LabsPage({ searchParams }: Props) {
   const states = getLabStates();
   const categories = getCategories();
   const totalLabs = countLabs();
+  const faqs = getFaqs("page:labs");
   const pages = Math.ceil(total / PAGE_SIZE);
 
   const qs = (over: Record<string, string | undefined>) => {
@@ -155,6 +157,10 @@ export default async function LabsPage({ searchParams }: Props) {
         indicative reported test charges, exclude GST, and must be verified directly with each
         laboratory before proceeding.
       </p>
+
+      <div className="mt-14 max-w-3xl">
+        <FaqAccordion faqs={faqs} heading="Testing Labs FAQs" />
+      </div>
 
       <div className="mt-14">
         <CtaBanner />

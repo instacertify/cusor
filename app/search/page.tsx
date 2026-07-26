@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ProductCard from "@/components/ProductCard";
 import SearchBox from "@/components/SearchBox";
-import { searchProducts, countSearchProducts, getLabs } from "@/lib/queries";
+import FaqAccordion from "@/components/FaqAccordion";
+import { searchProducts, countSearchProducts, getLabs, getFaqs } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +28,7 @@ export default async function SearchPage({ searchParams }: Props) {
   const products = q ? searchProducts(q, PAGE_SIZE, (page - 1) * PAGE_SIZE) : [];
   const total = q ? countSearchProducts(q) : 0;
   const { labs } = q ? getLabs({ q, limit: 6 }) : { labs: [] };
+  const faqs = getFaqs("page:search");
   const pages = Math.ceil(total / PAGE_SIZE);
 
   return (
@@ -94,6 +96,10 @@ export default async function SearchPage({ searchParams }: Props) {
           )}
         </>
       )}
+
+      <div className="mt-16 max-w-3xl">
+        <FaqAccordion faqs={faqs} heading="Search Tips" />
+      </div>
     </div>
   );
 }

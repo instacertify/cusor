@@ -149,6 +149,33 @@ export default async function ProductPage({ params }: Props) {
             </p>
           )}
 
+          {product.fee_large != null && (
+            <div className="mt-4 bg-white border border-cream-300 rounded-2xl shadow-card p-5">
+              <h2 className="text-sm font-bold text-ink-950 mb-3">
+                Annual BIS Marking Fee (by unit size)
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: "Large", value: product.fee_large },
+                  { label: "Medium", value: product.fee_medium },
+                  { label: "Small", value: product.fee_small },
+                  { label: "Micro", value: product.fee_micro },
+                ].map((f) => (
+                  <div key={f.label} className="bg-cream-50 rounded-xl px-3 py-2.5 text-center">
+                    <div className="text-[11px] font-bold uppercase tracking-wide text-ink-500">{f.label}</div>
+                    <div className="text-sm font-semibold text-ink-950">
+                      {f.value != null ? formatINR(f.value) : "—"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 text-[11px] text-ink-500">
+                {product.unit_info ? `Unit rate basis: ${product.unit_info}. ` : ""}
+                Marking fees are indicative, revised by BIS periodically, and exclude GST.
+              </p>
+            </div>
+          )}
+
           <article
             className="prose-certko mt-8"
             dangerouslySetInnerHTML={{ __html: marked.parse(product.description) as string }}

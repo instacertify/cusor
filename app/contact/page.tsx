@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { getPage } from "@/lib/queries";
+import FaqAccordion from "@/components/FaqAccordion";
+import { getPage, getFaqs } from "@/lib/queries";
 import { getSettings } from "@/lib/db";
 import { submitInquiry } from "./actions";
 
@@ -28,6 +29,7 @@ export default async function ContactPage({ searchParams }: Props) {
   const sp = await searchParams;
   const page = getPage("contact");
   const settings = getSettings();
+  const faqs = getFaqs("page:contact");
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
@@ -117,6 +119,10 @@ export default async function ContactPage({ searchParams }: Props) {
             </form>
           )}
         </div>
+      </div>
+
+      <div className="mt-16 max-w-3xl">
+        <FaqAccordion faqs={faqs} heading="Before You Ask" />
       </div>
     </div>
   );

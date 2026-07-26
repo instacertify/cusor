@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
-import { getUpcomingQcos } from "@/lib/queries";
+import FaqAccordion from "@/components/FaqAccordion";
+import { getUpcomingQcos, getFaqs } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,7 @@ function urgency(d: string): { label: string; cls: string } {
 
 export default function QcoPage() {
   const qcos = getUpcomingQcos();
+  const faqs = getFaqs("page:qco");
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
@@ -91,6 +93,10 @@ export default function QcoPage() {
         Enforcement dates are extended from time to time — always verify against the latest gazette
         notification before making compliance decisions.
       </p>
+
+      <div className="mt-14 max-w-3xl">
+        <FaqAccordion faqs={faqs} heading="QCO FAQs" />
+      </div>
 
       <div className="mt-14">
         <CtaBanner />
