@@ -117,7 +117,7 @@ export default function CertProductExpandableList({
                     rows={2}
                     hint='Optional structured fields, e.g. {"star_table":"…","emc":"Yes"}'
                   />
-                  <ImageUpload current={p.image} label="Product image" />
+                  <ImageUpload current={p.image} label="Product image" size="product" />
                   <div className="flex flex-wrap items-center gap-3">
                     <SubmitButton label="Save changes" />
                     <button

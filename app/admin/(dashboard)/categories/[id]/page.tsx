@@ -38,7 +38,7 @@ export default async function AdminCategoryEdit({ params, searchParams }: Props)
           </div>
           <TextArea label="Description" name="description" defaultValue={category.description} rows={3} />
           <Field label="Typical Timeline" name="timeline" defaultValue={category.timeline} placeholder="e.g. 10-16 weeks" />
-          <ImageUpload current={category.image} label="Category Image" />
+          <ImageUpload current={category.image} label="Category Image" size="category" />
         </section>
         <SubmitButton />
       </form>

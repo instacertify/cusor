@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { formatImageUploadHint } from "@/lib/image-upload-guide";
 import SubmitButton from "./SubmitButton";
 
 export interface SeoEditorData {
@@ -263,6 +264,7 @@ export default function SeoEditor({
             <div>
               <label htmlFor="og-image" className={labelCls}><span>Social Image URL</span></label>
               <input id="og-image" name="og_image" value={ogImage} onChange={(e) => setOgImage(e.target.value)} placeholder={data.image || "/images/hero.png"} className={inputCls} />
+              <p className="text-[11px] text-ink-500 mt-1.5 leading-relaxed">{formatImageUploadHint("og")}</p>
             </div>
           </div>
           <div>

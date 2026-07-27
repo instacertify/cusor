@@ -92,7 +92,7 @@ export default async function AdminCertProductEdit({ params, searchParams }: Pro
             />
           </div>
           <TextArea label="Summary" name="summary" defaultValue={product.summary} rows={2} />
-          <ImageUpload current={product.image} label="Product image" />
+          <ImageUpload current={product.image} label="Product image" size="product" />
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
