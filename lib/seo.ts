@@ -107,6 +107,13 @@ export function buildMetadata(
       follow: seo ? seo.robots_follow === 1 : true,
       noarchive: seo ? seo.robots_noarchive === 1 : false,
       nosnippet: seo ? seo.robots_nosnippet === 1 : false,
+      googleBot: {
+        index: seo ? seo.robots_index === 1 : true,
+        follow: seo ? seo.robots_follow === 1 : true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
     },
     openGraph: {
       title: seo?.og_title || title,

@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   title: "Compliance Blog | BIS, QCO & Export Certification Insights",
   description:
     "Practical articles on BIS certification costs, QCO deadlines, marketplace compliance and export certifications — written by the Certko team.",
+  alternates: { canonical: "https://certko.com/blog" },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
 
 function formatDate(d: string | null): string {

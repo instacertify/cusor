@@ -19,7 +19,12 @@ export const metadata: Metadata = {
   title: "Sitemap",
   description:
     "Browse every main Certko page — products, certifications, testing, labs, blog and resources — in one sitemap.",
-  robots: { index: true, follow: true },
+  alternates: { canonical: "https://certko.com/sitemap" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
 };
 
 function Section({

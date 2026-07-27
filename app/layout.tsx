@@ -58,6 +58,18 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: home?.meta_description || settings.tagline,
     metadataBase: new URL("https://certko.com"),
+    // Public pages are indexable by default. Admin layouts override to noindex.
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
+    },
     icons: {
       icon: [
         { url: "/brand/favicon-32.png", sizes: "32x32", type: "image/png" },

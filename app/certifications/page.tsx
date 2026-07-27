@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   title: "Product Certifications We Cover | BIS, BEE, GMARK, FCC, CE, SABER, WPC",
   description:
     "Explore the product certifications Certko supports: BIS/ISI, BEE star labelling, Gulf GMARK, US FCC, EU CE marking, Saudi SABER and India's WPC ETA — process, costs and expert help.",
+  alternates: { canonical: "https://certko.com/certifications" },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
 
 export default function CertificationsPage() {

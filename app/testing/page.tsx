@@ -16,6 +16,8 @@ export const metadata: Metadata = {
   title: "Product Testing Services | Search Tests by Category | Certko",
   description:
     "Search product testing services — chemical, electrical, EMC, physical, microbiology and mechanical. Find standards, scopes and accredited lab pathways with Certko.",
+  alternates: { canonical: "https://certko.com/testing" },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
 
 export default function TestingIndexPage() {

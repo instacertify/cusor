@@ -15,6 +15,8 @@ export const metadata: Metadata = {
   title: "All BIS Mandatory Products by Category",
   description:
     "Browse 1,400+ products requiring BIS certification in India, organised by category with IS standards, testing costs and approved labs.",
+  alternates: { canonical: "https://certko.com/products" },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
 
 export default function ProductsPage() {

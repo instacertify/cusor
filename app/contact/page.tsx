@@ -17,6 +17,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: page?.meta_title || "Get Expert Help",
     description: page?.meta_description,
+    alternates: { canonical: "https://certko.com/contact" },
+    robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
   };
 }
 

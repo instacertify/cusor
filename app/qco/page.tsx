@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   title: "Upcoming QCOs — Products Becoming BIS Mandatory | Enforcement Dates",
   description:
     "Track upcoming Quality Control Orders (QCOs): products that will soon require mandatory BIS certification in India, with IS standards, HSN codes and enforcement dates.",
+  alternates: { canonical: "https://certko.com/qco" },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
 
 function parseDate(d: string): Date | null {

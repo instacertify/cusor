@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   title: "BIS Product Search Table | Standards, HSN, QCO Status, Fees & Labs",
   description:
     "Search all BIS notified products in one table: IS standard, HSN code, QCO status, marking fees, lab testing cost range and approved labs. Filter by category, status and scheme.",
+  alternates: { canonical: "https://certko.com/products/all" },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
 
 const PAGE_SIZE = 25;

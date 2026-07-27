@@ -25,6 +25,8 @@ export const metadata: Metadata = {
   title: "BIS Testing Labs Directory | 400+ Recognised Labs Across India",
   description:
     "Searchable directory of BIS-recognised testing laboratories across India. Filter by state and product category, compare scopes and indicative test prices.",
+  alternates: { canonical: "https://certko.com/labs" },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
 
 const PAGE_SIZE = 24;

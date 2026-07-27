@@ -27,6 +27,8 @@ export const metadata: Metadata = {
   title: "Search Certifications, Product Testing & Labs",
   description:
     "Search Certko for certifications, product testing services, BIS schemes, standards and testing labs.",
+  alternates: { canonical: "https://certko.com/search" },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
 
 const PAGE_SIZE = 24;
