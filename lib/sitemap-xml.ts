@@ -31,43 +31,56 @@ type SitemapEntry = {
 
 type CacheGlobal = typeof globalThis & {
   __certkoSitemapXml?: { body: string; at: number } | null;
+  __certkoSitemapRefresh?: Promise<void> | null;
 };
 
 const g = globalThis as CacheGlobal;
 const TTL_MS = 60 * 60 * 1000; // 1 hour
 const DISK_NAME = "sitemap-cache.xml";
 
+/** Static file Google/LiteSpeed can fetch with Content-Length (fixes GSC HTTP error). */
+export function publicSitemapPath(): string {
+  return path.join(process.cwd(), "public", "sitemap.xml");
+}
+
 function diskPath(): string {
   return path.join(getWritableDataDir(), DISK_NAME);
 }
 
-function readDiskCache(): { body: string; at: number } | null {
+function isValidSitemap(body: string): boolean {
+  return body.includes("<urlset") && body.includes("</urlset>") && body.includes("<loc>");
+}
+
+function readFileCache(file: string): { body: string; at: number } | null {
   try {
-    const file = diskPath();
     const stat = fs.statSync(file);
     const body = fs.readFileSync(file, "utf8");
-    if (!body.includes("<urlset") || !body.includes("</urlset>")) return null;
+    if (!isValidSitemap(body)) return null;
     return { body, at: stat.mtimeMs };
   } catch {
     return null;
   }
 }
 
-function writeDiskCache(body: string) {
+function writeSitemapFiles(body: string) {
   try {
     fs.writeFileSync(diskPath(), body, "utf8");
   } catch (err) {
-    console.warn("[sitemap] could not write disk cache:", err);
+    console.warn("[sitemap] could not write data cache:", err);
+  }
+  try {
+    const pub = publicSitemapPath();
+    fs.mkdirSync(path.dirname(pub), { recursive: true });
+    fs.writeFileSync(pub, body, "utf8");
+  } catch (err) {
+    console.warn("[sitemap] could not write public/sitemap.xml:", err);
   }
 }
 
 export function invalidateSitemapCache() {
   g.__certkoSitemapXml = null;
-  try {
-    fs.unlinkSync(diskPath());
-  } catch {
-    // ignore missing file
-  }
+  // Rebuild immediately so Google always hits a fresh static file.
+  void refreshSitemapFiles();
 }
 
 function escapeXml(value: string): string {
@@ -209,7 +222,6 @@ export async function buildSitemapEntries(): Promise<SitemapEntry[]> {
     priority: 0.5,
   }));
 
-  // Deduplicate while preserving order (guards against slug collisions across tables).
   const seen = new Set<string>();
   const entries: SitemapEntry[] = [];
   for (const entry of [
@@ -230,16 +242,57 @@ export async function buildSitemapEntries(): Promise<SitemapEntry[]> {
   return entries;
 }
 
-/** Build (or return cached) sitemap XML. Never throws — falls back to disk/minimal. */
+/** Rebuild sitemap XML onto disk + public/sitemap.xml. Safe to call often. */
+export async function refreshSitemapFiles(): Promise<void> {
+  if (g.__certkoSitemapRefresh) return g.__certkoSitemapRefresh;
+
+  g.__certkoSitemapRefresh = (async () => {
+    try {
+      const entries = await buildSitemapEntries();
+      const body = toXml(entries);
+      g.__certkoSitemapXml = { body, at: Date.now() };
+      writeSitemapFiles(body);
+    } catch (err) {
+      console.error("[sitemap] refresh failed:", err);
+      const existing =
+        readFileCache(publicSitemapPath()) ||
+        readFileCache(diskPath()) ||
+        g.__certkoSitemapXml;
+      if (!existing) {
+        const body = minimalXml();
+        g.__certkoSitemapXml = { body, at: Date.now() };
+        writeSitemapFiles(body);
+      }
+    } finally {
+      g.__certkoSitemapRefresh = null;
+    }
+  })();
+
+  return g.__certkoSitemapRefresh;
+}
+
+/** Build (or return cached) sitemap XML. Never throws. */
 export async function getSitemapXml(): Promise<{ body: string; fromCache: boolean }> {
   const mem = g.__certkoSitemapXml;
   if (mem && Date.now() - mem.at < TTL_MS) {
     return { body: mem.body, fromCache: true };
   }
 
-  const disk = readDiskCache();
+  const pub = readFileCache(publicSitemapPath());
+  if (pub && Date.now() - pub.at < TTL_MS) {
+    g.__certkoSitemapXml = pub;
+    return { body: pub.body, fromCache: true };
+  }
+
+  const disk = readFileCache(diskPath());
   if (disk && Date.now() - disk.at < TTL_MS) {
     g.__certkoSitemapXml = disk;
+    // Keep public/ in sync for LiteSpeed static serving.
+    try {
+      fs.writeFileSync(publicSitemapPath(), disk.body, "utf8");
+    } catch {
+      /* ignore */
+    }
     return { body: disk.body, fromCache: true };
   }
 
@@ -247,17 +300,16 @@ export async function getSitemapXml(): Promise<{ body: string; fromCache: boolea
     const entries = await buildSitemapEntries();
     const body = toXml(entries);
     g.__certkoSitemapXml = { body, at: Date.now() };
-    writeDiskCache(body);
+    writeSitemapFiles(body);
     return { body, fromCache: false };
   } catch (err) {
     console.error("[sitemap] build failed, serving fallback:", err);
     if (mem?.body) return { body: mem.body, fromCache: true };
-    if (disk?.body) {
-      g.__certkoSitemapXml = disk;
-      return { body: disk.body, fromCache: true };
-    }
+    if (pub?.body) return { body: pub.body, fromCache: true };
+    if (disk?.body) return { body: disk.body, fromCache: true };
     const body = minimalXml();
     g.__certkoSitemapXml = { body, at: Date.now() };
+    writeSitemapFiles(body);
     return { body, fromCache: false };
   }
 }

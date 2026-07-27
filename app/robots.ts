@@ -15,6 +15,7 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: "https://certko.com/sitemap.xml",
-    host: "https://certko.com",
+    // Host must be hostname only (no scheme) for Yandex/some parsers.
+    host: "certko.com",
   };
 }
