@@ -1,4 +1,5 @@
 import { getDb } from "./db";
+import { scoreTextMatch } from "./search-match";
 
 export type QuickSearchResult = {
   type:
@@ -12,6 +13,7 @@ export type QuickSearchResult = {
   name: string;
   detail: string;
   href: string;
+  matchedTerms?: string[];
 };
 
 type IndexRow = QuickSearchResult & {
@@ -194,7 +196,18 @@ function buildIndex(): IndexRow[] {
         detail: `BIS · ${p.standard} · ${p.scheme}${p.qco_status ? ` · ${p.qco_status}` : ""}`,
         href: `/product/${p.slug}`,
       },
-      [p.name, p.standard, p.scheme, p.qco_status, p.hsn4, p.hsn8, p.category_name],
+      [
+        p.name,
+        p.standard,
+        p.scheme,
+        p.qco_status,
+        p.hsn4,
+        p.hsn8,
+        p.category_name,
+        "bis",
+        "certification",
+        p.scheme === "CRS" ? "crs registration electronics" : "isi mark licence",
+      ],
       // Prefer products with more labs when scores tie
       3 + Math.max(0, 20 - Math.min(20, p.lab_count || 0)) * 0.01
     );
@@ -248,44 +261,128 @@ function getIndex(): IndexRow[] {
   return g.__certkoSearchIndex;
 }
 
-/** Instant typeahead search from an in-memory index (no SQL LIKE scans). */
+/**
+ * Instant typeahead search from an in-memory index.
+ * Supports half / incomplete keywords via prefix + synonym matching.
+ */
 export function quickSearch(q: string, limit = 12): QuickSearchResult[] {
   const query = q.trim().toLowerCase();
-  if (query.length < 2) return [];
-
-  const terms = query.split(/\s+/).filter(Boolean);
-  if (terms.length === 0) return [];
+  if (query.length < 1) return [];
+  if (query.length < 2 && !/^\d+$/.test(query)) return [];
 
   const index = getIndex();
-  const scored: Array<{ row: IndexRow; score: number }> = [];
+  const scored: Array<{
+    row: IndexRow;
+    score: number;
+    matchedTerms: string[];
+  }> = [];
 
   for (const row of index) {
-    let score = 0;
-    let ok = true;
-    for (const term of terms) {
-      const idx = row.haystack.indexOf(term);
-      if (idx < 0) {
-        ok = false;
-        break;
-      }
-      // Prefer earlier matches and name-prefix hits
-      score += idx === 0 || row.haystack.startsWith(term) ? 0 : Math.min(40, idx);
-      if (row.name.toLowerCase().includes(term)) score -= 8;
-      if (row.name.toLowerCase().startsWith(term)) score -= 16;
-    }
-    if (!ok) continue;
-    score += row.boost * 10;
-    scored.push({ row, score });
+    const m = scoreTextMatch(query, row.haystack, row.name);
+    if (!m) continue;
+    scored.push({
+      row,
+      score: m.score + row.boost * 10,
+      matchedTerms: m.matchedTerms,
+    });
   }
 
-  scored.sort((a, b) => a.score - b.score || a.row.name.localeCompare(b.row.name));
+  scored.sort(
+    (a, b) =>
+      a.score - b.score ||
+      b.matchedTerms.length - a.matchedTerms.length ||
+      a.row.name.localeCompare(b.row.name)
+  );
 
-  return scored.slice(0, limit).map(({ row }) => ({
+  return scored.slice(0, limit).map(({ row, matchedTerms }) => ({
     type: row.type,
     name: row.name,
     detail: row.detail,
     href: row.href,
+    matchedTerms,
   }));
+}
+
+export type SearchSuggestionLink = {
+  label: string;
+  href: string;
+  detail?: string;
+};
+
+export type EmptySearchHelp = {
+  notFound: true;
+  message: string;
+  tryQueries: string[];
+  browse: SearchSuggestionLink[];
+  related: QuickSearchResult[];
+};
+
+const POPULAR_QUERIES = [
+  "BIS certification",
+  "LED lamp",
+  "pressure cooker",
+  "cable",
+  "BEE star",
+  "toy",
+  "IS 302",
+  "NABL lab",
+];
+
+const BROWSE_LINKS: SearchSuggestionLink[] = [
+  { label: "Browse BIS products", href: "/products", detail: "Find your product & standard" },
+  { label: "Certifications", href: "/certifications", detail: "BIS, BEE, GMARK, CE and more" },
+  { label: "Product testing", href: "/testing", detail: "Test categories & services" },
+  { label: "Find a lab", href: "/search?type=labs", detail: "BIS-recognised laboratories" },
+  { label: "Ask an expert", href: "/contact", detail: "We reply within 24 hours" },
+];
+
+/** When nothing matches, return alternatives so the UI never feels like a dead end. */
+export function getEmptySearchHelp(q: string, relatedLimit = 6): EmptySearchHelp {
+  const query = q.trim();
+  const tokens = query
+    .toLowerCase()
+    .split(/[\s+/]+/)
+    .filter((t) => t.length >= 2);
+  const related: QuickSearchResult[] = [];
+  const seen = new Set<string>();
+
+  const relaxTerms = [
+    ...tokens.sort((a, b) => b.length - a.length).slice(0, 2),
+    ...POPULAR_QUERIES.slice(0, 3),
+  ];
+  for (const term of relaxTerms) {
+    if (related.length >= relatedLimit) break;
+    for (const hit of quickSearch(term, 4)) {
+      if (seen.has(hit.href)) continue;
+      seen.add(hit.href);
+      related.push(hit);
+      if (related.length >= relatedLimit) break;
+    }
+  }
+
+  const tryQueries = [
+    tokens[0],
+    tokens.length > 1 ? tokens.slice(0, -1).join(" ") : "",
+    ...POPULAR_QUERIES,
+  ]
+    .map((t) => (t || "").trim())
+    .filter(
+      (t, i, arr) =>
+        t.length >= 2 &&
+        t.toLowerCase() !== query.toLowerCase() &&
+        arr.indexOf(t) === i
+    )
+    .slice(0, 8);
+
+  return {
+    notFound: true,
+    message: query
+      ? `No results found for “${query}”`
+      : "Type a product, IS number, or certification to search",
+    tryQueries,
+    browse: BROWSE_LINKS,
+    related,
+  };
 }
 
 /** Warm the index after DB boot (optional). */
