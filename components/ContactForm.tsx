@@ -10,11 +10,14 @@ export default function ContactForm({
   intent,
   errorMessage = null,
   initiallySent = false,
+  stayOnPage = false,
 }: {
   product?: string;
   intent?: Intent;
   errorMessage?: string | null;
   initiallySent?: boolean;
+  /** When true (e.g. embedded on a lab page), do not navigate to /contact?sent=1. */
+  stayOnPage?: boolean;
 }) {
   const [sent, setSent] = useState(initiallySent);
   const [error, setError] = useState<string | null>(errorMessage);
@@ -55,8 +58,7 @@ export default function ContactForm({
       }
 
       setSent(true);
-      // Keep URL shareable / refreshable as success without re-posting.
-      if (typeof window !== "undefined") {
+      if (!stayOnPage && typeof window !== "undefined") {
         window.history.replaceState(null, "", "/contact?sent=1");
       }
     } catch {
@@ -69,7 +71,7 @@ export default function ContactForm({
 
   const submitLabel =
     intent === "book"
-      ? "Contact Instacertify"
+      ? "Submit testing request"
       : intent === "test"
         ? "Request a quote for this test"
         : intent === "certification"
@@ -84,6 +86,12 @@ export default function ContactForm({
         : intent === "certification"
           ? "Certification / scheme"
           : "Product / test / certification";
+
+  const messageLabel = intent === "book" ? "Testing requirements *" : "Tell us more";
+  const messagePlaceholder =
+    intent === "book"
+      ? "Product name, IS standard / HSN if known, sample availability, city, and required timeline…"
+      : "Manufacturing location, import or domestic, sample availability, timeline…";
 
   return (
     <form action="/api/contact" method="post" onSubmit={onSubmit} className="space-y-4">
@@ -147,13 +155,14 @@ export default function ContactForm({
       </div>
       <div>
         <label htmlFor="message" className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">
-          Tell us more
+          {messageLabel}
         </label>
         <textarea
           id="message"
           name="message"
           rows={4}
-          placeholder="Manufacturing location, import or domestic, sample availability, timeline…"
+          required={intent === "book"}
+          placeholder={messagePlaceholder}
           className="w-full rounded-xl border border-cream-300 px-4 py-3 text-base sm:text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30"
         />
       </div>
@@ -165,7 +174,7 @@ export default function ContactForm({
         {pending ? "Sending…" : submitLabel}
       </button>
       <p className="text-[11px] text-ink-500 text-center">
-        No spam. Your details are only used to respond to this request.
+        No spam. Your request is saved as a lead for our team — we connect within 24 hours.
       </p>
     </form>
   );

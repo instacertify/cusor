@@ -19,7 +19,7 @@ export default async function AdminInquiries({ searchParams }: Props) {
     <div>
       <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Inquiries</h1>
       <p className="text-ink-600 text-sm mb-6">
-        Leads submitted through the “Get Expert Help” form.
+        Leads from the Contact / Get Expert Help forms and lab testing requests.
       </p>
 
       <SavedBanner

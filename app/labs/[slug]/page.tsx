@@ -6,7 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
-import RequestQuoteButton from "@/components/RequestQuoteButton";
+import LabContactPanel from "@/components/LabContactPanel";
 import { ensureDbReady } from "@/lib/db";
 import { getLabBySlug, getProductsForLab, getFaqs } from "@/lib/queries";
 import { formatPriceRange } from "@/lib/format";
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!lab) return {};
   return {
     title: `${lab.name} — BIS Recognised Testing Lab`,
-    description: `${lab.name} in ${[lab.city, lab.state].filter(Boolean).join(", ")} is BIS-recognised for ${lab.scope_count} testing scopes. See categories, indicative prices and contact Instacertify for help.`,
+    description: `${lab.name} in ${[lab.city, lab.state].filter(Boolean).join(", ")} is BIS-recognised for ${lab.scope_count} testing scopes. See categories, indicative prices and contact Instacertify for testing help.`,
   };
 }
 
@@ -86,13 +86,8 @@ export default async function LabDetailPage({ params }: Props) {
         ))}
       </div>
 
-      <div className="mt-6">
-        <RequestQuoteButton
-          subject={lab.name}
-          kind="book"
-          className="w-full sm:w-auto"
-        />
-      </div>
+      {/* Lab person name / phone / email are never shown — Contact opens lead form. */}
+      <LabContactPanel labName={lab.name} />
 
       {products.length > 0 && (
         <section className="mt-12">

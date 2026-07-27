@@ -13,7 +13,7 @@ export default async function CtaBanner({
   const settings = getSettings();
   const heading =
     kind === "book" && subject
-      ? `Need help with ${subject}?`
+      ? `Need testing help with ${subject}?`
       : kind === "test" && subject
         ? `Need a quote for ${subject}?`
         : kind === "certification" && subject
@@ -23,7 +23,7 @@ export default async function CtaBanner({
             : settings.cta_heading;
   const text =
     kind === "book"
-      ? "Contact Instacertify — someone from our team will connect with you within 24 hours."
+      ? "Tap Contact above, enter your testing requirements, and our team will connect within 24 hours."
       : kind === "test"
         ? "Share your product details and we’ll map the lab scope, sample size, timeline and indicative cost — free quote in 24 hours."
         : kind === "certification"
@@ -39,7 +39,14 @@ export default async function CtaBanner({
           </h2>
           <p className="mt-3 text-sm sm:text-base text-ink-300 leading-relaxed">{text}</p>
           <div className="mt-6 sm:mt-7 flex flex-col sm:flex-row flex-wrap gap-3">
-            {subject ? (
+            {kind === "book" ? (
+              <a
+                href="#lab-contact"
+                className="inline-flex items-center justify-center min-h-11 bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3 text-sm transition"
+              >
+                Contact
+              </a>
+            ) : subject ? (
               <RequestQuoteButton subject={subject} kind={kind} />
             ) : (
               <a

@@ -1002,9 +1002,10 @@ export function seedDatabase(db: SqliteDatabase) {
         name: l.name,
         city: l.city || "",
         state: l.state || "",
-        contact: l.contact,
-        phone: l.phone,
-        email: l.email,
+        // Never seed lab person contact details into the public database.
+        contact: null,
+        phone: null,
+        email: null,
         validity: l.validity,
         min_price: l.min_price,
         max_price: l.max_price,
