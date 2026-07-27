@@ -19,9 +19,39 @@ interface Suggestion {
   matchedTerms?: string[];
 }
 
+type BrowseLink = { label: string; href: string; detail?: string };
+
+type EmptyHelp = {
+  notFound: true;
+  message: string;
+  tryQueries: string[];
+  browse: BrowseLink[];
+  related: Suggestion[];
+};
+
+type CacheEntry =
+  | { kind: "results"; results: Suggestion[] }
+  | { kind: "empty"; help: EmptyHelp };
+
 /** Short-lived client cache so repeated / backspaced queries feel instant. */
-const clientCache = new Map<string, Suggestion[]>();
+const clientCache = new Map<string, CacheEntry>();
 const CLIENT_CACHE_MAX = 40;
+
+function typeLabel(type: Suggestion["type"]): string {
+  if (type === "certification") return "cert";
+  if (type === "cert-product") return "scheme";
+  if (type === "testing-category") return "testing";
+  if (type === "testing-service") return "test";
+  return type;
+}
+
+function typeClass(type: Suggestion["type"]): string {
+  if (type === "product") return "bg-butter-300/50 text-butter-700";
+  if (type === "cert-product") return "bg-butter-300/40 text-butter-800";
+  if (type === "lab") return "bg-ink-300/30 text-ink-700";
+  if (type === "certification") return "bg-green-100 text-green-700";
+  return "bg-cream-200 text-ink-600";
+}
 
 export default function SearchBox({
   large = false,
@@ -32,6 +62,7 @@ export default function SearchBox({
 }) {
   const [q, setQ] = useState("");
   const [results, setResults] = useState<Suggestion[]>([]);
+  const [emptyHelp, setEmptyHelp] = useState<EmptyHelp | null>(null);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const router = useRouter();
@@ -44,13 +75,20 @@ export default function SearchBox({
     const t = setTimeout(async () => {
       if (query.length < 2 && !/^\d+$/.test(query)) {
         setResults([]);
+        setEmptyHelp(null);
         setOpen(false);
         return;
       }
 
       const cached = clientCache.get(query.toLowerCase());
       if (cached) {
-        setResults(cached);
+        if (cached.kind === "results") {
+          setResults(cached.results);
+          setEmptyHelp(null);
+        } else {
+          setResults([]);
+          setEmptyHelp(cached.help);
+        }
         setOpen(true);
         setActive(-1);
         return;
@@ -63,13 +101,29 @@ export default function SearchBox({
         });
         const data = await res.json();
         if (id !== reqId.current) return;
-        const next = (data.results ?? []) as Suggestion[];
+
         if (clientCache.size >= CLIENT_CACHE_MAX) {
           const first = clientCache.keys().next().value;
           if (first) clientCache.delete(first);
         }
-        clientCache.set(query.toLowerCase(), next);
-        setResults(next);
+
+        if (data.notFound) {
+          const help: EmptyHelp = {
+            notFound: true,
+            message: data.message || `No results found for “${query}”`,
+            tryQueries: data.tryQueries || [],
+            browse: data.browse || [],
+            related: data.related || [],
+          };
+          clientCache.set(query.toLowerCase(), { kind: "empty", help });
+          setResults([]);
+          setEmptyHelp(help);
+        } else {
+          const next = (data.results ?? []) as Suggestion[];
+          clientCache.set(query.toLowerCase(), { kind: "results", results: next });
+          setResults(next);
+          setEmptyHelp(null);
+        }
         setOpen(true);
         setActive(-1);
       } catch {
@@ -99,6 +153,13 @@ export default function SearchBox({
     setOpen(false);
   }
 
+  function applySuggestedQuery(next: string) {
+    setQ(next);
+    setOpen(true);
+  }
+
+  const showDropdown = open && (results.length > 0 || emptyHelp != null);
+
   return (
     <div ref={boxRef} className="relative w-full">
       <div
@@ -124,7 +185,9 @@ export default function SearchBox({
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            onFocus={() => results.length && setOpen(true)}
+            onFocus={() => {
+              if (results.length > 0 || emptyHelp) setOpen(true);
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter") submit();
               if (e.key === "ArrowDown") {
@@ -155,7 +218,7 @@ export default function SearchBox({
         )}
       </div>
 
-      {open && results.length > 0 && (
+      {showDropdown && results.length > 0 && (
         <div className="absolute z-40 mt-2 w-full max-h-[min(70vh,28rem)] overflow-y-auto bg-white rounded-2xl border border-cream-300 shadow-card-hover">
           {results.map((r, i) => (
             <Link
@@ -183,27 +246,9 @@ export default function SearchBox({
                 ) : null}
               </span>
               <span
-                className={`shrink-0 text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 ${
-                  r.type === "product"
-                    ? "bg-butter-300/50 text-butter-700"
-                    : r.type === "cert-product"
-                    ? "bg-butter-300/40 text-butter-800"
-                    : r.type === "lab"
-                    ? "bg-ink-300/30 text-ink-700"
-                    : r.type === "certification"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-cream-200 text-ink-600"
-                }`}
+                className={`shrink-0 text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 ${typeClass(r.type)}`}
               >
-                {r.type === "certification"
-                  ? "cert"
-                  : r.type === "cert-product"
-                  ? "scheme"
-                  : r.type === "testing-category"
-                  ? "testing"
-                  : r.type === "testing-service"
-                  ? "test"
-                  : r.type}
+                {typeLabel(r.type)}
               </span>
             </Link>
           ))}
@@ -214,6 +259,85 @@ export default function SearchBox({
           >
             See all results for “{q.trim()}” →
           </Link>
+        </div>
+      )}
+
+      {showDropdown && emptyHelp && (
+        <div className="absolute z-40 mt-2 w-full max-h-[min(70vh,32rem)] overflow-y-auto bg-white rounded-2xl border border-cream-300 shadow-card-hover">
+          <div className="px-4 py-3 border-b border-cream-200 bg-cream-50">
+            <p className="text-sm font-semibold text-ink-950">{emptyHelp.message}</p>
+            <p className="text-xs text-ink-600 mt-1">
+              Try a shorter keyword, a product name, IS number, or one of the options below.
+            </p>
+          </div>
+
+          {emptyHelp.tryQueries.length > 0 && (
+            <div className="px-4 py-3 border-b border-cream-200">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-ink-500 mb-2">
+                Try searching
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {emptyHelp.tryQueries.map((term) => (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => applySuggestedQuery(term)}
+                    className="text-xs font-semibold rounded-lg border border-cream-300 bg-white px-2.5 py-1.5 text-ink-800 hover:border-butter-500 hover:bg-cream-50"
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {emptyHelp.related.length > 0 && (
+            <div className="border-b border-cream-200">
+              <p className="px-4 pt-3 text-[11px] font-bold uppercase tracking-wide text-ink-500">
+                Suggested options
+              </p>
+              {emptyHelp.related.map((r) => (
+                <Link
+                  key={r.href}
+                  href={r.href}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm hover:bg-cream-100 border-b border-cream-100 last:border-0"
+                >
+                  <span className="truncate min-w-0">
+                    <span className="font-medium text-ink-950">{r.name}</span>
+                    <span className="block text-xs text-ink-500 truncate">{r.detail}</span>
+                  </span>
+                  <span
+                    className={`shrink-0 text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 ${typeClass(r.type)}`}
+                  >
+                    {typeLabel(r.type)}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          <div className="px-4 py-3 space-y-1">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-ink-500 mb-1">
+              Browse instead
+            </p>
+            {emptyHelp.browse.map((b) => (
+              <Link
+                key={b.href}
+                href={b.href}
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between gap-2 rounded-xl px-2 py-2 text-sm hover:bg-cream-100"
+              >
+                <span>
+                  <span className="font-semibold text-ink-950">{b.label}</span>
+                  {b.detail ? (
+                    <span className="block text-xs text-ink-500">{b.detail}</span>
+                  ) : null}
+                </span>
+                <span className="text-butter-700 font-bold">→</span>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>

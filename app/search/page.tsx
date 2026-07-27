@@ -18,9 +18,11 @@ import {
   getLabsForProduct,
   getCertifications,
   getTestingCategories,
+  getFeaturedProducts,
 } from "@/lib/queries";
 import { formatNumber, formatPriceRange, formatINR } from "@/lib/format";
 import { textMatchesQuery } from "@/lib/search-match";
+import { getEmptySearchHelp } from "@/lib/search-index";
 
 export const dynamic = "force-dynamic";
 
@@ -111,6 +113,22 @@ export default async function SearchPage({ searchParams }: Props) {
       : null;
   const best = !bestCertProduct && tab !== "labs" && page === 1 && products.length > 0 ? products[0] : null;
   const bestLabs = best ? getLabsForProduct(best.id).slice(0, 5) : [];
+
+  const nothingFound =
+    Boolean(q) &&
+    tab === "all" &&
+    productTotal === 0 &&
+    certProgrammes.length === 0 &&
+    certProducts.length === 0 &&
+    testingCategories.length === 0 &&
+    uniqueTestingServices.length === 0 &&
+    labTotal === 0;
+
+  const emptyHelp = nothingFound ? getEmptySearchHelp(q, 8) : null;
+  const featuredFallback =
+    nothingFound && emptyHelp && emptyHelp.related.length === 0
+      ? getFeaturedProducts(4)
+      : [];
 
   const tabHref = (t: Tab, extra: Record<string, string | undefined> = {}) => {
     const p = new URLSearchParams();
@@ -209,6 +227,104 @@ export default async function SearchPage({ searchParams }: Props) {
         ))}
       </div>
 
+      {nothingFound && emptyHelp && (
+        <section className="mt-8 bg-white rounded-3xl border border-cream-300 shadow-card overflow-hidden">
+          <div className="px-6 py-5 bg-cream-100 border-b border-cream-200">
+            <h2 className="font-display text-xl font-semibold text-ink-950 flex items-center gap-2">
+              <Icon name="search" size={20} className="text-ink-500" />
+              {emptyHelp.message}
+            </h2>
+            <p className="mt-2 text-sm text-ink-600">
+              Nothing in our catalogue matched that keyword. Try a shorter term, an IS number,
+              or pick one of the options below.
+            </p>
+          </div>
+
+          <div className="p-6 space-y-8">
+            {emptyHelp.tryQueries.length > 0 && (
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wide text-ink-500 mb-3">
+                  Try searching
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {emptyHelp.tryQueries.map((term) => (
+                    <Link
+                      key={term}
+                      href={`/search?q=${encodeURIComponent(term)}`}
+                      className="text-sm font-semibold rounded-xl border border-cream-300 bg-cream-50 px-3 py-2 text-ink-900 hover:border-butter-500 hover:bg-white transition"
+                    >
+                      {term}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(emptyHelp.related.length > 0 || featuredFallback.length > 0) && (
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wide text-ink-500 mb-3">
+                  Suggested options
+                </h3>
+                {emptyHelp.related.length > 0 ? (
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {emptyHelp.related.map((r) => (
+                      <Link
+                        key={r.href}
+                        href={r.href}
+                        className="rounded-2xl border border-cream-300 px-4 py-3 hover:border-butter-500 transition"
+                      >
+                        <span className="text-[11px] font-bold uppercase tracking-wide text-butter-700">
+                          {r.type.replace("-", " ")}
+                        </span>
+                        <span className="mt-1 block font-semibold text-ink-950">{r.name}</span>
+                        <span className="mt-0.5 block text-xs text-ink-500 line-clamp-1">{r.detail}</span>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {featuredFallback.map((p) => (
+                      <ProductCard key={p.id} product={p} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wide text-ink-500 mb-3">
+                Browse instead
+              </h3>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {emptyHelp.browse.map((b) => (
+                  <Link
+                    key={b.href}
+                    href={b.href}
+                    className="rounded-2xl border border-cream-300 px-4 py-3 hover:border-butter-500 transition flex items-start justify-between gap-3"
+                  >
+                    <span>
+                      <span className="font-semibold text-ink-950">{b.label}</span>
+                      {b.detail ? (
+                        <span className="mt-0.5 block text-xs text-ink-500">{b.detail}</span>
+                      ) : null}
+                    </span>
+                    <Icon name="arrow-right" size={16} className="text-butter-700 shrink-0 mt-0.5" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-cream-50 border border-cream-200 px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <p className="text-sm text-ink-700">
+                Still stuck? Send your product name or datasheet — our team maps the right
+                certification path.
+              </p>
+              <RequestQuoteButton subject={q} kind="certification" variant="compact" short />
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ---- Labs tab ---- */}
       {tab === "labs" && (
         <>
@@ -234,7 +350,24 @@ export default async function SearchPage({ searchParams }: Props) {
           <p className="mt-5 text-sm text-ink-600">
             {formatNumber(labTotal)} lab{labTotal === 1 ? "" : "s"} found{state ? ` in ${state}` : ""}{q ? ` for “${q}”` : ""}
           </p>
-          <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{labs.map(labCard)}</div>
+          {labs.length > 0 ? (
+            <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{labs.map(labCard)}</div>
+          ) : q ? (
+            <div className="mt-4 rounded-2xl border border-cream-300 bg-white p-6">
+              <p className="font-semibold text-ink-950">No labs found for “{q}”</p>
+              <p className="mt-1 text-sm text-ink-600">
+                Try a city or state name, or browse the full lab directory.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link href="/search?type=labs" className="text-sm font-bold text-butter-700 hover:underline">
+                  Clear search →
+                </Link>
+                <Link href="/contact" className="text-sm font-bold text-butter-700 hover:underline">
+                  Ask an expert →
+                </Link>
+              </div>
+            </div>
+          ) : null}
           {pagination(page, labPages, "labs")}
         </>
       )}
@@ -375,7 +508,7 @@ export default async function SearchPage({ searchParams }: Props) {
       )}
 
       {/* ---- Products / All tabs ---- */}
-      {tab !== "labs" && tab !== "certs" && tab !== "testing" && q && (
+      {!nothingFound && tab !== "labs" && tab !== "certs" && tab !== "testing" && q && (
         <>
           {bestCertProduct && (
             <section className="mt-8 bg-white rounded-3xl border border-cream-300 shadow-card-hover overflow-hidden">

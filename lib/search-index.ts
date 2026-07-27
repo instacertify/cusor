@@ -312,6 +312,83 @@ export function quickSearch(q: string, limit = 12): QuickSearchResult[] {
   }));
 }
 
+export type SearchSuggestionLink = {
+  label: string;
+  href: string;
+  detail?: string;
+};
+
+export type EmptySearchHelp = {
+  notFound: true;
+  message: string;
+  tryQueries: string[];
+  browse: SearchSuggestionLink[];
+  /** Closest catalogue hits from a relaxed (first-token) search */
+  related: QuickSearchResult[];
+};
+
+const POPULAR_QUERIES = [
+  "BIS certification",
+  "LED lamp",
+  "pressure cooker",
+  "cable",
+  "BEE star",
+  "toy",
+  "IS 302",
+  "NABL lab",
+];
+
+const BROWSE_LINKS: SearchSuggestionLink[] = [
+  { label: "Browse BIS products", href: "/products", detail: "Find your product & standard" },
+  { label: "Certifications", href: "/certifications", detail: "BIS, BEE, GMARK, CE and more" },
+  { label: "Product testing", href: "/testing", detail: "Test categories & services" },
+  { label: "Find a lab", href: "/search?type=labs", detail: "BIS-recognised laboratories" },
+  { label: "Ask an expert", href: "/contact", detail: "We reply within 24 hours" },
+];
+
+/**
+ * When nothing matches the typed keyword, return a not-found payload with
+ * alternative queries, browse links, and loosely related catalogue hits.
+ */
+export function getEmptySearchHelp(q: string, relatedLimit = 6): EmptySearchHelp {
+  const query = q.trim();
+  const tokens = query.toLowerCase().split(/[\s+/]+/).filter((t) => t.length >= 2);
+  const related: QuickSearchResult[] = [];
+  const seen = new Set<string>();
+
+  // Relaxed passes: longest token, then first token, then popular seeds
+  const relaxTerms = [
+    ...tokens.sort((a, b) => b.length - a.length).slice(0, 2),
+    ...POPULAR_QUERIES.slice(0, 3),
+  ];
+  for (const term of relaxTerms) {
+    if (related.length >= relatedLimit) break;
+    for (const hit of quickSearch(term, 4)) {
+      if (seen.has(hit.href)) continue;
+      seen.add(hit.href);
+      related.push(hit);
+      if (related.length >= relatedLimit) break;
+    }
+  }
+
+  const tryQueries = [
+    tokens[0],
+    tokens.length > 1 ? tokens.slice(0, -1).join(" ") : "",
+    ...POPULAR_QUERIES,
+  ]
+    .map((t) => (t || "").trim())
+    .filter((t, i, arr) => t.length >= 2 && t.toLowerCase() !== query.toLowerCase() && arr.indexOf(t) === i)
+    .slice(0, 8);
+
+  return {
+    notFound: true,
+    message: `No results found for “${query}”`,
+    tryQueries,
+    browse: BROWSE_LINKS,
+    related,
+  };
+}
+
 /** Warm the index after DB boot (optional). */
 export function warmSearchIndex() {
   getIndex();
