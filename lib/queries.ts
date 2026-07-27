@@ -15,6 +15,7 @@ import type {
   TestingService,
   HeroSlide,
 } from "./db";
+import { relatedSearch } from "./search-index";
 
 // ---------- categories ----------
 export function getCategories(): Category[] {
@@ -760,13 +761,30 @@ export function countTestingServices(categoryId?: number): number {
   return (getDb().prepare("SELECT COUNT(*) AS n FROM testing_services").get() as { n: number }).n;
 }
 
-/** Browse suggestions when search has no matches — keeps users on-site with choices. */
+/** Browse / related suggestions when search has no exact matches. */
 export type SearchBrowseSuggestion = {
-  type: "product" | "certification" | "testing" | "lab" | "category";
+  type: "product" | "certification" | "testing" | "lab" | "category" | "related";
   name: string;
   detail: string;
   href: string;
 };
+
+/** Closely related catalogue hits for a free-typed search term (no dropdown pick). */
+export function getRelatedSearchSuggestions(
+  q: string,
+  limit = 12
+): SearchBrowseSuggestion[] {
+  try {
+    return relatedSearch(q, limit).map((r) => ({
+      type: "related" as const,
+      name: r.name,
+      detail: r.detail,
+      href: r.href,
+    }));
+  } catch {
+    return [];
+  }
+}
 
 export function getSearchBrowseSuggestions(limit = 12): SearchBrowseSuggestion[] {
   const n = Math.max(4, Math.min(24, Math.floor(limit) || 12));

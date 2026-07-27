@@ -112,13 +112,13 @@ export default function SearchBox({
         const data = await res.json();
         if (id !== reqId.current) return;
         let next = (data.results ?? []) as Suggestion[];
-        // Always offer choices — never a dead dropdown
+        // Always offer choices — never a dead dropdown (API also returns closely related hits)
         if (next.length === 0) {
           next = [
             {
               type: "browse",
-              name: `No exact match for “${query}”`,
-              detail: "Pick a popular section below, or open full search",
+              name: `See closely related results for “${query}”`,
+              detail: "Open full search with related matches and other options",
               href: `/search?q=${encodeURIComponent(query)}`,
             },
             ...FALLBACK_BROWSE,

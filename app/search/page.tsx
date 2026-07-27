@@ -19,7 +19,18 @@ import {
   getCertifications,
   getTestingCategories,
   getSearchBrowseSuggestions,
+  getRelatedSearchSuggestions,
+  type SearchBrowseSuggestion,
 } from "@/lib/queries";
+import type {
+  Product,
+  Lab,
+  Certification,
+  CertProduct,
+  TestingCategory,
+  TestingService,
+  Faq,
+} from "@/lib/db";
 import { formatNumber, formatPriceRange, formatINR } from "@/lib/format";
 import { ensureDbReady } from "@/lib/db";
 
@@ -45,86 +56,132 @@ function includesCI(hay: string | null | undefined, needle: string) {
   return (hay || "").toLowerCase().includes(needle);
 }
 
-export default async function SearchPage({ searchParams }: Props) {
-  await ensureDbReady();
-  const sp = await searchParams;
-  const q = (sp.q ?? "").trim();
-  const page = Math.max(1, Number(sp.page) || 1);
-  const tab: Tab =
-    sp.type === "labs"
-      ? "labs"
-      : sp.type === "products"
-      ? "products"
-      : sp.type === "certs"
-      ? "certs"
-      : sp.type === "testing"
-      ? "testing"
-      : "all";
-  const state = (sp.state ?? "").trim();
+type SearchData = {
+  q: string;
+  page: number;
+  tab: Tab;
+  state: string;
+  faqs: Faq[];
+  products: Product[];
+  productTotal: number;
+  productPages: number;
+  allCertifications: Certification[];
+  certProgrammes: Certification[];
+  certProducts: CertProduct[];
+  allTestingCategories: TestingCategory[];
+  testingCategories: TestingCategory[];
+  uniqueTestingServices: TestingService[];
+  labs: Lab[];
+  labTotal: number;
+  labPages: number;
+  states: { state: string; n: number }[];
+  bestCertProduct: CertProduct | null;
+  best: Product | null;
+  bestLabs: (Lab & { price: number | null })[];
+  showRelated: boolean;
+  relatedPicks: SearchBrowseSuggestion[];
+  browsePicks: SearchBrowseSuggestion[];
+};
+
+function loadSearchData(
+  q: string,
+  page: number,
+  tab: Tab,
+  state: string
+): SearchData {
   const faqs = getFaqs("page:search");
   const lq = q.toLowerCase();
-
-  // products (BIS master) — 2+ characters; still run for short queries safely
   const productLimit = tab === "all" ? 8 : PAGE_SIZE;
-  const products = q.length >= 2
-    ? searchProducts(q, productLimit, tab === "products" ? (page - 1) * PAGE_SIZE : 0)
-    : [];
-  const productTotal = q.length >= 2 ? countSearchProducts(q) : 0;
+
+  let products: Product[] = [];
+  let productTotal = 0;
+  try {
+    products =
+      q.length >= 2
+        ? searchProducts(q, productLimit, tab === "products" ? (page - 1) * PAGE_SIZE : 0)
+        : [];
+    productTotal = q.length >= 2 ? countSearchProducts(q) : 0;
+  } catch (err) {
+    console.error("[certko] search products failed:", err);
+  }
   const productPages = Math.ceil(productTotal / PAGE_SIZE);
 
-  // certification programmes + BEE/GMARK catalogue products (load once)
   const allCertifications = getCertifications();
-  const certProgrammes = q.length >= 2
-    ? allCertifications.filter(
-        (c) =>
-          includesCI(c.name, lq) ||
-          includesCI(c.full_name, lq) ||
-          includesCI(c.summary, lq) ||
-          includesCI(c.slug, lq)
-      )
-    : allCertifications;
-  const certProducts = q.length >= 2 ? searchCertProducts(q, tab === "certs" ? 40 : 8) : [];
+  const certProgrammes =
+    q.length >= 2
+      ? allCertifications.filter(
+          (c) =>
+            includesCI(c.name, lq) ||
+            includesCI(c.full_name, lq) ||
+            includesCI(c.summary, lq) ||
+            includesCI(c.slug, lq)
+        )
+      : allCertifications;
 
-  // product testing categories + services (load once)
+  let certProducts: CertProduct[] = [];
+  try {
+    certProducts = q.length >= 2 ? searchCertProducts(q, tab === "certs" ? 40 : 8) : [];
+  } catch (err) {
+    console.error("[certko] search cert products failed:", err);
+  }
+
   const allTestingCategories = getTestingCategories();
-  const testingCategories = q.length >= 2
-    ? allTestingCategories.filter(
-        (c) =>
-          includesCI(c.name, lq) ||
-          includesCI(c.summary, lq) ||
-          includesCI(c.slug, lq)
-      )
-    : allTestingCategories;
-  const uniqueTestingServices = q.length >= 2
-    ? searchTestingServices(q, tab === "testing" ? 60 : 8)
-    : tab === "testing"
-    ? getAllTestingServices(60)
-    : [];
+  const testingCategories =
+    q.length >= 2
+      ? allTestingCategories.filter(
+          (c) =>
+            includesCI(c.name, lq) ||
+            includesCI(c.summary, lq) ||
+            includesCI(c.slug, lq)
+        )
+      : allTestingCategories;
 
-  // labs (labs tab searches even without q, supports state filter + pagination)
+  let uniqueTestingServices: TestingService[] = [];
+  try {
+    uniqueTestingServices =
+      q.length >= 2
+        ? searchTestingServices(q, tab === "testing" ? 60 : 8)
+        : tab === "testing"
+        ? getAllTestingServices(60)
+        : [];
+  } catch (err) {
+    console.error("[certko] search testing failed:", err);
+  }
+
   const labLimit = tab === "labs" ? PAGE_SIZE : 6;
-  const { labs, total: labTotal } =
-    tab === "labs" || q.length >= 2
-      ? getLabs({
-          q: q.length >= 2 ? q : undefined,
-          state: tab === "labs" && state ? state : undefined,
-          limit: labLimit,
-          offset: tab === "labs" ? (page - 1) * PAGE_SIZE : 0,
-        })
-      : { labs: [], total: 0 };
+  let labs: Lab[] = [];
+  let labTotal = 0;
+  try {
+    if (tab === "labs" || q.length >= 2) {
+      const res = getLabs({
+        q: q.length >= 2 ? q : undefined,
+        state: tab === "labs" && state ? state : undefined,
+        limit: labLimit,
+        offset: tab === "labs" ? (page - 1) * PAGE_SIZE : 0,
+      });
+      labs = res.labs;
+      labTotal = res.total;
+    }
+  } catch (err) {
+    console.error("[certko] search labs failed:", err);
+  }
   const labPages = Math.ceil(labTotal / PAGE_SIZE);
   const states = tab === "labs" ? getLabStates() : [];
 
-  // best match: prefer catalogue hit, else BIS product
   const bestCertProduct =
     (tab === "all" || tab === "certs") && page === 1 && certProducts.length > 0
       ? certProducts[0]
       : null;
-  const best = !bestCertProduct && tab !== "labs" && page === 1 && products.length > 0 ? products[0] : null;
-  const bestLabs = best ? getLabsForProduct(best.id).slice(0, 5) : [];
+  const best =
+    !bestCertProduct && tab !== "labs" && page === 1 && products.length > 0 ? products[0] : null;
+  let bestLabs: (Lab & { price: number | null })[] = [];
+  try {
+    bestLabs = best ? getLabsForProduct(best.id).slice(0, 5) : [];
+  } catch {
+    bestLabs = [];
+  }
 
-  // If nothing matched, offer random on-site picks so the user never hits a dead end.
-  const showBrowsePicks =
+  const noExact =
     q.length >= 2 &&
     ((tab === "all" &&
       productTotal === 0 &&
@@ -138,7 +195,120 @@ export default async function SearchPage({ searchParams }: Props) {
       (tab === "testing" && testingCategories.length === 0 && uniqueTestingServices.length === 0) ||
       (tab === "labs" && labTotal === 0));
 
-  const picks = showBrowsePicks ? getSearchBrowseSuggestions(12) : [];
+  const relatedPicks = noExact ? getRelatedSearchSuggestions(q, 12) : [];
+  const browsePicks =
+    noExact && relatedPicks.length < 6 ? getSearchBrowseSuggestions(12 - relatedPicks.length) : [];
+
+  return {
+    q,
+    page,
+    tab,
+    state,
+    faqs,
+    products,
+    productTotal,
+    productPages,
+    allCertifications,
+    certProgrammes,
+    certProducts,
+    allTestingCategories,
+    testingCategories,
+    uniqueTestingServices,
+    labs,
+    labTotal,
+    labPages,
+    states,
+    bestCertProduct,
+    best,
+    bestLabs,
+    showRelated: noExact,
+    relatedPicks,
+    browsePicks,
+  };
+}
+
+export default async function SearchPage({ searchParams }: Props) {
+  let q = "";
+  let page = 1;
+  let tab: Tab = "all";
+  let state = "";
+  let data: SearchData;
+
+  try {
+    await ensureDbReady();
+    const sp = await searchParams;
+    q = (sp.q ?? "").trim();
+    page = Math.max(1, Number(sp.page) || 1);
+    tab =
+      sp.type === "labs"
+        ? "labs"
+        : sp.type === "products"
+        ? "products"
+        : sp.type === "certs"
+        ? "certs"
+        : sp.type === "testing"
+        ? "testing"
+        : "all";
+    state = (sp.state ?? "").trim();
+    data = loadSearchData(q, page, tab, state);
+  } catch (err) {
+    console.error("[certko] search page failed:", err);
+    // Never show a hard error page — keep users on-site with choices.
+    const relatedPicks = q.length >= 2 ? getRelatedSearchSuggestions(q, 12) : [];
+    const browsePicks = getSearchBrowseSuggestions(12);
+    data = {
+      q,
+      page: 1,
+      tab: "all",
+      state: "",
+      faqs: [],
+      products: [],
+      productTotal: 0,
+      productPages: 0,
+      allCertifications: [],
+      certProgrammes: [],
+      certProducts: [],
+      allTestingCategories: [],
+      testingCategories: [],
+      uniqueTestingServices: [],
+      labs: [],
+      labTotal: 0,
+      labPages: 0,
+      states: [],
+      bestCertProduct: null,
+      best: null,
+      bestLabs: [],
+      showRelated: true,
+      relatedPicks,
+      browsePicks,
+    };
+  }
+
+  const {
+    faqs,
+    products,
+    productTotal,
+    productPages,
+    allCertifications,
+    certProgrammes,
+    certProducts,
+    allTestingCategories,
+    testingCategories,
+    uniqueTestingServices,
+    labs,
+    labTotal,
+    labPages,
+    states,
+    bestCertProduct,
+    best,
+    bestLabs,
+    showRelated,
+    relatedPicks,
+    browsePicks,
+  } = data;
+
+  const showBrowsePicks = showRelated;
+  const picks = [...relatedPicks, ...browsePicks].slice(0, 12);
   const tabHref = (t: Tab, extra: Record<string, string | undefined> = {}) => {
     const p = new URLSearchParams();
     if (q) p.set("q", q);
@@ -229,27 +399,71 @@ export default async function SearchPage({ searchParams }: Props) {
       {showBrowsePicks && (
         <section className="mt-8 bg-white rounded-3xl border border-cream-300 shadow-card p-5 sm:p-6">
           <h2 className="font-display text-xl font-semibold text-ink-950">
-            No exact match for “{q}”
+            {relatedPicks.length > 0
+              ? `Closely related to “${q}”`
+              : `No exact match for “${q}”`}
           </h2>
           <p className="mt-2 text-sm text-ink-600">
-            Nothing matched that keyword. Choose one of these options to continue — or try a shorter
-            word (e.g. “LED”, “cable”, “BIS”).
+            {relatedPicks.length > 0
+              ? "You didn’t pick a dropdown item — here are the closest matches. Choose one to continue."
+              : "Nothing matched that keyword. Pick one of these options — or try a shorter word (e.g. “LED”, “cable”, “BIS”)."}
           </p>
-          <div className="mt-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {picks.map((item) => (
-              <Link
-                key={item.href + item.name}
-                href={item.href}
-                className="rounded-2xl border border-cream-300 bg-cream-50 hover:border-butter-500 hover:bg-white transition p-4"
-              >
-                <span className="text-[10px] font-bold uppercase tracking-wide text-butter-700">
-                  {item.type}
-                </span>
-                <span className="mt-1 block font-semibold text-ink-950 line-clamp-2">{item.name}</span>
-                <span className="mt-1 block text-xs text-ink-500 line-clamp-1">{item.detail}</span>
-              </Link>
-            ))}
-          </div>
+          {relatedPicks.length > 0 && (
+            <div className="mt-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {relatedPicks.map((item) => (
+                <Link
+                  key={`rel-${item.href}-${item.name}`}
+                  href={item.href}
+                  className="rounded-2xl border border-butter-300 bg-butter-50/40 hover:border-butter-500 hover:bg-white transition p-4"
+                >
+                  <span className="text-[10px] font-bold uppercase tracking-wide text-butter-700">
+                    closely related
+                  </span>
+                  <span className="mt-1 block font-semibold text-ink-950 line-clamp-2">{item.name}</span>
+                  <span className="mt-1 block text-xs text-ink-500 line-clamp-1">{item.detail}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+          {browsePicks.length > 0 && (
+            <>
+              <h3 className="mt-6 font-display text-lg font-semibold text-ink-950">
+                Other options you can choose
+              </h3>
+              <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {browsePicks.map((item) => (
+                  <Link
+                    key={`browse-${item.href}-${item.name}`}
+                    href={item.href}
+                    className="rounded-2xl border border-cream-300 bg-cream-50 hover:border-butter-500 hover:bg-white transition p-4"
+                  >
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-butter-700">
+                      {item.type}
+                    </span>
+                    <span className="mt-1 block font-semibold text-ink-950 line-clamp-2">{item.name}</span>
+                    <span className="mt-1 block text-xs text-ink-500 line-clamp-1">{item.detail}</span>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
+          {relatedPicks.length === 0 && browsePicks.length === 0 && picks.length > 0 && (
+            <div className="mt-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {picks.map((item) => (
+                <Link
+                  key={item.href + item.name}
+                  href={item.href}
+                  className="rounded-2xl border border-cream-300 bg-cream-50 hover:border-butter-500 hover:bg-white transition p-4"
+                >
+                  <span className="text-[10px] font-bold uppercase tracking-wide text-butter-700">
+                    {item.type}
+                  </span>
+                  <span className="mt-1 block font-semibold text-ink-950 line-clamp-2">{item.name}</span>
+                  <span className="mt-1 block text-xs text-ink-500 line-clamp-1">{item.detail}</span>
+                </Link>
+              ))}
+            </div>
+          )}
           <div className="mt-5 flex flex-wrap gap-3 text-sm">
             <Link href="/products/all" className="font-bold text-butter-700 hover:underline">
               Browse all products →
