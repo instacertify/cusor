@@ -68,18 +68,22 @@ export default function ContactForm({
   }
 
   const submitLabel =
-    intent === "test"
-      ? "Request a quote for this test"
-      : intent === "certification"
-        ? "Request a quote for this certification"
-        : "Request a free quote";
+    intent === "book"
+      ? "Book a test"
+      : intent === "test"
+        ? "Request a quote for this test"
+        : intent === "certification"
+          ? "Request a quote for this certification"
+          : "Request a free quote";
 
   const productLabel =
-    intent === "test"
-      ? "Test / service"
-      : intent === "certification"
-        ? "Certification / scheme"
-        : "Product / test / certification";
+    intent === "book"
+      ? "Lab / test"
+      : intent === "test"
+        ? "Test / service"
+        : intent === "certification"
+          ? "Certification / scheme"
+          : "Product / test / certification";
 
   return (
     <form action="/api/contact" method="post" onSubmit={onSubmit} className="space-y-4">

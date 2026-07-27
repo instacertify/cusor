@@ -6,6 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
+import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { ensureDbReady } from "@/lib/db";
 import { getLabBySlug, getProductsForLab, getFaqs } from "@/lib/queries";
 import { formatPriceRange } from "@/lib/format";
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!lab) return {};
   return {
     title: `${lab.name} — BIS Recognised Testing Lab`,
-    description: `${lab.name} in ${[lab.city, lab.state].filter(Boolean).join(", ")} is BIS-recognised for ${lab.scope_count} testing scopes. See categories, indicative prices and contact details.`,
+    description: `${lab.name} in ${[lab.city, lab.state].filter(Boolean).join(", ")} is BIS-recognised for ${lab.scope_count} testing scopes. See categories, indicative prices and book a test with Certko.`,
   };
 }
 
@@ -85,19 +86,19 @@ export default async function LabDetailPage({ params }: Props) {
         ))}
       </div>
 
-      {(lab.contact || lab.phone || lab.email) && (
-        <div className="mt-6 bg-white rounded-2xl border border-cream-300 shadow-card p-5 flex flex-wrap gap-x-10 gap-y-2 text-sm">
-          {lab.contact && (
-            <span><span className="font-bold text-ink-500 text-xs uppercase tracking-wide mr-2">Contact</span>{lab.contact}</span>
-          )}
-          {lab.phone && (
-            <span><span className="font-bold text-ink-500 text-xs uppercase tracking-wide mr-2">Phone</span>{lab.phone}</span>
-          )}
-          {lab.email && (
-            <span><span className="font-bold text-ink-500 text-xs uppercase tracking-wide mr-2">Email</span>{lab.email}</span>
-          )}
+      <div className="mt-6 bg-white rounded-2xl border border-cream-300 shadow-card p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="min-w-0">
+          <h2 className="font-display text-lg font-semibold text-ink-950">Book a test at this lab</h2>
+          <p className="mt-1 text-sm text-ink-600">
+            Share your product details and our team will connect within 24 hours to confirm scope, samples and timeline.
+          </p>
         </div>
-      )}
+        <RequestQuoteButton
+          subject={lab.name}
+          kind="book"
+          className="shrink-0 w-full sm:w-auto"
+        />
+      </div>
 
       {products.length > 0 && (
         <section className="mt-12">
@@ -127,7 +128,7 @@ export default async function LabDetailPage({ params }: Props) {
 
       <div className="mt-14">
         <TestimonialStrip />
-        <CtaBanner />
+        <CtaBanner subject={lab.name} kind="book" />
       </div>
     </div>
   );

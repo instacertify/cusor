@@ -12,19 +12,23 @@ export default async function CtaBanner({
   await ensureDbReady();
   const settings = getSettings();
   const heading =
-    kind === "test" && subject
-      ? `Need a quote for ${subject}?`
-      : kind === "certification" && subject
-      ? `Need a quote for ${subject} certification?`
-      : kind === "product" && subject
-      ? `Need a quote for ${subject}?`
-      : settings.cta_heading;
+    kind === "book" && subject
+      ? `Book a test with ${subject}`
+      : kind === "test" && subject
+        ? `Need a quote for ${subject}?`
+        : kind === "certification" && subject
+          ? `Need a quote for ${subject} certification?`
+          : kind === "product" && subject
+            ? `Need a quote for ${subject}?`
+            : settings.cta_heading;
   const text =
-    kind === "test"
-      ? "Share your product details and we’ll map the lab scope, sample size, timeline and indicative cost — free quote in 24 hours."
-      : kind === "certification"
-      ? "Our consultants handle application, testing coordination, inspection readiness and grant follow-up. Free quote in 24 hours."
-      : settings.cta_text;
+    kind === "book"
+      ? "Fill in a short form and someone from our team will connect with you within 24 hours to confirm scope, samples and timeline."
+      : kind === "test"
+        ? "Share your product details and we’ll map the lab scope, sample size, timeline and indicative cost — free quote in 24 hours."
+        : kind === "certification"
+          ? "Our consultants handle application, testing coordination, inspection readiness and grant follow-up. Free quote in 24 hours."
+          : settings.cta_text;
 
   return (
     <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-4">

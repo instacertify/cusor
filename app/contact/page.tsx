@@ -52,11 +52,15 @@ export default async function ContactPage({ searchParams }: Props) {
       <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
         <div>
           <h1 className="font-display text-2xl sm:text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
-            {page?.hero_heading || "Talk to a BIS expert"}
+            {sp.intent === "book"
+              ? "Book a test"
+              : page?.hero_heading || "Talk to a BIS expert"}
           </h1>
           <p className="mt-4 text-base sm:text-lg text-ink-600 leading-relaxed">
-            {page?.hero_subheading ||
-              "Tell us about your product and we will map the standard, estimate the full cost and send a free quote within 24 hours."}
+            {sp.intent === "book"
+              ? "Tell us what you need tested. Someone from our team will connect with you within 24 hours."
+              : page?.hero_subheading ||
+                "Tell us about your product and we will map the standard, estimate the full cost and send a free quote within 24 hours."}
           </p>
           <div className="mt-8 space-y-5">
             {PROMISES.map((p) => (

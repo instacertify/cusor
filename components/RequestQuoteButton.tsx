@@ -1,16 +1,18 @@
 import Icon from "./Icon";
 
-export type QuoteKind = "test" | "certification" | "product" | "general";
+export type QuoteKind = "test" | "certification" | "product" | "general" | "book";
 
 export function quoteContactHref(subject: string, kind: QuoteKind = "general"): string {
   const label =
-    kind === "test"
-      ? `${subject} — request quote for this test`
-      : kind === "certification"
-      ? `${subject} — request quote for this certification`
-      : kind === "product"
-      ? `${subject} — request quote`
-      : subject;
+    kind === "book"
+      ? `${subject} — book a test`
+      : kind === "test"
+        ? `${subject} — request quote for this test`
+        : kind === "certification"
+          ? `${subject} — request quote for this certification`
+          : kind === "product"
+            ? `${subject} — request quote`
+            : subject;
   const params = new URLSearchParams();
   if (label.trim()) params.set("product", label.trim());
   if (kind !== "general") params.set("intent", kind);
@@ -19,6 +21,7 @@ export function quoteContactHref(subject: string, kind: QuoteKind = "general"): 
 }
 
 export function quoteLabel(kind: QuoteKind, short = false): string {
+  if (kind === "book") return short ? "Book a test" : "Book a test";
   if (kind === "test") return short ? "Request quote" : "Request a quote for this test";
   if (kind === "certification") {
     return short ? "Request quote" : "Request a quote for this certification";
