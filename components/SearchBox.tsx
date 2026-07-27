@@ -16,6 +16,7 @@ interface Suggestion {
   name: string;
   detail: string;
   href: string;
+  matchedTerms?: string[];
 }
 
 /** Short-lived client cache so repeated / backspaced queries feel instant. */
@@ -41,7 +42,7 @@ export default function SearchBox({
     const query = q.trim();
     const ctrl = new AbortController();
     const t = setTimeout(async () => {
-      if (query.length < 2) {
+      if (query.length < 2 && !/^\d+$/.test(query)) {
         setResults([]);
         setOpen(false);
         return;
@@ -165,9 +166,21 @@ export default function SearchBox({
                 i === active ? "bg-cream-100" : ""
               }`}
             >
-              <span className="truncate">
+              <span className="truncate min-w-0">
                 <span className="font-medium text-ink-950">{r.name}</span>
                 <span className="block text-xs text-ink-500 truncate">{r.detail}</span>
+                {r.matchedTerms && r.matchedTerms.length > 0 ? (
+                  <span className="mt-0.5 flex flex-wrap gap-1">
+                    {r.matchedTerms.map((t) => (
+                      <span
+                        key={t}
+                        className="text-[10px] font-semibold rounded-md bg-cream-200 text-ink-600 px-1.5 py-0.5"
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </span>
+                ) : null}
               </span>
               <span
                 className={`shrink-0 text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 ${

@@ -20,6 +20,7 @@ import {
   getTestingCategories,
 } from "@/lib/queries";
 import { formatNumber, formatPriceRange, formatINR } from "@/lib/format";
+import { textMatchesQuery } from "@/lib/search-match";
 
 export const dynamic = "force-dynamic";
 
@@ -55,7 +56,6 @@ export default async function SearchPage({ searchParams }: Props) {
       : "all";
   const state = (sp.state ?? "").trim();
   const faqs = getFaqs("page:search");
-  const lq = q.toLowerCase();
 
   // products (BIS master)
   const productLimit = tab === "all" ? 8 : PAGE_SIZE;
@@ -68,12 +68,11 @@ export default async function SearchPage({ searchParams }: Props) {
   // certification programmes + BEE/GMARK catalogue products (load once)
   const allCertifications = getCertifications();
   const certProgrammes = q
-    ? allCertifications.filter(
-        (c) =>
-          c.name.toLowerCase().includes(lq) ||
-          c.full_name.toLowerCase().includes(lq) ||
-          c.summary.toLowerCase().includes(lq) ||
-          c.slug.includes(lq)
+    ? allCertifications.filter((c) =>
+        textMatchesQuery(
+          `${c.name} ${c.full_name} ${c.summary} ${c.slug} ${c.region}`,
+          q
+        )
       )
     : allCertifications;
   const certProducts = q ? searchCertProducts(q, tab === "certs" ? 40 : 8) : [];
@@ -81,11 +80,8 @@ export default async function SearchPage({ searchParams }: Props) {
   // product testing categories + services (load once)
   const allTestingCategories = getTestingCategories();
   const testingCategories = q
-    ? allTestingCategories.filter(
-        (c) =>
-          c.name.toLowerCase().includes(lq) ||
-          c.summary.toLowerCase().includes(lq) ||
-          c.slug.includes(lq)
+    ? allTestingCategories.filter((c) =>
+        textMatchesQuery(`${c.name} ${c.summary} ${c.slug} testing test`, q)
       )
     : allTestingCategories;
   const uniqueTestingServices = q

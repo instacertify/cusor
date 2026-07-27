@@ -1,4 +1,5 @@
 import { getDb } from "./db";
+import { scoreTextMatch } from "./search-match";
 
 export type QuickSearchResult = {
   type:
@@ -12,6 +13,8 @@ export type QuickSearchResult = {
   name: string;
   detail: string;
   href: string;
+  /** Terms from the query that matched this result (for UI hints). */
+  matchedTerms?: string[];
 };
 
 type IndexRow = QuickSearchResult & {
@@ -70,7 +73,7 @@ function buildIndex(): IndexRow[] {
         detail: `${c.region} · ${c.full_name}`,
         href: `/certifications/${c.slug}`,
       },
-      [c.name, c.full_name, c.slug, c.region, c.summary],
+      [c.name, c.full_name, c.slug, c.region, c.summary, "certification", "scheme"],
       0
     );
   }
@@ -100,7 +103,7 @@ function buildIndex(): IndexRow[] {
         detail: `${p.cert_name} · ${p.regime || p.family}${p.standards ? ` · ${p.standards}` : ""}`,
         href: `/certifications/${p.cert_slug}/products/${p.slug}`,
       },
-      [p.name, p.standards, p.family, p.regime, p.cert_name],
+      [p.name, p.standards, p.family, p.regime, p.cert_name, "certification"],
       1
     );
   }
@@ -126,7 +129,7 @@ function buildIndex(): IndexRow[] {
         detail: `Product testing · ${c.service_count ?? 0} tests`,
         href: `/testing/${c.slug}`,
       },
-      [c.name, c.slug, c.summary],
+      [c.name, c.slug, c.summary, "testing", "test", "lab"],
       2
     );
   }
@@ -162,7 +165,16 @@ function buildIndex(): IndexRow[] {
           .join(" · "),
         href: `/testing/${s.category_slug}/${s.slug}`,
       },
-      [s.name, s.standards, s.test_type, s.product_category, s.summary, s.category_name],
+      [
+        s.name,
+        s.standards,
+        s.test_type,
+        s.product_category,
+        s.summary,
+        s.category_name,
+        "testing",
+        "test",
+      ],
       2
     );
   }
@@ -194,8 +206,18 @@ function buildIndex(): IndexRow[] {
         detail: `BIS · ${p.standard} · ${p.scheme}${p.qco_status ? ` · ${p.qco_status}` : ""}`,
         href: `/product/${p.slug}`,
       },
-      [p.name, p.standard, p.scheme, p.qco_status, p.hsn4, p.hsn8, p.category_name],
-      // Prefer products with more labs when scores tie
+      [
+        p.name,
+        p.standard,
+        p.scheme,
+        p.qco_status,
+        p.hsn4,
+        p.hsn8,
+        p.category_name,
+        "bis",
+        "certification",
+        p.scheme === "CRS" ? "crs registration electronics" : "isi mark licence",
+      ],
       3 + Math.max(0, 20 - Math.min(20, p.lab_count || 0)) * 0.01
     );
   }
@@ -216,7 +238,7 @@ function buildIndex(): IndexRow[] {
         detail: `BIS category · ${c.product_count} products`,
         href: `/category/${c.slug}`,
       },
-      [c.name, c.slug],
+      [c.name, c.slug, "bis", "category", "products"],
       4
     );
   }
@@ -233,7 +255,7 @@ function buildIndex(): IndexRow[] {
         detail: [l.city, l.state].filter(Boolean).join(", ") || "Testing lab",
         href: `/labs/${l.slug}`,
       },
-      [l.name, l.city, l.state, l.slug],
+      [l.name, l.city, l.state, l.slug, "lab", "laboratory", "testing", "nabl"],
       5
     );
   }
@@ -248,43 +270,45 @@ function getIndex(): IndexRow[] {
   return g.__certkoSearchIndex;
 }
 
-/** Instant typeahead search from an in-memory index (no SQL LIKE scans). */
+/**
+ * Instant typeahead search from an in-memory index.
+ * Supports half / incomplete keywords via prefix + synonym matching and soft-AND.
+ */
 export function quickSearch(q: string, limit = 12): QuickSearchResult[] {
   const query = q.trim().toLowerCase();
-  if (query.length < 2) return [];
-
-  const terms = query.split(/\s+/).filter(Boolean);
-  if (terms.length === 0) return [];
+  if (query.length < 1) return [];
+  if (query.length < 2 && !/^\d+$/.test(query)) return [];
 
   const index = getIndex();
-  const scored: Array<{ row: IndexRow; score: number }> = [];
+  const scored: Array<{
+    row: IndexRow;
+    score: number;
+    matchedTerms: string[];
+  }> = [];
 
   for (const row of index) {
-    let score = 0;
-    let ok = true;
-    for (const term of terms) {
-      const idx = row.haystack.indexOf(term);
-      if (idx < 0) {
-        ok = false;
-        break;
-      }
-      // Prefer earlier matches and name-prefix hits
-      score += idx === 0 || row.haystack.startsWith(term) ? 0 : Math.min(40, idx);
-      if (row.name.toLowerCase().includes(term)) score -= 8;
-      if (row.name.toLowerCase().startsWith(term)) score -= 16;
-    }
-    if (!ok) continue;
-    score += row.boost * 10;
-    scored.push({ row, score });
+    const m = scoreTextMatch(query, row.haystack, row.name);
+    if (!m) continue;
+    scored.push({
+      row,
+      score: m.score + row.boost * 10,
+      matchedTerms: m.matchedTerms,
+    });
   }
 
-  scored.sort((a, b) => a.score - b.score || a.row.name.localeCompare(b.row.name));
+  scored.sort(
+    (a, b) =>
+      a.score - b.score ||
+      b.matchedTerms.length - a.matchedTerms.length ||
+      a.row.name.localeCompare(b.row.name)
+  );
 
-  return scored.slice(0, limit).map(({ row }) => ({
+  return scored.slice(0, limit).map(({ row, matchedTerms }) => ({
     type: row.type,
     name: row.name,
     detail: row.detail,
     href: row.href,
+    matchedTerms,
   }));
 }
 

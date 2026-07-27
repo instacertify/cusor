@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 export async function GET(req: NextRequest) {
   await ensureDbReady();
   const q = req.nextUrl.searchParams.get("q")?.trim() ?? "";
-  if (q.length < 2) {
+  if (q.length < 1 || (q.length < 2 && !/^\d+$/.test(q))) {
     return NextResponse.json(
       { results: [] },
       {
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const results = quickSearch(q, 12);
+  const results = quickSearch(q, 16);
 
   return NextResponse.json(
     { results },
