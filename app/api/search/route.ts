@@ -1,115 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ensureDbReady } from "@/lib/db";
-import {
-  searchProducts,
-  searchCertProducts,
-  searchTestingServices,
-  getLabs,
-  getCategories,
-  getCertifications,
-  getTestingCategories,
-} from "@/lib/queries";
+import { quickSearch } from "@/lib/search-index";
 
 export const dynamic = "force-dynamic";
-
-function includesQ(value: string | null | undefined, q: string): boolean {
-  return (value ?? "").toLowerCase().includes(q);
-}
+export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
   await ensureDbReady();
   const q = req.nextUrl.searchParams.get("q")?.trim() ?? "";
-  if (q.length < 2) return NextResponse.json({ results: [] });
+  if (q.length < 2) {
+    return NextResponse.json(
+      { results: [] },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=15, stale-while-revalidate=60",
+        },
+      }
+    );
+  }
 
-  const lq = q.toLowerCase();
+  const results = quickSearch(q, 12);
 
-  const certifications = getCertifications()
-    .filter(
-      (c) =>
-        includesQ(c.name, lq) ||
-        includesQ(c.full_name, lq) ||
-        includesQ(c.slug, lq) ||
-        includesQ(c.summary, lq)
-    )
-    .slice(0, 3)
-    .map((c) => ({
-      type: "certification" as const,
-      name: `${c.name} Certification`,
-      detail: `${c.region} · ${c.full_name}`,
-      href: `/certifications/${c.slug}`,
-    }));
-
-  const certProducts = searchCertProducts(q, 4).map((p) => ({
-    type: "cert-product" as const,
-    name: p.name,
-    detail: `${p.cert_name} · ${p.regime || p.family}${p.standards ? ` · ${p.standards}` : ""}`,
-    href: `/certifications/${p.cert_slug}/products/${p.slug}`,
-  }));
-
-  const products = searchProducts(q, 4).map((p) => ({
-    type: "product" as const,
-    name: p.name,
-    detail: `BIS · ${p.standard} · ${p.scheme}${p.qco_status ? ` · ${p.qco_status}` : ""}`,
-    href: `/product/${p.slug}`,
-  }));
-
-  const categories = getCategories()
-    .filter((c) => includesQ(c.name, lq))
-    .slice(0, 2)
-    .map((c) => ({
-      type: "category" as const,
-      name: c.name,
-      detail: `BIS category · ${c.product_count} products`,
-      href: `/category/${c.slug}`,
-    }));
-
-  const testingCategories = getTestingCategories()
-    .filter(
-      (c) =>
-        includesQ(c.name, lq) ||
-        includesQ(c.summary, lq) ||
-        includesQ(c.slug, lq)
-    )
-    .slice(0, 2)
-    .map((c) => ({
-      type: "testing-category" as const,
-      name: c.name,
-      detail: `Product testing · ${c.service_count ?? 0} tests`,
-      href: `/testing/${c.slug}`,
-    }));
-
-  const testingServices = searchTestingServices(q, 4).map((s) => ({
-    type: "testing-service" as const,
-    name: s.name,
-    detail: [
-      s.category_name,
-      s.standards,
-      s.test_type,
-      s.timeline ? `Timeline ${s.timeline}` : "",
-      s.sample_size ? `Sample ${s.sample_size}` : "",
-    ]
-      .filter(Boolean)
-      .join(" · "),
-    href: `/testing/${s.category_slug}/${s.slug}`,
-  }));
-
-  const { labs } = getLabs({ q, limit: 2 });
-  const labResults = labs.map((l) => ({
-    type: "lab" as const,
-    name: l.name,
-    detail: [l.city, l.state].filter(Boolean).join(", ") || "Testing lab",
-    href: `/labs/${l.slug}`,
-  }));
-
-  return NextResponse.json({
-    results: [
-      ...certifications,
-      ...certProducts,
-      ...testingCategories,
-      ...testingServices,
-      ...products,
-      ...categories,
-      ...labResults,
-    ].slice(0, 12),
-  });
+  return NextResponse.json(
+    { results },
+    {
+      headers: {
+        // Autocomplete is safe to cache briefly — cuts repeat keystroke latency.
+        "Cache-Control": "public, max-age=20, stale-while-revalidate=60",
+      },
+    }
+  );
 }

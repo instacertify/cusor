@@ -377,6 +377,10 @@ export async function ensureDbReady(): Promise<void> {
       bootstrapSchema(db);
       g.__certkoDb = db;
       g.__certkoDbBootstrapped = true;
+      // Warm typeahead index in the background so first search is instant.
+      void import("./search-index")
+        .then((m) => m.warmSearchIndex())
+        .catch(() => {});
     }
   } catch (err) {
     console.error("[certko] ensureDbReady failed:", err);

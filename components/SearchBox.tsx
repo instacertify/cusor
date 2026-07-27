@@ -18,6 +18,10 @@ interface Suggestion {
   href: string;
 }
 
+/** Short-lived client cache so repeated / backspaced queries feel instant. */
+const clientCache = new Map<string, Suggestion[]>();
+const CLIENT_CACHE_MAX = 40;
+
 export default function SearchBox({
   large = false,
   placeholder = "Search product or certification — BIS, BEE, GMARK, CE…",
@@ -31,6 +35,7 @@ export default function SearchBox({
   const [active, setActive] = useState(-1);
   const router = useRouter();
   const boxRef = useRef<HTMLDivElement>(null);
+  const reqId = useRef(0);
 
   useEffect(() => {
     const query = q.trim();
@@ -41,18 +46,35 @@ export default function SearchBox({
         setOpen(false);
         return;
       }
+
+      const cached = clientCache.get(query.toLowerCase());
+      if (cached) {
+        setResults(cached);
+        setOpen(true);
+        setActive(-1);
+        return;
+      }
+
+      const id = ++reqId.current;
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
           signal: ctrl.signal,
         });
         const data = await res.json();
-        setResults(data.results ?? []);
+        if (id !== reqId.current) return;
+        const next = (data.results ?? []) as Suggestion[];
+        if (clientCache.size >= CLIENT_CACHE_MAX) {
+          const first = clientCache.keys().next().value;
+          if (first) clientCache.delete(first);
+        }
+        clientCache.set(query.toLowerCase(), next);
+        setResults(next);
         setOpen(true);
         setActive(-1);
       } catch {
         /* aborted */
       }
-    }, 150);
+    }, 120);
     return () => {
       clearTimeout(t);
       ctrl.abort();

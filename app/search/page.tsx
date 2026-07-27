@@ -63,27 +63,29 @@ export default async function SearchPage({ searchParams }: Props) {
   const productTotal = q ? countSearchProducts(q) : 0;
   const productPages = Math.ceil(productTotal / PAGE_SIZE);
 
-  // certification programmes + BEE/GMARK catalogue products
+  // certification programmes + BEE/GMARK catalogue products (load once)
+  const allCertifications = getCertifications();
   const certProgrammes = q
-    ? getCertifications().filter(
+    ? allCertifications.filter(
         (c) =>
           c.name.toLowerCase().includes(lq) ||
           c.full_name.toLowerCase().includes(lq) ||
           c.summary.toLowerCase().includes(lq) ||
           c.slug.includes(lq)
       )
-    : getCertifications();
+    : allCertifications;
   const certProducts = q ? searchCertProducts(q, tab === "certs" ? 40 : 8) : [];
 
-  // product testing categories + services
+  // product testing categories + services (load once)
+  const allTestingCategories = getTestingCategories();
   const testingCategories = q
-    ? getTestingCategories().filter(
+    ? allTestingCategories.filter(
         (c) =>
           c.name.toLowerCase().includes(lq) ||
           c.summary.toLowerCase().includes(lq) ||
           c.slug.includes(lq)
       )
-    : getTestingCategories();
+    : allTestingCategories;
   const uniqueTestingServices = q
     ? searchTestingServices(q, tab === "testing" ? 60 : 8)
     : tab === "testing"
@@ -126,7 +128,7 @@ export default async function SearchPage({ searchParams }: Props) {
     {
       key: "certs",
       label: "Find a Certification",
-      count: q ? certProgrammes.length + certProducts.length : getCertifications().length,
+      count: q ? certProgrammes.length + certProducts.length : allCertifications.length,
       icon: "award",
     },
     {
@@ -134,7 +136,7 @@ export default async function SearchPage({ searchParams }: Props) {
       label: "Product Testing",
       count: q
         ? testingCategories.length + uniqueTestingServices.length
-        : getTestingCategories().reduce((n, c) => n + (c.service_count ?? 0), 0),
+        : allTestingCategories.reduce((n, c) => n + (c.service_count ?? 0), 0),
       icon: "flask",
     },
     { key: "products", label: "BIS Products", count: q ? productTotal : undefined, icon: "box" },

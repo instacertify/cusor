@@ -84,10 +84,18 @@ function searchParamsFor(q: string) {
   };
 }
 
+/** Slim product columns for search cards / lists (skips heavy description blobs). */
+const PRODUCT_SEARCH_SELECT = `
+  SELECT p.id, p.slug, p.name, p.standard, p.scheme, p.qco_status, p.hsn4, p.hsn8,
+         p.min_price, p.max_price, p.lab_count, p.featured, p.category_id,
+         p.image, p.created_at, '' AS description,
+         c.name AS category_name, c.slug AS category_slug, c.icon AS category_icon, c.image AS category_image
+  FROM products p JOIN categories c ON c.id = p.category_id`;
+
 export function searchProducts(q: string, limit = 30, offset = 0): Product[] {
   return getDb()
     .prepare(
-      `${PRODUCT_SELECT}
+      `${PRODUCT_SEARCH_SELECT}
        WHERE ${SEARCH_WHERE}
        ORDER BY p.lab_count DESC LIMIT @limit OFFSET @offset`
     )

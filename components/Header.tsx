@@ -60,10 +60,10 @@ export default async function Header() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 flex items-center gap-2 sm:gap-3 min-h-[4.25rem] sm:min-h-[5rem] py-2">
         <a href="/" aria-label="certko home" className="shrink-0 min-w-0">
           <span className="hidden sm:block">
-            <Logo width={176} withTagline priority />
+            <Logo width={162} withTagline priority />
           </span>
           <span className="sm:hidden">
-            <Logo width={128} withTagline priority />
+            <Logo width={118} withTagline priority />
           </span>
         </a>
         <div className="hidden lg:block flex-1 max-w-sm mx-auto">
