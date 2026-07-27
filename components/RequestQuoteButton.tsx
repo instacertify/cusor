@@ -5,7 +5,7 @@ export type QuoteKind = "test" | "certification" | "product" | "general" | "book
 export function quoteContactHref(subject: string, kind: QuoteKind = "general"): string {
   const label =
     kind === "book"
-      ? `${subject} — book a test`
+      ? `${subject} — contact Instacertify`
       : kind === "test"
         ? `${subject} — request quote for this test`
         : kind === "certification"
@@ -21,7 +21,7 @@ export function quoteContactHref(subject: string, kind: QuoteKind = "general"): 
 }
 
 export function quoteLabel(kind: QuoteKind, short = false): string {
-  if (kind === "book") return short ? "Book a test" : "Book a test";
+  if (kind === "book") return "Contact Instacertify";
   if (kind === "test") return short ? "Request quote" : "Request a quote for this test";
   if (kind === "certification") {
     return short ? "Request quote" : "Request a quote for this certification";

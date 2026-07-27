@@ -13,7 +13,7 @@ export default async function CtaBanner({
   const settings = getSettings();
   const heading =
     kind === "book" && subject
-      ? `Book a test with ${subject}`
+      ? `Need help with ${subject}?`
       : kind === "test" && subject
         ? `Need a quote for ${subject}?`
         : kind === "certification" && subject
@@ -23,7 +23,7 @@ export default async function CtaBanner({
             : settings.cta_heading;
   const text =
     kind === "book"
-      ? "Fill in a short form and someone from our team will connect with you within 24 hours to confirm scope, samples and timeline."
+      ? "Contact Instacertify — someone from our team will connect with you within 24 hours."
       : kind === "test"
         ? "Share your product details and we’ll map the lab scope, sample size, timeline and indicative cost — free quote in 24 hours."
         : kind === "certification"

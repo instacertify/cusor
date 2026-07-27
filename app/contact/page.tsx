@@ -53,12 +53,12 @@ export default async function ContactPage({ searchParams }: Props) {
         <div>
           <h1 className="font-display text-2xl sm:text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
             {sp.intent === "book"
-              ? "Book a test"
+              ? "Contact Instacertify"
               : page?.hero_heading || "Talk to a BIS expert"}
           </h1>
           <p className="mt-4 text-base sm:text-lg text-ink-600 leading-relaxed">
             {sp.intent === "book"
-              ? "Tell us what you need tested. Someone from our team will connect with you within 24 hours."
+              ? "Tell us about the lab or product you need help with. Someone from our team will connect with you within 24 hours."
               : page?.hero_subheading ||
                 "Tell us about your product and we will map the standard, estimate the full cost and send a free quote within 24 hours."}
           </p>

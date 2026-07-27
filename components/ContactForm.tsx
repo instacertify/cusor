@@ -69,7 +69,7 @@ export default function ContactForm({
 
   const submitLabel =
     intent === "book"
-      ? "Book a test"
+      ? "Contact Instacertify"
       : intent === "test"
         ? "Request a quote for this test"
         : intent === "certification"
@@ -78,7 +78,7 @@ export default function ContactForm({
 
   const productLabel =
     intent === "book"
-      ? "Lab / test"
+      ? "Lab / product"
       : intent === "test"
         ? "Test / service"
         : intent === "certification"

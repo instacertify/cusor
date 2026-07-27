@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!lab) return {};
   return {
     title: `${lab.name} — BIS Recognised Testing Lab`,
-    description: `${lab.name} in ${[lab.city, lab.state].filter(Boolean).join(", ")} is BIS-recognised for ${lab.scope_count} testing scopes. See categories, indicative prices and book a test with Certko.`,
+    description: `${lab.name} in ${[lab.city, lab.state].filter(Boolean).join(", ")} is BIS-recognised for ${lab.scope_count} testing scopes. See categories, indicative prices and contact Instacertify for help.`,
   };
 }
 
@@ -86,17 +86,11 @@ export default async function LabDetailPage({ params }: Props) {
         ))}
       </div>
 
-      <div className="mt-6 bg-white rounded-2xl border border-cream-300 shadow-card p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="min-w-0">
-          <h2 className="font-display text-lg font-semibold text-ink-950">Book a test at this lab</h2>
-          <p className="mt-1 text-sm text-ink-600">
-            Share your product details and our team will connect within 24 hours to confirm scope, samples and timeline.
-          </p>
-        </div>
+      <div className="mt-6">
         <RequestQuoteButton
           subject={lab.name}
           kind="book"
-          className="shrink-0 w-full sm:w-auto"
+          className="w-full sm:w-auto"
         />
       </div>
 
