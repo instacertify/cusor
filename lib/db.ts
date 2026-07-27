@@ -121,6 +121,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
       phone TEXT,
       email TEXT,
       validity TEXT,
+      accreditation TEXT NOT NULL DEFAULT '',
       min_price INTEGER,
       max_price INTEGER,
       scope_count INTEGER NOT NULL DEFAULT 0,
@@ -346,6 +347,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureTestimonialsLibrary(db);
   clearLegacyHomeAnnouncement(db);
   scrubLabPublicContactDetails(db);
+  ensureLabsAccreditationColumn(db);
 }
 
 function runEnsures(db: SqliteDatabase) {
@@ -358,6 +360,7 @@ function runEnsures(db: SqliteDatabase) {
   ensureTestimonialsLibrary(db);
   clearLegacyHomeAnnouncement(db);
   scrubLabPublicContactDetails(db);
+  ensureLabsAccreditationColumn(db);
 }
 
 /** Remove the old default homepage announcement chip from existing installs. */
@@ -406,6 +409,14 @@ function scrubLabPublicContactDetails(db: SqliteDatabase) {
     if (next !== faq.answer) {
       db.prepare("UPDATE faqs SET answer = ? WHERE id = ?").run(next, faq.id);
     }
+  }
+}
+
+/** Add labs.accreditation for NABL / BIS recognition notes on existing DBs. */
+function ensureLabsAccreditationColumn(db: SqliteDatabase) {
+  const cols = db.prepare("PRAGMA table_info(labs)").all() as { name: string }[];
+  if (!cols.some((c) => c.name === "accreditation")) {
+    db.exec(`ALTER TABLE labs ADD COLUMN accreditation TEXT NOT NULL DEFAULT ''`);
   }
 }
 
@@ -551,6 +562,7 @@ export interface Lab {
   phone: string | null;
   email: string | null;
   validity: string | null;
+  accreditation: string;
   min_price: number | null;
   max_price: number | null;
   scope_count: number;

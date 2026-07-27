@@ -108,6 +108,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         description: "Product pages, fees and labs",
       },
       {
+        href: "/admin/labs",
+        label: "Labs",
+        icon: "flask",
+        description: "BIS-recognised labs — location, accreditation, scopes, prices",
+      },
+      {
         href: "/admin/qcos",
         label: "QCO Alerts",
         icon: "bell",
