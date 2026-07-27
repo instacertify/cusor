@@ -1193,6 +1193,11 @@ export async function savePost(formData: FormData) {
       id,
     ]
   );
+  if (status === "published") {
+    const { notifyIndexNow } = await import("@/lib/indexnow");
+    const { BASE_URL } = await import("@/lib/seo");
+    notifyIndexNow([`${BASE_URL}/blog/${slug}`, `${BASE_URL}/blog`, `${BASE_URL}/sitemap.xml`]);
+  }
   revalidatePath("/", "layout");
   redirect(`/admin/blog/${id}?saved=1`);
 }
@@ -1205,6 +1210,45 @@ export async function deletePost(formData: FormData) {
 }
 
 // ---------- SEO tools ----------
+export async function submitIndexNow(formData: FormData) {
+  await requireAdmin();
+  const { submitToIndexNow, INDEXNOW_KEY_URL } = await import("@/lib/indexnow");
+  const { BASE_URL } = await import("@/lib/seo");
+  const raw = String(formData.get("urls") ?? "");
+  let urls = raw
+    .split(/[\n,]+/)
+    .map((u) => u.trim())
+    .filter(Boolean);
+
+  if (formData.get("include_home")) {
+    urls.push(BASE_URL, `${BASE_URL}/`, `${BASE_URL}/products`, `${BASE_URL}/certifications`);
+  }
+  if (formData.get("include_recent_posts")) {
+    const posts = getDb()
+      .prepare(
+        `SELECT slug FROM posts WHERE status = 'published' ORDER BY published_at DESC LIMIT 20`
+      )
+      .all() as { slug: string }[];
+    for (const p of posts) urls.push(`${BASE_URL}/blog/${p.slug}`);
+    urls.push(`${BASE_URL}/blog`);
+  }
+  if (urls.length === 0) {
+    urls = [BASE_URL, `${BASE_URL}/sitemap.xml`];
+  }
+
+  const result = await submitToIndexNow(urls);
+  logAdminEvent(
+    "indexnow_submit",
+    "",
+    `${result.ok ? "ok" : "fail"}:${result.status}:${result.submitted}:${INDEXNOW_KEY_URL}`
+  );
+  const q = new URLSearchParams();
+  q.set(result.ok ? "indexnow" : "indexnow_error", "1");
+  q.set("msg", result.message.slice(0, 180));
+  q.set("n", String(result.submitted));
+  redirect(`/admin/seo?${q.toString()}`);
+}
+
 export async function saveSeo(formData: FormData) {
   await requireAdmin();
   const { saveSeoMeta } = await import("@/lib/seo");
