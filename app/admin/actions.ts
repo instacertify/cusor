@@ -1645,3 +1645,200 @@ export async function bulkImportEntity(formData: FormData) {
     };
   }
 }
+
+// ---------- Backlinks ----------
+export async function saveBacklink(formData: FormData) {
+  await requireAdmin();
+  const { upsertBacklink } = await import("@/lib/backlinks");
+  const idRaw = String(formData.get("id") ?? "").trim();
+  const id = idRaw ? Number(idRaw) : undefined;
+  const drRaw = String(formData.get("domain_rating") ?? "").trim();
+  const domain_rating = drRaw === "" ? null : Number(drRaw);
+  upsertBacklink({
+    id: id && !Number.isNaN(id) ? id : undefined,
+    direction: String(formData.get("direction") ?? "inbound"),
+    source_url: String(formData.get("source_url") ?? ""),
+    target_url: String(formData.get("target_url") ?? ""),
+    anchor_text: String(formData.get("anchor_text") ?? ""),
+    rel_nofollow: Boolean(formData.get("rel_nofollow")),
+    status: String(formData.get("status") ?? "pending"),
+    notes: String(formData.get("notes") ?? ""),
+    domain_rating:
+      domain_rating != null && !Number.isNaN(domain_rating) ? domain_rating : null,
+    contact_email: String(formData.get("contact_email") ?? ""),
+  });
+  revalidateSoon("/admin/backlinks");
+  redirect("/admin/backlinks?saved=1");
+}
+
+export async function deleteBacklinkAction(formData: FormData) {
+  await requireAdmin();
+  const { deleteBacklink } = await import("@/lib/backlinks");
+  deleteBacklink(Number(formData.get("id")));
+  revalidateSoon("/admin/backlinks");
+  redirect("/admin/backlinks?saved=1");
+}
+
+export async function addSuggestedInternalBacklink(formData: FormData) {
+  await requireAdmin();
+  const { upsertBacklink } = await import("@/lib/backlinks");
+  const target_url = String(formData.get("target_url") ?? "").trim();
+  const anchor_text = String(formData.get("anchor_text") ?? "").trim();
+  if (!target_url) redirect("/admin/backlinks");
+  upsertBacklink({
+    direction: "internal",
+    source_url: "/blog",
+    target_url,
+    anchor_text: anchor_text || target_url,
+    status: "pending",
+    notes: "Suggested from internal link opportunities",
+  });
+  revalidateSoon("/admin/backlinks");
+  redirect("/admin/backlinks?saved=1");
+}
+
+// ---------- Content writer ----------
+export async function generateContentDraft(formData: FormData) {
+  await requireAdmin();
+  const {
+    generateContent,
+    saveContentDraft,
+  } = await import("@/lib/content-writer");
+  const title = String(formData.get("title") ?? "").trim();
+  const focus_keyword = String(formData.get("focus_keyword") ?? "").trim();
+  if (!title && !focus_keyword) redirect("/admin/content-writer?error=1");
+
+  const generated = generateContent({
+    title: title || `Guide to ${focus_keyword}`,
+    focus_keyword: focus_keyword || title,
+    content_type: String(formData.get("content_type") ?? "guide") as
+      | "guide"
+      | "product"
+      | "faq"
+      | "comparison"
+      | "news"
+      | "pillar",
+    tone: String(formData.get("tone") ?? "professional") as
+      | "professional"
+      | "plain"
+      | "sales",
+    secondary_keywords: String(formData.get("secondary_keywords") ?? ""),
+    audience: String(formData.get("audience") ?? ""),
+    product_slug: String(formData.get("product_slug") ?? ""),
+    notes: String(formData.get("notes") ?? ""),
+    auto_link: Boolean(formData.get("auto_link")),
+  });
+
+  const id = saveContentDraft({
+    title: generated.title,
+    focus_keyword: focus_keyword || title,
+    content_type: String(formData.get("content_type") ?? "guide"),
+    tone: String(formData.get("tone") ?? "professional"),
+    excerpt: generated.excerpt,
+    content: generated.content,
+    meta_title: generated.meta_title,
+    meta_description: generated.meta_description,
+    secondary_keywords: generated.secondary_keywords,
+    internal_links_json: JSON.stringify(generated.internal_links),
+    status: "draft",
+  });
+  revalidateSoon("/admin/content-writer");
+  redirect(`/admin/content-writer/${id}?saved=1`);
+}
+
+export async function saveContentDraftAction(formData: FormData) {
+  await requireAdmin();
+  const { saveContentDraft } = await import("@/lib/content-writer");
+  const id = Number(formData.get("id"));
+  if (!id) redirect("/admin/content-writer");
+  saveContentDraft({
+    id,
+    title: String(formData.get("title") ?? "").trim(),
+    focus_keyword: String(formData.get("focus_keyword") ?? "").trim(),
+    content_type: String(formData.get("content_type") ?? "guide"),
+    tone: String(formData.get("tone") ?? "professional"),
+    excerpt: String(formData.get("excerpt") ?? ""),
+    content: String(formData.get("content") ?? ""),
+    meta_title: String(formData.get("meta_title") ?? ""),
+    meta_description: String(formData.get("meta_description") ?? ""),
+    secondary_keywords: String(formData.get("secondary_keywords") ?? ""),
+    status: "draft",
+  });
+  revalidateSoon("/admin/content-writer");
+  redirect(`/admin/content-writer/${id}?saved=1`);
+}
+
+export async function deleteContentDraftAction(formData: FormData) {
+  await requireAdmin();
+  const { deleteContentDraft } = await import("@/lib/content-writer");
+  deleteContentDraft(Number(formData.get("id")));
+  revalidateSoon("/admin/content-writer");
+  redirect("/admin/content-writer?saved=1");
+}
+
+export async function publishContentDraftToBlog(formData: FormData) {
+  await requireAdmin();
+  const { publishDraftToBlog } = await import("@/lib/content-writer");
+  const id = Number(formData.get("id"));
+  const authorId = Number(formData.get("author_id")) || undefined;
+  const postId = publishDraftToBlog(id, authorId);
+  revalidatePath("/", "layout");
+  redirect(`/admin/blog/${postId}?saved=1`);
+}
+
+export async function regenerateContentDraft(formData: FormData) {
+  await requireAdmin();
+  const {
+    generateContent,
+    saveContentDraft,
+    getContentDraftById,
+  } = await import("@/lib/content-writer");
+  const id = Number(formData.get("id"));
+  const existing = getContentDraftById(id);
+  if (!existing) redirect("/admin/content-writer");
+
+  const title = String(formData.get("title") ?? existing.title).trim();
+  const focus_keyword = String(
+    formData.get("focus_keyword") ?? existing.focus_keyword
+  ).trim();
+  const content_type = String(
+    formData.get("content_type") ?? existing.content_type
+  );
+  const tone = String(formData.get("tone") ?? existing.tone);
+
+  const generated = generateContent({
+    title,
+    focus_keyword,
+    content_type: content_type as
+      | "guide"
+      | "product"
+      | "faq"
+      | "comparison"
+      | "news"
+      | "pillar",
+    tone: tone as "professional" | "plain" | "sales",
+    secondary_keywords: String(
+      formData.get("secondary_keywords") ?? existing.secondary_keywords
+    ),
+    product_slug: String(formData.get("product_slug") ?? ""),
+    notes: String(formData.get("notes") ?? ""),
+    auto_link: true,
+  });
+
+  saveContentDraft({
+    id,
+    title: generated.title,
+    focus_keyword,
+    content_type,
+    tone,
+    excerpt: generated.excerpt,
+    content: generated.content,
+    meta_title: generated.meta_title,
+    meta_description: generated.meta_description,
+    secondary_keywords: generated.secondary_keywords,
+    internal_links_json: JSON.stringify(generated.internal_links),
+    status: "draft",
+  });
+  revalidateSoon("/admin/content-writer");
+  redirect(`/admin/content-writer/${id}?saved=1`);
+}

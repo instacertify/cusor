@@ -14,6 +14,10 @@ import { ensureSeoLocationPosts } from "./seed-seo-posts";
 import { ensurePagesNavColumns } from "./pages-nav";
 import { ensureHeroSlidesCatalog } from "./hero-slides";
 import { ensureTestimonialsLibrary } from "./seed-testimonials";
+import {
+  ensureBacklinksCatalog,
+  ensureContentDraftsCatalog,
+} from "./growth-schema";
 
 /** Prefer ./data; fall back to /tmp when the app dir is not writable (some Node hosts). */
 export function getWritableDataDir(): string {
@@ -344,6 +348,8 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensurePagesNavColumns(db);
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
+  ensureBacklinksCatalog(db);
+  ensureContentDraftsCatalog(db);
   clearLegacyHomeAnnouncement(db);
   scrubLabPublicContactDetails(db);
 }
@@ -356,6 +362,8 @@ function runEnsures(db: SqliteDatabase) {
   ensurePagesNavColumns(db);
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
+  ensureBacklinksCatalog(db);
+  ensureContentDraftsCatalog(db);
   clearLegacyHomeAnnouncement(db);
   scrubLabPublicContactDetails(db);
 }

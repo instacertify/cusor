@@ -75,40 +75,92 @@ export function getRelatedProducts(product: Product, limit = 4): Product[] {
 const SEARCH_WHERE = `p.name LIKE @like OR p.standard LIKE @like OR c.name LIKE @like
   OR (@hsn != '' AND (p.hsn4 LIKE @hsn OR p.hsn8 LIKE @hsn))`;
 
+/**
+ * Build SQL params for product search.
+ * Multi-word / incomplete queries match token-by-token (AND), so
+ * "led lam" still finds LED lamps even when the keyword is unfinished.
+ */
 function searchParamsFor(q: string) {
   const trimmed = q.trim();
+  const tokens = trimmed
+    .toLowerCase()
+    .split(/[\s+/]+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 2 || /^\d/.test(t));
+
+  if (tokens.length <= 1) {
+    return {
+      like: `%${trimmed.replace(/\s+/g, "%")}%`,
+      hsn: /^\d{2,8}$/.test(trimmed) ? `${trimmed}%` : "",
+      tokenWhere: "",
+      tokenParams: {} as Record<string, string>,
+    };
+  }
+
+  // Each token must appear in name, standard, category, or HSN
+  const tokenClauses: string[] = [];
+  const tokenParams: Record<string, string> = {};
+  tokens.forEach((t, i) => {
+    const key = `t${i}`;
+    tokenParams[key] = `%${t}%`;
+    tokenClauses.push(
+      `(p.name LIKE @${key} OR p.standard LIKE @${key} OR c.name LIKE @${key} OR p.scheme LIKE @${key} OR p.hsn4 LIKE @${key} OR p.hsn8 LIKE @${key})`
+    );
+  });
+
   return {
-    like: `%${trimmed.replace(/\s+/g, "%")}%`,
-    // numeric queries also match HSN codes (prefix match)
+    // Fallback phrase pattern (ordered) for single-clause callers
+    like: `%${tokens.join("%")}%`,
     hsn: /^\d{2,8}$/.test(trimmed) ? `${trimmed}%` : "",
+    tokenWhere: tokenClauses.join(" AND "),
+    tokenParams,
   };
+}
+
+function productSearchWhere(sp: ReturnType<typeof searchParamsFor>): string {
+  if (sp.tokenWhere) return sp.tokenWhere;
+  return SEARCH_WHERE;
 }
 
 /** Slim product columns for search cards / lists (skips heavy description blobs). */
 const PRODUCT_SEARCH_SELECT = `
   SELECT p.id, p.slug, p.name, p.standard, p.scheme, p.qco_status, p.hsn4, p.hsn8,
          p.min_price, p.max_price, p.lab_count, p.featured, p.category_id,
-         p.image, p.created_at, '' AS description,
+         p.image, p.timeline, '' AS description,
          c.name AS category_name, c.slug AS category_slug, c.icon AS category_icon, c.image AS category_image
   FROM products p JOIN categories c ON c.id = p.category_id`;
 
 export function searchProducts(q: string, limit = 30, offset = 0): Product[] {
+  const sp = searchParamsFor(q);
   return getDb()
     .prepare(
       `${PRODUCT_SEARCH_SELECT}
-       WHERE ${SEARCH_WHERE}
-       ORDER BY p.lab_count DESC LIMIT @limit OFFSET @offset`
+       WHERE ${productSearchWhere(sp)}
+       ORDER BY
+         CASE WHEN lower(p.name) LIKE @namePrefix THEN 0
+              WHEN lower(p.name) LIKE @like THEN 1
+              ELSE 2 END,
+         p.lab_count DESC
+       LIMIT @limit OFFSET @offset`
     )
-    .all({ ...searchParamsFor(q), limit, offset }) as Product[];
+    .all({
+      like: sp.like,
+      hsn: sp.hsn,
+      ...sp.tokenParams,
+      namePrefix: `${q.trim().toLowerCase().split(/\s+/)[0] || ""}%`,
+      limit,
+      offset,
+    }) as Product[];
 }
 
 export function countSearchProducts(q: string): number {
+  const sp = searchParamsFor(q);
   const row = getDb()
     .prepare(
       `SELECT COUNT(*) AS n FROM products p JOIN categories c ON c.id = p.category_id
-       WHERE ${SEARCH_WHERE}`
+       WHERE ${productSearchWhere(sp)}`
     )
-    .get(searchParamsFor(q)) as { n: number };
+    .get({ like: sp.like, hsn: sp.hsn, ...sp.tokenParams }) as { n: number };
   return row.n;
 }
 
@@ -137,9 +189,10 @@ export function queryProductsTable(
   const params: Record<string, string | number> = {};
   if (filter.q?.trim()) {
     const sp = searchParamsFor(filter.q);
-    clauses.push(`(${SEARCH_WHERE})`);
+    clauses.push(`(${productSearchWhere(sp)})`);
     params.like = sp.like;
     params.hsn = sp.hsn;
+    Object.assign(params, sp.tokenParams);
   }
   if (filter.categoryId) {
     clauses.push("p.category_id = @categoryId");
@@ -211,9 +264,20 @@ export function getLabs(filter: LabFilter = {}): { labs: Lab[]; total: number } 
     params.push(`%${filter.category}%`);
   }
   if (filter.q) {
-    clauses.push("(name LIKE ? OR city LIKE ?)");
-    const like = `%${filter.q.trim()}%`;
-    params.push(like, like);
+    const tokens = filter.q
+      .trim()
+      .toLowerCase()
+      .split(/[\s+/]+/)
+      .map((t) => t.trim())
+      .filter((t) => t.length >= 2 || /^\d/.test(t));
+    const terms = tokens.length > 0 ? tokens : [filter.q.trim().toLowerCase()];
+    const tokenClauses: string[] = [];
+    for (const t of terms) {
+      tokenClauses.push("(name LIKE ? OR city LIKE ? OR state LIKE ?)");
+      const like = `%${t}%`;
+      params.push(like, like, like);
+    }
+    clauses.push(`(${tokenClauses.join(" AND ")})`);
   }
   const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
   const total = (
@@ -635,19 +699,31 @@ export function getCertProductById(id: number): CertProduct | undefined {
 }
 
 export function searchCertProducts(q: string, limit = 8): CertProduct[] {
-  const like = `%${q}%`;
+  const tokens = q
+    .trim()
+    .toLowerCase()
+    .split(/[\s+/]+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 2 || /^\d/.test(t));
+  const terms = tokens.length > 0 ? tokens : [q.trim().toLowerCase()];
+  const params: string[] = [];
+  const clauses = terms.map((t) => {
+    params.push(`%${t}%`, `%${t}%`, `%${t}%`, `%${t}%`);
+    return `(cp.name LIKE ? OR cp.standards LIKE ? OR cp.family LIKE ? OR c.name LIKE ?)`;
+  });
+  const first = terms[0] || q.trim();
   return getDb()
     .prepare(
       `SELECT cp.*, c.slug AS cert_slug, c.name AS cert_name, c.region AS cert_region
        FROM cert_products cp
        JOIN certifications c ON c.id = cp.certification_id
-       WHERE cp.name LIKE ? OR cp.standards LIKE ? OR cp.family LIKE ? OR c.name LIKE ?
+       WHERE ${clauses.join(" AND ")}
        ORDER BY
-         CASE WHEN cp.name LIKE ? THEN 0 ELSE 1 END,
+         CASE WHEN lower(cp.name) LIKE ? THEN 0 ELSE 1 END,
          cp.sort, cp.name
        LIMIT ?`
     )
-    .all(like, like, like, like, `${q}%`, limit) as CertProduct[];
+    .all(...params, `${first.toLowerCase()}%`, limit) as CertProduct[];
 }
 
 export function countCertProducts(certificationId?: number): number {
@@ -721,20 +797,33 @@ export function getTestingServiceById(id: number): TestingService | undefined {
 }
 
 export function searchTestingServices(q: string, limit = 8): TestingService[] {
-  const like = `%${q}%`;
+  const tokens = q
+    .trim()
+    .toLowerCase()
+    .split(/[\s+/]+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 2 || /^\d/.test(t));
+  const terms = tokens.length > 0 ? tokens : [q.trim().toLowerCase()];
+  const params: string[] = [];
+  const clauses = terms.map((t) => {
+    const like = `%${t}%`;
+    params.push(like, like, like, like, like, like);
+    return `(s.name LIKE ? OR s.standards LIKE ? OR s.test_type LIKE ?
+          OR s.product_category LIKE ? OR s.summary LIKE ? OR c.name LIKE ?)`;
+  });
+  const first = terms[0] || q.trim();
   return getDb()
     .prepare(
       `SELECT s.*, c.slug AS category_slug, c.name AS category_name, c.icon AS category_icon
        FROM testing_services s
        JOIN testing_categories c ON c.id = s.category_id
-       WHERE s.name LIKE ? OR s.standards LIKE ? OR s.test_type LIKE ?
-          OR s.product_category LIKE ? OR s.summary LIKE ? OR c.name LIKE ?
+       WHERE ${clauses.join(" AND ")}
        ORDER BY
-         CASE WHEN s.name LIKE ? THEN 0 WHEN c.name LIKE ? THEN 1 ELSE 2 END,
+         CASE WHEN lower(s.name) LIKE ? THEN 0 WHEN lower(c.name) LIKE ? THEN 1 ELSE 2 END,
          s.sort, s.name
        LIMIT ?`
     )
-    .all(like, like, like, like, like, like, `${q}%`, `${q}%`, limit) as TestingService[];
+    .all(...params, `${first.toLowerCase()}%`, `${first.toLowerCase()}%`, limit) as TestingService[];
 }
 
 export function getAllTestingServices(limit = 100): TestingService[] {
