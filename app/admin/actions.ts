@@ -15,8 +15,9 @@ import { logAdminEvent } from "@/lib/admin-audit";
 
 /** Revalidate after the redirect response so Save/Update feels snappy. */
 function revalidateSoon(path: string, type?: "layout" | "page") {
-  // Keep typeahead search fresh when CMS content changes.
+  // Keep typeahead search + sitemap fresh when CMS content changes.
   void import("@/lib/search-index").then((m) => m.invalidateSearchIndex());
+  void import("@/lib/sitemap-xml").then((m) => m.invalidateSitemapCache());
   after(() => {
     if (type) revalidatePath(path, type);
     else revalidatePath(path);
@@ -47,6 +48,8 @@ export async function clearSiteCache(formData?: FormData) {
   clearGmarkCache();
   const { invalidateSearchIndex } = await import("@/lib/search-index");
   invalidateSearchIndex();
+  const { invalidateSitemapCache } = await import("@/lib/sitemap-xml");
+  invalidateSitemapCache();
 
   // Run synchronously so the Done confirmation means cache is already cleared.
   revalidatePath("/", "layout");

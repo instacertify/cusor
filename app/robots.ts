@@ -6,9 +6,15 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin", "/api"],
+        disallow: ["/admin", "/admin/", "/api/", "/api"],
+      },
+      {
+        userAgent: "Googlebot",
+        allow: ["/", "/sitemap.xml"],
+        disallow: ["/admin", "/admin/", "/api/", "/api"],
       },
     ],
     sitemap: "https://certko.com/sitemap.xml",
+    host: "https://certko.com",
   };
 }

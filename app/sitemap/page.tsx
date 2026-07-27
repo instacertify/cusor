@@ -100,7 +100,7 @@ export default async function HtmlSitemapPage() {
         Quick links to the main areas of Certko. For search engines, the machine-readable
         map is also available at{" "}
         <Link href="/sitemap.xml" className="font-semibold text-butter-700 hover:underline">
-          /sitemap.xml
+          https://certko.com/sitemap.xml
         </Link>
         .
       </p>
