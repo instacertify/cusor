@@ -1,12 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ContactForm from "./ContactForm";
 import Icon from "./Icon";
 
 /** Yellow Contact button on lab pages → expands testing-requirements form → saves lead. */
 export default function LabContactPanel({ labName }: { labName: string }) {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.location.hash === "#lab-contact") setOpen(true);
+    const onHash = () => {
+      if (window.location.hash === "#lab-contact") setOpen(true);
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
 
   return (
     <div id="lab-contact" className="mt-6 scroll-mt-24">
