@@ -88,7 +88,7 @@ function searchParamsFor(q: string) {
 const PRODUCT_SEARCH_SELECT = `
   SELECT p.id, p.slug, p.name, p.standard, p.scheme, p.qco_status, p.hsn4, p.hsn8,
          p.min_price, p.max_price, p.lab_count, p.featured, p.category_id,
-         p.image, p.created_at, '' AS description,
+         p.timeline, p.image, '' AS description,
          c.name AS category_name, c.slug AS category_slug, c.icon AS category_icon, c.image AS category_image
   FROM products p JOIN categories c ON c.id = p.category_id`;
 
@@ -759,3 +759,85 @@ export function countTestingServices(categoryId?: number): number {
   }
   return (getDb().prepare("SELECT COUNT(*) AS n FROM testing_services").get() as { n: number }).n;
 }
+
+/** Browse suggestions when search has no matches — keeps users on-site with choices. */
+export type SearchBrowseSuggestion = {
+  type: "product" | "certification" | "testing" | "lab" | "category";
+  name: string;
+  detail: string;
+  href: string;
+};
+
+export function getSearchBrowseSuggestions(limit = 12): SearchBrowseSuggestion[] {
+  const n = Math.max(4, Math.min(24, Math.floor(limit) || 12));
+  const per = Math.max(2, Math.ceil(n / 4));
+  const out: SearchBrowseSuggestion[] = [];
+
+  const products = getDb()
+    .prepare(
+      `${PRODUCT_SELECT} ORDER BY RANDOM() LIMIT ?`
+    )
+    .all(per) as Product[];
+  for (const p of products) {
+    out.push({
+      type: "product",
+      name: p.name,
+      detail: `BIS · ${p.standard || p.scheme}`,
+      href: `/product/${p.slug}`,
+    });
+  }
+
+  const certs = getDb()
+    .prepare(`SELECT slug, name, region FROM certifications ORDER BY RANDOM() LIMIT ?`)
+    .all(per) as Array<{ slug: string; name: string; region: string }>;
+  for (const c of certs) {
+    out.push({
+      type: "certification",
+      name: `${c.name} Certification`,
+      detail: c.region || "Certification",
+      href: `/certifications/${c.slug}`,
+    });
+  }
+
+  const tests = getDb()
+    .prepare(
+      `SELECT s.name, s.slug, c.slug AS category_slug, c.name AS category_name
+       FROM testing_services s
+       JOIN testing_categories c ON c.id = s.category_id
+       ORDER BY RANDOM() LIMIT ?`
+    )
+    .all(per) as Array<{
+    name: string;
+    slug: string;
+    category_slug: string;
+    category_name: string;
+  }>;
+  for (const t of tests) {
+    out.push({
+      type: "testing",
+      name: t.name,
+      detail: `Testing · ${t.category_name}`,
+      href: `/testing/${t.category_slug}/${t.slug}`,
+    });
+  }
+
+  const labs = getDb()
+    .prepare(`SELECT slug, name, city, state FROM labs ORDER BY RANDOM() LIMIT ?`)
+    .all(per) as Array<{ slug: string; name: string; city: string; state: string }>;
+  for (const l of labs) {
+    out.push({
+      type: "lab",
+      name: l.name,
+      detail: [l.city, l.state].filter(Boolean).join(", ") || "Testing lab",
+      href: `/labs/${l.slug}`,
+    });
+  }
+
+  // Shuffle combined list lightly
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out.slice(0, n);
+}
+

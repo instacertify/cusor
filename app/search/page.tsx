@@ -18,8 +18,10 @@ import {
   getLabsForProduct,
   getCertifications,
   getTestingCategories,
+  getSearchBrowseSuggestions,
 } from "@/lib/queries";
 import { formatNumber, formatPriceRange, formatINR } from "@/lib/format";
+import { ensureDbReady } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +41,12 @@ interface Props {
   searchParams: Promise<{ q?: string; page?: string; type?: string; state?: string }>;
 }
 
+function includesCI(hay: string | null | undefined, needle: string) {
+  return (hay || "").toLowerCase().includes(needle);
+}
+
 export default async function SearchPage({ searchParams }: Props) {
+  await ensureDbReady();
   const sp = await searchParams;
   const q = (sp.q ?? "").trim();
   const page = Math.max(1, Number(sp.page) || 1);
@@ -57,38 +64,38 @@ export default async function SearchPage({ searchParams }: Props) {
   const faqs = getFaqs("page:search");
   const lq = q.toLowerCase();
 
-  // products (BIS master)
+  // products (BIS master) — 2+ characters; still run for short queries safely
   const productLimit = tab === "all" ? 8 : PAGE_SIZE;
-  const products = q
+  const products = q.length >= 2
     ? searchProducts(q, productLimit, tab === "products" ? (page - 1) * PAGE_SIZE : 0)
     : [];
-  const productTotal = q ? countSearchProducts(q) : 0;
+  const productTotal = q.length >= 2 ? countSearchProducts(q) : 0;
   const productPages = Math.ceil(productTotal / PAGE_SIZE);
 
   // certification programmes + BEE/GMARK catalogue products (load once)
   const allCertifications = getCertifications();
-  const certProgrammes = q
+  const certProgrammes = q.length >= 2
     ? allCertifications.filter(
         (c) =>
-          c.name.toLowerCase().includes(lq) ||
-          c.full_name.toLowerCase().includes(lq) ||
-          c.summary.toLowerCase().includes(lq) ||
-          c.slug.includes(lq)
+          includesCI(c.name, lq) ||
+          includesCI(c.full_name, lq) ||
+          includesCI(c.summary, lq) ||
+          includesCI(c.slug, lq)
       )
     : allCertifications;
-  const certProducts = q ? searchCertProducts(q, tab === "certs" ? 40 : 8) : [];
+  const certProducts = q.length >= 2 ? searchCertProducts(q, tab === "certs" ? 40 : 8) : [];
 
   // product testing categories + services (load once)
   const allTestingCategories = getTestingCategories();
-  const testingCategories = q
+  const testingCategories = q.length >= 2
     ? allTestingCategories.filter(
         (c) =>
-          c.name.toLowerCase().includes(lq) ||
-          c.summary.toLowerCase().includes(lq) ||
-          c.slug.includes(lq)
+          includesCI(c.name, lq) ||
+          includesCI(c.summary, lq) ||
+          includesCI(c.slug, lq)
       )
     : allTestingCategories;
-  const uniqueTestingServices = q
+  const uniqueTestingServices = q.length >= 2
     ? searchTestingServices(q, tab === "testing" ? 60 : 8)
     : tab === "testing"
     ? getAllTestingServices(60)
@@ -97,9 +104,9 @@ export default async function SearchPage({ searchParams }: Props) {
   // labs (labs tab searches even without q, supports state filter + pagination)
   const labLimit = tab === "labs" ? PAGE_SIZE : 6;
   const { labs, total: labTotal } =
-    tab === "labs" || q
+    tab === "labs" || q.length >= 2
       ? getLabs({
-          q: q || undefined,
+          q: q.length >= 2 ? q : undefined,
           state: tab === "labs" && state ? state : undefined,
           limit: labLimit,
           offset: tab === "labs" ? (page - 1) * PAGE_SIZE : 0,
@@ -116,6 +123,22 @@ export default async function SearchPage({ searchParams }: Props) {
   const best = !bestCertProduct && tab !== "labs" && page === 1 && products.length > 0 ? products[0] : null;
   const bestLabs = best ? getLabsForProduct(best.id).slice(0, 5) : [];
 
+  // If nothing matched, offer random on-site picks so the user never hits a dead end.
+  const showBrowsePicks =
+    q.length >= 2 &&
+    ((tab === "all" &&
+      productTotal === 0 &&
+      certProgrammes.length === 0 &&
+      certProducts.length === 0 &&
+      testingCategories.length === 0 &&
+      uniqueTestingServices.length === 0 &&
+      labs.length === 0) ||
+      (tab === "products" && productTotal === 0) ||
+      (tab === "certs" && certProgrammes.length === 0 && certProducts.length === 0) ||
+      (tab === "testing" && testingCategories.length === 0 && uniqueTestingServices.length === 0) ||
+      (tab === "labs" && labTotal === 0));
+
+  const picks = showBrowsePicks ? getSearchBrowseSuggestions(12) : [];
   const tabHref = (t: Tab, extra: Record<string, string | undefined> = {}) => {
     const p = new URLSearchParams();
     if (q) p.set("q", q);
@@ -187,9 +210,56 @@ export default async function SearchPage({ searchParams }: Props) {
         {q ? `Results for “${q}”` : tab === "labs" ? "Find a Testing Lab" : "Search"}
       </h1>
       <div className="mt-5 sm:mt-6 max-w-xl">
-        <SearchBox large placeholder="Search product, IS, HSN or lab…" />
+        <SearchBox large placeholder="Search product, IS, HSN or lab…" initialQuery={q} />
       </div>
 
+      {q.length > 0 && q.length < 2 && (
+        <p className="mt-4 text-sm text-ink-600 bg-cream-100 border border-cream-300 rounded-2xl px-4 py-3">
+          Type at least 2 characters to search. Or pick a section:{" "}
+          <Link href="/products/all" className="font-semibold text-butter-700 hover:underline">Products</Link>
+          {" · "}
+          <Link href="/certifications" className="font-semibold text-butter-700 hover:underline">Certifications</Link>
+          {" · "}
+          <Link href="/testing" className="font-semibold text-butter-700 hover:underline">Testing</Link>
+          {" · "}
+          <Link href="/labs" className="font-semibold text-butter-700 hover:underline">Labs</Link>
+        </p>
+      )}
+
+      {showBrowsePicks && (
+        <section className="mt-8 bg-white rounded-3xl border border-cream-300 shadow-card p-5 sm:p-6">
+          <h2 className="font-display text-xl font-semibold text-ink-950">
+            No exact match for “{q}”
+          </h2>
+          <p className="mt-2 text-sm text-ink-600">
+            Nothing matched that keyword. Choose one of these options to continue — or try a shorter
+            word (e.g. “LED”, “cable”, “BIS”).
+          </p>
+          <div className="mt-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {picks.map((item) => (
+              <Link
+                key={item.href + item.name}
+                href={item.href}
+                className="rounded-2xl border border-cream-300 bg-cream-50 hover:border-butter-500 hover:bg-white transition p-4"
+              >
+                <span className="text-[10px] font-bold uppercase tracking-wide text-butter-700">
+                  {item.type}
+                </span>
+                <span className="mt-1 block font-semibold text-ink-950 line-clamp-2">{item.name}</span>
+                <span className="mt-1 block text-xs text-ink-500 line-clamp-1">{item.detail}</span>
+              </Link>
+            ))}
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3 text-sm">
+            <Link href="/products/all" className="font-bold text-butter-700 hover:underline">
+              Browse all products →
+            </Link>
+            <Link href="/contact" className="font-bold text-butter-700 hover:underline">
+              Contact Instacertify →
+            </Link>
+          </div>
+        </section>
+      )}
       {/* Tabs */}
       <div className="mt-6 sm:mt-8 flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-none">
         {TABS.map((t) => (
@@ -501,12 +571,12 @@ export default async function SearchPage({ searchParams }: Props) {
                 <ProductCard key={p.id} product={p} />
               ))}
             </div>
-          ) : (
+          ) : !showBrowsePicks ? (
             <p className="mt-4 text-ink-600 text-sm">
               No products matched. Try a shorter keyword (e.g. “cable” instead of the full product name), or{" "}
               <Link href="/contact" className="font-bold text-butter-700">ask an expert</Link> — we answer within 24 hours.
             </p>
-          )}
+          ) : null}
           {tab === "all" && productTotal > products.length && (
             <div className="mt-5">
               <Link href={tabHref("products")} className="text-sm font-bold text-butter-700 hover:text-butter-600">
