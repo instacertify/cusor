@@ -75,41 +75,100 @@ export function getRelatedProducts(product: Product, limit = 4): Product[] {
 const SEARCH_WHERE = `p.name LIKE @like OR p.standard LIKE @like OR c.name LIKE @like
   OR (@hsn != '' AND (p.hsn4 LIKE @hsn OR p.hsn8 LIKE @hsn))`;
 
+/**
+ * Multi-word / incomplete queries match token-by-token so "led lam" still finds LED lamps.
+ */
 function searchParamsFor(q: string) {
   const trimmed = q.trim();
+  const tokens = trimmed
+    .toLowerCase()
+    .split(/[\s+/]+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 2 || /^\d/.test(t));
+
+  if (tokens.length <= 1) {
+    return {
+      like: `%${trimmed.replace(/\s+/g, "%")}%`,
+      hsn: /^\d{2,8}$/.test(trimmed) ? `${trimmed}%` : "",
+      tokenWhere: "",
+      tokenParams: {} as Record<string, string>,
+    };
+  }
+
+  const tokenClauses: string[] = [];
+  const tokenParams: Record<string, string> = {};
+  tokens.forEach((t, i) => {
+    const key = `t${i}`;
+    tokenParams[key] = `%${t}%`;
+    tokenClauses.push(
+      `(p.name LIKE @${key} OR p.standard LIKE @${key} OR c.name LIKE @${key} OR p.scheme LIKE @${key} OR p.hsn4 LIKE @${key} OR p.hsn8 LIKE @${key})`
+    );
+  });
+
   return {
-    like: `%${trimmed.replace(/\s+/g, "%")}%`,
-    // numeric queries also match HSN codes (prefix match)
+    like: `%${tokens.join("%")}%`,
     hsn: /^\d{2,8}$/.test(trimmed) ? `${trimmed}%` : "",
+    tokenWhere: tokenClauses.join(" AND "),
+    tokenParams,
   };
+}
+
+function productSearchWhere(sp: ReturnType<typeof searchParamsFor>): string {
+  if (sp.tokenWhere) return sp.tokenWhere;
+  return SEARCH_WHERE;
 }
 
 /** Slim product columns for search cards / lists (skips heavy description blobs). */
 const PRODUCT_SEARCH_SELECT = `
   SELECT p.id, p.slug, p.name, p.standard, p.scheme, p.qco_status, p.hsn4, p.hsn8,
          p.min_price, p.max_price, p.lab_count, p.featured, p.category_id,
-         p.image, p.created_at, '' AS description,
+         p.image, p.timeline, '' AS description,
          c.name AS category_name, c.slug AS category_slug, c.icon AS category_icon, c.image AS category_image
   FROM products p JOIN categories c ON c.id = p.category_id`;
 
 export function searchProducts(q: string, limit = 30, offset = 0): Product[] {
-  return getDb()
-    .prepare(
-      `${PRODUCT_SEARCH_SELECT}
-       WHERE ${SEARCH_WHERE}
-       ORDER BY p.lab_count DESC LIMIT @limit OFFSET @offset`
-    )
-    .all({ ...searchParamsFor(q), limit, offset }) as Product[];
+  const sp = searchParamsFor(q);
+  const first = q.trim().toLowerCase().split(/\s+/)[0] || "";
+  try {
+    return getDb()
+      .prepare(
+        `${PRODUCT_SEARCH_SELECT}
+         WHERE ${productSearchWhere(sp)}
+         ORDER BY
+           CASE WHEN lower(p.name) LIKE @namePrefix THEN 0
+                WHEN lower(p.name) LIKE @like THEN 1
+                ELSE 2 END,
+           p.lab_count DESC
+         LIMIT @limit OFFSET @offset`
+      )
+      .all({
+        like: sp.like,
+        hsn: sp.hsn,
+        ...sp.tokenParams,
+        namePrefix: `${first}%`,
+        limit,
+        offset,
+      }) as Product[];
+  } catch (err) {
+    console.error("[certko] searchProducts failed:", err);
+    return [];
+  }
 }
 
 export function countSearchProducts(q: string): number {
-  const row = getDb()
-    .prepare(
-      `SELECT COUNT(*) AS n FROM products p JOIN categories c ON c.id = p.category_id
-       WHERE ${SEARCH_WHERE}`
-    )
-    .get(searchParamsFor(q)) as { n: number };
-  return row.n;
+  const sp = searchParamsFor(q);
+  try {
+    const row = getDb()
+      .prepare(
+        `SELECT COUNT(*) AS n FROM products p JOIN categories c ON c.id = p.category_id
+         WHERE ${productSearchWhere(sp)}`
+      )
+      .get({ like: sp.like, hsn: sp.hsn, ...sp.tokenParams }) as { n: number };
+    return row.n;
+  } catch (err) {
+    console.error("[certko] countSearchProducts failed:", err);
+    return 0;
+  }
 }
 
 export interface ProductTableFilter {
@@ -137,9 +196,10 @@ export function queryProductsTable(
   const params: Record<string, string | number> = {};
   if (filter.q?.trim()) {
     const sp = searchParamsFor(filter.q);
-    clauses.push(`(${SEARCH_WHERE})`);
+    clauses.push(`(${productSearchWhere(sp)})`);
     params.like = sp.like;
     params.hsn = sp.hsn;
+    Object.assign(params, sp.tokenParams);
   }
   if (filter.categoryId) {
     clauses.push("p.category_id = @categoryId");
