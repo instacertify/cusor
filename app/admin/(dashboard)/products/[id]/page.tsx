@@ -1,9 +1,26 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getProductById, getFaqs } from "@/lib/queries";
-import { saveProduct, saveFaq, deleteFaq, removeProductImage } from "../../../actions";
+import {
+  getProductById,
+  getFaqs,
+  getLabsForProduct,
+  getLabsForAdminSelect,
+  getTestingServicesForProduct,
+  getTestingServicesForAdminSelect,
+} from "@/lib/queries";
+import {
+  saveProduct,
+  saveFaq,
+  deleteFaq,
+  removeProductImage,
+  addProductLab,
+  removeProductLab,
+  addProductTesting,
+  removeProductTesting,
+} from "../../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
+import { formatINR } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +35,14 @@ export default async function AdminProductEdit({ params, searchParams }: Props) 
   const product = getProductById(Number(id));
   if (!product) notFound();
   const faqs = getFaqs(`product:${product.id}`);
+  const linkedLabs = getLabsForProduct(product.id);
+  const linkedTests = getTestingServicesForProduct(product.id);
+  const allLabs = getLabsForAdminSelect();
+  const allTests = getTestingServicesForAdminSelect();
+  const linkedLabIds = new Set(linkedLabs.map((l) => l.id));
+  const linkedTestIds = new Set(linkedTests.map((t) => t.id));
+  const availableLabs = allLabs.filter((l) => !linkedLabIds.has(l.id));
+  const availableTests = allTests.filter((t) => !linkedTestIds.has(t.id));
   const back = `/admin/products/${product.id}`;
 
   return (
@@ -100,6 +125,157 @@ export default async function AdminProductEdit({ params, searchParams }: Props) 
           </button>
         </form>
       )}
+
+      {/* Linked labs */}
+      <section id="product-labs" className="mt-10 scroll-mt-24">
+        <h2 className="font-display text-xl font-bold text-ink-950 mb-1">
+          Linked Labs ({linkedLabs.length})
+        </h2>
+        <p className="text-sm text-ink-600 mb-4">
+          Manually attach BIS-recognised labs that can test this product. Shown on the public product page.
+        </p>
+
+        {linkedLabs.length > 0 ? (
+          <div className="bg-white rounded-2xl border border-cream-300 shadow-card overflow-hidden mb-4">
+            <ul className="divide-y divide-cream-100">
+              {linkedLabs.map((lab) => (
+                <li
+                  key={lab.id}
+                  className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <div className="font-semibold text-ink-950 text-sm">{lab.name}</div>
+                    <div className="text-xs text-ink-500">
+                      {[lab.city, lab.state].filter(Boolean).join(", ") || "India"}
+                      {lab.price != null ? ` · ${formatINR(lab.price)}` : " · On request"}
+                    </div>
+                  </div>
+                  <ConfirmDeleteForm action={removeProductLab} itemLabel="this lab link">
+                    <input type="hidden" name="product_id" value={product.id} />
+                    <input type="hidden" name="lab_id" value={lab.id} />
+                    <button className="text-xs font-semibold text-red-600 hover:text-red-700 min-h-9 px-2">
+                      Remove
+                    </button>
+                  </ConfirmDeleteForm>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="text-sm text-ink-500 bg-cream-100 rounded-xl border border-cream-300 px-4 py-3 mb-4">
+            No labs linked yet. Add one from the dropdown below.
+          </p>
+        )}
+
+        <form
+          action={addProductLab}
+          className="bg-cream-100 rounded-2xl border border-cream-300 p-5 grid sm:grid-cols-[1fr_140px_auto] gap-3 items-end"
+        >
+          <input type="hidden" name="product_id" value={product.id} />
+          <div>
+            <label
+              htmlFor="lab_id"
+              className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5"
+            >
+              Add lab
+            </label>
+            <select
+              id="lab_id"
+              name="lab_id"
+              required
+              className="w-full rounded-xl border border-cream-300 px-3 py-2.5 text-sm bg-white outline-none focus:border-butter-500 min-h-11"
+              defaultValue=""
+            >
+              <option value="" disabled>
+                Select a lab…
+              </option>
+              {availableLabs.map((lab) => (
+                <option key={lab.id} value={lab.id}>
+                  {lab.name}
+                  {lab.city ? ` — ${lab.city}` : ""}
+                  {lab.state ? `, ${lab.state}` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+          <Field label="Test price (₹)" name="price" type="number" placeholder="Optional" />
+          <SubmitButton label="Add lab" className="min-h-11" />
+        </form>
+      </section>
+
+      {/* Linked testing */}
+      <section id="product-testing" className="mt-10 scroll-mt-24">
+        <h2 className="font-display text-xl font-bold text-ink-950 mb-1">
+          Linked Testing ({linkedTests.length})
+        </h2>
+        <p className="text-sm text-ink-600 mb-4">
+          Manually attach relevant product tests from the testing catalogue. Shown on the public product page.
+        </p>
+
+        {linkedTests.length > 0 ? (
+          <div className="bg-white rounded-2xl border border-cream-300 shadow-card overflow-hidden mb-4">
+            <ul className="divide-y divide-cream-100">
+              {linkedTests.map((t) => (
+                <li
+                  key={t.id}
+                  className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <div className="font-semibold text-ink-950 text-sm">{t.name}</div>
+                    <div className="text-xs text-ink-500">
+                      {t.category_name}
+                      {t.standards ? ` · ${t.standards}` : ""}
+                    </div>
+                  </div>
+                  <ConfirmDeleteForm action={removeProductTesting} itemLabel="this testing link">
+                    <input type="hidden" name="product_id" value={product.id} />
+                    <input type="hidden" name="testing_service_id" value={t.id} />
+                    <button className="text-xs font-semibold text-red-600 hover:text-red-700 min-h-9 px-2">
+                      Remove
+                    </button>
+                  </ConfirmDeleteForm>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="text-sm text-ink-500 bg-cream-100 rounded-xl border border-cream-300 px-4 py-3 mb-4">
+            No testing services linked yet. Add one from the dropdown below.
+          </p>
+        )}
+
+        <form
+          action={addProductTesting}
+          className="bg-cream-100 rounded-2xl border border-cream-300 p-5 grid sm:grid-cols-[1fr_auto] gap-3 items-end"
+        >
+          <input type="hidden" name="product_id" value={product.id} />
+          <div>
+            <label
+              htmlFor="testing_service_id"
+              className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5"
+            >
+              Add testing
+            </label>
+            <select
+              id="testing_service_id"
+              name="testing_service_id"
+              required
+              className="w-full rounded-xl border border-cream-300 px-3 py-2.5 text-sm bg-white outline-none focus:border-butter-500 min-h-11"
+              defaultValue=""
+            >
+              <option value="" disabled>
+                Select a test…
+              </option>
+              {availableTests.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.category_name} — {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <SubmitButton label="Add testing" className="min-h-11" />
+        </form>
+      </section>
 
       {/* FAQs */}
       <section className="mt-10">

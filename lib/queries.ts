@@ -250,10 +250,63 @@ export function getLabsForProduct(productId: number): (Lab & { price: number | n
     getDb()
       .prepare(
         `SELECT l.*, pl.price FROM product_labs pl JOIN labs l ON l.id = pl.lab_id
-         WHERE pl.product_id = ? ORDER BY pl.price IS NULL, pl.price`
+         WHERE pl.product_id = ? ORDER BY pl.price IS NULL, pl.price, l.name`
       )
       .all(productId) as (Lab & { price: number | null })[]
   ).map((row) => ({ ...publicLab(row), price: row.price }));
+}
+
+/** Labs dropdown list for admin product linking (id + label only). */
+export function getLabsForAdminSelect(): {
+  id: number;
+  name: string;
+  city: string;
+  state: string;
+}[] {
+  return getDb()
+    .prepare("SELECT id, name, city, state FROM labs ORDER BY name")
+    .all() as { id: number; name: string; city: string; state: string }[];
+}
+
+/** Testing services linked to a BIS product. */
+export function getTestingServicesForProduct(productId: number): TestingService[] {
+  return getDb()
+    .prepare(
+      `SELECT s.*, c.slug AS category_slug, c.name AS category_name, c.icon AS category_icon
+       FROM product_testing_services pts
+       JOIN testing_services s ON s.id = pts.testing_service_id
+       JOIN testing_categories c ON c.id = s.category_id
+       WHERE pts.product_id = ?
+       ORDER BY pts.sort, c.sort, s.sort, s.name`
+    )
+    .all(productId) as TestingService[];
+}
+
+/** All testing services for admin product linking dropdowns. */
+export function getTestingServicesForAdminSelect(): {
+  id: number;
+  name: string;
+  category_name: string;
+}[] {
+  return getDb()
+    .prepare(
+      `SELECT s.id, s.name, c.name AS category_name
+       FROM testing_services s
+       JOIN testing_categories c ON c.id = s.category_id
+       ORDER BY c.sort, s.sort, s.name`
+    )
+    .all() as { id: number; name: string; category_name: string }[];
+}
+
+/** Keep products.lab_count in sync with product_labs rows. */
+export function syncProductLabCount(productId: number): void {
+  getDb()
+    .prepare(
+      `UPDATE products
+       SET lab_count = (SELECT COUNT(*) FROM product_labs WHERE product_id = ?)
+       WHERE id = ?`
+    )
+    .run(productId, productId);
 }
 
 export function getProductsForLab(labId: number, limit = 50): Product[] {

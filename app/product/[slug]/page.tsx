@@ -12,6 +12,7 @@ import RequestQuoteButton from "@/components/RequestQuoteButton";
 import {
   getProductBySlug,
   getLabsForProduct,
+  getTestingServicesForProduct,
   getFaqs,
   getRelatedProducts,
 } from "@/lib/queries";
@@ -42,6 +43,7 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound();
 
   const labs = getLabsForProduct(product.id);
+  const tests = getTestingServicesForProduct(product.id);
   const faqs = getFaqs(`product:${product.id}`);
   const related = getRelatedProducts(product, 4);
   const heroImage = product.image || product.category_image || "";
@@ -199,53 +201,97 @@ export default async function ProductPage({ params }: Props) {
         <p className="text-ink-600 text-sm mb-6">
           Indicative test charges reported per laboratory, excluding GST. Confirm final quotes directly with the lab.
         </p>
-        {/* Mobile lab cards */}
-        <div className="space-y-3 sm:hidden">
-          {labs.map((lab) => (
-            <Link
-              key={lab.id}
-              href={`/labs/${lab.slug}`}
-              className="block bg-white rounded-2xl border border-cream-300 p-4 active:bg-cream-50"
-            >
-              <div className="font-semibold text-ink-950 leading-snug">{lab.name}</div>
-              <div className="mt-1 text-sm text-ink-600">
-                {[lab.city, lab.state].filter(Boolean).join(", ") || "India"}
-              </div>
-              <div className="mt-2 text-sm font-semibold text-ink-950">
-                {lab.price != null ? formatINR(lab.price) : "On request"}
-              </div>
-            </Link>
-          ))}
-        </div>
-        <div className="hidden sm:block overflow-x-auto bg-white rounded-2xl border border-cream-300 shadow-card">
-          <table className="w-full text-sm min-w-[560px]">
-            <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-ink-500 border-b border-cream-200">
-                <th className="px-5 py-3.5 font-semibold">Laboratory</th>
-                <th className="px-5 py-3.5 font-semibold">Location</th>
-                <th className="px-5 py-3.5 font-semibold text-right">Test Price</th>
-              </tr>
-            </thead>
-            <tbody>
+        {labs.length === 0 ? (
+          <p className="text-sm text-ink-500 bg-white rounded-2xl border border-cream-300 px-4 py-6">
+            No labs linked for this product yet.{" "}
+            <Link href="/contact" className="font-semibold text-butter-700 hover:underline">
+              Contact us
+            </Link>{" "}
+            to map suitable labs.
+          </p>
+        ) : (
+          <>
+            {/* Mobile lab cards */}
+            <div className="space-y-3 sm:hidden">
               {labs.map((lab) => (
-                <tr key={lab.id} className="border-b border-cream-100 last:border-0 hover:bg-cream-50">
-                  <td className="px-5 py-3.5">
-                    <Link href={`/labs/${lab.slug}`} className="font-semibold text-ink-950 hover:text-butter-700">
-                      {lab.name}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3.5 text-ink-600">
-                    {[lab.city, lab.state].filter(Boolean).join(", ")}
-                  </td>
-                  <td className="px-5 py-3.5 text-right font-semibold text-ink-950">
+                <Link
+                  key={lab.id}
+                  href={`/labs/${lab.slug}`}
+                  className="block bg-white rounded-2xl border border-cream-300 p-4 active:bg-cream-50"
+                >
+                  <div className="font-semibold text-ink-950 leading-snug">{lab.name}</div>
+                  <div className="mt-1 text-sm text-ink-600">
+                    {[lab.city, lab.state].filter(Boolean).join(", ") || "India"}
+                  </div>
+                  <div className="mt-2 text-sm font-semibold text-ink-950">
                     {lab.price != null ? formatINR(lab.price) : "On request"}
-                  </td>
-                </tr>
+                  </div>
+                </Link>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
+            <div className="hidden sm:block overflow-x-auto bg-white rounded-2xl border border-cream-300 shadow-card">
+              <table className="w-full text-sm min-w-[560px]">
+                <thead>
+                  <tr className="text-left text-xs uppercase tracking-wide text-ink-500 border-b border-cream-200">
+                    <th className="px-5 py-3.5 font-semibold">Laboratory</th>
+                    <th className="px-5 py-3.5 font-semibold">Location</th>
+                    <th className="px-5 py-3.5 font-semibold text-right">Test Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {labs.map((lab) => (
+                    <tr key={lab.id} className="border-b border-cream-100 last:border-0 hover:bg-cream-50">
+                      <td className="px-5 py-3.5">
+                        <Link href={`/labs/${lab.slug}`} className="font-semibold text-ink-950 hover:text-butter-700">
+                          {lab.name}
+                        </Link>
+                      </td>
+                      <td className="px-5 py-3.5 text-ink-600">
+                        {[lab.city, lab.state].filter(Boolean).join(", ")}
+                      </td>
+                      <td className="px-5 py-3.5 text-right font-semibold text-ink-950">
+                        {lab.price != null ? formatINR(lab.price) : "On request"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </section>
+
+      {/* Linked testing */}
+      {tests.length > 0 && (
+        <section className="mt-14">
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink-950 mb-2">
+            Relevant Product Testing
+          </h2>
+          <p className="text-ink-600 text-sm mb-6">
+            Testing services mapped to this product — open a test for standards, timeline and sample guidance.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {tests.map((t) => (
+              <Link
+                key={t.id}
+                href={`/testing/${t.category_slug}/${t.slug}`}
+                className="block bg-white rounded-2xl border border-cream-300 p-5 hover:border-butter-400 transition"
+              >
+                <div className="text-[11px] font-bold uppercase tracking-wide text-ink-500">
+                  {t.category_name}
+                </div>
+                <div className="mt-1 font-semibold text-ink-950 leading-snug">{t.name}</div>
+                {t.standards ? (
+                  <div className="mt-2 text-xs text-ink-600 line-clamp-2">{t.standards}</div>
+                ) : null}
+                {t.timeline ? (
+                  <div className="mt-3 text-xs font-semibold text-butter-700">{t.timeline}</div>
+                ) : null}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* FAQs */}
       {faqs.length > 0 && (

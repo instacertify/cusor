@@ -482,6 +482,96 @@ export async function removeProductImage(formData: FormData) {
   redirect(`/admin/products/${id}?saved=1`);
 }
 
+function syncProductLabCount(db: ReturnType<typeof getDb>, productId: number) {
+  db.prepare(
+    `UPDATE products
+     SET lab_count = (SELECT COUNT(*) FROM product_labs WHERE product_id = ?)
+     WHERE id = ?`
+  ).run(productId, productId);
+}
+
+/** Attach a BIS-recognised lab to a product (dropdown). */
+export async function addProductLab(formData: FormData) {
+  await requireAdmin();
+  const productId = Number(formData.get("product_id"));
+  const labId = Number(formData.get("lab_id"));
+  const priceRaw = String(formData.get("price") ?? "").trim();
+  const price = priceRaw ? Number(priceRaw) : null;
+  if (!productId || !labId) redirect(`/admin/products/${productId || ""}?error=1`);
+  const db = getDb();
+  const product = db.prepare("SELECT id FROM products WHERE id = ?").get(productId);
+  const lab = db.prepare("SELECT id FROM labs WHERE id = ?").get(labId);
+  if (!product || !lab) redirect(`/admin/products/${productId}?error=1`);
+  db.prepare(
+    `INSERT INTO product_labs (product_id, lab_id, price) VALUES (?, ?, ?)
+     ON CONFLICT(product_id, lab_id) DO UPDATE SET price = excluded.price`
+  ).run(productId, labId, Number.isFinite(price as number) ? price : null);
+  syncProductLabCount(db, productId);
+  revalidateSoon("/", "layout");
+  redirect(`/admin/products/${productId}?saved=1#product-labs`);
+}
+
+export async function removeProductLab(formData: FormData) {
+  await requireAdmin();
+  const productId = Number(formData.get("product_id"));
+  const labId = Number(formData.get("lab_id"));
+  if (!productId || !labId) redirect(`/admin/products/${productId || ""}?error=1`);
+  const db = getDb();
+  db.prepare("DELETE FROM product_labs WHERE product_id = ? AND lab_id = ?").run(
+    productId,
+    labId
+  );
+  syncProductLabCount(db, productId);
+  revalidateSoon("/", "layout");
+  redirect(`/admin/products/${productId}?saved=1#product-labs`);
+}
+
+/** Attach a testing service to a product (dropdown). */
+export async function addProductTesting(formData: FormData) {
+  await requireAdmin();
+  const productId = Number(formData.get("product_id"));
+  const testingServiceId = Number(formData.get("testing_service_id"));
+  if (!productId || !testingServiceId) {
+    redirect(`/admin/products/${productId || ""}?error=1`);
+  }
+  const db = getDb();
+  const product = db.prepare("SELECT id FROM products WHERE id = ?").get(productId);
+  const svc = db
+    .prepare("SELECT id FROM testing_services WHERE id = ?")
+    .get(testingServiceId);
+  if (!product || !svc) redirect(`/admin/products/${productId}?error=1`);
+  const sort = (
+    db
+      .prepare(
+        "SELECT COALESCE(MAX(sort), -1) + 1 AS n FROM product_testing_services WHERE product_id = ?"
+      )
+      .get(productId) as { n: number }
+  ).n;
+  db.prepare(
+    `INSERT INTO product_testing_services (product_id, testing_service_id, sort)
+     VALUES (?, ?, ?)
+     ON CONFLICT(product_id, testing_service_id) DO NOTHING`
+  ).run(productId, testingServiceId, sort);
+  revalidateSoon("/", "layout");
+  redirect(`/admin/products/${productId}?saved=1#product-testing`);
+}
+
+export async function removeProductTesting(formData: FormData) {
+  await requireAdmin();
+  const productId = Number(formData.get("product_id"));
+  const testingServiceId = Number(formData.get("testing_service_id"));
+  if (!productId || !testingServiceId) {
+    redirect(`/admin/products/${productId || ""}?error=1`);
+  }
+  getDb()
+    .prepare(
+      "DELETE FROM product_testing_services WHERE product_id = ? AND testing_service_id = ?"
+    )
+    .run(productId, testingServiceId);
+  revalidateSoon("/", "layout");
+  redirect(`/admin/products/${productId}?saved=1#product-testing`);
+}
+
 // ---------- faqs ----------
 function withParam(url: string, param: string): string {
   return `${url}${url.includes("?") ? "&" : "?"}${param}`;

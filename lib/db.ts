@@ -298,6 +298,14 @@ function bootstrapSchema(db: SqliteDatabase): void {
     CREATE INDEX IF NOT EXISTS idx_testing_services_cat ON testing_services(category_id);
     CREATE INDEX IF NOT EXISTS idx_testing_services_name ON testing_services(name);
 
+    CREATE TABLE IF NOT EXISTS product_testing_services (
+      product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+      testing_service_id INTEGER NOT NULL REFERENCES testing_services(id) ON DELETE CASCADE,
+      sort INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (product_id, testing_service_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_product_testing_svc ON product_testing_services(testing_service_id);
+
     CREATE TABLE IF NOT EXISTS hero_slides (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL DEFAULT '',
