@@ -16,6 +16,7 @@
 # runtime database (seeded automatically from data/bis_dataset.json)
 /data/certko.db
 /data/certko.db-*
+/data/sitemap-cache.xml
 
 # runtime uploads from the admin panel
 /public/uploads/*

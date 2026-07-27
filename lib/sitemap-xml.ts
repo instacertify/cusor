@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import {
   getCategories,
   getLabs,
@@ -9,7 +11,7 @@ import {
   getRoutableContentPages,
 } from "@/lib/queries";
 import { pagePublicPath } from "@/lib/pages-nav";
-import { ensureDbReady, getDb } from "@/lib/db";
+import { ensureDbReady, getDb, getWritableDataDir } from "@/lib/db";
 import { getSeoExclusions } from "@/lib/seo";
 
 export const SITEMAP_BASE = "https://certko.com";
@@ -32,10 +34,40 @@ type CacheGlobal = typeof globalThis & {
 };
 
 const g = globalThis as CacheGlobal;
-const TTL_MS = 60 * 60 * 1000; // 1 hour in-process cache
+const TTL_MS = 60 * 60 * 1000; // 1 hour
+const DISK_NAME = "sitemap-cache.xml";
+
+function diskPath(): string {
+  return path.join(getWritableDataDir(), DISK_NAME);
+}
+
+function readDiskCache(): { body: string; at: number } | null {
+  try {
+    const file = diskPath();
+    const stat = fs.statSync(file);
+    const body = fs.readFileSync(file, "utf8");
+    if (!body.includes("<urlset") || !body.includes("</urlset>")) return null;
+    return { body, at: stat.mtimeMs };
+  } catch {
+    return null;
+  }
+}
+
+function writeDiskCache(body: string) {
+  try {
+    fs.writeFileSync(diskPath(), body, "utf8");
+  } catch (err) {
+    console.warn("[sitemap] could not write disk cache:", err);
+  }
+}
 
 export function invalidateSitemapCache() {
   g.__certkoSitemapXml = null;
+  try {
+    fs.unlinkSync(diskPath());
+  } catch {
+    // ignore missing file
+  }
 }
 
 function escapeXml(value: string): string {
@@ -59,10 +91,12 @@ function toXml(entries: SitemapEntry[]): string {
     })
     .join("\n");
 
-  return `<?xml version="1.0" encoding="UTF-8"?>\n` +
+  return (
+    `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
     `${body}\n` +
-    `</urlset>\n`;
+    `</urlset>\n`
+  );
 }
 
 function minimalXml(): string {
@@ -175,7 +209,10 @@ export async function buildSitemapEntries(): Promise<SitemapEntry[]> {
     priority: 0.5,
   }));
 
-  return [
+  // Deduplicate while preserving order (guards against slug collisions across tables).
+  const seen = new Set<string>();
+  const entries: SitemapEntry[] = [];
+  for (const entry of [
     ...staticPages,
     ...categories,
     ...certifications,
@@ -185,24 +222,42 @@ export async function buildSitemapEntries(): Promise<SitemapEntry[]> {
     ...authors,
     ...products,
     ...labPages,
-  ];
+  ]) {
+    if (seen.has(entry.url)) continue;
+    seen.add(entry.url);
+    entries.push(entry);
+  }
+  return entries;
 }
 
-/** Build (or return cached) sitemap XML. Never throws — falls back to a tiny valid map. */
+/** Build (or return cached) sitemap XML. Never throws — falls back to disk/minimal. */
 export async function getSitemapXml(): Promise<{ body: string; fromCache: boolean }> {
-  const hit = g.__certkoSitemapXml;
-  if (hit && Date.now() - hit.at < TTL_MS) {
-    return { body: hit.body, fromCache: true };
+  const mem = g.__certkoSitemapXml;
+  if (mem && Date.now() - mem.at < TTL_MS) {
+    return { body: mem.body, fromCache: true };
+  }
+
+  const disk = readDiskCache();
+  if (disk && Date.now() - disk.at < TTL_MS) {
+    g.__certkoSitemapXml = disk;
+    return { body: disk.body, fromCache: true };
   }
 
   try {
     const entries = await buildSitemapEntries();
     const body = toXml(entries);
     g.__certkoSitemapXml = { body, at: Date.now() };
+    writeDiskCache(body);
     return { body, fromCache: false };
   } catch (err) {
-    console.error("[sitemap] build failed, serving minimal sitemap:", err);
-    if (hit?.body) return { body: hit.body, fromCache: true };
-    return { body: minimalXml(), fromCache: false };
+    console.error("[sitemap] build failed, serving fallback:", err);
+    if (mem?.body) return { body: mem.body, fromCache: true };
+    if (disk?.body) {
+      g.__certkoSitemapXml = disk;
+      return { body: disk.body, fromCache: true };
+    }
+    const body = minimalXml();
+    g.__certkoSitemapXml = { body, at: Date.now() };
+    return { body, fromCache: false };
   }
 }

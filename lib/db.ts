@@ -16,22 +16,22 @@ import { ensureHeroSlidesCatalog } from "./hero-slides";
 import { ensureTestimonialsLibrary } from "./seed-testimonials";
 
 /** Prefer ./data; fall back to /tmp when the app dir is not writable (some Node hosts). */
-function resolveDbPath(): string {
+export function getWritableDataDir(): string {
   const preferredDir = path.join(process.cwd(), "data");
-  const preferred = path.join(preferredDir, "certko.db");
   try {
     fs.mkdirSync(preferredDir, { recursive: true });
     fs.accessSync(preferredDir, fs.constants.W_OK);
-    return preferred;
+    return preferredDir;
   } catch {
     const fallbackDir = path.join("/tmp", "certko-data");
     fs.mkdirSync(fallbackDir, { recursive: true });
-    console.warn(
-      "[certko] data/ is not writable; using",
-      path.join(fallbackDir, "certko.db")
-    );
-    return path.join(fallbackDir, "certko.db");
+    console.warn("[certko] data/ is not writable; using", fallbackDir);
+    return fallbackDir;
   }
+}
+
+function resolveDbPath(): string {
+  return path.join(getWritableDataDir(), "certko.db");
 }
 
 type DbGlobal = typeof globalThis & {
