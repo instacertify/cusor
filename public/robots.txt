@@ -1,38 +1,32 @@
 # Certko — https://certko.com
-# All public pages may be crawled. Only admin and API routes are blocked.
+#
+# Complete public frontend is visible to search engines.
+# Crawl allowed: YES
+# Blocking: NO (public pages only)
+# Page fetch: YES
+#
+# Only the CMS (/admin) and private APIs (/api) are closed to crawlers.
+# Everything else — products, certifications, testing, labs, blog, sitemap,
+# HTML pages, images, and assets — may be crawled and indexed.
 
 User-agent: *
 Allow: /
-Allow: /sitemap
-Allow: /sitemap.xml
-Allow: /llms.txt
-Allow: /products
-Allow: /products/all
-Allow: /certifications
-Allow: /testing
-Allow: /labs
-Allow: /qco
-Allow: /blog
-Allow: /contact
-Allow: /category/
-Allow: /product/
-Allow: /search
-Disallow: /admin
 Disallow: /admin/
-Disallow: /api
 Disallow: /api/
 
 User-agent: Googlebot
 Allow: /
-Allow: /sitemap
-Allow: /sitemap.xml
-Allow: /llms.txt
-Disallow: /admin
 Disallow: /admin/
-Disallow: /api
 Disallow: /api/
 
 User-agent: Googlebot-Image
 Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
 
 Sitemap: https://certko.com/sitemap.xml
