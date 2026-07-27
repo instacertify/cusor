@@ -1,0 +1,55 @@
+# Certko
+
+> Certko is a BIS certification and product compliance platform for India. Search 1,400+ notified products for IS standards, HSN codes, QCO status, marking fees, lab test cost ranges, and 400+ BIS-recognised laboratories.
+
+Certko helps manufacturers, importers, and marketplace sellers understand which Bureau of Indian Standards (BIS) certifications apply, what testing is required, indicative costs, and which labs can test a product. Contact: info@certko.com · +91-9999118039 · https://certko.com/contact
+
+## Main pages
+
+- [Home](https://certko.com/): BIS certification checker overview and product search
+- [Products](https://certko.com/products): Browse notified product categories
+- [Product search table](https://certko.com/products/all): Filter all products by IS, HSN, QCO status, scheme, fees and labs
+- [Certifications](https://certko.com/certifications): BIS and related certification schemes
+- [BIS certification](https://certko.com/certifications/bis): ISI / CRS schemes, process and products covered
+- [Product testing](https://certko.com/testing): Lab testing categories and services
+- [Labs](https://certko.com/labs): BIS-recognised testing laboratories directory
+- [QCO tracker](https://certko.com/qco): Quality Control Order status and enforcement dates
+- [Blog](https://certko.com/blog): Guides and updates on Indian product compliance
+- [Contact](https://certko.com/contact): Get expert help on certification and testing
+- [HTML sitemap](https://certko.com/sitemap): Human-readable list of main site sections
+- [XML sitemap](https://certko.com/sitemap.xml): Machine-readable URL list for crawlers
+
+## Certifications
+
+- [BIS (ISI / CRS)](https://certko.com/certifications/bis)
+- [BEE](https://certko.com/certifications/bee)
+- [G-Mark](https://certko.com/certifications/g-mark)
+- [FCC](https://certko.com/certifications/fcc)
+- [CE](https://certko.com/certifications/ce)
+- [SABER](https://certko.com/certifications/saber)
+- [WPC / ETA](https://certko.com/certifications/wpc-eta)
+
+## Product testing
+
+- [Chemical testing](https://certko.com/testing/chemical-testing)
+- [Electrical testing](https://certko.com/testing/electrical-testing)
+- [EMC testing](https://certko.com/testing/emc-testing)
+- [Physical testing](https://certko.com/testing/physical-testing)
+- [Microbiology testing](https://certko.com/testing/microbiology-testing)
+- [Mechanical testing](https://certko.com/testing/mechanical-testing)
+
+## Top product categories
+
+- [Electrical & Electronics](https://certko.com/category/electrical-and-electronics)
+- [Steel Products](https://certko.com/category/steel-products)
+- [Food, Dairy & Beverages](https://certko.com/category/food-dairy-and-beverages)
+- [PVC & Plastic Products](https://certko.com/category/pvc-and-plastic-products)
+- [Cement & Construction Materials](https://certko.com/category/cement-and-construction-materials)
+- [Electrical Appliances](https://certko.com/category/electrical-appliances)
+- [Medical Devices & Textiles](https://certko.com/category/medical-devices-and-textiles)
+
+## Optional
+
+- [Privacy policy](https://certko.com/privacy)
+- [Terms of service](https://certko.com/terms)
+- [Robots.txt](https://certko.com/robots.txt): Crawler access rules

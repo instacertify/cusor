@@ -22,6 +22,7 @@ export const RESERVED_PAGE_SLUGS = new Set([
   "search",
   "sitemap",
   "sitemap.xml",
+  "llms.txt",
   "testing",
   "uploads",
   "images",
