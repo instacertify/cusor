@@ -312,6 +312,12 @@ const PATHS: Record<string, ReactNode> = {
       <path d="M9 4a3 3 0 0 1 6 0M9 11h6M9 15h6" />
     </>
   ),
+  link: (
+    <>
+      <path d="M10 13a5 5 0 0 0 7.07 0l1.41-1.41a5 5 0 0 0-7.07-7.07L10 5.93" />
+      <path d="M14 11a5 5 0 0 0-7.07 0L5.52 12.41a5 5 0 0 0 7.07 7.07L14 18.07" />
+    </>
+  ),
   chevron: <path d="M6 9l6 6 6-6" />,
   microscope: (
     <>

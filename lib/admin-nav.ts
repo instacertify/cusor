@@ -150,6 +150,18 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         description: "Meta, schema and sitemap controls",
       },
       {
+        href: "/admin/content-writer",
+        label: "Content Writer",
+        icon: "file",
+        description: "Generate SEO articles with internal links",
+      },
+      {
+        href: "/admin/backlinks",
+        label: "Backlinks",
+        icon: "link",
+        description: "Track inbound links and internal link opportunities",
+      },
+      {
         href: "/admin/email",
         label: "Email / SMTP",
         icon: "mail",
