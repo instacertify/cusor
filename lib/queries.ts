@@ -219,14 +219,22 @@ export function getLabs(filter: LabFilter = {}): { labs: Lab[]; total: number } 
   const total = (
     getDb().prepare(`SELECT COUNT(*) AS n FROM labs ${where}`).get(...params) as { n: number }
   ).n;
-  const labs = getDb()
-    .prepare(`SELECT * FROM labs ${where} ORDER BY name LIMIT ? OFFSET ?`)
-    .all(...params, filter.limit ?? 24, filter.offset ?? 0) as Lab[];
+  const labs = (
+    getDb()
+      .prepare(`SELECT * FROM labs ${where} ORDER BY name LIMIT ? OFFSET ?`)
+      .all(...params, filter.limit ?? 24, filter.offset ?? 0) as Lab[]
+  ).map(publicLab);
   return { labs, total };
 }
 
 export function getLabBySlug(slug: string): Lab | undefined {
-  return getDb().prepare("SELECT * FROM labs WHERE slug = ?").get(slug) as Lab | undefined;
+  const lab = getDb().prepare("SELECT * FROM labs WHERE slug = ?").get(slug) as Lab | undefined;
+  return lab ? publicLab(lab) : undefined;
+}
+
+/** Never expose lab contact person / phone / email on the public site. */
+function publicLab(lab: Lab): Lab {
+  return { ...lab, contact: null, phone: null, email: null };
 }
 
 export function getLabStates(): { state: string; n: number }[] {
@@ -238,12 +246,14 @@ export function getLabStates(): { state: string; n: number }[] {
 }
 
 export function getLabsForProduct(productId: number): (Lab & { price: number | null })[] {
-  return getDb()
-    .prepare(
-      `SELECT l.*, pl.price FROM product_labs pl JOIN labs l ON l.id = pl.lab_id
-       WHERE pl.product_id = ? ORDER BY pl.price IS NULL, pl.price`
-    )
-    .all(productId) as (Lab & { price: number | null })[];
+  return (
+    getDb()
+      .prepare(
+        `SELECT l.*, pl.price FROM product_labs pl JOIN labs l ON l.id = pl.lab_id
+         WHERE pl.product_id = ? ORDER BY pl.price IS NULL, pl.price`
+      )
+      .all(productId) as (Lab & { price: number | null })[]
+  ).map((row) => ({ ...publicLab(row), price: row.price }));
 }
 
 export function getProductsForLab(labId: number, limit = 50): Product[] {

@@ -534,7 +534,7 @@ const PAGE_FAQS: Record<string, { question: string; answer: string }[]> = {
     {
       question: "How do I find a lab near me?",
       answer:
-        "Switch to the Find a Lab tab and filter by state, or search a city name. Each lab card shows its approved scopes and indicative price range; the lab page lists contact details.",
+        "Switch to the Find a Lab tab and filter by state, or search a city name. Each lab card shows its approved scopes and indicative price range. Use Contact Instacertify on the lab page to reach our team.",
     },
   ],
   tenders: [
@@ -626,7 +626,7 @@ const TESTIMONIALS = [
     name: "Arvind S.",
     role: "Cable Exporter, Ahmedabad",
     quote:
-      "The lab directory alone is worth it — verified scopes, contact details and indicative pricing for hundreds of BIS labs. Our compliance team uses Certko every week.",
+      "The lab directory alone is worth it — verified scopes and indicative pricing for hundreds of BIS labs. Our compliance team uses Certko every week.",
     rating: 5,
     featured: 1,
   },
@@ -692,7 +692,7 @@ We aggregate official BIS laboratory scope data, clean it, and publish it free �
 ## What we offer
 
 - **Product database** — every notified product mapped to its IS standard, scheme, price range and approved labs.
-- **Lab directory** — searchable directory of BIS-recognised laboratories with locations, scopes and contact details.
+- **Lab directory** — searchable directory of BIS-recognised laboratories with locations and scopes.
 - **Expert help** — vetted BIS consultants who handle applications, testing coordination and factory inspections end-to-end.
 
 ## Data sources

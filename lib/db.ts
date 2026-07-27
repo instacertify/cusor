@@ -337,6 +337,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
   clearLegacyHomeAnnouncement(db);
+  scrubLabPublicContactDetails(db);
 }
 
 function runEnsures(db: SqliteDatabase) {
@@ -348,6 +349,7 @@ function runEnsures(db: SqliteDatabase) {
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
   clearLegacyHomeAnnouncement(db);
+  scrubLabPublicContactDetails(db);
 }
 
 /** Remove the old default homepage announcement chip from existing installs. */
@@ -364,6 +366,38 @@ function clearLegacyHomeAnnouncement(db: SqliteDatabase) {
     db.prepare(
       "INSERT INTO settings (key, value) VALUES ('announcement', '') ON CONFLICT(key) DO UPDATE SET value = excluded.value"
     ).run();
+  }
+}
+
+/**
+ * Never show lab contact-person name / phone / email on the public site.
+ * Clears stored PII and rewrites FAQ copy that used to point visitors at it.
+ */
+function scrubLabPublicContactDetails(db: SqliteDatabase) {
+  db.prepare(
+    `UPDATE labs
+     SET contact = NULL,
+         phone = NULL,
+         email = NULL
+     WHERE IFNULL(contact, '') != ''
+        OR IFNULL(phone, '') != ''
+        OR IFNULL(email, '') != ''`
+  ).run();
+
+  const faqs = db
+    .prepare("SELECT id, answer FROM faqs WHERE answer LIKE '%contact detail%'")
+    .all() as { id: number; answer: string }[];
+  for (const faq of faqs) {
+    const next = faq.answer
+      .replace(
+        /; the lab page lists contact details\./gi,
+        ". Use Contact Instacertify on the lab page to reach our team."
+      )
+      .replace(/, scopes and contact details/gi, " and scopes")
+      .replace(/scopes, contact details and indicative/gi, "scopes and indicative");
+    if (next !== faq.answer) {
+      db.prepare("UPDATE faqs SET answer = ? WHERE id = ?").run(next, faq.id);
+    }
   }
 }
 
