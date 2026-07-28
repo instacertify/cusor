@@ -29,7 +29,7 @@ interface Props {
 const PROMISES = [
   { icon: "zap", title: "24-hour response", text: "A compliance specialist replies with a mapped standard and full cost estimate within one working day." },
   { icon: "clipboard", title: "Transparent quotes", text: "Lab charges, government fees and consultant fees itemised separately — no bundled surprises." },
-  { icon: "cog", title: "End-to-end handling", text: "Application, technical file, lab coordination, factory inspection readiness and licence grant." },
+  { icon: "cog", title: "End-to-end handling", text: "Application, lab coordination and grant follow-up — plus factory inspection readiness for ISI. CRS products need no onsite audit." },
 ];
 
 export default async function ContactPage({ searchParams }: Props) {
