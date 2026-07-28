@@ -290,6 +290,146 @@ Share your **LED product type(s)**, **R-number(s)** and **target markets**. We w
 > **Disclaimer:** This article summarises the BIS *Guidelines for Implementation of Revised Standards for LED Luminaires* (20 March 2026) for general guidance. In case of any inconsistency, the Bureau of Indian Standards Act, 2016, the BIS Conformity Assessment Regulations, 2018, applicable Compulsory Registration Orders, and the official BIS guidelines prevail.
 `,
   },
+  {
+    slug: "msds-sds-authoring-shipping-import-compliance-guide",
+    title:
+      "MSDS / SDS Authoring: Why It Matters for Shipping, Imports and Global Trade",
+    excerpt:
+      "A compliant GHS Safety Data Sheet (SDS/MSDS) is essential for airlines, shipping lines and customs. Learn why professional SDS authoring protects shipments — and how Instacertify Labs Private Limited can help.",
+    meta_title:
+      "MSDS SDS Authoring for Shipping & Imports | Why It Matters | Certko",
+    meta_description:
+      "Why MSDS/SDS authoring is critical for shipping and imports: GHS 16-section format, customs clearance, DG transport and marketplace rules. Get SDS authoring via Instacertify Labs Private Limited.",
+    published_at: "2026-07-28",
+    content: `If you manufacture, import, export or distribute chemicals — or any product that contains hazardous ingredients — a **Material Safety Data Sheet (MSDS)** / **Safety Data Sheet (SDS)** is not optional paperwork. It is the document airlines, shipping lines, freight forwarders, customs officers, warehouse teams and downstream buyers use to decide whether your cargo can move safely.
+
+In modern trade the preferred term is **SDS**, authored to the **Globally Harmonized System (GHS)** 16-section format. Older “MSDS” templates still circulate, but international partners increasingly reject non-GHS sheets. Getting SDS authoring right protects worker safety, prevents blocked consignments and keeps e-commerce / B2B listings live.
+
+## MSDS vs SDS — what you should use today
+
+| Term | Meaning | Practical takeaway |
+| --- | --- | --- |
+| **MSDS** | Older material safety data sheet formats (varied layouts) | Still used colloquially; often outdated for export |
+| **SDS** | GHS-aligned **Safety Data Sheet** with a fixed **16-section** structure | Required for most international shipping and regulatory hazard communication |
+
+When buyers or carriers say “send MSDS”, they almost always mean a **current GHS SDS** — with correct classification, pictograms, signal words and transport information.
+
+## Why SDS authoring is critical in the shipping industry
+
+### 1. Dangerous goods (DG) acceptance
+Carriers will not book many chemical, battery-material, solvent, aerosol or coating shipments without a readable SDS. Section 14 (Transport information) — UN number, proper shipping name, class, packing group — must align with your DG declaration. A vague or copy-pasted sheet is a common reason for **cargo rejection at the airline / shipping line desk**.
+
+### 2. Customs and border clearance
+Import and export clearance teams use the SDS to verify hazard class, composition disclosures and handling controls. Incomplete sheets trigger queries, holds and demurrage. For time-sensitive sea and air lanes, that cost often exceeds the price of professional authoring.
+
+### 3. Port, CFS and warehouse handling
+Stevedores, CFS operators and 3PLs need first-aid, spill, fire-fighting and PPE guidance from the SDS before they store or cross-dock drums, IBCs or retail cartons. Missing Section 4–8 data increases refusal risk at bonded facilities.
+
+### 4. Insurance and liability
+In the event of a spill, fire or exposure incident in transit, investigators look at whether the shipper provided accurate hazard communication. A professionally authored SDS is part of your **duty-of-care** evidence pack.
+
+### 5. Multimodal consistency
+The same SKU may move road → air → ocean → last-mile. One GHS SDS (localised where needed) keeps hazard communication consistent across modes and jurisdictions.
+
+## Why SDS authoring matters for imports into (and exports from) India
+
+India-based manufacturers, importers and brand owners routinely need SDS documents when they:
+
+- Ship industrial chemicals, solvents, paints, coatings, lubricants, adhesives or cleaning agents
+- Move cosmetics oils, aerosols, disinfectants or fragrance compounds
+- Export pharma raw materials / APIs and related intermediates
+- Place battery materials, electrolytes or related chemistries into logistics chains
+- List chemical-containing SKUs on marketplaces that demand SDS uploads
+- Supply modern trade / OEM customers who gate vendor onboarding on GHS documents
+
+**Import angle:** Even when the overseas supplier sends an SDS, Indian importers often still need a **reviewed or India/destination-localised** sheet — correct language, regional GHS adaptations, and transport data that matches the actual packing used for the India leg.
+
+**Export angle:** A factory-only “technical sheet” is not enough. Buyers in the EU, USA, Middle East and ASEAN typically expect a GHS SDS (and sometimes translations) before the first PO ships.
+
+## What a compliant 16-section GHS SDS covers
+
+Professional authoring is more than formatting a Word template. It includes hazard classification and structured communication across all 16 sections, including:
+
+1. Identification  
+2. Hazard identification  
+3. Composition / information on ingredients  
+4. First-aid measures  
+5. Fire-fighting measures  
+6. Accidental release measures  
+7. Handling and storage  
+8. Exposure controls / personal protection  
+9. Physical and chemical properties  
+10. Stability and reactivity  
+11. Toxicological information  
+12. Ecological information  
+13. Disposal considerations  
+14. **Transport information** (critical for shipping)  
+15. Regulatory information  
+16. Other information  
+
+Weak Section 14 or incorrect classification is the fastest way to fail a DG desk review.
+
+## Documents typically needed to author an accurate SDS
+
+- Complete chemical composition (including impurities / stabilisers where relevant)
+- **CAS** numbers for components
+- Physical-chemical data (state, flash point, boiling point, pH, etc.)
+- Available toxicological / ecological test information
+- Intended use and end-user scenario
+- Packaging type for storage and transport
+- Known UN / transport details if already assigned
+
+Garbage-in still produces garbage-out — accurate composition disclosure is the foundation of trustworthy classification.
+
+## Who needs professional MSDS / SDS authoring?
+
+- Chemical manufacturers and formulators
+- Importers and distributors placing mixtures on the market
+- Exporters clearing air / ocean DG shipments
+- Brands selling paints, cleaners, aerosols, oils and personal-care chemistries
+- Companies onboarding to Amazon, Flipkart, Alibaba and other platforms that require SDS for chemical listings
+- Logistics and trading houses that must supply SDS packs to forwarders
+
+## How Instacertify Labs Private Limited can help
+
+If you need dependable **MSDS / SDS authoring** for shipping and trade compliance, **[Instacertify Labs Private Limited](https://instacertify.com/certification/global-certifications/msds-authoring)** is a strong partner for Indian and export-facing businesses.
+
+Their [MSDS Authoring service](https://instacertify.com/certification/global-certifications/msds-authoring) is built around GHS discipline, including:
+
+- **16-section GHS format** creation
+- Hazard classification and labelling support
+- Global compliance orientation for exports
+- Multilingual / regional SDS localisation where needed
+- Support across product families such as industrial chemicals, paints and coatings, cleaning agents, cosmetics oils, aerosols, pharma raw materials, battery materials and related mixtures
+
+Typical workflow on their page: consultation & data gathering → hazard classification → drafting the 16-section SDS → quality review / localisation → final delivery — with indicative turnarounds in the range of about **6–10 working days** depending on mixture complexity.
+
+Explore the full service here:  
+**[MSDS Authoring by Instacertify Labs Private Limited](https://instacertify.com/certification/global-certifications/msds-authoring)**
+
+Whether you are clearing a first hazardous shipment, refreshing outdated MSDS files to GHS SDS, or preparing marketplace / customer onboarding packs, a specialist authoring desk reduces rework with carriers and customs.
+
+## Practical checklist before you book freight
+
+1. Confirm whether your product is a substance or mixture and collect composition + CAS data.
+2. Replace legacy MSDS files with a **GHS 16-section SDS**.
+3. Verify **Section 14** matches the planned UN classification and packing.
+4. Localise language/format for the destination market if the buyer requires it.
+5. Keep SDS version control — update when formulation, hazard data or classifications change (review every few years even if nothing major changes).
+6. Attach the SDS to the forwarder / airline / shipping-line booking pack with your DG documents.
+7. Store the same PDF for marketplace, customer and warehouse onboarding.
+
+## Need India certification help alongside SDS?
+
+Certko helps manufacturers and importers with **BIS, testing and India market compliance** planning. When your product also needs Indian certification routes in parallel with SDS authoring, start here:
+
+[Get Expert Help](/contact) · [Contact Instacertify](/contact) · [Certifications](/certifications) · [Product testing](/testing) · [Find a lab](/labs)
+
+For dedicated **SDS / MSDS authoring**, go directly to **[Instacertify Labs Private Limited — MSDS Authoring](https://instacertify.com/certification/global-certifications/msds-authoring)**.
+
+> **Disclaimer:** This article is general guidance on SDS/MSDS authoring for shipping and trade. Exact document requirements depend on product chemistry, mode of transport (air/sea/road), and the laws of origin and destination countries (including GHS adaptations, DG regulations and marketplace rules). Always use a competent authoring partner and verify carrier-specific instructions before shipment.
+`,
+  },
 ];
 
 export function ensureMigrationPosts(db: SqliteDatabase) {
