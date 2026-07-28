@@ -248,6 +248,49 @@ function getIndex(): IndexRow[] {
   return g.__certkoSearchIndex;
 }
 
+function toResult(row: IndexRow): QuickSearchResult {
+  return {
+    type: row.type,
+    name: row.name,
+    detail: row.detail,
+    href: row.href,
+  };
+}
+
+/** Tiny Levenshtein for short fuzzy matches (caps length for speed). */
+function editDistance(a: string, b: string): number {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  const aa = a.slice(0, 24);
+  const bb = b.slice(0, 24);
+  const prev = new Array(bb.length + 1);
+  const cur = new Array(bb.length + 1);
+  for (let j = 0; j <= bb.length; j++) prev[j] = j;
+  for (let i = 1; i <= aa.length; i++) {
+    cur[0] = i;
+    for (let j = 1; j <= bb.length; j++) {
+      const cost = aa[i - 1] === bb[j - 1] ? 0 : 1;
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+    }
+    for (let j = 0; j <= bb.length; j++) prev[j] = cur[j];
+  }
+  return prev[bb.length];
+}
+
+function scoreExact(row: IndexRow, terms: string[]): number | null {
+  let score = 0;
+  for (const term of terms) {
+    const idx = row.haystack.indexOf(term);
+    if (idx < 0) return null;
+    score += idx === 0 || row.haystack.startsWith(term) ? 0 : Math.min(40, idx);
+    const name = row.name.toLowerCase();
+    if (name.includes(term)) score -= 8;
+    if (name.startsWith(term)) score -= 16;
+  }
+  return score + row.boost * 10;
+}
+
 /** Instant typeahead search from an in-memory index (no SQL LIKE scans). */
 export function quickSearch(q: string, limit = 12): QuickSearchResult[] {
   const query = q.trim().toLowerCase();
@@ -260,32 +303,74 @@ export function quickSearch(q: string, limit = 12): QuickSearchResult[] {
   const scored: Array<{ row: IndexRow; score: number }> = [];
 
   for (const row of index) {
-    let score = 0;
-    let ok = true;
-    for (const term of terms) {
-      const idx = row.haystack.indexOf(term);
-      if (idx < 0) {
-        ok = false;
-        break;
-      }
-      // Prefer earlier matches and name-prefix hits
-      score += idx === 0 || row.haystack.startsWith(term) ? 0 : Math.min(40, idx);
-      if (row.name.toLowerCase().includes(term)) score -= 8;
-      if (row.name.toLowerCase().startsWith(term)) score -= 16;
-    }
-    if (!ok) continue;
-    score += row.boost * 10;
+    const score = scoreExact(row, terms);
+    if (score == null) continue;
     scored.push({ row, score });
   }
 
   scored.sort((a, b) => a.score - b.score || a.row.name.localeCompare(b.row.name));
+  if (scored.length > 0) {
+    return scored.slice(0, limit).map(({ row }) => toResult(row));
+  }
 
-  return scored.slice(0, limit).map(({ row }) => ({
-    type: row.type,
-    name: row.name,
-    detail: row.detail,
-    href: row.href,
-  }));
+  // No exact hit — return closely related options instead of empty.
+  return relatedSearch(query, limit);
+}
+
+/**
+ * Closely related suggestions when the typed term has no exact match.
+ * Uses prefixes, partial tokens, and light fuzzy name distance.
+ */
+export function relatedSearch(q: string, limit = 12): QuickSearchResult[] {
+  const query = q.trim().toLowerCase();
+  if (query.length < 2) return [];
+
+  const index = getIndex();
+  const tokens = query.split(/[^a-z0-9]+/).filter((t) => t.length >= 2);
+  const prefixes = new Set<string>();
+  prefixes.add(query.slice(0, Math.min(query.length, 6)));
+  if (query.length >= 4) prefixes.add(query.slice(0, 4));
+  if (query.length >= 3) prefixes.add(query.slice(0, 3));
+  for (const t of tokens) {
+    prefixes.add(t);
+    if (t.length >= 3) prefixes.add(t.slice(0, 3));
+    if (t.length >= 4) prefixes.add(t.slice(0, 4));
+  }
+
+  const scored: Array<{ row: IndexRow; score: number }> = [];
+  const seen = new Set<string>();
+
+  for (const row of index) {
+    const key = row.href;
+    if (seen.has(key)) continue;
+    const name = row.name.toLowerCase();
+    let score = 999;
+
+    for (const p of prefixes) {
+      if (!p) continue;
+      if (name.startsWith(p) || row.haystack.startsWith(p)) {
+        score = Math.min(score, 10 + (p.length < 3 ? 20 : 0) + row.boost);
+      } else if (name.includes(p) || row.haystack.includes(p)) {
+        score = Math.min(score, 30 + Math.max(0, 8 - p.length) + row.boost * 2);
+      }
+    }
+
+    // Fuzzy: short queries vs first word of name
+    const firstWord = name.split(/[^a-z0-9]+/).find((w) => w.length >= 2) || name.slice(0, 16);
+    if (query.length <= 12 && firstWord.length >= 2) {
+      const d = editDistance(query, firstWord.slice(0, query.length + 2));
+      const maxD = query.length <= 4 ? 1 : query.length <= 7 ? 2 : 3;
+      if (d <= maxD) score = Math.min(score, 15 + d * 8 + row.boost);
+    }
+
+    if (score < 900) {
+      seen.add(key);
+      scored.push({ row, score });
+    }
+  }
+
+  scored.sort((a, b) => a.score - b.score || a.row.name.localeCompare(b.row.name));
+  return scored.slice(0, limit).map(({ row }) => toResult(row));
 }
 
 /** Warm the index after DB boot (optional). */
