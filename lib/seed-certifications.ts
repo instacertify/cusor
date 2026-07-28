@@ -22,8 +22,8 @@ export const CERTIFICATIONS: CertSeed[] = [
 
 BIS certification is administered by the Bureau of Indian Standards and applies to hundreds of notified products — from cement, steel and cables to appliances, toys and footwear. It comes in three main flavours:
 
-- **ISI Mark (Scheme I)** — testing plus factory inspection; required for most industrial and consumer products under QCOs.
-- **CRS (Scheme II)** — lab-test-based registration for electronics and IT products.
+- **ISI Mark (Scheme I)** — testing plus factory / onsite inspection; required for most industrial and consumer products under QCOs.
+- **CRS (Scheme II)** — lab-test-based registration for electronics and IT products. **No onsite factory audit** — register on the BIS CRS portal, test at a BIS-empaneled lab, apply with the report, pay fees and get approved.
 - **FMCS** — the Foreign Manufacturers Certification Scheme, the ISI route for factories outside India.
 
 ## When it is mandatory
@@ -32,20 +32,28 @@ Whenever a Quality Control Order covering your product is in force. Use our prod
 
 ## Typical process
 
+### CRS products (no onsite audit)
+1. Register your account on the BIS CRS portal and get approved as manufacturer / brand applicant.
+2. Send samples to a BIS-empaneled (recognised) laboratory.
+3. Get the test results.
+4. Apply for CRS certification on the portal.
+5. Pay the fees and get the R-number — then you are ready to sell.
+
+### ISI / FMCS products
 1. Map the product to its Indian Standard (IS).
 2. Prepare the application and technical file.
 3. Sample testing at a BIS-recognised laboratory.
-4. Factory inspection (ISI/FMCS routes).
+4. Factory inspection (onsite audit).
 5. Grant of licence, followed by annual marking fees and surveillance.
 
 ## Cost drivers
 
-Laboratory testing charges (the largest variable — compare labs in our directory), BIS application and licence fees, annual marking fees by unit size, and consultant fees if you outsource the paperwork.`,
+Laboratory testing charges (the largest variable — compare labs in our directory), BIS application and licence / registration fees, annual marking fees by unit size (where applicable), and consultant fees if you outsource the paperwork.`,
     faqs: [
       {
         question: "How do I know if my product needs ISI or CRS?",
         answer:
-          "It depends on the notifying order. Electronics and IT products under MeitY orders follow CRS; most other products follow the ISI mark route. Every product page on Certko shows the applicable scheme.",
+          "It depends on the notifying order. Electronics and IT products under MeitY / CRS orders follow CRS (portal registration + lab testing, **no onsite factory audit**); most other products follow the ISI mark route with factory inspection. Every product page on Certko shows the applicable scheme and process.",
       },
       {
         question: "How long is a BIS licence valid?",

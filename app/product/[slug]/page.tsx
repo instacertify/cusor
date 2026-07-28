@@ -184,7 +184,9 @@ export default async function ProductPage({ params }: Props) {
           <div className="bg-gradient-to-br from-ink-900 to-ink-800 text-white rounded-3xl p-7 shadow-card-hover">
             <h2 className="font-display text-xl font-bold">Get certified faster</h2>
             <p className="mt-2 text-sm text-ink-300 leading-relaxed">
-              Our experts handle the application, coordinate testing for {product.standard || "your standard"} and manage the inspection. Free quote in 24 hours.
+              {product.scheme === "CRS"
+                ? `CRS products need no factory audit. We help you register on the BIS CRS portal, test ${product.standard || "your product"} at a BIS-empaneled lab, file the application, pay fees and get approved — then you are ready to sell. Free quote in 24 hours.`
+                : `Our experts handle the application, coordinate testing for ${product.standard || "your standard"} and manage the factory inspection. Free quote in 24 hours.`}
             </p>
             <div className="mt-5">
               <RequestQuoteButton subject={product.name} kind="product" short className="w-full" />
