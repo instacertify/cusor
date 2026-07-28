@@ -290,6 +290,140 @@ Share your **LED product type(s)**, **R-number(s)** and **target markets**. We w
 > **Disclaimer:** This article summarises the BIS *Guidelines for Implementation of Revised Standards for LED Luminaires* (20 March 2026) for general guidance. In case of any inconsistency, the Bureau of Indian Standards Act, 2016, the BIS Conformity Assessment Regulations, 2018, applicable Compulsory Registration Orders, and the official BIS guidelines prevail.
 `,
   },
+  {
+    slug: "bis-july-2026-amendments-eight-indian-standards-january-2027",
+    title:
+      "BIS July 2026 Amendments: 8 Indian Standards Updated — Concurrent Running Ends 19 January 2027",
+    excerpt:
+      "BIS has established amendments to eight Indian Standards (bicycles, LPG cylinders, beverage cans, infant bottles, automotive RFID and more). Old editions stay valid only until 19 January 2027 — what manufacturers and licence holders should do now.",
+    meta_title:
+      "BIS July 2026 Amendments to 8 Indian Standards | Jan 2027 Deadline | Certko",
+    meta_description:
+      "Gazette-notified BIS amendments (20 July 2026) for IS 1281, IS 3196, IS 14407, IS 16722, IS 18427, IS 18800 and more. Concurrent running till 19 Jan 2027. Certko consulting for licence & lab transition.",
+    published_at: "2026-07-28",
+    content: `On **21 July 2026**, the Bureau of Indian Standards (Department of Consumer Affairs) notified that **amendments to eight Indian Standards** have been established. The English schedule was published in the *Gazette of India* (Extraordinary, Part III — Section 4) on **25 July 2026** (CG-DL-E-27072026-274864; Ref. HQ-PUB015/1/2020-PUB-BIS (1576)).
+
+If you manufacture, import, brand or certify products under any of these standards — especially under **ISI / Scheme-I** or related conformity assessment — the clock is now running. Each amendment was **established on 20 July 2026**, and the **unamended standard remains in force only until 19 January 2027**.
+
+That is roughly a **six-month concurrent-running window**. After 19 January 2027, continuing to design, test or mark against the old edition is a compliance risk.
+
+## What the Gazette actually says
+
+Under **Sub-rule (1) of Rule 15** of the Bureau of Indian Standards Rules, 2018, BIS notifies that the amendments listed in the schedule have been established. For every standard in this batch:
+
+| Column | Meaning for your team |
+| --- | --- |
+| **Amendment established** | **20 July 2026** |
+| **Date till which the standard *without* the amendment remains in force** | **19 January 2027** |
+
+In plain language: you may still work to the previous text for a limited time, but you must plan the switch to the **amended** edition before that cut-off — including lab reports, licence updates, marking artwork and supplier declarations where your scheme requires them.
+
+> This Gazette establishes the amendments and their concurrent-running dates. It does **not** reprint the clause-by-clause amendment text. Always download the official amendment from the BIS standards portal / sales channel for the exact technical changes that apply to your product family.
+
+## The eight standards amended (July 2026)
+
+| # | Indian Standard | Product / scope | Amendment | Concurrent end |
+| --- | --- | --- | --- | --- |
+| 1 | **IS 1281 : 2025** | Bicycles — Cranks and Chain Wheels — Specification (Fourth Revision) | Amendment No. 1, July 2026 | **19 Jan 2027** |
+| 2 | **IS 3196 (Part 1) : 2013** | Welded low-carbon steel LPG cylinders (>5 L water capacity) — Specification (Sixth Revision) | Amendment No. 5, July 2026 | **19 Jan 2027** |
+| 3 | **IS 14407 : 2023** | Aluminium cans for beverages — Specification (First Revision) | Amendment No. 1, July 2026 | **19 Jan 2027** |
+| 4 | **IS 15841 : 2009** / ISO 11634:1996 | Snowboard-boots — Interface with ski-binding | Amendment No. 1, July 2026 | **19 Jan 2027** |
+| 5 | **IS 16722 : 2018** | RFID system for automotive applications — Specification | Amendment No. 2, July 2026 | **19 Jan 2027** |
+| 6 | **IS 17891 (Part 3) : 2023** / ISO 3601-3:2005 | Fluid power systems — O-rings — Part 3: Quality acceptance criteria | Amendment No. 1, July 2026 | **19 Jan 2027** |
+| 7 | **IS 18427 : 2024** | Three-piece round open-top metal cans for foods and beverages — Specification | Amendment No. 1, July 2026 | **19 Jan 2027** |
+| 8 | **IS 18800 : 2023** | Stainless steel feeding bottle for infants — Specification | Amendment No. 1, July 2026 | **19 Jan 2027** |
+
+Several of these lines sit in **high-scrutiny** categories: pressurised LPG cylinders, infant feeding products, food-contact metal packaging, and automotive RFID. Even where a change looks “editorial”, licence holders should confirm whether **re-testing, drawing updates or marking changes** are required under their grant of licence / scheme rules.
+
+## Why concurrent running still needs a project plan
+
+A six-month window sounds comfortable until you map the real work:
+
+1. **Buy / review the amendment** for every IS number in your licence or purchase order.
+2. **Gap-assess** drawings, bill of materials, process controls and existing type-test reports.
+3. **Book a BIS-recognised lab** (or in-house testing where the scheme allows) against the *amended* standard.
+4. **Update licence / scheme paperwork** — standard revision, model addition, or essential-requirement update as applicable.
+5. **Refresh marking, packaging and CoC language** so the Standard Mark and documents cite the correct edition.
+6. **Align suppliers** (cylinder blanks, can stock, O-rings, RFID modules, bottle components) so incoming parts match the amended acceptance criteria.
+
+Labs and certification queues tighten as January approaches. Teams that wait until December often discover the bottleneck is not the amendment text — it is **lab capacity and licence query cycles**.
+
+## Sector snapshots — who should act first
+
+### LPG cylinder manufacturers & brand owners (IS 3196 Part 1)
+Amendment **No. 5** on a long-running Sixth Revision standard is a signal to re-check welding, material and inspection clauses used in your current type approval. For ISI-marked cylinders, treat this as a **licence hygiene** item: confirm with your licence terms whether an updated test report or drawing revision must be filed before **19 January 2027**.
+
+### Beverage & food metal packaging (IS 14407, IS 18427)
+Aluminium beverage cans and three-piece open-top food/beverage cans often sit in buyer-driven compliance packs (modern trade, exports, QSR supply chains). Even voluntary adoption of the amended IS becomes a **tender / vendor-audit** requirement. Align QA specs and incoming inspection to the amended editions early so you are not renegotiating contracts in Q1 2027.
+
+### Infant products (IS 18800)
+Stainless steel feeding bottles for infants attract heightened consumer and marketplace scrutiny. If you hold (or seek) BIS conformity for this line, plan amendment review + any required re-verification **before** the concurrent period ends — and update listing claims / Standard Mark artwork accordingly.
+
+### Automotive RFID (IS 16722)
+Amendment **No. 2** matters to OEMs and Tier suppliers embedding RFID in automotive applications. Cross-check against your PPAP / customer drawings so plant quality systems do not still reference the unamended 2018 text after January 2027.
+
+### Bicycles — cranks & chain wheels (IS 1281 : 2025)
+IS 1281 was only recently revised (2025). Amendment No. 1 arriving in July 2026 is a reminder that **new revisions still get quick technical corrections**. Cycle-component makers should not assume last year’s Fourth Revision file is “done”.
+
+### Fluid-power O-rings (IS 17891 Part 3) & snowboard boots (IS 15841)
+These are narrower niches, but the same calendar applies. Exporters quoting ISO-aligned IS adoptions should update customer dossiers so invoices and CoCs cite the amended Indian Standard where that is the contract reference.
+
+## Practical checklist before 19 January 2027
+
+1. List every **CM/L, R-number, or purchase spec** that cites any of the eight IS numbers above.
+2. Download **Amendment No. x (July 2026)** for each applicable standard from BIS.
+3. Run a **clause gap review** with design + QA (and your Certko consultant if you want an external pack).
+4. Decide whether you need **fresh type tests**, partial re-tests, or documentation-only updates.
+5. Book **[BIS-recognised labs](/labs)** with the amended standard in scope — search by IS number on Certko Labs or BIS LIMS.
+6. File any required **standard revision / licence update** and clear queries while concurrent running is still open.
+7. Update **marking artwork, packaging, CoC templates and ERP master data** to the amended edition.
+8. Brief distributors and e-commerce teams so listings stop claiming the old unamended text after the cut-off.
+
+## Scope of Certko consulting — turning a Gazette notice into a closed file
+
+Most manufacturers do not struggle to *read* a Gazette table. They struggle to **translate it into licence-safe action** across plants, labs and paperwork. Certko’s consulting team helps you close that loop:
+
+### 1. Applicability & risk scan
+- Map your SKUs / licences to the eight amended standards
+- Flag which lines need lab work vs documentation updates
+- Highlight January 2027 exposure for ISI / scheme licences and buyer audits
+
+### 2. Amendment gap pack
+- Clause-level reading of the official amendment against your current drawings and reports
+- Sample / lead-model matrix where re-testing is indicated
+- Supplier questionnaire for critical parts (cylinder steel, can stock, RFID modules, bottle components, O-rings)
+
+### 3. Lab & test coordination
+- Shortlist of recognised labs with the right IS scope
+- Pre-submission review so reports cite the **amended** edition
+- Parallel planning when multiple plants or product families are affected
+
+### 4. Licence / portal support
+- Standard-revision and related filings under applicable BIS schemes
+- Query handling through grant / operative status under the amended standard
+- Marking and documentation alignment for marketplace and tender packs
+
+### 5. Buyer & export documentation
+- CoC / specification language updated for modern trade and OEM customers
+- Evidence pack for audits that ask “which edition are you shipping to after Jan 2027?”
+
+### Who should talk to us this week
+- LPG cylinder plants on **IS 3196 (Part 1)**
+- Can makers under **IS 14407** or **IS 18427**
+- Infant bottle brands under **IS 18800**
+- Automotive RFID suppliers under **IS 16722**
+- Bicycle component makers on **IS 1281 : 2025**
+- Any importer or brand whose **buyer PO still cites the unamended** edition
+
+## Talk to a Certko consultant
+
+Share your **product type**, **IS number(s)** and whether you already hold a **BIS licence**. We will send a **transition plan, lab options and consulting quote within 24 hours** — with a clear path to be amendment-ready before **19 January 2027**.
+
+[Get Expert Help](/contact) · [Contact Instacertify](/contact) · [Browse certifications](/certifications) · [Product testing](/testing) · [Find a lab](/labs)
+
+> **Disclaimer:** This article summarises the BIS Gazette notification Ref. HQ-PUB015/1/2020-PUB-BIS (1576) (notified 21 July 2026; published 25 July 2026) for general guidance. It does not reproduce the full technical text of each amendment. In case of any inconsistency, the Bureau of Indian Standards Act, 2016, the BIS Rules, 2018, the BIS Conformity Assessment Regulations, 2018, the official Indian Standards / amendments, and any applicable Quality Control Orders or scheme guidelines prevail.
+`,
+  },
 ];
 
 export function ensureMigrationPosts(db: SqliteDatabase) {
