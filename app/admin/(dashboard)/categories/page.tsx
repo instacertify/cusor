@@ -36,7 +36,7 @@ export default async function AdminCategories({ searchParams }: Props) {
           </div>
           <Field label="Typical Timeline" name="timeline" placeholder="e.g. 8-16 weeks" defaultValue="8-16 weeks" />
           <TextArea label="Description" name="description" rows={2} />
-          <ImageUpload current="" label="Category image (optional)" allowClear={false} />
+          <ImageUpload current="" label="Category image (optional)" allowClear={false} size="category" />
           <SubmitButton label="Create category" />
         </form>
       </div>

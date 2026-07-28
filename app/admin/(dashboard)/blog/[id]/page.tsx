@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string }>;
 }
 
 export default async function AdminPostEdit({ params, searchParams }: Props) {
@@ -32,7 +32,7 @@ export default async function AdminPostEdit({ params, searchParams }: Props) {
           </Link>
         )}
       </div>
-      <SavedBanner saved={sp.saved} />
+      <SavedBanner saved={sp.saved} error={sp.error} />
 
       <form action={savePost} className="space-y-6">
         <input type="hidden" name="id" value={post.id} />
@@ -80,7 +80,7 @@ export default async function AdminPostEdit({ params, searchParams }: Props) {
             </div>
           </div>
           <TextArea label="Excerpt (shown on the blog index and in search results)" name="excerpt" defaultValue={post.excerpt} rows={2} />
-          <ImageUpload current={post.image} label="Cover Image" />
+          <ImageUpload current={post.image} label="Cover Image" size="blog" />
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">

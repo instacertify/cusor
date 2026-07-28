@@ -3,6 +3,27 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Keep captcha font / sql.js on disk (not bundled into server chunks)
   serverExternalPackages: ["svg-captcha", "bcryptjs", "sql.js"],
+  // Allow larger admin image uploads (default is too small for many photos)
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "12mb",
+    },
+  },
+  images: {
+    // Uploaded SVG / unusual formats are rendered via SmartImage (<img>)
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "inline",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+  },
+  // If public/uploads is not writable, files live next to SQLite and are served by /api/uploads
+  async rewrites() {
+    return [
+      {
+        source: "/uploads/:path*",
+        destination: "/api/uploads/:path*",
+      },
+    ];
+  },
   // If a host uses file tracing / standalone, keep sql.js assets available
   outputFileTracingIncludes: {
     "/**": [

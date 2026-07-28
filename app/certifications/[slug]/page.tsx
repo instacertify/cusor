@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import SmartImage from "@/components/SmartImage";
 import type { Metadata } from "next";
 import { marked } from "marked";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -111,7 +111,7 @@ export default async function CertificationPage({ params }: Props) {
           </div>
         </div>
         {cert.image ? (
-          <Image
+          <SmartImage
             src={cert.image}
             alt={`${cert.full_name}`}
             width={520}

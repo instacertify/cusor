@@ -1,7 +1,22 @@
 import type { SqliteDatabase } from "./sqlite";
 import path from "path";
 
-export const HERO_IMAGE_EXTS = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".avif", ".bmp"];
+export const HERO_IMAGE_EXTS = [
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".jfif",
+  ".webp",
+  ".gif",
+  ".svg",
+  ".avif",
+  ".bmp",
+  ".ico",
+  ".tif",
+  ".tiff",
+  ".heic",
+  ".heif",
+];
 export const HERO_VIDEO_EXTS = [".mp4", ".webm", ".mov", ".m4v", ".ogg"];
 export const HERO_MEDIA_EXTS = [...HERO_IMAGE_EXTS, ...HERO_VIDEO_EXTS];
 

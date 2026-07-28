@@ -150,7 +150,7 @@ export default async function AdminCertificationEdit({ params, searchParams }: P
             <Field label="Icon name" name="icon" defaultValue={cert.icon} placeholder="e.g. shield, globe, zap" />
           </div>
           <TextArea label="Summary" name="summary" defaultValue={cert.summary} rows={2} />
-          <ImageUpload current={cert.image} label="Front / hero image" />
+          <ImageUpload current={cert.image} label="Front / hero image" size="certification" />
         </section>
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Content writeup</h2>

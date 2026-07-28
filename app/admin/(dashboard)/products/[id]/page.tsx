@@ -94,7 +94,7 @@ export default async function AdminProductEdit({ params, searchParams }: Props) 
             <Field label="QCO Status" name="qco_status" defaultValue={product.qco_status} placeholder="e.g. Mandatory (QCO in force)" />
           </div>
           <Field label="Applicable QCO / Order" name="qco_order" defaultValue={product.qco_order} placeholder="Order name and effective date" />
-          <ImageUpload current={product.image} label="Product Image" />
+          <ImageUpload current={product.image} label="Product Image" size="product" />
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">

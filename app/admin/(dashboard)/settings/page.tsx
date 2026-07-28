@@ -36,7 +36,7 @@ export default async function SettingsPage({ searchParams }: Props) {
         </Link>
         . Use the sidebar <strong>Clear cache</strong> button anytime to refresh the public site.
       </p>
-      <SavedBanner saved={sp.saved} />
+      <SavedBanner saved={sp.saved} error={sp.error} />
 
       <form action={saveSettings} className="space-y-8">
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
@@ -81,6 +81,7 @@ export default async function SettingsPage({ searchParams }: Props) {
                 clearName="clear_logo_primary"
                 clearLabel="Reset to default CERTKO logo"
                 previewFit="contain"
+                size="logo"
                 hint="Preferred: transparent PNG with wordmark + tagline."
               />
               <div>
@@ -91,6 +92,7 @@ export default async function SettingsPage({ searchParams }: Props) {
                   clearName="clear_logo_on_dark"
                   clearLabel="Reset to default light logo"
                   previewFit="contain"
+                  size="logoDark"
                   hint="Use a light / cream wordmark PNG for the dark footer."
                 />
                 <div className="mt-2 max-w-xs rounded-xl bg-ink-950 p-4 border border-ink-800">

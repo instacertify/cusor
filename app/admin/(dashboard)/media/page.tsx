@@ -1,5 +1,6 @@
 import { getDb } from "@/lib/db";
 import type { Category, Certification, PageRecord, Product } from "@/lib/db";
+import { imageKindForEntity } from "@/lib/image-upload-guide";
 import { saveEntityImage } from "../../actions";
 import { ImageUpload, SavedBanner, SubmitButton } from "@/components/admin/Field";
 
@@ -28,7 +29,8 @@ export default async function AdminMediaPage({ searchParams }: Props) {
       <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Front Images</h1>
       <p className="text-ink-600 text-sm mb-6">
         Upload or replace images used on the public site — homepage hero, content pages, certifications,
-        categories and featured products.
+        categories and featured products. Each field shows recommended size; PNG/JPG/WebP/GIF/SVG/AVIF/BMP/TIFF/HEIC
+        accepted (max 12 MB).
       </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
 
@@ -118,7 +120,7 @@ function ImageCard({
       <form action={saveEntityImage} className="space-y-3">
         <input type="hidden" name="entity" value={entity} />
         <input type="hidden" name="id" value={id} />
-        <ImageUpload current={current} label="Image" />
+        <ImageUpload current={current} label="Image" size={imageKindForEntity(entity)} />
         <SubmitButton label="Save image" />
       </form>
     </div>

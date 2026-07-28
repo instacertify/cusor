@@ -3,8 +3,6 @@
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
-import fs from "fs";
-import path from "path";
 import { getDb, setSetting } from "@/lib/db";
 import {
   requireAdmin,
@@ -64,28 +62,30 @@ export async function clearSiteCache(formData?: FormData) {
 }
 
 async function saveUploadedImage(file: File | null): Promise<string | null> {
-  if (!file || file.size === 0) return null;
-  const ext = path.extname(file.name).toLowerCase();
-  if (![".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".avif"].includes(ext)) return null;
-  const dir = path.join(process.cwd(), "public", "uploads");
-  fs.mkdirSync(dir, { recursive: true });
-  const name = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-  const buf = Buffer.from(await file.arrayBuffer());
-  fs.writeFileSync(path.join(dir, name), buf);
-  return `/uploads/${name}`;
+  const { persistUploadedImage } = await import("@/lib/uploads");
+  return persistUploadedImage(file);
 }
 
 async function saveUploadedMedia(file: File | null): Promise<string | null> {
-  if (!file || file.size === 0) return null;
-  const ext = path.extname(file.name).toLowerCase();
+  const { persistUploadedHeroMedia } = await import("@/lib/uploads");
   const { HERO_MEDIA_EXTS } = await import("@/lib/hero-slides");
-  if (!HERO_MEDIA_EXTS.includes(ext)) return null;
-  const dir = path.join(process.cwd(), "public", "uploads", "hero");
-  fs.mkdirSync(dir, { recursive: true });
-  const name = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-  const buf = Buffer.from(await file.arrayBuffer());
-  fs.writeFileSync(path.join(dir, name), buf);
-  return `/uploads/hero/${name}`;
+  return persistUploadedHeroMedia(file, HERO_MEDIA_EXTS);
+}
+
+/** Persist an upload, or redirect with ?error=image when the file is invalid. */
+async function uploadedImageOrRedirect(
+  formData: FormData,
+  field: string,
+  errorPath: string
+): Promise<string | null> {
+  const file = formData.get(field) as File | null;
+  try {
+    const url = await saveUploadedImage(file);
+    if (file && file.size > 0 && !url) redirect(errorPath);
+    return url;
+  } catch {
+    redirect(errorPath);
+  }
 }
 
 export async function logout() {
@@ -173,7 +173,12 @@ export async function saveSettings(formData: FormData) {
   }
 
   for (const key of Object.keys(LOGO_DEFAULTS) as Array<keyof typeof LOGO_DEFAULTS>) {
-    const uploaded = await saveUploadedImage(formData.get(`${key}_file`) as File | null);
+    let uploaded: string | null = null;
+    try {
+      uploaded = await saveUploadedImage(formData.get(`${key}_file`) as File | null);
+    } catch {
+      redirect("/admin/settings?error=image");
+    }
     if (uploaded) {
       setSetting(key, uploaded);
     } else if (formData.get(`clear_${key}`) === "1") {
@@ -295,7 +300,11 @@ export async function createPage(formData: FormData) {
 export async function savePage(formData: FormData) {
   await requireAdmin();
   const slug = String(formData.get("slug"));
-  const image = await saveUploadedImage(formData.get("image_file") as File | null);
+  const image = await uploadedImageOrRedirect(
+    formData,
+    "image_file",
+    `/admin/pages/${slug}?error=image`
+  );
   const db = getDb();
   const nav = pageNavFlags(formData);
   db.prepare(
@@ -349,7 +358,8 @@ export async function createCategory(formData: FormData) {
   const maxSort = (
     db.prepare("SELECT COALESCE(MAX(sort), 0) AS m FROM categories").get() as { m: number }
   ).m;
-  const image = (await saveUploadedImage(formData.get("image_file") as File | null)) ?? "";
+  const image =
+    (await uploadedImageOrRedirect(formData, "image_file", "/admin/categories?error=image")) ?? "";
   const res = db
     .prepare(
       `INSERT INTO categories (slug, name, icon, description, image, timeline, sort)
@@ -371,7 +381,11 @@ export async function createCategory(formData: FormData) {
 export async function saveCategory(formData: FormData) {
   await requireAdmin();
   const id = Number(formData.get("id"));
-  const image = await saveUploadedImage(formData.get("image_file") as File | null);
+  const image = await uploadedImageOrRedirect(
+    formData,
+    "image_file",
+    `/admin/categories/${id}?error=image`
+  );
   getDb()
     .prepare(
       `UPDATE categories SET name=?, icon=?, description=?, timeline=? ${image ? ", image=?" : ""} WHERE id=?`
@@ -441,7 +455,11 @@ export async function createProduct(formData: FormData) {
 export async function saveProduct(formData: FormData) {
   await requireAdmin();
   const id = Number(formData.get("id"));
-  const image = await saveUploadedImage(formData.get("image_file") as File | null);
+  const image = await uploadedImageOrRedirect(
+    formData,
+    "image_file",
+    `/admin/products/${id}?error=image`
+  );
   const minPrice = formData.get("min_price") ? Number(formData.get("min_price")) : null;
   const maxPrice = formData.get("max_price") ? Number(formData.get("max_price")) : null;
   getDb()
@@ -657,7 +675,9 @@ export async function createCertification(formData: FormData) {
   ).m;
   const sortRaw = String(formData.get("sort") ?? "").trim();
   const sort = sortRaw ? Number(sortRaw) || maxSort + 1 : maxSort + 1;
-  const image = (await saveUploadedImage(formData.get("image_file") as File | null)) ?? "";
+  const image =
+    (await uploadedImageOrRedirect(formData, "image_file", "/admin/certifications?error=image")) ??
+    "";
   const summary = String(formData.get("summary") ?? "").trim();
   const content =
     String(formData.get("content") ?? "").trim() ||
@@ -781,7 +801,11 @@ export async function saveCertification(formData: FormData) {
     .get(slug, id) as { id: number } | undefined;
   if (clash) slug = `${slug}-${id}`;
 
-  const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
+  const uploaded = await uploadedImageOrRedirect(
+    formData,
+    "image_file",
+    `/admin/certifications/${id}?error=image`
+  );
   const clearImage = formData.get("clear_image") === "1";
   const image = uploaded ?? (clearImage ? "" : current.image);
   const sort = Number(formData.get("sort") ?? 0) || 0;
@@ -826,7 +850,10 @@ export async function saveCertProduct(formData: FormData) {
     redirect(`/admin/certifications/${certificationId || ""}?error=1`);
   }
   let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
-  const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
+  const errorPath = id
+    ? `/admin/certifications/product/${id}?error=image`
+    : `/admin/certifications/${certificationId}/products?error=image`;
+  const uploaded = await uploadedImageOrRedirect(formData, "image_file", errorPath);
   const clearImage = formData.get("clear_image") === "1";
   const minPrice = formData.get("min_price") ? Number(formData.get("min_price")) : null;
   const maxPrice = formData.get("max_price") ? Number(formData.get("max_price")) : null;
@@ -951,7 +978,7 @@ export async function saveEntityImage(formData: FormData) {
   await requireAdmin();
   const entity = String(formData.get("entity") ?? "");
   const id = String(formData.get("id") ?? "");
-  const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
+  const uploaded = await uploadedImageOrRedirect(formData, "image_file", "/admin/media?error=image");
   const clearImage = formData.get("clear_image") === "1";
   const db = getDb();
 
@@ -1068,7 +1095,11 @@ export async function saveAuthor(formData: FormData) {
   }
   slug = candidate;
 
-  const image = await saveUploadedImage(formData.get("image_file") as File | null);
+  const image = await uploadedImageOrRedirect(
+    formData,
+    "image_file",
+    id ? `/admin/authors/${id}?error=image` : "/admin/authors?error=image"
+  );
   const values = {
     slug,
     name,
@@ -1151,7 +1182,11 @@ export async function savePost(formData: FormData) {
   await requireAdmin();
   const { slugify } = await import("@/lib/format");
   const id = Number(formData.get("id"));
-  const image = await saveUploadedImage(formData.get("image_file") as File | null);
+  const image = await uploadedImageOrRedirect(
+    formData,
+    "image_file",
+    `/admin/blog/${id}?error=image`
+  );
   const db = getDb();
   const existing = db.prepare("SELECT slug, status, published_at FROM posts WHERE id = ?").get(id) as
     | { slug: string; status: string; published_at: string | null }
@@ -1285,7 +1320,8 @@ export async function createTestingCategory(formData: FormData) {
   ).m;
   const sortRaw = String(formData.get("sort") ?? "").trim();
   const sort = sortRaw ? Number(sortRaw) || maxSort + 1 : maxSort + 1;
-  const image = (await saveUploadedImage(formData.get("image_file") as File | null)) ?? "";
+  const image =
+    (await uploadedImageOrRedirect(formData, "image_file", "/admin/testing?error=image")) ?? "";
   const summary = String(formData.get("summary") ?? "").trim();
   const content =
     String(formData.get("content") ?? "").trim() ||
@@ -1354,7 +1390,11 @@ export async function saveTestingCategory(formData: FormData) {
     .get(slug, id) as { id: number } | undefined;
   if (clash) slug = `${slug}-${id}`;
 
-  const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
+  const uploaded = await uploadedImageOrRedirect(
+    formData,
+    "image_file",
+    `/admin/testing/${id}?error=image`
+  );
   const clearImage = formData.get("clear_image") === "1";
   const image = uploaded ?? (clearImage ? "" : current.image);
   const sort = Number(formData.get("sort") ?? 0) || 0;
@@ -1401,7 +1441,10 @@ export async function saveTestingService(formData: FormData) {
   if (!catExists) redirect("/admin/testing?error=1");
 
   let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
-  const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
+  const errorPath = id
+    ? `/admin/testing/service/${id}?error=image`
+    : `/admin/testing/${categoryId}?error=image`;
+  const uploaded = await uploadedImageOrRedirect(formData, "image_file", errorPath);
   const clearImage = formData.get("clear_image") === "1";
   const values = {
     category_id: categoryId,
@@ -1532,8 +1575,14 @@ export async function saveHeroSlide(formData: FormData) {
   await requireAdmin();
   const { mediaTypeFromPath } = await import("@/lib/hero-slides");
   const id = formData.get("id") ? Number(formData.get("id")) : null;
-  const mediaUpload = await saveUploadedMedia(formData.get("media_file") as File | null);
-  const posterUpload = await saveUploadedImage(formData.get("poster_file") as File | null);
+  let mediaUpload: string | null = null;
+  let posterUpload: string | null = null;
+  try {
+    mediaUpload = await saveUploadedMedia(formData.get("media_file") as File | null);
+    posterUpload = await saveUploadedImage(formData.get("poster_file") as File | null);
+  } catch {
+    redirect("/admin/hero?error=image");
+  }
   const db = getDb();
 
   const title = String(formData.get("title") ?? "").trim();
