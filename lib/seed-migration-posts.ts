@@ -157,6 +157,139 @@ Share your **product category**, **R-number(s)** and **factory locations**. We w
 > **Disclaimer:** This article summarises publicly available BIS guidance for manufacturers. In case of any inconsistency, the Bureau of Indian Standards Act, 2016, the BIS Conformity Assessment Regulations, 2018, applicable Quality Control Orders, and the official *Guidelines for Implementation of Migration to IS/IEC 62368-1:2023* prevail.
 `,
   },
+  {
+    slug: "is-10322-led-luminaires-revised-standards-august-2026",
+    title:
+      "IS 10322 LED Luminaires Revised Standards — CRS Switchover by 02 August 2026",
+    excerpt:
+      "BIS has revised the IS 10322 series for fixed, recessed, street, flood, hand-lamp, lighting-chain and emergency LED luminaires. Concurrent running ends 02 August 2026 — what licensees must file, what changed technically, and how Certko can run the migration.",
+    meta_title:
+      "IS 10322 LED Luminaires Revised Standards | CRS by Aug 2026 | Certko",
+    meta_description:
+      "Migrate CRS LED luminaires to IS 10322 (Part 5) :2026 revisions. Concurrent running ends 02 August 2026. Lead-model testing, Part 1:2026 changes and Certko consulting help.",
+    published_at: "2026-07-28",
+    content: `BIS Registration Department has issued **Guidelines for Implementation of Revised Standards for LED Luminaires** (Ref: Reg./ IS 10322 Series /Guidelines/01, **20 March 2026**).
+
+Seven LED luminaire categories under the Compulsory Registration Order (CRO) now point to **2026 editions** of the IS 10322 (Part 5) sections — all tied to the revised general requirements in **IS 10322 (Part 1):2026**.
+
+The last date of **concurrent running is 02 August 2026**. After that date, licences that have not switched to the revised standards do not remain operative. If you manufacture or import LED luminaires for India, this is an immediate CRS project.
+
+## Products and standards covered
+
+| Product category | Current IS | Revised IS | Concurrent running ends |
+| --- | --- | --- | --- |
+| Fixed General Purpose LED Luminaires (incl. Fancy Lights) | IS 10322 (Part 5/Sec 1):2012 | **IS 10322 (Part 5/Sec 1):2026** | **02 August 2026** |
+| Recessed LED Luminaires | IS 10322 (Part 5/Sec 2):2012 | **IS 10322 (Part 5/Sec 2):2026** | **02 August 2026** |
+| LED Luminaires for Road and Street Lighting | IS 10322 (Part 5/Sec 3):2012 | **IS 10322 (Part 5/Sec 3):2026** | **02 August 2026** |
+| LED Flood Lights | IS 10322 (Part 5/Sec 5):2013 | **IS 10322 (Part 5/Sec 5):2026** | **02 August 2026** |
+| LED Hand Lamps | IS 10322 (Part 5/Sec 6):2013 | **IS 10322 (Part 5/Sec 6):2026** | **02 August 2026** |
+| LED Lighting Chains | IS 10322 (Part 5/Sec 7):2017 | **IS 10322 (Part 5/Sec 7):2026** | **02 August 2026** |
+| LED Luminaires for Emergency Lighting | IS 10322 (Part 5/Sec 8):2013 | **IS 10322 (Part 5/Sec 8):2026** | **02 August 2026** |
+
+All of the above sections **refer to IS 10322 (Part 1)**. The Part 1 edition **IS 10322 (Part 1):2014** has been superseded by **IS 10322 (Part 1):2026** — so general safety changes apply across the family, not only section-specific clauses.
+
+## What existing CRS licensees must do
+
+Per the BIS guidelines (Section A):
+
+1. **Implement the applicable revised standard by 02 August 2026.** Beyond that date, a licence that has not ensured compliance **shall not remain operative**.
+2. Submit **complete test report(s)** from a **BIS-recognised laboratory** for **all lead model(s)** in scope that were previously tested to the old edition.
+3. Give an **undertaking** that the revised-standard requirements have been implemented on **other existing series models** still in the licence scope.
+4. If actions are incomplete by the deadline, BIS may start **cancellation of the licence** and/or **deletion of models** from scope.
+
+There is no “one sample covers the whole R-number” shortcut — plan lead-model testing per series, for every factory location that holds a separate CRS licence.
+
+## Rules for new applicants and scope changes
+
+**New / pending applications (Section B):**
+
+- If the sample is already in the lab (or a test report is already issued), the file **may still be processed under the old edition**.
+- Applications recorded after the guidelines may use **old or revised** standards — but old-standard processing is allowed **only until 02 August 2026**, and only with a **declaration** that you will implement the revised standard by that date.
+- **After concurrent running ends, no new licence will be granted under the old standard.**
+
+**Change in scope of licence (Section C):**
+
+- Same rules as for applicants apply.
+- Old-standard scope-change requests are allowed only until you switch over to the revised standard **or** until 02 August 2026 — **whichever is earlier**.
+
+## Significant technical changes (why retesting is not paperwork-only)
+
+BIS lists the Part 1:2026 and section-level changes in the guidelines annexure. Highlights manufacturers should brief design and lab teams on:
+
+### IS 10322 (Part 1):2026
+- Introduction of **IPX9**
+- **EMF safety** requirements
+- Modified **marking** requirements (including mains socket-outlet marking)
+- Protection against **fast rotating parts** (moving fan blades)
+- Introduction of **PELV** systems
+- Extra rules for luminaires with **controllable control gear providing SELV outputs**
+- Updated touch **voltage / touch current** limits for shock assessment
+- Informative annexes on PoE / IT-cabling powered Class III luminaires and impulse withstand Category III
+- Normative annex on **battery / EDLC-operated** luminaires
+- Extended **photobiological** requirements
+
+### Section-specific additions
+- **Sec 1 (fixed GP):** scope aligned with Part 1 to include all electric light sources
+- **Sec 2 (recessed):** recessed-specific Part 1 requirements moved into Sec 2; **air-handling** luminaires; extra marking
+- **Sec 3 (street):** additional marking
+- **Sec 5 (flood):** **glass breaking test**; additional marking
+- **Sec 7 (lighting chains):** Temporarily Installed Protected Lighting (**TPL**) chains; new terms
+- **Sec 8 (emergency):** rest/inhibiting modes; high-temperature tests; **lithium batteries** and **EDLCs**; heat/fire/tracking clarifications; exit-sign contrast method
+
+If your series includes battery-backed emergency luminaires, street lights with new marking, or flood lights with glass optics, expect more than a rubber-stamp retest.
+
+## 30-day action checklist (before 02 August 2026)
+
+1. List every **R-number**, factory and LED category (Sec 1–8) still on old editions.
+2. Reconfirm **lead models** vs current series guidelines for each licence.
+3. Book **BIS-recognised labs** with scope for the applicable **IS 10322 (Part 5/Sec x):2026** edition — search on [Certko Labs](/labs) or BIS LIMS.
+4. Run gap review against **Part 1:2026** (IP, EMF, marking, SELV/PELV, photobiological, battery/EDLC).
+5. Compile complete lead-model test reports + **series-model undertaking**.
+6. File the standard revision / update in the CRS portal and clear queries before the cut-off.
+7. Refresh Standard Mark / packaging artwork for the revised IS reference.
+
+## Scope of Certko consulting — LED luminaire CRS migration
+
+This switchover is short-dated. Certko supports lighting OEMs, importers and brand owners with end-to-end CRS migration help:
+
+### 1. Licence & series gap assessment
+- Inventory of R-numbers across fixed, recessed, street, flood, hand-lamp, chain and emergency ranges
+- Lead-model / series mapping to the 2026 editions
+- Risk flag for licences unlikely to clear lab + portal before **02 August 2026**
+
+### 2. Lab booking & test plan
+- Shortlist of BIS-recognised labs for the relevant IS 10322 Part 5 section
+- Sample matrix for lead models (and multi-location licences)
+- Pre-submission review of reports against revised clauses (IPX9, EMF, glass break, emergency battery/EDLC, etc.)
+
+### 3. Documentation & portal filing
+- Undertaking pack for remaining series models
+- Standard-revision filing support in the CRS login
+- Query handling through operative status under the revised standard
+
+### 4. Design / CCL advisory (light-touch engineering bridge)
+- Briefing notes for R&D on Part 1:2026 and section deltas
+- Coordination with component suppliers where SELV control gear, batteries or EDLCs affect compliance
+
+### 5. Post-switchover scope changes
+- Adding new models only under the **2026** editions
+- Marketplace / tender documentation alignment after grant
+
+### Who should call us now
+- Brands with active CRS licences still on **2012 / 2013 / 2017** IS 10322 Part 5 sections
+- Factories with multiple LED categories or multiple plants
+- Importers mid-application who still need a declaration path before the cut-off
+- Teams that cannot spare internal bandwidth for parallel lab + portal work in the next weeks
+
+## Talk to a Certko consultant
+
+Share your **LED product type(s)**, **R-number(s)** and **target markets**. We will send a **migration plan, lab options and quote within 24 hours**.
+
+[Get Expert Help](/contact) · [Contact Instacertify](/contact) · [Product testing](/testing) · [Find a BIS lab](/labs) · [Search LED / lighting products](/products)
+
+> **Disclaimer:** This article summarises the BIS *Guidelines for Implementation of Revised Standards for LED Luminaires* (20 March 2026) for general guidance. In case of any inconsistency, the Bureau of Indian Standards Act, 2016, the BIS Conformity Assessment Regulations, 2018, applicable Compulsory Registration Orders, and the official BIS guidelines prevail.
+`,
+  },
 ];
 
 export function ensureMigrationPosts(db: SqliteDatabase) {
