@@ -342,19 +342,28 @@ export default function Icon({
   const node = PATHS[name];
   if (!node) {
     // fallback: render raw text (supports legacy emoji values in the CMS)
-    return <span className={className} style={{ fontSize: size * 0.9 }}>{name}</span>;
+    return (
+      <span
+        className={className}
+        style={{ fontSize: `calc(${size * 0.9}px * var(--icon-scale, 1.15))` }}
+      >
+        {name}
+      </span>
+    );
   }
   return (
     <svg
-      width={size}
-      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
       strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={className}
+      className={`icon-glyph ${className}`}
+      style={{
+        width: `calc(${size}px * var(--icon-scale, 1.15))`,
+        height: `calc(${size}px * var(--icon-scale, 1.15))`,
+      }}
       aria-hidden="true"
     >
       {node}

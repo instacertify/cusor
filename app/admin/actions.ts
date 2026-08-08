@@ -213,6 +213,12 @@ export async function saveSettings(formData: FormData) {
     setSetting("icon_style", resolveIconStyle(iconStyle));
   }
 
+  const iconScale = String(formData.get("icon_scale") ?? "").trim();
+  if (iconScale) {
+    const { resolveIconScale } = await import("@/lib/icon-style");
+    setSetting("icon_scale", resolveIconScale(iconScale));
+  }
+
   revalidatePath("/", "layout");
   redirect("/admin/settings?saved=1");
 }
