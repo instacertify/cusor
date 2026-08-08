@@ -50,7 +50,7 @@ export default async function AdminSeoIndex({ searchParams }: Props) {
             placeholder="Search a product to optimise…"
             className="flex-1 rounded-xl border border-cream-300 px-4 py-2.5 text-sm outline-none focus:border-butter-500"
           />
-          <button className="bg-ink-900 hover:bg-ink-800 text-white text-sm font-bold rounded-xl px-6 py-2.5 transition">
+          <button type="submit" className="bg-ink-900 hover:bg-ink-800 text-white text-sm font-bold rounded-xl px-6 py-2.5 transition">
             Search
           </button>
         </form>

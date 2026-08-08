@@ -104,7 +104,7 @@ export default async function LabsPage({ searchParams }: Props) {
             </option>
           ))}
         </select>
-        <button className="bg-ink-900 hover:bg-ink-800 text-white text-sm font-bold rounded-xl px-6 py-2.5 transition">
+        <button type="submit" className="bg-ink-900 hover:bg-ink-800 text-white text-sm font-bold rounded-xl px-6 py-2.5 transition">
           Filter
         </button>
       </form>
