@@ -526,6 +526,152 @@ export async function removeProductLab(formData: FormData) {
   redirect(`/admin/products/${productId}?saved=1#product-labs`);
 }
 
+function parseOptionalInt(raw: FormDataEntryValue | null): number | null {
+  const s = String(raw ?? "").trim().replace(/,/g, "");
+  if (!s) return null;
+  const n = Number(s);
+  return Number.isFinite(n) ? Math.round(n) : null;
+}
+
+/** Collect lab category tags from checkboxes + optional free-text list. */
+function parseLabCategoriesFromForm(formData: FormData): string {
+  const checked = formData
+    .getAll("categories")
+    .map((v) => String(v).trim())
+    .filter(Boolean);
+  const extra = String(formData.get("categories_extra") ?? "")
+    .split(/[,;\n]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const c of [...checked, ...extra]) {
+    const key = c.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(c);
+  }
+  return JSON.stringify(out);
+}
+
+export async function createLab(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) redirect("/admin/labs?error=1");
+  const db = getDb();
+  let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
+  let n = 2;
+  while (db.prepare("SELECT id FROM labs WHERE slug = ?").get(slug)) {
+    slug = `${slugify(name)}-${n++}`;
+  }
+  const code = String(formData.get("code") ?? "").trim() || null;
+  const city = String(formData.get("city") ?? "").trim();
+  const state = String(formData.get("state") ?? "").trim();
+  const accreditation = String(formData.get("accreditation") ?? "").trim();
+  const validity = String(formData.get("validity") ?? "").trim() || null;
+  const scopeCount = parseOptionalInt(formData.get("scope_count")) ?? 0;
+  const minPrice = parseOptionalInt(formData.get("min_price"));
+  const maxPrice = parseOptionalInt(formData.get("max_price"));
+  const categories = parseLabCategoriesFromForm(formData);
+  const res = db
+    .prepare(
+      `INSERT INTO labs (
+         slug, code, name, city, state, contact, phone, email,
+         validity, accreditation, min_price, max_price, scope_count, categories
+       ) VALUES (?, ?, ?, ?, ?, NULL, NULL, NULL, ?, ?, ?, ?, ?, ?)`
+    )
+    .run(
+      slug,
+      code,
+      name,
+      city,
+      state,
+      validity,
+      accreditation,
+      minPrice,
+      maxPrice,
+      scopeCount,
+      categories
+    );
+  revalidateSoon("/", "layout");
+  redirect(`/admin/labs/${Number(res.lastInsertRowid)}?saved=1`);
+}
+
+export async function saveLab(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const id = Number(formData.get("id"));
+  if (!id) redirect("/admin/labs?error=1");
+  const db = getDb();
+  const current = db.prepare("SELECT * FROM labs WHERE id = ?").get(id) as
+    | { slug: string; name: string }
+    | undefined;
+  if (!current) redirect("/admin/labs?error=1");
+  const name = String(formData.get("name") ?? "").trim() || current.name;
+  let slug = slugify(String(formData.get("slug") ?? "").trim() || current.slug);
+  let n = 2;
+  while (true) {
+    const clash = db.prepare("SELECT id FROM labs WHERE slug = ? AND id != ?").get(slug, id) as
+      | { id: number }
+      | undefined;
+    if (!clash) break;
+    slug = `${slugify(name)}-${n++}`;
+  }
+  const code = String(formData.get("code") ?? "").trim() || null;
+  const city = String(formData.get("city") ?? "").trim();
+  const state = String(formData.get("state") ?? "").trim();
+  const accreditation = String(formData.get("accreditation") ?? "").trim();
+  const validity = String(formData.get("validity") ?? "").trim() || null;
+  const scopeCount = parseOptionalInt(formData.get("scope_count")) ?? 0;
+  const minPrice = parseOptionalInt(formData.get("min_price"));
+  const maxPrice = parseOptionalInt(formData.get("max_price"));
+  const categories = parseLabCategoriesFromForm(formData);
+  db.prepare(
+    `UPDATE labs SET
+       slug = ?, code = ?, name = ?, city = ?, state = ?,
+       validity = ?, accreditation = ?, min_price = ?, max_price = ?,
+       scope_count = ?, categories = ?
+     WHERE id = ?`
+  ).run(
+    slug,
+    code,
+    name,
+    city,
+    state,
+    validity,
+    accreditation,
+    minPrice,
+    maxPrice,
+    scopeCount,
+    categories,
+    id
+  );
+  revalidateSoon("/", "layout");
+  redirect(`/admin/labs/${id}?saved=1`);
+}
+
+export async function deleteLab(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  if (!id) redirect("/admin/labs?error=1");
+  const db = getDb();
+  const lab = db.prepare("SELECT id FROM labs WHERE id = ?").get(id);
+  if (!lab) redirect("/admin/labs?error=1");
+  const productIds = (
+    db.prepare("SELECT product_id FROM product_labs WHERE lab_id = ?").all(id) as {
+      product_id: number;
+    }[]
+  ).map((r) => r.product_id);
+  db.prepare("DELETE FROM product_labs WHERE lab_id = ?").run(id);
+  db.prepare("DELETE FROM labs WHERE id = ?").run(id);
+  for (const productId of productIds) {
+    syncProductLabCount(db, productId);
+  }
+  revalidateSoon("/", "layout");
+  redirect("/admin/labs?saved=1");
+}
+
 /** Attach a testing service to a product (dropdown). */
 export async function addProductTesting(formData: FormData) {
   await requireAdmin();
