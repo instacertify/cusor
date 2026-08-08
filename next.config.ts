@@ -25,6 +25,7 @@ const nextConfig: NextConfig = {
             value: "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
           },
           { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Robots-Tag", value: "index, follow" },
         ],
       },
       {

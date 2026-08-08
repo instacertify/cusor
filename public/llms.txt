@@ -52,4 +52,5 @@ Certko helps manufacturers, importers, and marketplace sellers understand which 
 
 - [Privacy policy](https://certko.com/privacy)
 - [Terms of service](https://certko.com/terms)
-- [Robots.txt](https://certko.com/robots.txt): Crawler access rules
+- [Robots.txt](https://certko.com/robots.txt): Full public site crawlable (Allow: /); only /admin and /api blocked
+

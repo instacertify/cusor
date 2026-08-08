@@ -348,6 +348,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureTestimonialsLibrary(db);
   clearLegacyHomeAnnouncement(db);
   scrubLabPublicContactDetails(db);
+  ensurePublicFrontendCrawlable(db);
 }
 
 function runEnsures(db: SqliteDatabase) {
@@ -361,6 +362,22 @@ function runEnsures(db: SqliteDatabase) {
   ensureTestimonialsLibrary(db);
   clearLegacyHomeAnnouncement(db);
   scrubLabPublicContactDetails(db);
+  ensurePublicFrontendCrawlable(db);
+}
+
+/** Ensure public pages stay crawlable/indexable for search engines. */
+function ensurePublicFrontendCrawlable(db: SqliteDatabase) {
+  const cols = db.prepare("PRAGMA table_info(seo_meta)").all() as { name: string }[];
+  if (!cols.some((c) => c.name === "robots_index")) return;
+  db.exec(`
+    UPDATE seo_meta
+    SET robots_index = 1,
+        robots_follow = 1,
+        sitemap_include = 1
+    WHERE robots_index = 0
+       OR robots_follow = 0
+       OR sitemap_include = 0
+  `);
 }
 
 /** Remove the old default homepage announcement chip from existing installs. */
