@@ -7,6 +7,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import AuthorByline from "@/components/AuthorByline";
+import BlogCoverImage from "@/components/BlogCoverImage";
 import Icon from "@/components/Icon";
 import { getPostBySlug, getPublishedPosts } from "@/lib/queries";
 import { buildMetadata, buildJsonLd, BASE_URL } from "@/lib/seo";
@@ -78,12 +79,11 @@ export default async function BlogPostPage({ params }: Props) {
         </h1>
         <p className="mt-4 text-lg text-ink-600 leading-relaxed">{post.excerpt}</p>
         {post.image && (
-          <Image
+          <BlogCoverImage
             src={post.image}
             alt={post.title}
-            width={1200}
-            height={630}
             priority
+            sizes="(max-width: 768px) 100vw, 768px"
             className="mt-8 rounded-3xl border border-cream-300 shadow-card object-cover w-full aspect-[16/9]"
           />
         )}

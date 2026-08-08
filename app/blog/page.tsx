@@ -1,11 +1,11 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import AuthorByline from "@/components/AuthorByline";
 import BlogPagination, { BLOG_PAGE_SIZE } from "@/components/BlogPagination";
+import BlogCoverImage from "@/components/BlogCoverImage";
 import { countPublishedPosts, getPublishedPosts } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -80,11 +80,9 @@ export default async function BlogIndexPage({ searchParams }: Props) {
             >
               <Link href={`/blog/${p.slug}`} className="block">
                 {p.image ? (
-                  <Image
+                  <BlogCoverImage
                     src={p.image}
                     alt={p.title}
-                    width={1200}
-                    height={630}
                     className="w-full aspect-[16/9] object-cover"
                   />
                 ) : (

@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
+import BlogCoverImage from "@/components/BlogCoverImage";
 import { getAuthorBySlug, getPublishedPostsByAuthor } from "@/lib/queries";
 import { buildMetadata } from "@/lib/seo";
 
@@ -105,11 +106,9 @@ export default async function AuthorProfilePage({ params }: Props) {
               className="group bg-white rounded-3xl border border-cream-300 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition overflow-hidden flex flex-col"
             >
               {p.image ? (
-                <Image
+                <BlogCoverImage
                   src={p.image}
                   alt={p.title}
-                  width={1200}
-                  height={630}
                   className="w-full aspect-[16/9] object-cover"
                 />
               ) : (
