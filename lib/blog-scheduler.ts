@@ -1,4 +1,4 @@
-import { getDb, type Post } from "@/lib/db";
+import { getDb, type Post } from "./db";
 
 export type BlogPostStatus = "draft" | "scheduled" | "published";
 
@@ -102,7 +102,7 @@ export function publishDueBlogPosts(now = new Date()): PublishDueResult {
       `[certko] blog scheduler published ${publishedIds.length} post(s) at ${nowIso}:`,
       publishedSlugs.join(", ")
     );
-    void import("@/lib/sitemap-xml")
+    void import("./sitemap-xml")
       .then((m) => m.refreshSitemapFiles())
       .catch(() => {
         /* non-fatal */
