@@ -13,9 +13,9 @@ import { getFaqs, getTestingCategories } from "@/lib/queries";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Product Testing Services | Search Tests by Category | Certko",
+  title: "Explore the Right Quality Assurance Solutions | Product Testing | Certko",
   description:
-    "Search product testing services — chemical, electrical, EMC, physical, microbiology and mechanical. Find standards, scopes and accredited lab pathways with Certko.",
+    "Explore the right quality assurance solutions — chemical, electrical, EMC, physical, microbiology and mechanical product testing. Find standards, scopes and accredited lab pathways with Certko.",
   alternates: { canonical: "https://certko.com/testing" },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
@@ -28,11 +28,12 @@ export default function TestingIndexPage() {
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
       <Breadcrumbs crumbs={[{ label: "Product Testing" }]} />
       <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">
-        Product Testing
+        Explore the Right Quality Assurance Solutions
       </h1>
       <p className="mt-3 text-ink-600 max-w-2xl">
-        Search testing categories and individual test services for your product. Open a category for
-        writeups, FAQs and the full list of tests — then request a mapped lab quote.
+        Search product testing categories and individual test services — chemical, electrical, EMC,
+        physical, microbiology and mechanical. Open a category for standards, FAQs and scopes, then
+        request a mapped lab quote.
       </p>
 
       <div className="mt-8 max-w-2xl">
