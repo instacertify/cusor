@@ -1121,6 +1121,8 @@ export function seedDatabase(db: SqliteDatabase) {
 
     // ---- blog posts ----
     const insPost = db.prepare(
+      // Initial empty-DB seed only. Do not UPDATE existing posts/images later —
+      // covers on live blogs are managed in /admin/blog after login.
       `INSERT INTO posts (slug, title, excerpt, content, image, author, status, published_at, meta_title, meta_description)
        VALUES (@slug, @title, @excerpt, @content, @image, @author, 'published', @published_at, @meta_title, @meta_description)`
     );
