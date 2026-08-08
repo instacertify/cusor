@@ -14,6 +14,7 @@ import { ensureSeoLocationPosts } from "./seed-seo-posts";
 import { ensureMigrationPosts } from "./seed-migration-posts";
 import { ensureMsdsPosts } from "./seed-msds-posts";
 import { ensurePagesNavColumns } from "./pages-nav";
+import { ensureLandingPages } from "./seed-landing-pages";
 import { ensureHeroSlidesCatalog } from "./hero-slides";
 import { ensureTestimonialsLibrary } from "./seed-testimonials";
 
@@ -68,7 +69,10 @@ function bootstrapSchema(db: SqliteDatabase): void {
       nav_footer INTEGER NOT NULL DEFAULT 0,
       nav_label TEXT NOT NULL DEFAULT '',
       nav_detail TEXT NOT NULL DEFAULT '',
-      nav_sort INTEGER NOT NULL DEFAULT 0
+      nav_sort INTEGER NOT NULL DEFAULT 0,
+      page_type TEXT NOT NULL DEFAULT 'content',
+      cta_label TEXT NOT NULL DEFAULT '',
+      cta_href TEXT NOT NULL DEFAULT ''
     );
 
     CREATE TABLE IF NOT EXISTS categories (
@@ -346,6 +350,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureMigrationPosts(db);
   ensureMsdsPosts(db);
   ensurePagesNavColumns(db);
+  ensureLandingPages(db);
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
   clearLegacyHomeAnnouncement(db);
@@ -360,6 +365,7 @@ function runEnsures(db: SqliteDatabase) {
   ensureMigrationPosts(db);
   ensureMsdsPosts(db);
   ensurePagesNavColumns(db);
+  ensureLandingPages(db);
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
   clearLegacyHomeAnnouncement(db);
@@ -586,6 +592,9 @@ export interface PageRecord {
   nav_label: string;
   nav_detail: string;
   nav_sort: number;
+  page_type: string;
+  cta_label: string;
+  cta_href: string;
 }
 
 export interface Testimonial {
