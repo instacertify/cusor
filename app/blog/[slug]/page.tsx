@@ -81,10 +81,10 @@ export default async function BlogPostPage({ params }: Props) {
           <Image
             src={post.image}
             alt={post.title}
-            width={900}
-            height={480}
+            width={1200}
+            height={630}
             priority
-            className="mt-8 rounded-3xl border border-cream-300 shadow-card object-cover w-full"
+            className="mt-8 rounded-3xl border border-cream-300 shadow-card object-cover w-full aspect-[16/9]"
           />
         )}
         <div

@@ -72,6 +72,9 @@ export function ImageUpload({
   clearName = "clear_image",
   clearLabel = "Remove current image",
   previewFit = "cover",
+  /** Tailwind aspect class for the preview frame (e.g. aspect-[16/9] for blog covers). */
+  previewAspect,
+  accept = "image/png,image/jpeg,image/webp,image/gif,image/svg+xml",
   hint = "Upload PNG/JPG/WebP to replace the current image.",
 }: {
   current?: string;
@@ -82,9 +85,14 @@ export function ImageUpload({
   clearName?: string;
   clearLabel?: string;
   previewFit?: "cover" | "contain";
+  previewAspect?: string;
+  accept?: string;
   hint?: string;
 }) {
   const fitClass = previewFit === "contain" ? "object-contain bg-cream-100 p-3" : "object-cover";
+  const frameClass = previewAspect
+    ? `w-full max-w-md ${previewAspect} rounded-xl border border-cream-300 mb-2 overflow-hidden`
+    : "w-full max-w-xs rounded-xl border border-cream-300 mb-2";
   return (
     <div>
       <label htmlFor={name} className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">
@@ -95,16 +103,21 @@ export function ImageUpload({
         <img
           src={current}
           alt="Current"
-          className={`w-full max-w-xs rounded-xl border border-cream-300 mb-2 ${fitClass}`}
+          className={`${frameClass} ${fitClass}`}
         />
       ) : (
-        <p className="text-xs text-ink-500 mb-2">No image set yet.</p>
+        <div
+          className={`${frameClass} bg-cream-100 flex items-center justify-center`}
+          aria-hidden
+        >
+          <p className="text-xs text-ink-500 px-3 text-center">No image set yet.</p>
+        </div>
       )}
       <input
         id={name}
         name={name}
         type="file"
-        accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+        accept={accept}
         className="block w-full text-sm text-ink-700 file:mr-3 file:rounded-lg file:border-0 file:bg-cream-200 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink-800 hover:file:bg-cream-300"
       />
       {allowClear && current ? (
@@ -113,7 +126,7 @@ export function ImageUpload({
           {clearLabel}
         </label>
       ) : null}
-      <p className="text-[11px] text-ink-500 mt-1">{hint}</p>
+      <p className="text-[11px] text-ink-500 mt-1 leading-relaxed">{hint}</p>
     </div>
   );
 }

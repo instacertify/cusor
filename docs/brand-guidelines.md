@@ -74,3 +74,10 @@ Meaning: CERT = certification / compliance / confidence; KO = Knowledge + Operat
 ## UI Style
 
 Stripe / Notion / Linear–inspired: whitespace, rounded corners, large type, flat icons, high contrast, mobile-first. Minimal decorative graphics; SVG logo; light shadows only.
+
+## Blog cover images
+
+- **Size / ratio:** 1200×630 px (16:9 landscape) — matches `/blog` cards, article hero and social/OG previews
+- **Formats:** PNG, JPG or WebP only
+- **Look:** flat, high-contrast product/context photography or simple graphics; cream / navy / amber palette when branded
+- **Avoid:** heavy multi-layer shadows, glow effects, purple gradients, emoji stickers, floating badges over the image

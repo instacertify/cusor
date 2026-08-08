@@ -63,10 +63,17 @@ export async function clearSiteCache(formData?: FormData) {
   redirect(`${next}?cache=1`);
 }
 
-async function saveUploadedImage(file: File | null): Promise<string | null> {
+const DEFAULT_IMAGE_EXTS = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".avif"];
+/** Blog covers follow brand guidelines — landscape photography formats only. */
+const BLOG_COVER_EXTS = [".png", ".jpg", ".jpeg", ".webp"];
+
+async function saveUploadedImage(
+  file: File | null,
+  allowedExts: string[] = DEFAULT_IMAGE_EXTS
+): Promise<string | null> {
   if (!file || file.size === 0) return null;
   const ext = path.extname(file.name).toLowerCase();
-  if (![".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".avif"].includes(ext)) return null;
+  if (!allowedExts.includes(ext)) return null;
   const dir = path.join(process.cwd(), "public", "uploads");
   fs.mkdirSync(dir, { recursive: true });
   const name = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
@@ -1151,10 +1158,16 @@ export async function savePost(formData: FormData) {
   await requireAdmin();
   const { slugify } = await import("@/lib/format");
   const id = Number(formData.get("id"));
-  const image = await saveUploadedImage(formData.get("image_file") as File | null);
+  const uploaded = await saveUploadedImage(
+    formData.get("image_file") as File | null,
+    BLOG_COVER_EXTS
+  );
+  const clearImage = formData.get("clear_image") === "1";
   const db = getDb();
-  const existing = db.prepare("SELECT slug, status, published_at FROM posts WHERE id = ?").get(id) as
-    | { slug: string; status: string; published_at: string | null }
+  const existing = db
+    .prepare("SELECT slug, status, published_at, image FROM posts WHERE id = ?")
+    .get(id) as
+    | { slug: string; status: string; published_at: string | null; image: string | null }
     | undefined;
   if (!existing) redirect("/admin/blog");
 
@@ -1174,24 +1187,26 @@ export async function savePost(formData: FormData) {
       : existing.published_at;
   const author = resolveAuthorFromForm(formData);
 
+  let nextImage = existing.image ?? "";
+  if (uploaded) nextImage = uploaded;
+  else if (clearImage) nextImage = "";
+
   db.prepare(
     `UPDATE posts SET slug=?, title=?, excerpt=?, content=?, author=?, author_id=?, status=?, published_at=?,
-     meta_title=?, meta_description=? ${image ? ", image=?" : ""} WHERE id=?`
+     meta_title=?, meta_description=?, image=? WHERE id=?`
   ).run(
-    ...[
-      slug,
-      String(formData.get("title") ?? "").trim(),
-      String(formData.get("excerpt") ?? "").trim(),
-      String(formData.get("content") ?? ""),
-      author.name,
-      author.id,
-      status,
-      publishedAt,
-      String(formData.get("meta_title") ?? "").trim(),
-      String(formData.get("meta_description") ?? "").trim(),
-      ...(image ? [image] : []),
-      id,
-    ]
+    slug,
+    String(formData.get("title") ?? "").trim(),
+    String(formData.get("excerpt") ?? "").trim(),
+    String(formData.get("content") ?? ""),
+    author.name,
+    author.id,
+    status,
+    publishedAt,
+    String(formData.get("meta_title") ?? "").trim(),
+    String(formData.get("meta_description") ?? "").trim(),
+    nextImage,
+    id
   );
   revalidatePath("/", "layout");
   redirect(`/admin/blog/${id}?saved=1`);

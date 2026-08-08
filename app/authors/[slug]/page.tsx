@@ -108,12 +108,12 @@ export default async function AuthorProfilePage({ params }: Props) {
                 <Image
                   src={p.image}
                   alt={p.title}
-                  width={520}
-                  height={300}
-                  className="w-full h-44 object-cover"
+                  width={1200}
+                  height={630}
+                  className="w-full aspect-[16/9] object-cover"
                 />
               ) : (
-                <div className="w-full h-44 bg-cream-200" aria-hidden />
+                <div className="w-full aspect-[16/9] bg-cream-200" aria-hidden />
               )}
               <div className="p-6 flex flex-col gap-2 flex-1">
                 <p className="text-xs font-semibold text-ink-500">{formatDate(p.published_at)}</p>
