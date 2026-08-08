@@ -54,7 +54,7 @@ export default async function AdminAuthorEditPage({ params, searchParams }: Prop
           <ImageUpload
             current={author.image}
             label="Profile photo"
-            hint="Square photo works best. PNG/JPG/WebP."
+            size="author"
             previewFit="cover"
           />
         </section>

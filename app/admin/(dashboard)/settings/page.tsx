@@ -81,6 +81,7 @@ export default async function SettingsPage({ searchParams }: Props) {
                 clearName="clear_logo_primary"
                 clearLabel="Reset to default CERTKO logo"
                 previewFit="contain"
+                size="logo"
                 hint="Preferred: transparent PNG with wordmark + tagline."
               />
               <div>
@@ -91,6 +92,7 @@ export default async function SettingsPage({ searchParams }: Props) {
                   clearName="clear_logo_on_dark"
                   clearLabel="Reset to default light logo"
                   previewFit="contain"
+                  size="logoDark"
                   hint="Use a light / cream wordmark PNG for the dark footer."
                 />
                 <div className="mt-2 max-w-xs rounded-xl bg-ink-950 p-4 border border-ink-800">

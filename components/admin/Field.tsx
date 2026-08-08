@@ -1,3 +1,8 @@
+import {
+  formatImageUploadHint,
+  type ImageUploadKind,
+} from "@/lib/image-upload-guide";
+
 export function Field({
   label,
   name,
@@ -72,7 +77,8 @@ export function ImageUpload({
   clearName = "clear_image",
   clearLabel = "Remove current image",
   previewFit = "cover",
-  hint = "Upload PNG/JPG/WebP to replace the current image.",
+  size = "generic",
+  hint,
 }: {
   current?: string;
   name?: string;
@@ -82,9 +88,14 @@ export function ImageUpload({
   clearName?: string;
   clearLabel?: string;
   previewFit?: "cover" | "contain";
+  /** Preset recommended dimensions / resolution for this upload slot */
+  size?: ImageUploadKind;
+  /** Extra note appended after the size recommendation */
   hint?: string;
 }) {
   const fitClass = previewFit === "contain" ? "object-contain bg-cream-100 p-3" : "object-cover";
+  const sizeHint = formatImageUploadHint(size);
+  const fullHint = hint ? `${sizeHint} ${hint}` : sizeHint;
   return (
     <div>
       <label htmlFor={name} className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">
@@ -113,7 +124,7 @@ export function ImageUpload({
           {clearLabel}
         </label>
       ) : null}
-      <p className="text-[11px] text-ink-500 mt-1">{hint}</p>
+      <p className="text-[11px] text-ink-500 mt-1.5 leading-relaxed">{fullHint}</p>
     </div>
   );
 }

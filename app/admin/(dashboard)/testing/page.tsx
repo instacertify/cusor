@@ -58,7 +58,7 @@ export default async function AdminTesting({ searchParams }: Props) {
             />
             <Field label="Meta title" name="meta_title" placeholder="auto from name" />
             <TextArea label="Meta description" name="meta_description" rows={2} />
-            <ImageUpload current="" label="Front image (optional)" allowClear={false} />
+            <ImageUpload current="" label="Front image (optional)" allowClear={false} size="testing" />
             <SubmitButton label="Create category" />
           </form>
         </div>
@@ -126,7 +126,7 @@ export default async function AdminTesting({ searchParams }: Props) {
               <TextArea label="Content writeup (Markdown)" name="content" rows={4} />
               <Field label="Meta title" name="meta_title" />
               <TextArea label="Meta description" name="meta_description" rows={2} />
-              <ImageUpload current="" label="Test image" allowClear={false} />
+              <ImageUpload current="" label="Test image" allowClear={false} size="testing" />
               <SubmitButton label="Create test page" />
             </form>
           )}

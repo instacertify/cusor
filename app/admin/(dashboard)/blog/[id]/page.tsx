@@ -80,7 +80,7 @@ export default async function AdminPostEdit({ params, searchParams }: Props) {
             </div>
           </div>
           <TextArea label="Excerpt (shown on the blog index and in search results)" name="excerpt" defaultValue={post.excerpt} rows={2} />
-          <ImageUpload current={post.image} label="Cover Image" />
+          <ImageUpload current={post.image} label="Cover Image" size="blog" />
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">

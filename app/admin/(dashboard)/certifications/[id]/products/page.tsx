@@ -153,7 +153,7 @@ export default async function AdminCertificationProductsList({ params, searchPar
             defaultValue="{}"
             hint='Optional structured fields, e.g. {"star_table":"…","emc":"Yes"}'
           />
-          <ImageUpload current="" label="Product image" allowClear={false} />
+          <ImageUpload current="" label="Product image" allowClear={false} size="product" />
           <SubmitButton label="Create covered product" />
         </form>
       </section>

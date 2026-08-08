@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { getAllHeroSlides } from "@/lib/queries";
+import { formatImageUploadHint } from "@/lib/image-upload-guide";
 import { saveHeroSlide, deleteHeroSlide } from "../../actions";
 import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 import { Field, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
@@ -35,7 +36,7 @@ export default async function AdminHeroPage({ searchParams }: Props) {
       <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Hero slider</h1>
       <p className="text-ink-600 text-sm mb-6">
         Deploy homepage hero banner slides. Supports images (PNG, JPG, WebP, AVIF, SVG), animated GIF, and video
-        (MP4, WebM, MOV).
+        (MP4, WebM, MOV). {formatImageUploadHint("hero")}
       </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
 
@@ -86,6 +87,9 @@ export default async function AdminHeroPage({ searchParams }: Props) {
                   accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,image/avif,image/bmp,video/mp4,video/webm,video/quicktime,video/ogg,.mp4,.webm,.mov,.m4v,.gif"
                   className="block w-full text-sm text-ink-700 file:mr-3 file:rounded-lg file:border-0 file:bg-cream-200 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink-800"
                 />
+                <span className="mt-1.5 block text-[11px] text-ink-500 leading-relaxed">
+                  {formatImageUploadHint("hero")}
+                </span>
               </label>
               {s.media_type === "video" || s.media.endsWith(".mp4") || s.media.endsWith(".webm") ? (
                 <ImageUpload
@@ -93,6 +97,7 @@ export default async function AdminHeroPage({ searchParams }: Props) {
                   name="poster_file"
                   clearName="clear_poster"
                   label="Video poster image (optional)"
+                  size="heroPoster"
                   hint="Shown before video plays / as fallback."
                 />
               ) : null}
@@ -140,8 +145,8 @@ export default async function AdminHeroPage({ searchParams }: Props) {
               accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,image/avif,image/bmp,video/mp4,video/webm,video/quicktime,video/ogg,.mp4,.webm,.mov,.m4v,.gif"
               className="block w-full text-sm text-ink-700 file:mr-3 file:rounded-lg file:border-0 file:bg-cream-200 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink-800"
             />
-            <span className="mt-1 block text-[11px] text-ink-500">
-              Images: PNG, JPG, WebP, AVIF, SVG, GIF · Video: MP4, WebM, MOV, M4V
+            <span className="mt-1.5 block text-[11px] text-ink-500 leading-relaxed">
+              {formatImageUploadHint("hero")} Images: PNG, JPG, WebP, AVIF, SVG, GIF · Video: MP4, WebM, MOV, M4V.
             </span>
           </label>
           <ImageUpload
@@ -149,6 +154,7 @@ export default async function AdminHeroPage({ searchParams }: Props) {
             name="poster_file"
             allowClear={false}
             label="Poster image for video (optional)"
+            size="heroPoster"
             hint="Recommended when uploading a video."
           />
           <SubmitButton label="Add slide" />

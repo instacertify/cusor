@@ -46,7 +46,7 @@ export default async function AdminPageEdit({ params, searchParams }: Props) {
           <Field label="Page Title" name="title" defaultValue={page.title} required />
           <Field label="Hero Heading" name="hero_heading" defaultValue={page.hero_heading} />
           <TextArea label="Hero Subheading" name="hero_subheading" defaultValue={page.hero_subheading} rows={2} />
-          <ImageUpload current={page.image} label="Page Image" />
+          <ImageUpload current={page.image} label="Page Image" size="page" />
         </section>
 
         <PageNavPlacement
