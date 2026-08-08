@@ -12,6 +12,60 @@ export function mediaTypeFromPath(filePath: string): "image" | "gif" | "video" {
   return "image";
 }
 
+/** Default homepage hero scroll: electronic → mechanical → lab. */
+export const DEFAULT_TESTING_HERO_SLIDES = [
+  {
+    title: "Electronic Testing",
+    subtitle: "Safety, EMC and performance tests for electrical & electronic products",
+    media: "/images/testing/electrical-testing.mp4",
+    poster: "/images/testing/electrical-poster.jpg",
+    link_href: "/testing/electrical-testing",
+    link_label: "Browse electronic tests",
+    duration_ms: 7000,
+    sort: 0,
+  },
+  {
+    title: "Mechanical Testing",
+    subtitle: "Strength, durability and physical performance testing for materials & parts",
+    media: "/images/testing/mechanical-testing.mp4",
+    poster: "/images/testing/mechanical-poster.jpg",
+    link_href: "/testing/mechanical-testing",
+    link_label: "Browse mechanical tests",
+    duration_ms: 7000,
+    sort: 1,
+  },
+  {
+    title: "Lab-backed certification",
+    subtitle: "Testing coordination, recognised labs and clear cost ranges",
+    media: "/images/hero-lab.mp4",
+    poster: "/images/hero-lab-poster.jpg",
+    link_href: "/testing",
+    link_label: "Explore all testing",
+    duration_ms: 7000,
+    sort: 2,
+  },
+] as const;
+
+function insertSlide(
+  db: SqliteDatabase,
+  slide: (typeof DEFAULT_TESTING_HERO_SLIDES)[number]
+) {
+  db.prepare(
+    `INSERT INTO hero_slides (title, subtitle, media, media_type, poster, link_href, link_label, duration_ms, active, sort)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`
+  ).run(
+    slide.title,
+    slide.subtitle,
+    slide.media,
+    mediaTypeFromPath(slide.media),
+    slide.poster,
+    slide.link_href,
+    slide.link_label,
+    slide.duration_ms,
+    slide.sort
+  );
+}
+
 export function ensureHeroSlidesCatalog(db: SqliteDatabase) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS hero_slides (
@@ -32,45 +86,45 @@ export function ensureHeroSlidesCatalog(db: SqliteDatabase) {
 
   const count = (db.prepare("SELECT COUNT(*) AS n FROM hero_slides").get() as { n: number }).n;
   if (count === 0) {
-    // Prefer looping lab footage for the homepage media panel
-    const media = "/images/hero-lab.mp4";
-    db.prepare(
-      `INSERT INTO hero_slides (title, subtitle, media, media_type, poster, link_href, link_label, duration_ms, active, sort)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 8000, 1, 0)`
-    ).run(
-      "Lab-backed certification",
-      "Testing coordination, recognised labs and clear cost ranges",
-      media,
-      mediaTypeFromPath(media),
-      "/images/hero-lab-poster.jpg",
-      "/labs",
-      "Browse testing labs"
-    );
-  } else {
-    // Soft upgrade: replace the original static hero.png seed with lab video once
-    const onlyDefault = db
-      .prepare(
-        `SELECT id, media FROM hero_slides WHERE active = 1 AND media IN ('/images/hero.png', '') LIMIT 2`
-      )
-      .all() as { id: number; media: string }[];
-    const totalActive = (
-      db.prepare("SELECT COUNT(*) AS n FROM hero_slides WHERE active = 1").get() as { n: number }
-    ).n;
-    if (totalActive === 1 && onlyDefault.length === 1 && onlyDefault[0].media === "/images/hero.png") {
-      db.prepare(
-        `UPDATE hero_slides
-         SET media = ?, media_type = ?, poster = ?, title = ?, subtitle = ?, link_href = ?, link_label = ?, duration_ms = 8000
-         WHERE id = ?`
-      ).run(
-        "/images/hero-lab.mp4",
-        "video",
-        "/images/hero-lab-poster.jpg",
-        "Lab-backed certification",
-        "Testing coordination, recognised labs and clear cost ranges",
-        "/labs",
-        "Browse testing labs",
-        onlyDefault[0].id
-      );
-    }
+    for (const slide of DEFAULT_TESTING_HERO_SLIDES) insertSlide(db, slide);
+    return;
+  }
+
+  // Soft upgrade path A: original static hero.png only
+  const onlyDefault = db
+    .prepare(
+      `SELECT id, media FROM hero_slides WHERE active = 1 AND media IN ('/images/hero.png', '') LIMIT 2`
+    )
+    .all() as { id: number; media: string }[];
+  const totalActive = (
+    db.prepare("SELECT COUNT(*) AS n FROM hero_slides WHERE active = 1").get() as { n: number }
+  ).n;
+  if (totalActive === 1 && onlyDefault.length === 1 && onlyDefault[0].media === "/images/hero.png") {
+    db.prepare("DELETE FROM hero_slides WHERE id = ?").run(onlyDefault[0].id);
+    for (const slide of DEFAULT_TESTING_HERO_SLIDES) insertSlide(db, slide);
+    return;
+  }
+
+  // Soft upgrade path B: single lab video seed → expand with electronic + mechanical
+  const active = db
+    .prepare(`SELECT id, media FROM hero_slides WHERE active = 1 ORDER BY sort, id`)
+    .all() as { id: number; media: string }[];
+  if (
+    active.length === 1 &&
+    (active[0].media === "/images/hero-lab.mp4" || active[0].media === "/images/hero.png")
+  ) {
+    db.prepare("DELETE FROM hero_slides WHERE id = ?").run(active[0].id);
+    for (const slide of DEFAULT_TESTING_HERO_SLIDES) insertSlide(db, slide);
+    return;
+  }
+
+  // Soft upgrade path C: ensure electronic + mechanical slides exist when missing
+  const medias = new Set(
+    (
+      db.prepare("SELECT media FROM hero_slides").all() as { media: string }[]
+    ).map((r) => r.media)
+  );
+  for (const slide of DEFAULT_TESTING_HERO_SLIDES) {
+    if (!medias.has(slide.media)) insertSlide(db, slide);
   }
 }
