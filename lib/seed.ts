@@ -792,6 +792,12 @@ export function seedDatabase(db: SqliteDatabase) {
       facebook_domain_verification: "",
       custom_head_html: "",
       custom_body_html: "",
+      social_twitter_url: "",
+      social_linkedin_url: "",
+      social_youtube_url: "",
+      social_twitter_icon: "",
+      social_linkedin_icon: "",
+      social_youtube_icon: "",
     };
     const insSetting = db.prepare(
       "INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)"
