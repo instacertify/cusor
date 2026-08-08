@@ -49,9 +49,9 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       },
       {
         href: "/admin/pages",
-        label: "Pages",
+        label: "Pages & Landings",
         icon: "file",
-        description: "Create pages; place in menu, submenu or footer",
+        description: "CMS pages + advertising landing pages",
       },
       {
         href: "/admin/hero",

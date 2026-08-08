@@ -58,6 +58,9 @@ export function ensurePagesNavColumns(db: SqliteDatabase) {
   add("nav_label", "nav_label TEXT NOT NULL DEFAULT ''");
   add("nav_detail", "nav_detail TEXT NOT NULL DEFAULT ''");
   add("nav_sort", "nav_sort INTEGER NOT NULL DEFAULT 0");
+  add("page_type", "page_type TEXT NOT NULL DEFAULT 'content'");
+  add("cta_label", "cta_label TEXT NOT NULL DEFAULT ''");
+  add("cta_href", "cta_href TEXT NOT NULL DEFAULT ''");
 
   // One-time defaults for seeded CMS pages if they still have all-zero placement
   const seeded: Record<string, { menu?: number; submenu?: number; footer?: number; label?: string; detail?: string; sort?: number }> = {

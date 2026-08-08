@@ -287,24 +287,45 @@ export async function createPage(formData: FormData) {
     candidate = `${slug}-${n++}`;
   }
   slug = candidate;
+  const pageType =
+    String(formData.get("page_type") ?? "content") === "landing" ? "landing" : "content";
   const nav = pageNavFlags(formData);
+  // Advertising landings default to not in site nav (campaign URLs only).
+  const navMenu = pageType === "landing" ? 0 : nav.nav_menu;
+  const navSubmenu = pageType === "landing" ? 0 : nav.nav_submenu;
+  const navFooter = pageType === "landing" ? 0 : nav.nav_footer;
+  const ctaLabel =
+    String(formData.get("cta_label") ?? "").trim() ||
+    (pageType === "landing" ? "Get Expert Help" : "");
+  const ctaHref =
+    String(formData.get("cta_href") ?? "").trim() ||
+    (pageType === "landing" ? "/contact" : "");
+  const stub =
+    pageType === "landing"
+      ? `## Why this offer matters\n\nWrite the advertising pitch here using **Markdown**.\n\n## What clients receive\n\n- Benefit one\n- Benefit two\n\n## How it works\n\n1. Step one\n2. Step two\n\n[Get Expert Help](/contact)`
+      : "Write your page content here using **Markdown**.";
 
   db.prepare(
     `INSERT INTO pages (
       slug, title, meta_title, meta_description, hero_heading, hero_subheading, content, image,
-      nav_menu, nav_submenu, nav_footer, nav_label, nav_detail, nav_sort
-    ) VALUES (?, ?, ?, '', ?, '', 'Write your page content here using **Markdown**.', '', ?, ?, ?, ?, ?, ?)`
+      nav_menu, nav_submenu, nav_footer, nav_label, nav_detail, nav_sort,
+      page_type, cta_label, cta_href
+    ) VALUES (?, ?, ?, '', ?, '', ?, '', ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     slug,
     title,
     `${title} | Certko`,
     title,
-    nav.nav_menu,
-    nav.nav_submenu,
-    nav.nav_footer,
+    stub,
+    navMenu,
+    navSubmenu,
+    navFooter,
     nav.nav_label || title,
     nav.nav_detail,
-    nav.nav_sort
+    nav.nav_sort,
+    pageType,
+    ctaLabel,
+    ctaHref
   );
 
   revalidatePath("/", "layout");
@@ -317,9 +338,14 @@ export async function savePage(formData: FormData) {
   const image = await saveUploadedImage(formData.get("image_file") as File | null);
   const db = getDb();
   const nav = pageNavFlags(formData);
+  const pageType =
+    String(formData.get("page_type") ?? "content") === "landing" ? "landing" : "content";
+  const ctaLabel = String(formData.get("cta_label") ?? "").trim();
+  const ctaHref = String(formData.get("cta_href") ?? "").trim();
   db.prepare(
     `UPDATE pages SET title=?, meta_title=?, meta_description=?, hero_heading=?, hero_subheading=?, content=?,
-     nav_menu=?, nav_submenu=?, nav_footer=?, nav_label=?, nav_detail=?, nav_sort=?
+     nav_menu=?, nav_submenu=?, nav_footer=?, nav_label=?, nav_detail=?, nav_sort=?,
+     page_type=?, cta_label=?, cta_href=?
      ${image ? ", image=?" : ""} WHERE slug=?`
   ).run(
     ...[
@@ -335,6 +361,9 @@ export async function savePage(formData: FormData) {
       nav.nav_label,
       nav.nav_detail,
       nav.nav_sort,
+      pageType,
+      ctaLabel,
+      ctaHref,
       ...(image ? [image] : []),
       slug,
     ]
