@@ -240,13 +240,13 @@ export default async function SearchPage({ searchParams }: Props) {
     q = (sp.q ?? "").trim();
     page = Math.max(1, Number(sp.page) || 1);
     tab =
-      sp.type === "labs"
+      sp.type === "labs" || sp.type === "lab"
         ? "labs"
-        : sp.type === "products"
+        : sp.type === "products" || sp.type === "standard" || sp.type === "standards"
         ? "products"
-        : sp.type === "certs"
+        : sp.type === "certs" || sp.type === "cert" || sp.type === "certification"
         ? "certs"
-        : sp.type === "testing"
+        : sp.type === "testing" || sp.type === "test"
         ? "testing"
         : "all";
     state = (sp.state ?? "").trim();
@@ -319,10 +319,22 @@ export default async function SearchPage({ searchParams }: Props) {
   };
 
   const TABS: { key: Tab; label: string; count?: number; icon: string }[] = [
-    { key: "all", label: "All Results", icon: "search" },
+    { key: "all", label: "Search", icon: "search" },
+    {
+      key: "products",
+      label: "Search Standard",
+      count: q ? productTotal : undefined,
+      icon: "table",
+    },
+    {
+      key: "labs",
+      label: "Search Lab",
+      count: tab === "labs" || q ? labTotal : undefined,
+      icon: "microscope",
+    },
     {
       key: "certs",
-      label: "Find a Certification",
+      label: "Search Certification",
       count: q ? certProgrammes.length + certProducts.length : allCertifications.length,
       icon: "award",
     },
@@ -334,8 +346,6 @@ export default async function SearchPage({ searchParams }: Props) {
         : allTestingCategories.reduce((n, c) => n + (c.service_count ?? 0), 0),
       icon: "flask",
     },
-    { key: "products", label: "BIS Products", count: q ? productTotal : undefined, icon: "box" },
-    { key: "labs", label: "Find a Lab", count: tab === "labs" ? labTotal : undefined, icon: "microscope" },
   ];
 
   const pagination = (current: number, totalPages: number, t: Tab) =>

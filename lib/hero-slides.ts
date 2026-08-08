@@ -32,21 +32,45 @@ export function ensureHeroSlidesCatalog(db: SqliteDatabase) {
 
   const count = (db.prepare("SELECT COUNT(*) AS n FROM hero_slides").get() as { n: number }).n;
   if (count === 0) {
-    // Seed from existing homepage image when present
-    const home = db.prepare("SELECT image FROM pages WHERE slug = 'home'").get() as
-      | { image: string }
-      | undefined;
-    const media = home?.image || "/images/hero.png";
+    // Prefer looping lab footage for the homepage media panel
+    const media = "/images/hero-lab.mp4";
     db.prepare(
-      `INSERT INTO hero_slides (title, subtitle, media, media_type, link_href, link_label, duration_ms, active, sort)
-       VALUES (?, ?, ?, ?, ?, ?, 6000, 1, 0)`
+      `INSERT INTO hero_slides (title, subtitle, media, media_type, poster, link_href, link_label, duration_ms, active, sort)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 8000, 1, 0)`
     ).run(
-      "BIS certification intelligence",
-      "Search products, labs and costs in one place",
+      "Lab-backed certification",
+      "Testing coordination, recognised labs and clear cost ranges",
       media,
       mediaTypeFromPath(media),
-      "/products",
-      "Browse products"
+      "/images/hero-lab-poster.jpg",
+      "/labs",
+      "Browse testing labs"
     );
+  } else {
+    // Soft upgrade: replace the original static hero.png seed with lab video once
+    const onlyDefault = db
+      .prepare(
+        `SELECT id, media FROM hero_slides WHERE active = 1 AND media IN ('/images/hero.png', '') LIMIT 2`
+      )
+      .all() as { id: number; media: string }[];
+    const totalActive = (
+      db.prepare("SELECT COUNT(*) AS n FROM hero_slides WHERE active = 1").get() as { n: number }
+    ).n;
+    if (totalActive === 1 && onlyDefault.length === 1 && onlyDefault[0].media === "/images/hero.png") {
+      db.prepare(
+        `UPDATE hero_slides
+         SET media = ?, media_type = ?, poster = ?, title = ?, subtitle = ?, link_href = ?, link_label = ?, duration_ms = 8000
+         WHERE id = ?`
+      ).run(
+        "/images/hero-lab.mp4",
+        "video",
+        "/images/hero-lab-poster.jpg",
+        "Lab-backed certification",
+        "Testing coordination, recognised labs and clear cost ranges",
+        "/labs",
+        "Browse testing labs",
+        onlyDefault[0].id
+      );
+    }
   }
 }

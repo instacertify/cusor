@@ -30,20 +30,69 @@ export function invalidateSearchIndex() {
   g.__certkoSearchIndex = null;
 }
 
+/** Normalize IS / IEC style standards so "IS16102", "IS 16102", "is-16102" match. */
+function expandStandardTokens(text: string): string[] {
+  const out: string[] = [];
+  const src = text.toLowerCase();
+  // Capture patterns like IS 16102 (Part 1), IEC 62368-1, IS/IEC 62368
+  const re =
+    /\b(?:is\/?iec|is|iec|en|iso|gso|saso|cispr)\s*[-/]?\s*\d+(?:\s*[-:]\s*\d+)*(?:\s*\([^)]*\))?/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(src))) {
+    const raw = m[0].toLowerCase();
+    const compact = raw.replace(/[^a-z0-9]/g, "");
+    const spaced = raw.replace(/\s+/g, " ").trim();
+    out.push(spaced, compact);
+    // Also index bare number for "16102" style queries
+    const num = raw.match(/\d+(?:\s*[-:]\s*\d+)*/);
+    if (num) out.push(num[0].replace(/\s+/g, ""), num[0].replace(/\s+/g, " "));
+  }
+  return out;
+}
+
 function push(
   rows: IndexRow[],
   item: QuickSearchResult,
   haystackParts: Array<string | null | undefined>,
   boost: number
 ) {
-  const haystack = haystackParts
-    .filter(Boolean)
+  const parts = haystackParts.filter(Boolean).map(String);
+  const extras: string[] = [];
+  for (const p of parts) extras.push(...expandStandardTokens(p));
+  const haystack = [...parts, ...extras]
     .join(" ")
     .toLowerCase()
     .replace(/\s+/g, " ")
     .trim();
   if (!haystack) return;
   rows.push({ ...item, haystack, boost });
+}
+
+export type QuickSearchScope = "all" | "standard" | "lab" | "certification" | "testing";
+
+const SCOPE_TYPES: Record<QuickSearchScope, QuickSearchResult["type"][] | null> = {
+  all: null,
+  standard: ["product", "cert-product", "testing-service", "category"],
+  lab: ["lab"],
+  certification: ["certification", "cert-product"],
+  testing: ["testing-category", "testing-service"],
+};
+
+function normalizeQueryTerms(q: string): string[] {
+  const query = q.trim().toLowerCase();
+  const terms = query.split(/\s+/).filter(Boolean);
+  // Also search compact form for standard-like queries: "is 16102" → "is16102"
+  const compact = query.replace(/[^a-z0-9]/g, "");
+  if (compact.length >= 3 && compact !== query.replace(/\s+/g, "")) {
+    terms.push(compact);
+  }
+  return [...new Set(terms)];
+}
+
+function filterByScope(rows: QuickSearchResult[], scope: QuickSearchScope): QuickSearchResult[] {
+  const allowed = SCOPE_TYPES[scope];
+  if (!allowed) return rows;
+  return rows.filter((r) => allowed.includes(r.type));
 }
 
 function buildIndex(): IndexRow[] {
@@ -292,19 +341,34 @@ function scoreExact(row: IndexRow, terms: string[]): number | null {
 }
 
 /** Instant typeahead search from an in-memory index (no SQL LIKE scans). */
-export function quickSearch(q: string, limit = 12): QuickSearchResult[] {
+export function quickSearch(
+  q: string,
+  limit = 12,
+  scope: QuickSearchScope = "all"
+): QuickSearchResult[] {
   const query = q.trim().toLowerCase();
   if (query.length < 2) return [];
 
-  const terms = query.split(/\s+/).filter(Boolean);
+  const terms = normalizeQueryTerms(query);
   if (terms.length === 0) return [];
 
-  const index = getIndex();
+  const allowed = SCOPE_TYPES[scope];
+  const index = getIndex().filter((row) => !allowed || allowed.includes(row.type));
   const scored: Array<{ row: IndexRow; score: number }> = [];
 
   for (const row of index) {
-    const score = scoreExact(row, terms);
+    let score = scoreExact(row, terms);
     if (score == null) continue;
+    // Prefer exact standard hits when searching standards
+    if (scope === "standard") {
+      const compact = query.replace(/[^a-z0-9]/g, "");
+      if (compact && row.haystack.includes(compact)) score -= 25;
+      if (/\bis\b|\biec\b|\biso\b/i.test(row.detail) || /\bis\b|\biec\b/i.test(row.name)) {
+        score -= 6;
+      }
+    }
+    if (scope === "lab" && row.type === "lab") score -= 10;
+    if (scope === "certification" && row.type === "certification") score -= 12;
     scored.push({ row, score });
   }
 
@@ -314,7 +378,7 @@ export function quickSearch(q: string, limit = 12): QuickSearchResult[] {
   }
 
   // No exact hit — return closely related options instead of empty.
-  return relatedSearch(query, limit);
+  return filterByScope(relatedSearch(query, limit * 2), scope).slice(0, limit);
 }
 
 /**

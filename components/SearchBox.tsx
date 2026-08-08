@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+export type SearchScope = "all" | "standard" | "lab" | "certification";
+
 interface Suggestion {
   type:
     | "product"
@@ -24,50 +26,144 @@ interface Suggestion {
 const clientCache = new Map<string, Suggestion[]>();
 const CLIENT_CACHE_MAX = 40;
 
-const FALLBACK_BROWSE: Suggestion[] = [
-  {
-    type: "browse",
-    name: "Browse BIS products",
-    detail: "Search the full notified product table",
-    href: "/products/all",
+const SCOPE_META: Record<
+  SearchScope,
+  { label: string; placeholder: string; pageType: string; browse: Suggestion[] }
+> = {
+  all: {
+    label: "Search",
+    placeholder: "Search product, IS standard, certification or lab…",
+    pageType: "",
+    browse: [
+      {
+        type: "browse",
+        name: "Browse BIS products",
+        detail: "Search the full notified product table",
+        href: "/products/all",
+      },
+      {
+        type: "browse",
+        name: "Certifications",
+        detail: "BIS, BEE, GMARK and more",
+        href: "/certifications",
+      },
+      {
+        type: "browse",
+        name: "Testing labs",
+        detail: "400+ BIS-recognised labs",
+        href: "/labs",
+      },
+      {
+        type: "browse",
+        name: "Contact Instacertify",
+        detail: "Tell us what you need — we reply within 24 hours",
+        href: "/contact",
+      },
+    ],
   },
-  {
-    type: "browse",
-    name: "Certifications",
-    detail: "BIS, BEE, GMARK and more",
-    href: "/certifications",
+  standard: {
+    label: "Search standard",
+    placeholder: "Search by IS / IEC standard or product name…",
+    pageType: "products",
+    browse: [
+      {
+        type: "browse",
+        name: "Open product search table",
+        detail: "Filter by IS standard, HSN, QCO status",
+        href: "/products/all",
+      },
+      {
+        type: "browse",
+        name: "Browse BIS categories",
+        detail: "33 notified product categories",
+        href: "/products",
+      },
+      {
+        type: "browse",
+        name: "Upcoming QCOs",
+        detail: "Standards becoming mandatory soon",
+        href: "/qco",
+      },
+    ],
   },
-  {
-    type: "browse",
-    name: "Product testing",
-    detail: "Lab test categories and services",
-    href: "/testing",
+  lab: {
+    label: "Search lab",
+    placeholder: "Search lab name or city…",
+    pageType: "labs",
+    browse: [
+      {
+        type: "browse",
+        name: "All testing labs",
+        detail: "400+ BIS-recognised laboratories",
+        href: "/labs",
+      },
+      {
+        type: "browse",
+        name: "Find labs by search",
+        detail: "Filter by state and keyword",
+        href: "/search?type=labs",
+      },
+      {
+        type: "browse",
+        name: "Product testing",
+        detail: "Compare test categories first",
+        href: "/testing",
+      },
+    ],
   },
-  {
-    type: "browse",
-    name: "Testing labs",
-    detail: "400+ BIS-recognised labs",
-    href: "/labs",
+  certification: {
+    label: "Search certification",
+    placeholder: "Search BIS, BEE, GMARK, CE, FCC, SABER…",
+    pageType: "certs",
+    browse: [
+      {
+        type: "browse",
+        name: "All certifications",
+        detail: "BIS, BEE, GMARK, CE, FCC, SABER, WPC",
+        href: "/certifications",
+      },
+      {
+        type: "browse",
+        name: "BIS / ISI Mark",
+        detail: "Indian mandatory product certification",
+        href: "/certifications/bis",
+      },
+      {
+        type: "browse",
+        name: "BEE Star Rating",
+        detail: "Energy efficiency labelling",
+        href: "/certifications/bee",
+      },
+    ],
   },
-  {
-    type: "browse",
-    name: "Contact Instacertify",
-    detail: "Tell us what you need — we reply within 24 hours",
-    href: "/contact",
-  },
-];
+};
+
+function searchPageHref(term: string, scope: SearchScope): string {
+  const params = new URLSearchParams();
+  if (term.trim()) params.set("q", term.trim());
+  const pageType = SCOPE_META[scope].pageType;
+  if (pageType) params.set("type", pageType);
+  const qs = params.toString();
+  return qs ? `/search?${qs}` : "/search";
+}
 
 export default function SearchBox({
   large = false,
-  placeholder = "Search product or certification — BIS, BEE, GMARK, CE…",
+  placeholder,
   initialQuery = "",
+  showScopes = false,
+  initialScope = "all",
 }: {
   large?: boolean;
   placeholder?: string;
   /** Prefill from /search?q=… so the box matches the results page */
   initialQuery?: string;
+  /** Show Search standard / Search / Search lab / Search certification chips */
+  showScopes?: boolean;
+  initialScope?: SearchScope;
 }) {
   const [q, setQ] = useState(initialQuery);
+  const [scope, setScope] = useState<SearchScope>(initialScope);
   const [results, setResults] = useState<Suggestion[]>([]);
   /** Query string that produced the current `results` (avoids empty “See all for ”). */
   const [resultsQuery, setResultsQuery] = useState("");
@@ -76,12 +172,17 @@ export default function SearchBox({
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const boxRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const reqId = useRef(0);
+
+  const meta = SCOPE_META[scope];
+  const effectivePlaceholder = placeholder ?? meta.placeholder;
+  const browseFallback = meta.browse;
 
   useEffect(() => {
     const query = q.trim();
 
-    // Close immediately when under 2 chars — prevents stale “See all for ””
+    // Close immediately when under 2 chars — prevents stale “See all for ”
     if (query.length < 2) {
       setResults([]);
       setResultsQuery("");
@@ -92,7 +193,8 @@ export default function SearchBox({
 
     const ctrl = new AbortController();
     const t = setTimeout(async () => {
-      const cached = clientCache.get(query.toLowerCase());
+      const cacheKey = `${scope}:${query.toLowerCase()}`;
+      const cached = clientCache.get(cacheKey);
       if (cached) {
         setResults(cached);
         setResultsQuery(query);
@@ -105,33 +207,40 @@ export default function SearchBox({
       const id = ++reqId.current;
       setLoading(true);
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
-          signal: ctrl.signal,
-        });
+        const apiType =
+          scope === "all"
+            ? ""
+            : scope === "standard"
+              ? "standard"
+              : scope === "lab"
+                ? "lab"
+                : "certification";
+        const url = `/api/search?q=${encodeURIComponent(query)}${
+          apiType ? `&type=${apiType}` : ""
+        }`;
+        const res = await fetch(url, { signal: ctrl.signal });
         if (!res.ok) throw new Error("search failed");
         const data = await res.json();
         if (id !== reqId.current) return;
         let next = (data.results ?? []) as Suggestion[];
-        // Always offer choices — never a dead dropdown (API also returns closely related hits)
+        // Always offer choices — never a dead dropdown
         if (next.length === 0) {
           next = [
             {
               type: "browse",
               name: `See closely related results for “${query}”`,
               detail: "Open full search with related matches and other options",
-              href: `/search?q=${encodeURIComponent(query)}`,
+              href: searchPageHref(query, scope),
             },
-            ...FALLBACK_BROWSE,
+            ...browseFallback,
           ];
         }
         if (clientCache.size >= CLIENT_CACHE_MAX) {
           const first = clientCache.keys().next().value;
           if (first) clientCache.delete(first);
         }
-        // Don't cache the no-match browse list under the typed key forever empty —
-        // cache real hits only
         if ((data.results ?? []).length > 0) {
-          clientCache.set(query.toLowerCase(), next);
+          clientCache.set(cacheKey, next);
         }
         setResults(next);
         setResultsQuery(query);
@@ -140,15 +249,14 @@ export default function SearchBox({
       } catch (err) {
         if ((err as Error)?.name === "AbortError") return;
         if (id !== reqId.current) return;
-        // Network/API failure — still keep the user on-site with options
         setResults([
           {
             type: "browse",
             name: `Search for “${query}”`,
             detail: "Open the full results page",
-            href: `/search?q=${encodeURIComponent(query)}`,
+            href: searchPageHref(query, scope),
           },
-          ...FALLBACK_BROWSE,
+          ...browseFallback,
         ]);
         setResultsQuery(query);
         setOpen(true);
@@ -162,7 +270,7 @@ export default function SearchBox({
       clearTimeout(t);
       ctrl.abort();
     };
-  }, [q]);
+  }, [q, scope]);
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -175,14 +283,13 @@ export default function SearchBox({
   function goToSearch(term: string) {
     const t = term.trim();
     if (t.length < 2) {
-      // Keep user on site — show browse suggestions instead of navigating empty
-      setResults(FALLBACK_BROWSE);
+      setResults(browseFallback);
       setResultsQuery("");
       setOpen(true);
       setActive(-1);
       return;
     }
-    router.push(`/search?q=${encodeURIComponent(t)}`);
+    router.push(searchPageHref(t, scope));
     setOpen(false);
   }
 
@@ -195,11 +302,48 @@ export default function SearchBox({
     goToSearch(q);
   }
 
+  function selectScope(next: SearchScope) {
+    setScope(next);
+    setActive(-1);
+    clientCache.clear();
+    if (q.trim().length < 2) {
+      setResults(SCOPE_META[next].browse);
+      setResultsQuery("");
+      setOpen(true);
+    }
+    inputRef.current?.focus();
+  }
+
   const showDropdown = open && results.length > 0;
   const seeAllTerm = resultsQuery.trim() || q.trim();
+  const scopes: SearchScope[] = ["standard", "all", "lab", "certification"];
 
   return (
     <div ref={boxRef} className="relative w-full">
+      {showScopes ? (
+        <div className="mb-3 flex flex-wrap gap-2" role="tablist" aria-label="Search type">
+          {scopes.map((key) => {
+            const activeScope = key === scope;
+            return (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={activeScope}
+                onClick={() => selectScope(key)}
+                className={`inline-flex min-h-10 items-center rounded-xl px-3.5 py-2 text-sm font-semibold border transition ${
+                  activeScope
+                    ? "bg-ink-900 text-white border-ink-900"
+                    : "bg-white/90 text-ink-800 border-cream-300 hover:border-butter-500 backdrop-blur"
+                }`}
+              >
+                {SCOPE_META[key].label}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+
       <div
         className={`flex items-center gap-2 bg-white rounded-2xl border border-cream-300 focus-within:border-butter-500 focus-within:ring-4 focus-within:ring-butter-300/30 transition ${
           large
@@ -221,12 +365,13 @@ export default function SearchBox({
             <path d="M21 21l-4.3-4.3" strokeLinecap="round" />
           </svg>
           <input
+            ref={inputRef}
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onFocus={() => {
               if (results.length) setOpen(true);
               else if (q.trim().length < 2) {
-                setResults(FALLBACK_BROWSE);
+                setResults(browseFallback);
                 setResultsQuery("");
                 setOpen(true);
               }
@@ -246,8 +391,8 @@ export default function SearchBox({
               }
               if (e.key === "Escape") setOpen(false);
             }}
-            placeholder={placeholder}
-            aria-label="Search products, standards and labs"
+            placeholder={effectivePlaceholder}
+            aria-label={meta.label}
             autoComplete="off"
             className={`w-full min-w-0 bg-transparent outline-none placeholder:text-ink-400 text-ink-950 ${
               large ? "text-base sm:text-lg py-1.5" : "text-sm"
@@ -265,7 +410,13 @@ export default function SearchBox({
             onClick={submit}
             className="w-full sm:w-auto shrink-0 min-h-11 bg-ink-900 hover:bg-ink-800 text-white font-semibold rounded-xl px-5 py-2.5 text-sm transition"
           >
-            Check Now
+            {scope === "lab"
+              ? "Find Lab"
+              : scope === "certification"
+                ? "Find Cert"
+                : scope === "standard"
+                  ? "Find Standard"
+                  : "Check Now"}
           </button>
         )}
       </div>
@@ -310,17 +461,19 @@ export default function SearchBox({
                   ? "test"
                   : r.type === "browse"
                   ? "go"
+                  : r.type === "product"
+                  ? "standard"
                   : r.type}
               </span>
             </Link>
           ))}
           {seeAllTerm.length >= 2 ? (
             <Link
-              href={`/search?q=${encodeURIComponent(seeAllTerm)}`}
+              href={searchPageHref(seeAllTerm, scope)}
               onClick={() => setOpen(false)}
               className="block px-4 py-3 text-sm font-semibold text-butter-700 hover:bg-cream-100"
             >
-              See all results for “{seeAllTerm}” →
+              See all {meta.label.toLowerCase()} results for “{seeAllTerm}” →
             </Link>
           ) : null}
         </div>
