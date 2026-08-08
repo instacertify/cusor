@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
+import SmartImage from "@/components/SmartImage";
 import type { Metadata } from "next";
 import { marked } from "marked";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -99,7 +99,7 @@ export default async function ContentPage({ params }: Props) {
           )}
         </div>
         {page.image ? (
-          <Image
+          <SmartImage
             src={page.image}
             alt={page.title}
             width={520}

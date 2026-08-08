@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string }>;
 }
 
 const PROTECTED = new Set(["home", "contact", "privacy", "terms", "about", "guide"]);
@@ -38,7 +38,7 @@ export default async function AdminPageEdit({ params, searchParams }: Props) {
       <p className="text-ink-600 text-sm mb-6">
         Content supports Markdown. URL: <code className="bg-cream-100 px-1 rounded">{publicPath}</code>
       </p>
-      <SavedBanner saved={sp.saved} />
+      <SavedBanner saved={sp.saved} error={sp.error} />
       <form action={savePage} className="space-y-6">
         <input type="hidden" name="slug" value={page.slug} />
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
@@ -46,7 +46,7 @@ export default async function AdminPageEdit({ params, searchParams }: Props) {
           <Field label="Page Title" name="title" defaultValue={page.title} required />
           <Field label="Hero Heading" name="hero_heading" defaultValue={page.hero_heading} />
           <TextArea label="Hero Subheading" name="hero_subheading" defaultValue={page.hero_subheading} rows={2} />
-          <ImageUpload current={page.image} label="Page Image" />
+          <ImageUpload current={page.image} label="Page Image" size="page" />
         </section>
 
         <PageNavPlacement

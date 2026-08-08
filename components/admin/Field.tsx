@@ -1,3 +1,9 @@
+import {
+  formatImageUploadHint,
+  type ImageUploadKind,
+} from "@/lib/image-upload-guide";
+import { IMAGE_ACCEPT } from "@/lib/upload-urls";
+
 export function Field({
   label,
   name,
@@ -72,7 +78,8 @@ export function ImageUpload({
   clearName = "clear_image",
   clearLabel = "Remove current image",
   previewFit = "cover",
-  hint = "Upload PNG/JPG/WebP to replace the current image.",
+  size = "generic",
+  hint,
 }: {
   current?: string;
   name?: string;
@@ -82,9 +89,16 @@ export function ImageUpload({
   clearName?: string;
   clearLabel?: string;
   previewFit?: "cover" | "contain";
+  /** Preset recommended dimensions / resolution for this upload slot */
+  size?: ImageUploadKind;
+  /** Extra note appended after the size recommendation */
   hint?: string;
 }) {
   const fitClass = previewFit === "contain" ? "object-contain bg-cream-100 p-3" : "object-cover";
+  const sizeHint = formatImageUploadHint(size);
+  const fullHint = hint
+    ? `${sizeHint} ${hint}`
+    : `${sizeHint} Formats: PNG, JPG, WebP, GIF, SVG, AVIF, BMP, TIFF, HEIC, ICO (max 12 MB).`;
   return (
     <div>
       <label htmlFor={name} className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">
@@ -104,7 +118,7 @@ export function ImageUpload({
         id={name}
         name={name}
         type="file"
-        accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+        accept={IMAGE_ACCEPT}
         className="block w-full text-sm text-ink-700 file:mr-3 file:rounded-lg file:border-0 file:bg-cream-200 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink-800 hover:file:bg-cream-300"
       />
       {allowClear && current ? (
@@ -113,7 +127,7 @@ export function ImageUpload({
           {clearLabel}
         </label>
       ) : null}
-      <p className="text-[11px] text-ink-500 mt-1">{hint}</p>
+      <p className="text-[11px] text-ink-500 mt-1.5 leading-relaxed">{fullHint}</p>
     </div>
   );
 }

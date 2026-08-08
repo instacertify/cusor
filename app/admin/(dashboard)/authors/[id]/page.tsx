@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string }>;
 }
 
 export default async function AdminAuthorEditPage({ params, searchParams }: Props) {
@@ -30,7 +30,7 @@ export default async function AdminAuthorEditPage({ params, searchParams }: Prop
           View profile ↗
         </Link>
       </div>
-      <SavedBanner saved={sp.saved} />
+      <SavedBanner saved={sp.saved} error={sp.error} />
 
       <form action={saveAuthor} className="space-y-6">
         <input type="hidden" name="id" value={author.id} />
@@ -54,7 +54,7 @@ export default async function AdminAuthorEditPage({ params, searchParams }: Prop
           <ImageUpload
             current={author.image}
             label="Profile photo"
-            hint="Square photo works best. PNG/JPG/WebP."
+            size="author"
             previewFit="cover"
           />
         </section>

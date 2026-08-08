@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import SmartImage from "@/components/SmartImage";
 import type { Metadata } from "next";
 import { marked } from "marked";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -123,7 +123,7 @@ export default async function TestingServicePage({ params }: Props) {
           </div>
         </div>
         {svc.image ? (
-          <Image
+          <SmartImage
             src={svc.image}
             alt={svc.name}
             width={520}

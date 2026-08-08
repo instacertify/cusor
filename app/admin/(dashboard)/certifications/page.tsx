@@ -88,7 +88,7 @@ export default async function AdminCertifications({ searchParams }: Props) {
             <TextArea label="Content writeup (Markdown)" name="content" rows={4} />
             <Field label="Meta title" name="meta_title" placeholder="auto from name" />
             <TextArea label="Meta description" name="meta_description" rows={2} />
-            <ImageUpload current="" label="Front image (optional)" allowClear={false} />
+            <ImageUpload current="" label="Front image (optional)" allowClear={false} size="certification" />
             <SubmitButton label="Create certification" />
           </form>
         </div>
@@ -156,7 +156,7 @@ export default async function AdminCertifications({ searchParams }: Props) {
               <TextArea label="Content (Markdown)" name="content" rows={3} />
               <TextArea label="Labs (indicative)" name="labs" rows={2} />
               <TextArea label="Fee note" name="fee_note" rows={2} />
-              <ImageUpload current="" label="Product image" allowClear={false} />
+              <ImageUpload current="" label="Product image" allowClear={false} size="product" />
               <SubmitButton label="Create covered product" />
             </form>
           )}

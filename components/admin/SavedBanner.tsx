@@ -50,12 +50,15 @@ export default function SavedBanner({
   }, [saved]);
 
   if (error) {
+    const imageError = error === "image";
     return (
       <p
         className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 mb-5"
         role="alert"
       >
-        Something went wrong — please check required fields.
+        {imageError
+          ? "Image upload failed — use PNG, JPG, WebP, GIF, SVG, AVIF, BMP, TIFF, HEIC or ICO (max 12 MB), then try again."
+          : "Something went wrong — please check required fields."}
       </p>
     );
   }

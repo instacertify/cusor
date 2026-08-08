@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import SmartImage from "@/components/SmartImage";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
@@ -56,7 +56,7 @@ export default async function AuthorProfilePage({ params }: Props) {
       <section className="max-w-3xl">
         <div className="flex flex-col sm:flex-row gap-6 sm:items-start">
           {author.image ? (
-            <Image
+            <SmartImage
               src={author.image}
               alt={author.name}
               width={120}
@@ -105,7 +105,7 @@ export default async function AuthorProfilePage({ params }: Props) {
               className="group bg-white rounded-3xl border border-cream-300 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition overflow-hidden flex flex-col"
             >
               {p.image ? (
-                <Image
+                <SmartImage
                   src={p.image}
                   alt={p.title}
                   width={520}

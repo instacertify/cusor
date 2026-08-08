@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string }>;
 }
 
 export default async function AdminCategoryEdit({ params, searchParams }: Props) {
@@ -28,7 +28,7 @@ export default async function AdminCategoryEdit({ params, searchParams }: Props)
           View page ↗
         </Link>
       </div>
-      <SavedBanner saved={sp.saved} />
+      <SavedBanner saved={sp.saved} error={sp.error} />
       <form action={saveCategory} className="space-y-6">
         <input type="hidden" name="id" value={category.id} />
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
@@ -38,7 +38,7 @@ export default async function AdminCategoryEdit({ params, searchParams }: Props)
           </div>
           <TextArea label="Description" name="description" defaultValue={category.description} rows={3} />
           <Field label="Typical Timeline" name="timeline" defaultValue={category.timeline} placeholder="e.g. 10-16 weeks" />
-          <ImageUpload current={category.image} label="Category Image" />
+          <ImageUpload current={category.image} label="Category Image" size="category" />
         </section>
         <SubmitButton />
       </form>

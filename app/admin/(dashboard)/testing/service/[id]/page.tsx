@@ -173,7 +173,7 @@ export default async function AdminTestingServiceEdit({ params, searchParams }: 
             <Field label="Sample size required" name="sample_size" defaultValue={service.sample_size} />
           </div>
           <TextArea label="Summary" name="summary" defaultValue={service.summary} rows={2} />
-          <ImageUpload current={service.image} label="Test image" />
+          <ImageUpload current={service.image} label="Test image" size="testing" />
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">

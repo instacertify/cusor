@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import SmartImage from "@/components/SmartImage";
 import type { Metadata } from "next";
 import { marked } from "marked";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -78,7 +78,7 @@ export default async function BlogPostPage({ params }: Props) {
         </h1>
         <p className="mt-4 text-lg text-ink-600 leading-relaxed">{post.excerpt}</p>
         {post.image && (
-          <Image
+          <SmartImage
             src={post.image}
             alt={post.title}
             width={900}
@@ -96,7 +96,7 @@ export default async function BlogPostPage({ params }: Props) {
           <aside className="mt-12 rounded-2xl border border-cream-300 bg-cream-50 p-5 sm:p-6">
             <div className="flex gap-4 items-start">
               {post.author_image ? (
-                <Image
+                <SmartImage
                   src={post.author_image}
                   alt={authorName}
                   width={72}

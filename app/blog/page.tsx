@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import SmartImage from "@/components/SmartImage";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
@@ -47,7 +47,7 @@ export default function BlogIndexPage() {
             >
               <Link href={`/blog/${p.slug}`} className="block">
                 {p.image ? (
-                  <Image
+                  <SmartImage
                     src={p.image}
                     alt={p.title}
                     width={520}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
+import SmartImage from "@/components/SmartImage";
 import Link from "next/link";
 import type { HeroSlide } from "@/lib/db";
 
@@ -83,7 +83,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={s.media} alt={s.title || "Hero slide"} className="h-full w-full object-cover" />
             ) : (
-              <Image
+              <SmartImage
                 src={s.media}
                 alt={s.title || "Hero slide"}
                 fill
