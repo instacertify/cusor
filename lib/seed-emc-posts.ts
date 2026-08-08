@@ -1,14 +1,7 @@
 import type { SqliteDatabase } from "./sqlite";
+import { insertBlogPostsIfMissing, type BlogPostSeed } from "./seed-blog-posts";
 
-export type EmcPostSeed = {
-  slug: string;
-  title: string;
-  excerpt: string;
-  meta_title: string;
-  meta_description: string;
-  published_at: string;
-  content: string;
-};
+export type EmcPostSeed = BlogPostSeed;
 
 function emcCta(angle: string): string {
   return `## How Certko + Instacertify help with ${angle}
@@ -468,33 +461,6 @@ ${emcCta("end-to-end EMI / EMC delivery")}
 ];
 
 export function ensureEmcPosts(db: SqliteDatabase) {
-  const author = db
-    .prepare("SELECT id, name FROM authors ORDER BY sort, id LIMIT 1")
-    .get() as { id: number; name: string } | undefined;
-  if (!author) return;
-
-  const exists = db.prepare("SELECT id FROM posts WHERE slug = ?");
-  const insert = db.prepare(
-    `INSERT INTO posts
-      (slug, title, excerpt, content, image, author, author_id, status, published_at, meta_title, meta_description)
-     VALUES (?, ?, ?, ?, '', ?, ?, 'published', ?, ?, ?)`
-  );
-
-  const tx = db.transaction(() => {
-    for (const p of EMC_POSTS) {
-      if (exists.get(p.slug)) continue;
-      insert.run(
-        p.slug,
-        p.title,
-        p.excerpt,
-        p.content,
-        author.name,
-        author.id,
-        p.published_at,
-        p.meta_title,
-        p.meta_description
-      );
-    }
-  });
-  tx();
+  // Insert-only: never updates existing posts or their admin-managed cover images.
+  insertBlogPostsIfMissing(db, EMC_POSTS);
 }

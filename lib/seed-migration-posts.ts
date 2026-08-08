@@ -1,14 +1,7 @@
 import type { SqliteDatabase } from "./sqlite";
+import { insertBlogPostsIfMissing, type BlogPostSeed } from "./seed-blog-posts";
 
-type MigrationPostSeed = {
-  slug: string;
-  title: string;
-  excerpt: string;
-  meta_title: string;
-  meta_description: string;
-  published_at: string;
-  content: string;
-};
+type MigrationPostSeed = BlogPostSeed;
 
 /**
  * Topical compliance posts (QCO / standard migrations) inserted on boot if missing.
@@ -439,33 +432,6 @@ Share your **product name**, **HS code** (if known), **factory location** and ta
 ];
 
 export function ensureMigrationPosts(db: SqliteDatabase) {
-  const author = db
-    .prepare("SELECT id, name FROM authors ORDER BY sort, id LIMIT 1")
-    .get() as { id: number; name: string } | undefined;
-  if (!author) return;
-
-  const exists = db.prepare("SELECT id FROM posts WHERE slug = ?");
-  const insert = db.prepare(
-    `INSERT INTO posts
-      (slug, title, excerpt, content, image, author, author_id, status, published_at, meta_title, meta_description)
-     VALUES (?, ?, ?, ?, '', ?, ?, 'published', ?, ?, ?)`
-  );
-
-  const tx = db.transaction(() => {
-    for (const p of MIGRATION_POSTS) {
-      if (exists.get(p.slug)) continue;
-      insert.run(
-        p.slug,
-        p.title,
-        p.excerpt,
-        p.content,
-        author.name,
-        author.id,
-        p.published_at,
-        p.meta_title,
-        p.meta_description
-      );
-    }
-  });
-  tx();
+  // Insert-only: never updates existing posts or their admin-managed cover images.
+  insertBlogPostsIfMissing(db, MIGRATION_POSTS);
 }
