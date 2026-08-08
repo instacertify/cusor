@@ -4,6 +4,7 @@ import { getPostById, getAuthors } from "@/lib/queries";
 import { savePost, deletePost } from "../../../actions";
 import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import { BLOG_IMAGE_ACCEPT, BLOG_IMAGE_HINT } from "@/lib/image-upload";
 
 export const dynamic = "force-dynamic";
 
@@ -83,10 +84,10 @@ export default async function AdminPostEdit({ params, searchParams }: Props) {
           <ImageUpload
             current={post.image}
             label="Cover Image"
-            accept="image/png,image/jpeg,image/webp"
+            accept={BLOG_IMAGE_ACCEPT}
             previewFit="cover"
             previewAspect="aspect-[16/9]"
-            hint="Brand guideline: landscape cover at 1200×630 (16:9). PNG, JPG or WebP only — flat, high-contrast photography or simple graphics; no heavy shadows, glow, or decorative overlays. Used on /blog cards, the article hero and social previews."
+            hint={BLOG_IMAGE_HINT}
           />
         </section>
 

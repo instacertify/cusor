@@ -63,21 +63,33 @@ export async function clearSiteCache(formData?: FormData) {
   redirect(`${next}?cache=1`);
 }
 
-const DEFAULT_IMAGE_EXTS = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".avif"];
-/** Blog covers follow brand guidelines — landscape photography formats only. */
-const BLOG_COVER_EXTS = [".png", ".jpg", ".jpeg", ".webp"];
-
 async function saveUploadedImage(
   file: File | null,
-  allowedExts: string[] = DEFAULT_IMAGE_EXTS
+  allowedExts?: string[]
 ): Promise<string | null> {
   if (!file || file.size === 0) return null;
-  const ext = path.extname(file.name).toLowerCase();
-  if (!allowedExts.includes(ext)) return null;
+  const { DEFAULT_IMAGE_EXTS, detectImageType, sanitizeUploadBasename } = await import(
+    "@/lib/image-upload"
+  );
+  const allow = new Set(allowedExts ?? DEFAULT_IMAGE_EXTS);
+  // JPEG aliases map to canonical .jpg after detection
+  if ([...allow].some((e) => [".jpg", ".jpeg", ".jpe", ".jfif", ".jp"].includes(e))) {
+    allow.add(".jpg");
+    allow.add(".jpeg");
+    allow.add(".jpe");
+    allow.add(".jfif");
+    allow.add(".jp");
+  }
+
+  const buf = Buffer.from(await file.arrayBuffer());
+  const detected = detectImageType(buf, file.name);
+  if (!detected || !allow.has(detected.ext)) return null;
+
   const dir = path.join(process.cwd(), "public", "uploads");
   fs.mkdirSync(dir, { recursive: true });
-  const name = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-  const buf = Buffer.from(await file.arrayBuffer());
+  // Always persist with the canonical lowercase extension from magic bytes
+  // so /uploads/...jpg|.png|.webp|.gif|.avif serve with the right type.
+  const name = `${Date.now()}-${sanitizeUploadBasename(file.name)}${detected.ext}`;
   fs.writeFileSync(path.join(dir, name), buf);
   return `/uploads/${name}`;
 }
@@ -1158,6 +1170,7 @@ export async function savePost(formData: FormData) {
   await requireAdmin();
   const { slugify } = await import("@/lib/format");
   const id = Number(formData.get("id"));
+  const { BLOG_COVER_EXTS } = await import("@/lib/image-upload");
   const uploaded = await saveUploadedImage(
     formData.get("image_file") as File | null,
     BLOG_COVER_EXTS

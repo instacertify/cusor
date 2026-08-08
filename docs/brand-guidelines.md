@@ -78,6 +78,6 @@ Stripe / Notion / Linear–inspired: whitespace, rounded corners, large type, fl
 ## Blog cover images
 
 - **Size / ratio:** 1200×630 px (16:9 landscape) — matches `/blog` cards, article hero and social/OG previews
-- **Formats:** PNG, JPG or WebP only
+- **Formats:** PNG, JPG/JPEG, WebP, GIF, AVIF, BMP, SVG (upload sniffing normalizes aliases like `.jpeg` / `.jp` to the correct file type)
 - **Look:** flat, high-contrast product/context photography or simple graphics; cream / navy / amber palette when branded
 - **Avoid:** heavy multi-layer shadows, glow effects, purple gradients, emoji stickers, floating badges over the image
