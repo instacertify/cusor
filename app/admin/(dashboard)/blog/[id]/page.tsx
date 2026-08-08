@@ -80,7 +80,14 @@ export default async function AdminPostEdit({ params, searchParams }: Props) {
             </div>
           </div>
           <TextArea label="Excerpt (shown on the blog index and in search results)" name="excerpt" defaultValue={post.excerpt} rows={2} />
-          <ImageUpload current={post.image} label="Cover Image" />
+          <ImageUpload
+            current={post.image}
+            label="Cover Image"
+            accept="image/png,image/jpeg,image/webp"
+            previewFit="cover"
+            previewAspect="aspect-[16/9]"
+            hint="Brand guideline: landscape cover at 1200×630 (16:9). PNG, JPG or WebP only — flat, high-contrast photography or simple graphics; no heavy shadows, glow, or decorative overlays. Used on /blog cards, the article hero and social previews."
+          />
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">

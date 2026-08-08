@@ -369,6 +369,14 @@ export function getPublishedPostsByAuthor(authorId: number, limit = 50): Post[] 
 }
 
 // ---------- blog posts ----------
+export function countPublishedPosts(): number {
+  return (
+    getDb()
+      .prepare("SELECT COUNT(*) AS n FROM posts WHERE status = 'published'")
+      .get() as { n: number }
+  ).n;
+}
+
 export function getPublishedPosts(limit = 50, offset = 0): Post[] {
   return getDb()
     .prepare(
