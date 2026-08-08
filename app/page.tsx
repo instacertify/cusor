@@ -6,6 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import FaqAccordion from "@/components/FaqAccordion";
 import CtaBanner from "@/components/CtaBanner";
 import HeroSlider from "@/components/HeroSlider";
+import HeroLabBackground from "@/components/HeroLabBackground";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import { ensureDbReady, getSettings } from "@/lib/db";
 import {
@@ -54,13 +55,10 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div
-          className="absolute inset-0 -z-10 bg-cream-50"
-          aria-hidden
-        />
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-8 sm:pt-14 pb-10 sm:pb-16 grid lg:grid-cols-[1.15fr_1fr] gap-8 sm:gap-10 items-center">
+      {/* Hero — full-bleed moving lab background */}
+      <section className="relative overflow-hidden min-h-[min(88vh,720px)] flex flex-col justify-center">
+        <HeroLabBackground />
+        <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-8 sm:pt-14 pb-10 sm:pb-16 grid lg:grid-cols-[1.15fr_1fr] gap-8 sm:gap-10 items-center">
           <div className="animate-rise min-w-0">
             {settings.announcement?.trim() ? (
               <p className="inline-flex max-w-full items-center gap-2 bg-white border border-cream-200 rounded-full px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs font-semibold text-ink-700 mb-5 sm:mb-6">
@@ -75,7 +73,7 @@ export default async function HomePage() {
               {settings.hero_subheading}
             </p>
             <div className="mt-6 sm:mt-8 max-w-xl">
-              <SearchBox large placeholder="Search your product or certification…" />
+              <SearchBox large showScopes />
             </div>
             <div className="mt-8 sm:mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               {stats.map((s, i) => (
