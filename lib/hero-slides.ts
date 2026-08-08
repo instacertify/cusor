@@ -183,8 +183,7 @@ export function ensureHeroSlidesCatalog(db: SqliteDatabase) {
     if (!medias.has(slide.media)) insertSlide(db, slide);
   }
 
-  // Soft upgrade path D: replace retired lab-only seed if still present alongside new set
-  // and normalize Explore more labels on known default media rows.
+  // Soft upgrade path D: normalize Explore more labels on known default media rows.
   db.prepare(
     `UPDATE hero_slides SET link_label = 'Explore more'
      WHERE media IN (?, ?, ?, ?, ?)
@@ -198,4 +197,26 @@ export function ensureHeroSlidesCatalog(db: SqliteDatabase) {
     "/images/testing/chemical-testing.mp4",
     "/images/testing/certification-quality.mp4"
   );
+
+  // Soft upgrade path E: hide retired single lab clip once the 5-category set exists.
+  const hasCategorySet = (
+    db
+      .prepare(
+        `SELECT COUNT(*) AS n FROM hero_slides
+         WHERE media IN (
+           '/images/testing/electrical-testing.mp4',
+           '/images/testing/mechanical-testing.mp4',
+           '/images/testing/emc-testing.mp4',
+           '/images/testing/chemical-testing.mp4',
+           '/images/testing/certification-quality.mp4'
+         )`
+      )
+      .get() as { n: number }
+  ).n;
+  if (hasCategorySet >= 5) {
+    db.prepare(
+      `UPDATE hero_slides SET active = 0
+       WHERE media = '/images/hero-lab.mp4' AND active = 1`
+    ).run();
+  }
 }
