@@ -5,6 +5,7 @@ import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import ScrollTable from "@/components/ScrollTable";
+import ProductsTableFilters from "@/components/ProductsTableFilters";
 import {
   queryProductsTable,
   getCategories,
@@ -25,22 +26,25 @@ export const metadata: Metadata = {
 
 const PAGE_SIZE = 25;
 
-const SORTS = [
-  { value: "labs", label: "Most labs" },
-  { value: "name", label: "Name A–Z" },
-  { value: "price_low", label: "Lowest test cost" },
-  { value: "price_high", label: "Highest test cost" },
-  { value: "fee", label: "Highest marking fee" },
-];
+type Param = string | string[] | undefined;
+
+/** Prefer the first non-empty value when duplicate query keys are present. */
+function param(v: Param): string | undefined {
+  if (Array.isArray(v)) {
+    const hit = v.find((x) => typeof x === "string" && x.trim() !== "");
+    return hit ?? v[0];
+  }
+  return v;
+}
 
 interface Props {
   searchParams: Promise<{
-    q?: string;
-    category?: string;
-    status?: string;
-    scheme?: string;
-    sort?: string;
-    page?: string;
+    q?: Param;
+    category?: Param;
+    status?: Param;
+    scheme?: Param;
+    sort?: Param;
+    page?: Param;
   }>;
 }
 
@@ -57,32 +61,37 @@ function shortQco(status: string) {
 }
 
 export default async function ProductsTablePage({ searchParams }: Props) {
-  const sp = await searchParams;
-  const page = Math.max(1, Number(sp.page) || 1);
+  const raw = await searchParams;
+  const q = param(raw.q);
+  const category = param(raw.category);
+  const status = param(raw.status);
+  const scheme = param(raw.scheme);
+  const sort = param(raw.sort);
+  const page = Math.max(1, Number(param(raw.page)) || 1);
   const categories = getCategories();
   const statuses = getQcoStatuses();
   const faqs = getFaqs("page:products");
 
   const { products, total } = queryProductsTable({
-    q: sp.q,
-    categoryId: Number(sp.category) || undefined,
-    qcoStatus: sp.status || undefined,
-    scheme: sp.scheme || undefined,
-    sort: sp.sort,
+    q,
+    categoryId: Number(category) || undefined,
+    qcoStatus: status || undefined,
+    scheme: scheme || undefined,
+    sort,
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
   });
   const pages = Math.ceil(total / PAGE_SIZE);
 
-  const filtersOpen = Boolean(sp.category || sp.status || sp.scheme || (sp.sort && sp.sort !== "labs"));
+  const filtersOpen = Boolean(category || status || scheme || (sort && sort !== "labs"));
 
   const qs = (over: Record<string, string | undefined>) => {
     const merged: Record<string, string | undefined> = {
-      q: sp.q,
-      category: sp.category,
-      status: sp.status,
-      scheme: sp.scheme,
-      sort: sp.sort,
+      q,
+      category,
+      status,
+      scheme,
+      sort,
       ...over,
     };
     const p = new URLSearchParams();
@@ -90,9 +99,6 @@ export default async function ProductsTablePage({ searchParams }: Props) {
     const s = p.toString();
     return s ? `/products/all?${s}` : "/products/all";
   };
-
-  const selectClass =
-    "w-full rounded-xl border border-cream-300 px-3 py-3 text-base md:text-sm bg-white outline-none min-h-11 appearance-none";
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-10">
@@ -113,129 +119,20 @@ export default async function ProductsTablePage({ searchParams }: Props) {
         </span>
       </p>
 
-      {/* Filters — compact on phone, full grid on desktop */}
-      <form
-        action="/products/all"
-        method="GET"
-        className="mt-5 sm:mt-8 bg-white rounded-2xl border border-cream-300 shadow-card p-3 sm:p-4"
-      >
-        <div className="grid grid-cols-[1fr_auto] gap-2 lg:grid-cols-[1.4fr_1fr_1fr_0.7fr_0.8fr_auto] lg:gap-3">
-          <input
-            type="search"
-            name="q"
-            defaultValue={sp.q ?? ""}
-            placeholder="Product, IS or HSN…"
-            enterKeyHint="search"
-            className="rounded-xl border border-cream-300 px-3 sm:px-4 py-3 text-base md:text-sm outline-none focus:border-butter-500 min-h-11 w-full min-w-0"
-          />
-
-          {/* Desktop: all filters inline */}
-          <select
-            name="category"
-            defaultValue={sp.category ?? ""}
-            className={`hidden lg:block ${selectClass}`}
-          >
-            <option value="">All categories</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.product_count})
-              </option>
-            ))}
-          </select>
-          <select
-            name="status"
-            defaultValue={sp.status ?? ""}
-            className={`hidden lg:block ${selectClass}`}
-          >
-            <option value="">All QCO statuses</option>
-            {statuses.map((s) => (
-              <option key={s.qco_status} value={s.qco_status}>
-                {s.qco_status} ({s.n})
-              </option>
-            ))}
-          </select>
-          <select
-            name="scheme"
-            defaultValue={sp.scheme ?? ""}
-            className={`hidden lg:block ${selectClass}`}
-          >
-            <option value="">Scheme</option>
-            <option value="ISI">ISI</option>
-            <option value="CRS">CRS</option>
-          </select>
-          <select
-            name="sort"
-            defaultValue={sp.sort ?? "labs"}
-            className={`hidden lg:block ${selectClass}`}
-          >
-            {SORTS.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-
-          <button
-            type="submit"
-            className="bg-ink-900 hover:bg-ink-800 text-white text-sm font-semibold rounded-xl px-4 sm:px-6 py-3 min-h-11 transition shrink-0"
-          >
-            Search
-          </button>
-        </div>
-
-        {/* Phone / tablet: collapsible extra filters */}
-        <details className="lg:hidden mt-3 group" open={filtersOpen || undefined}>
-          <summary className="flex items-center justify-between min-h-11 cursor-pointer list-none rounded-xl border border-cream-200 bg-cream-50 px-3 text-sm font-semibold text-ink-800 [&::-webkit-details-marker]:hidden">
-            <span>
-              Filters
-              {filtersOpen ? (
-                <span className="ml-2 text-xs font-medium text-butter-700">· active</span>
-              ) : null}
-            </span>
-            <span className="text-ink-400 group-open:rotate-180 transition-transform" aria-hidden>
-              ▾
-            </span>
-          </summary>
-          <div className="mt-3 grid grid-cols-2 gap-2.5">
-            <select
-              name="category"
-              defaultValue={sp.category ?? ""}
-              className={`${selectClass} col-span-2`}
-            >
-              <option value="">All categories</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name} ({c.product_count})
-                </option>
-              ))}
-            </select>
-            <select name="status" defaultValue={sp.status ?? ""} className={`${selectClass} col-span-2`}>
-              <option value="">All QCO statuses</option>
-              {statuses.map((s) => (
-                <option key={s.qco_status} value={s.qco_status}>
-                  {s.qco_status} ({s.n})
-                </option>
-              ))}
-            </select>
-            <select name="scheme" defaultValue={sp.scheme ?? ""} className={selectClass}>
-              <option value="">Scheme</option>
-              <option value="ISI">ISI</option>
-              <option value="CRS">CRS</option>
-            </select>
-            <select name="sort" defaultValue={sp.sort ?? "labs"} className={selectClass}>
-              {SORTS.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </details>
-      </form>
+      <ProductsTableFilters
+        q={q}
+        category={category}
+        status={status}
+        scheme={scheme}
+        sort={sort}
+        categories={categories}
+        statuses={statuses}
+        filtersOpen={filtersOpen}
+      />
 
       <p className="mt-4 sm:mt-5 text-sm text-ink-600">
         {formatNumber(total)} product{total === 1 ? "" : "s"} found
-        {sp.q ? ` for “${sp.q}”` : ""}
+        {q ? ` for “${q}”` : ""}
       </p>
 
       {/* Mobile cards — phone-first layout */}

@@ -102,7 +102,7 @@ export default function MobileNav({ groups }: { groups: Group[] }) {
               role="dialog"
               aria-modal="true"
               aria-labelledby={titleId}
-              className="absolute inset-0 flex flex-col bg-cream-50 pt-[env(safe-area-inset-top)]"
+              className="absolute inset-y-0 right-0 flex w-full max-w-sm flex-col bg-cream-50 pt-[env(safe-area-inset-top)] shadow-card-hover"
             >
               <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-cream-200 bg-cream-50">
                 <p id={titleId} className="font-display text-base font-semibold text-ink-950">

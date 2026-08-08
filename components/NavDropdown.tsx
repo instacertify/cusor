@@ -44,6 +44,7 @@ export default function NavDropdown({
   return (
     <div ref={ref} className="relative" onMouseEnter={enter} onMouseLeave={leave}>
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-ink-700 hover:text-ink-950 hover:bg-cream-200 transition"

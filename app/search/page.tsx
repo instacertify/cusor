@@ -515,7 +515,7 @@ export default async function SearchPage({ searchParams }: Props) {
                 <option key={s.state} value={s.state}>{s.state} ({s.n})</option>
               ))}
             </select>
-            <button className="bg-ink-900 hover:bg-ink-800 text-white text-sm font-bold rounded-xl px-6 py-2.5 transition">
+            <button type="submit" className="bg-ink-900 hover:bg-ink-800 text-white text-sm font-bold rounded-xl px-6 py-2.5 transition">
               Search Labs
             </button>
           </form>
