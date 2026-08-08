@@ -1,452 +1,479 @@
 import type { SqliteDatabase } from "./sqlite";
-import { insertBlogPostsIfMissing, type BlogPostSeed } from "./seed-blog-posts";
+import {
+  upsertBlogPostCopyPreservingImage,
+  type BlogPostSeed,
+} from "./seed-blog-posts";
 
 export type EmcPostSeed = BlogPostSeed;
 
 function emcCta(angle: string): string {
-  return `## How Certko + Instacertify help with ${angle}
+  return `## Work with Certko + Instacertify on ${angle}
 
-Certko is operated by **Instacertify Labs Private Limited**. For EMI / EMC programmes we typically:
+**Certko** is operated by **Instacertify Labs Private Limited**. Our EMI / EMC desk is built for manufacturers and brand owners who need chamber time, clean reports and a calendar that also respects MeitY / BIS safety work.
 
-1. **Map your product** to the right CISPR / IEC 61000 family and destination rules (India MeitY / BIS pathways, CE EMC, FCC and buyer specs).
-2. **Shortlist accredited labs** with chamber capacity, indicative cost bands and sample plans — see [EMC testing](/testing) and [Find a lab](/labs).
-3. **Coordinate the file** — pre-compliance tips, formal emissions/immunity booking, query handling and a clean report pack for certification or buyer release.
-4. **Keep safety + EMC in one calendar** so CRS / CE / FCC work does not collide with your shipment date.
+What we do on a typical engagement:
 
-Share your **product name**, **intended markets**, **power architecture** (AC mains / DC / battery) and any existing CB or EMC reports. You get a **scoped test plan + quote within 24 hours**.
+1. **Scope the right standards** — CISPR product family, IEC 61000 immunity set, Class A/B decision, CE / FCC / buyer matrix.
+2. **Shortlist accredited labs** — chamber availability, indicative pricing and sample plan via [EMC testing](/testing) and [Find a lab](/labs).
+3. **Run the programme** — pre-compliance advice, formal booking, setup review, failure triage and a buyer-ready report pack.
+4. **Align with certification** — keep CRS / CE / FCC and EMC samples on one timeline so shipments are not blocked twice.
 
-[Get Expert Help](/contact) · [Contact Instacertify](/contact) · [Browse product testing](/testing) · [Find a lab](/labs) · [More on the blog](/blog)`;
+Send your **product name**, **block diagram or datasheet**, **target markets**, **power architecture** (AC / DC / battery) and any prior CB or EMC reports. You receive a **scoped test plan and quote within 24 hours**.
+
+[Get Expert Help](/contact) · [Contact Instacertify](/contact) · [Product testing](/testing) · [Find a lab](/labs) · [Blog](/blog)`;
 }
 
 /**
- * EMI / EMC / CISPR topical posts inserted on boot if missing.
+ * EMI / EMC / CISPR topical posts.
+ * Copy may be refreshed on boot; cover images are never overwritten (admin-owned).
  */
 export const EMC_POSTS: EmcPostSeed[] = [
   {
     slug: "emi-emc-testing-services-cispr-meity-guide",
     title:
-      "EMI / EMC Testing Services Explained — CISPR Standards, MeitY Pathways & Export Readiness",
+      "EMI & EMC Testing Services: CISPR Standards, MeitY Rules and a Practical Export Plan",
     excerpt:
-      "A practical guide to EMI and EMC testing for electronics makers: CISPR emissions families, IEC 61000 immunity, how MeitY / BIS programmes interact with EMC, and how Certko with Instacertify runs the lab file.",
-    meta_title:
-      "EMI EMC Testing Services | CISPR & MeitY Guide | Certko",
+      "Rewritten field guide to EMI/EMC testing — what CISPR and IEC 61000 actually cover, how MeitY/BIS safety differs from EMC, which lab services to book, and how Certko with Instacertify keeps your programme on schedule.",
+    meta_title: "EMI & EMC Testing Services | CISPR & MeitY | Certko",
     meta_description:
-      "Understand EMI/EMC testing under CISPR and IEC 61000, how MeitY electronics programmes relate, and how Certko + Instacertify coordinate accredited lab testing for India and export.",
+      "Practical EMI/EMC testing guide: CISPR emissions, IEC 61000 immunity, MeitY/BIS vs export EMC, lab service menu, and Certko + Instacertify coordination for India and global markets.",
     published_at: "2026-08-15",
-    content: `# EMI / EMC Testing Services — CISPR Standards, Ministry Pathways & What Exporters Must Plan
+    content: `# EMI & EMC Testing Services: CISPR Standards, MeitY Rules and a Practical Export Plan
 
-Electromagnetic interference (**EMI**) and electromagnetic compatibility (**EMC**) testing decide whether your product can sit next to other electronics without disrupting radios, networks, medical devices or industrial controls — and whether it keeps working when the environment is noisy.
+If your product plugs into mains, switches power at high frequency, drives LEDs, talks over cables or sits near radios, **EMI/EMC testing** is not optional paperwork — it is how you prove the design will not interfere with other equipment and will not collapse when the environment is noisy.
 
-For Indian manufacturers and global brands selling IT, AV, lighting, appliances and industrial electronics, EMC is no longer a “Europe-only” checkbox. **CISPR** emission standards, **IEC 61000** immunity methods, **MeitY**-notified electronics schemes and overseas buyer specs often land in the same launch calendar.
+This revised guide is written for compliance managers, hardware leads and export teams who need a clear service map: **CISPR** for emissions, **IEC 61000** for immunity, **MeitY / BIS** for India’s electronics registration path, and a realistic way to use **Certko + Instacertify** without wasting chamber weeks.
 
-This guide explains the service landscape — and where **Certko**, backed by **Instacertify**, takes the coordination load off your team.
+## What EMI and EMC mean in a factory, not a textbook
 
-## EMI vs EMC — plain language
-
-| Term | What it means for your product |
+| Term | Shop-floor meaning |
 | --- | --- |
-| **EMI** | Unwanted electromagnetic energy your product **creates** (or that attacks it) |
-| **EMC** | The full discipline: you must **not emit too much** and must **tolerate** a defined level of disturbance |
-| **Emissions testing** | Measures conducted and radiated noise against CISPR / FCC limits |
-| **Immunity testing** | Applies ESD, surge, EFT, RF fields and dips per IEC 61000-4-x to prove robustness |
+| **EMI (electromagnetic interference)** | The unwanted noise your product throws onto cables or into the air — or the noise that hits your product from outside |
+| **EMC (electromagnetic compatibility)** | The full promise: limited emissions **and** enough immunity to keep working in a defined environment |
+| **Emissions tests** | Lab measurements against CISPR (or FCC) limit lines |
+| **Immunity tests** | Lab stresses using IEC 61000-4 methods (ESD, surge, burst, RF, dips) |
 
-Passing only emissions is not always enough. CE (EMC Directive), many OEM contracts and industrial buyers expect a **balanced emissions + immunity** pack.
+A quiet emissions plot with a fragile ESD design is still a failed market launch. Serious CE EMC files and OEM specs ask for **both sides**.
 
-## Why CISPR sits at the centre of emissions work
+## The CISPR backbone of emissions testing
 
-**CISPR** (International Special Committee on Radio Interference) publishes the product-family emission standards labs use worldwide. Choosing the wrong CISPR book is one of the most expensive mistakes in EMC — you pay for a full chamber programme and still cannot use the report for the market you care about.
+**CISPR** (International Special Committee on Radio Interference) is the family of product standards most accredited labs open first for emissions. The expensive mistake is booking “EMC” without naming the CISPR book.
 
-| CISPR family (common) | Typical products |
+| CISPR standard | Typical equipment | What the lab is really checking |
+| --- | --- | --- |
+| **CISPR 32** | IT, AV, multimedia, many docks / displays / set-top style products | Conducted + radiated emissions for multimedia/IT ports and enclosures |
+| **CISPR 15** | Luminaires, LED lighting and similar | Lighting-specific emission limits and setups |
+| **CISPR 14-1** | Household appliances, electric tools | Continuous and discontinuous (click) disturbance |
+| **CISPR 14-2** | Same appliance/tool world | Immunity performance companion |
+| **CISPR 11** | ISM / process / certain scientific & medical gear | Group/class based ISM emission framework |
+| **CISPR 25** (and OEM manuals) | Automotive components | Vehicle-component EMC — specialised chambers |
+
+Class **A** (industrial) versus Class **B** (residential / light commercial) changes the limit severity. Consumer-facing SKUs almost always need a **Class B** story unless the buyer explicitly accepts industrial placement.
+
+## MeitY / ministry pathways vs full EMC — do not confuse the two
+
+India’s **Ministry of Electronics and Information Technology (MeitY)** Compulsory Registration Orders push many electronics into **BIS CRS** (safety registration). Platforms are moving large IT/AV families from older IS 13252 / IS 616 thinking toward **IS/IEC 62368-1**.
+
+| Need | What it proves | Typical evidence |
+| --- | --- | --- |
+| **MeitY → BIS CRS** | Safety registration to make/sell notified goods in India | BIS-recognised lab safety report + CRS grant |
+| **CE EMC / UKCA** | Essential EMC requirements for Europe-style markets | CISPR emissions + IEC 61000 immunity pack |
+| **FCC** | US emissions rules for digital / ISM devices | FCC methods (related physics, different paperwork) |
+| **OEM / retailer gate** | Contractual technical file | Whatever the customer’s EMC annex says |
+
+**CRS does not automatically equal a full CISPR programme.** Many teams still should start **EMI pre-compliance early**, because the same PCB stack-up, cable set and enclosure bonding decisions decide both thermal/safety behaviour and EMC margin.
+
+Certko’s job in the first call is to write a one-page matrix: *India mandatory now* versus *destination EMC mandatory for the PO*.
+
+## EMI/EMC testing services you should actually put on a purchase order
+
+1. **Conducted emissions** — disturbance leaving on power (and sometimes telecom) lines  
+2. **Radiated emissions** — chamber / site field-strength measurements  
+3. **Harmonics & flicker** — IEC 61000-3-2 / 3-3 (and related) for many mains EU paths  
+4. **Immunity battery** — IEC 61000-4-2 (ESD), -4-3 (radiated RF), -4-4 (EFT), -4-5 (surge), -4-6 (conducted RF), -4-8 (magnetic), -4-11 / -4-34 (dips)  
+5. **Pre-compliance / debug** — cheaper iteration before “certification mode”  
+6. **System testing** — host + adapter + longest cables as shipped, not a naked PCB  
+
+Browse the EMC entry points under [Product testing](/testing).
+
+## Sample and document pack that keeps labs honest
+
+Bring more than a pretty prototype:
+
+- Production-intent hardware and firmware (not a muted demo build)  
+- Block diagram, highest internal frequencies, wireless modules list  
+- Cable schedule with lengths and shield termination notes  
+- Intended markets and any existing CB / prior EMC reports  
+- Written pass target: CISPR edition, class, immunity levels, performance criterion A/B/C  
+
+## Project timeline that usually works
+
+| Week | Activity |
 | --- | --- |
-| **CISPR 32** | Multimedia / IT / AV equipment (replaces older CISPR 22 thinking for many designs) |
-| **CISPR 15** | Electrical lighting and similar equipment |
-| **CISPR 14-1** | Household appliances, electric tools and similar apparatus (emissions) |
-| **CISPR 14-2** | Immunity companion for many household / tool categories |
-| **CISPR 11** | Industrial, scientific and medical (ISM) equipment |
-| **CISPR 25 / related automotive** | Vehicle components (specialised chambers and limits) |
+| 0 | Scope CISPR + immunity + MeitY/export matrix with Certko |
+| 1 | Pre-compliance scan on risky ports / clocks |
+| 2–3 | Design fixes (filter, bonding, cable, firmware edges) |
+| 3–5 | Formal emissions + immunity at accredited lab |
+| Parallel | BIS/CRS or other safety samples on their own track |
 
-Exact edition, class (A/B) and measurement setup depend on the product definition in the standard — not on your marketing name.
+Chamber queues slip when everyone books in the same export season — lock slots after scoping, not after the commercial invoice is frozen.
 
-## How MeitY / ministry electronics programmes relate to EMC
+## Read the companion articles
 
-Under India’s **Ministry of Electronics and Information Technology (MeitY)** Compulsory Registration Orders, many IT and electronics products need **BIS CRS** safety registration (historically IS 13252 / IS 616; migrating to **IS/IEC 62368-1** for large equipment families).
-
-Important nuance for planning:
-
-- **CRS is primarily a safety / registration path** through BIS-recognised labs and the CRS portal.
-- **Full CISPR / IEC 61000 EMC** is often driven by **export markets** (CE, UKCA), **US FCC** rules, **Gulf / OEM buyer specs**, or product categories where EMC evidence is separately demanded.
-- Smart teams still run **EMI pre-compliance early**, because the same PCB, cable and enclosure decisions affect both safety thermal behaviour and EMC margins.
-
-Certko helps you separate “must have for MeitY / BIS now” from “must have for the PO’s destination market” — so you do not over-test or under-test.
-
-## Core EMI / EMC testing services labs deliver
-
-1. **Conducted emissions** — noise on power (and sometimes telecom) ports, typically 150 kHz–30 MHz class ranges depending on standard  
-2. **Radiated emissions** — chamber or OATS measurements of field strength in the relevant bands  
-3. **Harmonics & flicker** — IEC 61000-3-2 / 3-3 (and -3-11 / -3-12 where applicable) for mains products aimed at EU-style markets  
-4. **Immunity battery** — ESD, radiated RF, EFT/burst, surge, conducted RF, magnetic fields, voltage dips/interrupts (IEC 61000-4 series)  
-5. **Pre-compliance / debug** — near-field probes, troubleshooting fixtures, iterative fixes before formal “for certification” runs  
-6. **Combined EMC + safety packages** — common for adapters and power electronics where buyers want one project owner  
-
-Explore service entry points on [Product testing](/testing) under EMC.
-
-## What a strong EMC project pack includes
-
-- Product description, block diagram, clock frequencies and wireless modules (if any)  
-- Power rating, earthing class and cable list (length matters for radiated results)  
-- Intended **markets** and already-held reports (CB, prior CISPR, FCC ID filings)  
-- Sample units built like production — “lab-only golden samples” often fail later in surveillance  
-- Clear pass criteria: which CISPR edition, which class, which immunity levels  
-
-## Related deep-dives on Certko
-
-- [Conducted & radiated emissions under CISPR](/blog/cispr-conducted-radiated-emissions-testing)  
-- [IEC 61000 immunity testing services](/blog/iec-61000-emc-immunity-testing-services)  
+- [CISPR conducted & radiated emissions (revised)](/blog/cispr-conducted-radiated-emissions-testing)  
+- [IEC 61000 immunity testing services (revised)](/blog/iec-61000-emc-immunity-testing-services)  
 - [CISPR product-family map for IT, lighting, appliances & ISM](/blog/cispr-standards-product-family-emi-emc-map)  
-- [How Certko and Instacertify run your EMI/EMC programme](/blog/certko-instacertify-emi-emc-testing-help)
+- [How Certko and Instacertify run EMI/EMC programmes](/blog/certko-instacertify-emi-emc-testing-help)
 
-${emcCta("EMI / EMC scoping")}
+${emcCta("full EMI / EMC scoping")}
 
-> **Disclaimer:** Standard editions, limit classes and scheme rules change. Always confirm the applicable CISPR / IEC text, MeitY / BIS notification and destination regulation for your exact model before booking irreversible lab time.
+> **Disclaimer:** Standard editions, limit classes and scheme rules change. Confirm the applicable CISPR / IEC text, MeitY / BIS notification and destination regulation for your exact model before irreversible lab bookings.
 `,
   },
   {
     slug: "cispr-conducted-radiated-emissions-testing",
     title:
-      "CISPR Conducted & Radiated Emissions Testing — What Labs Measure and Why Shipments Stall",
+      "CISPR Conducted and Radiated Emissions Testing — How Labs Measure Noise and Why Cargo Gets Held",
     excerpt:
-      "Deep dive into CISPR conducted and radiated emissions testing: ports, chambers, Class A vs B, common failure modes on SMPS and IoT boards, and how Instacertify via Certko prepares a fix-ready lab plan.",
-    meta_title:
-      "CISPR Conducted & Radiated Emissions Testing Guide | Certko",
+      "Revised deep dive into CISPR conducted and radiated emissions: LISN setups, chambers, Class A vs B, SMPS/IoT failure patterns, MeitY-aware planning, and how Instacertify via Certko prepares a fix-ready lab plan.",
+    meta_title: "CISPR Conducted & Radiated Emissions Testing | Certko",
     meta_description:
-      "Learn CISPR conducted and radiated emissions testing for electronics — measurement intent, Class A/B, failure patterns and how Certko + Instacertify coordinate accredited EMC labs.",
+      "Rewritten guide to CISPR conducted and radiated emissions testing — measurement intent, Class A/B, common failures, and Certko + Instacertify lab coordination for exporters.",
     published_at: "2026-08-15",
-    content: `# CISPR Conducted & Radiated Emissions Testing — Services That Decide Your EMC Gate
+    content: `# CISPR Conducted and Radiated Emissions Testing — How Labs Measure Noise and Why Cargo Gets Held
 
-When a shipping desk, notified body or overseas buyer asks for “EMI test reports”, they almost always mean **emissions evidence** against a **CISPR** product standard (or FCC Part 15 / 18 methods that rhyme with the same physics). This article unpacks the two workhorses of every EMI programme: **conducted emissions** and **radiated emissions**.
+When a forwarder, notified body or overseas buyer asks for “EMI reports”, they almost always mean **emissions evidence** against a **CISPR** product standard (or an FCC method that follows the same physics). This rewritten article focuses on the two services that decide most first-time failures: **conducted emissions** and **radiated emissions**.
 
-## Conducted emissions — noise that leaves on the cable
+## Conducted emissions — the noise that rides your cables
 
-Conducted tests measure high-frequency disturbance that travels along **power lines** (and, in some standards, telecom or other wired ports) into the public supply or neighbouring equipment.
+Conducted testing measures high-frequency disturbance leaving the product on **power lines** (and, in some standards, telecom or other wired ports).
 
-**Why it fails so often on modern products**
+### What the lab physically does
+- Places the equipment under test (EUT) on a defined table / setup  
+- Inserts a **LISN / AMN** so the mains impedance is repeatable  
+- Sweeps the relevant band (commonly starting around 150 kHz up through tens of MHz, per standard)  
+- Applies the detectors the edition requires (quasi-peak, average, RMS-average, etc.)
 
-- Fast switching in **SMPS / LED drivers** without adequate filtering  
-- Poor common-mode choke or Y-capacitor strategy  
-- Cable shields terminated only at one end (or not at all)  
-- “Quiet” firmware modes that were never the mode measured at the customer site  
+### Why modern products fail conducted limits
+- Fast **SMPS / LED driver** edges without enough common-mode filtering  
+- Weak CM choke or Y-capacitor strategy  
+- Shield drains that are decorative rather than bonded  
+- Measuring a quiet firmware mode that customers never use  
 
-Labs use line impedance stabilisation networks (**LISN** / AMN), defined detector types (quasi-peak, average, RMS-average depending on edition) and strict table layouts. Your job as the manufacturer is to bring a **production-representative** sample and a mode of operation that matches real use — not the quietest demo mode.
+**Instacertify tip:** treat the **shipping power adapter + host** as the EUT whenever that is how the product leaves India or your free-zone warehouse.
 
-## Radiated emissions — noise that leaves through the air
+## Radiated emissions — the noise that leaves through the air
 
-Radiated tests measure electric-field (and sometimes magnetic-field at lower frequencies) emissions in a **semi-anechoic chamber**, fully anechoic room or open-area test site, at the distance required by the standard (commonly 3 m or 10 m class setups).
+Radiated tests measure field strength in a **semi-anechoic chamber**, fully anechoic room or open-area site at the distance the standard names (often 3 m or 10 m class setups).
 
-Typical radiators on a failing board:
-
-- Unterminated high-speed clocks and DDR / video lanes  
+### Usual radiators on a failing board
+- Uncontrolled clocks, DDR / video lanes and switching nodes  
 - Cable bundles acting as antennas  
-- Enclosure slots and display openings  
-- Wireless modules whose harmonics were never budgeted into the CISPR limit line  
+- Enclosure slots, display openings and poor gasket compression  
+- Wireless modules whose harmonics were never budgeted into the limit line  
 
-## CISPR context: which book drives the limit line?
+If conducted is “clean” but radiated fails, look at **cables and enclosure bonding** before rewriting the entire power stage.
 
-| If your product is mainly… | Emissions book labs usually open first |
+## Which CISPR book owns your limit line?
+
+| Product story | Emissions standard to name on the PO |
 | --- | --- |
-| IT / AV / multimedia | **CISPR 32** |
-| Luminaires / LED drivers (lighting scope) | **CISPR 15** |
-| Household appliances / electric tools | **CISPR 14-1** |
+| IT / AV / multimedia hosts and accessories | **CISPR 32** |
+| Luminaires / lighting controlgear in scope | **CISPR 15** |
+| Household appliances and electric tools | **CISPR 14-1** |
 | ISM / process equipment | **CISPR 11** |
+| Automotive modules | **CISPR 25** + OEM manuals |
 
-Class **A** (industrial environments) vs Class **B** (residential / domestic) changes the limit severity. Selling into homes or light-commercial shelves with a Class A-only report is a classic rejection story.
+Marketing names do not choose the standard — the **product definition inside CISPR** does. Certko writes that rationale before you pay for chamber days.
 
-## Ministry / MeitY planning tip
+## Class A vs Class B — the silent rejection
 
-For **MeitY-notified CRS products**, the mandatory file is still the **safety / registration** path under BIS. Parallel **CISPR emissions** work is what unlocks **CE EMC**, many **US** filings and OEM quality gates. Certko sequences both so chamber weeks do not land after your PO ship date.
+| Class | Typical environment | Commercial risk |
+| --- | --- | --- |
+| **A** | Industrial / commercial heavy | Often unacceptable for home / retail shelves |
+| **B** | Residential / light commercial | What most consumer POs expect |
 
-## Service menu — what to ask the lab to quote
+Passing Class A and “hoping” a retail buyer accepts it is how containers sit while you redesign.
 
-1. **Formal conducted emissions** to the applicable CISPR edition  
-2. **Formal radiated emissions** (chamber) with photography and setup notes  
-3. **Pre-compliance scans** for debug (cheaper iteration before “certification mode”)  
-4. **Filter / layout advisory loop** when margins are thin (engineering support, not magic)  
-5. **Report pack** suitable for NB / buyer / certification consultants  
+## MeitY planning without mixing programmes
 
-## Failure → fix playbook Instacertify uses with clients
+For **MeitY-notified CRS products**, the mandatory India file is still the **safety / registration** path under BIS. Parallel **CISPR emissions** work unlocks **CE EMC**, many **US** filings and OEM quality gates. Certko sequences both so chamber weeks are not booked after the DG or buyer cut-off.
+
+## What to ask the lab to quote (line items)
+
+1. Formal **conducted emissions** to the named CISPR edition  
+2. Formal **radiated emissions** with setup photos and cable map  
+3. **Pre-compliance** scans for debug (cheaper iteration)  
+4. Engineering support loop when margins are thin  
+5. Report pack suitable for NB / buyer / certification consultants  
+
+## Failure → first-fix table used on Instacertify programmes
 
 | Symptom | First checks |
 | --- | --- |
 | Conducted QP over limit near switching frequency | Input filter, CM choke, PCB return paths |
 | Radiated broadband hump | Cable dressing, enclosure bonding, clock edges |
-| Passes on bench PSU, fails on production adapter | Treat adapter + host as the EUT system |
-| Passes Class A, buyer wants Class B | Redesign margin — not a paperwork swap |
+| Passes on bench PSU, fails on production adapter | System EUT definition wrong |
+| Passes Class A, buyer wants Class B | Hardware margin — not a certificate rename |
+| Fails only with longest HDMI/USB loom | Cable common-mode control and clamp ferrites |
 
-## Read next
+## Related reading
 
-- [Full EMI/EMC services & MeitY overview](/blog/emi-emc-testing-services-cispr-meity-guide)  
-- [Immunity testing under IEC 61000](/blog/iec-61000-emc-immunity-testing-services)  
-- [Product-family CISPR map](/blog/cispr-standards-product-family-emi-emc-map)
+- [EMI/EMC services & MeitY overview (revised)](/blog/emi-emc-testing-services-cispr-meity-guide)  
+- [IEC 61000 immunity services (revised)](/blog/iec-61000-emc-immunity-testing-services)  
+- [CISPR product-family map](/blog/cispr-standards-product-family-emi-emc-map)  
+- [Certko × Instacertify EMC help](/blog/certko-instacertify-emi-emc-testing-help)
 
 ${emcCta("conducted & radiated emissions programmes")}
 
-> **Disclaimer:** Measurement distances, detectors and limit lines are edition-specific. Use the standard text cited on your test request form; this article is educational guidance, not a substitute for the CISPR publication.
+> **Disclaimer:** Distances, detectors and limit lines are edition-specific. Use the CISPR text cited on your test request form; this article is educational guidance.
 `,
   },
   {
     slug: "iec-61000-emc-immunity-testing-services",
     title:
-      "EMC Immunity Testing Services under IEC 61000 — ESD, Surge, EFT & RF for Real-World Noise",
+      "IEC 61000 EMC Immunity Testing — ESD, Surge, EFT, RF and Dips That Catch Real Field Failures",
     excerpt:
-      "Enrich your EMC plan beyond emissions: IEC 61000-4 immunity tests (ESD, radiated RF, EFT, surge, dips), how they pair with CISPR reports, and how Certko + Instacertify coordinate resilient product validation.",
-    meta_title:
-      "IEC 61000 EMC Immunity Testing Services | Certko",
+      "Revised immunity guide: how IEC 61000-4 tests pair with CISPR emissions, what ESD/surge/EFT/RF/dips prove, performance criteria A/B/C, and how Certko + Instacertify build a resilient validation pack.",
+    meta_title: "IEC 61000 EMC Immunity Testing Services | Certko",
     meta_description:
-      "EMC immunity testing services under IEC 61000-4 — ESD, EFT, surge, radiated and conducted RF, voltage dips. How Certko and Instacertify help electronics teams pass buyer and CE EMC gates.",
+      "Rewritten IEC 61000 immunity testing guide — ESD, EFT, surge, radiated/conducted RF, voltage dips — plus how Certko and Instacertify help electronics teams clear CE and buyer EMC gates.",
     published_at: "2026-08-16",
-    content: `# EMC Immunity Testing Services under IEC 61000 — Because Emissions Alone Are Not Enough
+    content: `# IEC 61000 EMC Immunity Testing — ESD, Surge, EFT, RF and Dips That Catch Real Field Failures
 
-A product can be quiet on a CISPR emissions plot and still **reset, flicker or corrupt data** when a nearby phone transmits, a relay chatters or the mains spikes. **Immunity testing** proves your design survives a defined electromagnetic environment. For CE EMC, industrial OEMs and serious retail buyers, immunity is a first-class EMI/EMC service — not an optional extra.
+Emissions answers: *how loud is my product?* Immunity answers: *does it keep working when the world is loud?* This revised article is for teams that already booked CISPR scans — or are about to — and still need a serious **IEC 61000** immunity package for CE EMC, industrial OEMs or retailer technical files.
 
-## Where IEC 61000 fits beside CISPR
+## Where IEC 61000 sits beside CISPR
 
-| Layer | Typical standards | Question answered |
+| Layer | Standards you will hear | Question |
 | --- | --- | --- |
-| Emissions | **CISPR** product standards | Does the product pollute the spectrum? |
-| Immunity methods | **IEC 61000-4-x** basic standards | Can the product tolerate disturbance X? |
-| Product immunity performance | e.g. **CISPR 35**, **CISPR 14-2**, IEC generic/product norms | Which levels and performance criteria apply? |
-| Mains quality (emissions-adjacent) | **IEC 61000-3-2 / 3-3** | Harmonics & flicker into the supply |
+| Emissions | **CISPR** product books | Does the product pollute the spectrum? |
+| Basic immunity methods | **IEC 61000-4-x** | How do we apply disturbance X repeatably? |
+| Product immunity performance | e.g. **CISPR 35**, **CISPR 14-2**, IEC product/generic norms | Which levels and pass criteria apply to *this* product? |
+| Mains quality (often with CE files) | **IEC 61000-3-2 / 3-3** | Harmonics and flicker into the supply |
 
-CISPR tells the world how loud you are. **IEC 61000-4** is the toolbox labs use to hit you with ESD guns, bursts, surges and RF fields in a repeatable way.
+CISPR is not a substitute for immunity. A Class B emissions pass can still reboot under ESD or brown-out.
 
-## Immunity services you should know by name
+## Immunity services worth naming on the quote
 
-### 1. Electrostatic discharge — IEC 61000-4-2
-Simulates charged users touching enclosures, ports and buttons. Failures show up as reboots, latch-ups or damaged interfaces — especially on USB, HDMI and unguarded buttons.
+### Electrostatic discharge — IEC 61000-4-2
+Simulates charged operators touching enclosures, buttons and connector shells. Watch USB, HDMI, metal bezels and floating LEDs.
 
-### 2. Radiated RF immunity — IEC 61000-4-3
-Subjects the equipment to RF fields in a chamber (spot frequencies / sweeps per the product standard). Critical for devices near cellular, Wi-Fi and broadcast transmitters.
+### Radiated RF immunity — IEC 61000-4-3
+Chamber RF fields that mimic phones, Wi-Fi and broadcast energy. Spot-frequency / sweep strategies follow the product standard.
 
-### 3. Electrical fast transient / burst — IEC 61000-4-4
-Injects fast bursts onto power and signal lines — classic industrial and commercial mains noise from switching loads.
+### Electrical fast transient / burst — IEC 61000-4-4
+Fast bursts on power and signal lines — classic commercial building noise from switching loads and relays.
 
-### 4. Surge — IEC 61000-4-5
-Combination-wave surges that stress SPDs, rectifiers and earth references. Outdoor-fed and long-cable products feel this first.
+### Surge — IEC 61000-4-5
+Combination-wave energy that stresses SPDs, bridge rectifiers and earth references. Long outdoor feeds feel this first.
 
-### 5. Conducted RF immunity — IEC 61000-4-6
-RF energy injected onto cables when radiated testing alone does not cover the coupling path.
+### Conducted RF — IEC 61000-4-6
+RF injected onto cables when the coupling path is conductive rather than purely radiated.
 
-### 6. Power frequency magnetic field — IEC 61000-4-8
-Relevant near transformers, busbars and heavy industrial plant.
+### Power-frequency magnetic field — IEC 61000-4-8
+Relevant near transformers, busbars and heavy plant.
 
-### 7. Voltage dips, short interruptions & variations — IEC 61000-4-11 (and -4-34 for higher current)
-Proves behaviour when the mains sags — performance criterion A/B/C language matters for buyer contracts.
+### Voltage dips & interruptions — IEC 61000-4-11 (and -4-34 for higher current)
+Proves behaviour when mains sags. This is where “it works in the office” products fail on site.
 
-## Performance criteria — read the fine print
+## Performance criteria — negotiate before you test
 
-Immunity standards do not only say “pass/fail on smoke”. They use **performance criteria** (commonly A, B, C):
+Immunity is not only smoke / no-smoke. Product standards use **performance criteria** (commonly A, B, C):
 
-- **A** — normal performance within spec during the test  
-- **B** — temporary degradation with self-recovery  
-- **C** — recoverable only by user / power cycle  
+| Criterion | Plain meaning | Buyer impact |
+| --- | --- | --- |
+| **A** | Normal performance during the test | Often demanded for critical functions |
+| **B** | Temporary degradation, self-recovers | Acceptable for some secondary features |
+| **C** | Needs user action / power cycle | Frequently rejected in OEM annexes |
 
-OEM tenders often demand Criterion **A** for key functions. Align this in writing before you book the lab.
+Write the required criterion into the lab PO. Discovering it after a Criterion C result wastes the slot.
 
-## MeitY / India programme interaction
+## India MeitY note (revised for clarity)
 
-Immunity is rarely the headline of a **MeitY CRS** safety file, but it is frequently on the critical path for:
+Immunity is rarely the headline document inside a **MeitY CRS** safety file. It becomes critical when you also need:
 
 - **CE marking** under the EMC Directive  
-- Industrial and medical-adjacent buyer audits  
-- Gulf / European retail technical files  
-- Brands that already faced field returns from ESD or surge events  
+- Industrial / medical-adjacent OEM audits  
+- Gulf or European retail technical files  
+- Closure of field returns already blamed on ESD or surge  
 
-Certko’s planning model: lock **CISPR emissions + IEC 61000 immunity** against the destination checklist while BIS / MeitY safety testing runs on its own sample set when required.
+Certko’s model: run **CISPR emissions + IEC 61000 immunity** against the destination checklist while BIS / MeitY safety uses its own sample set when required.
 
-## How to brief Instacertify for an immunity package
+## Briefing checklist for Instacertify
 
-Send:
+Send these five items and we can price a real matrix, not a vague “EMC lump sum”:
 
-1. Ports list (power, eth, USB, sensor looms)  
-2. Enclosure material and earthing scheme  
+1. Ports list (power, Ethernet, USB, sensors, displays)  
+2. Enclosure material and earthing / bonding scheme  
 3. Firmware recovery behaviour you consider acceptable  
-4. Target markets and any customer EMC spec sheet  
-5. Whether wireless transmitters are active in the mode under test  
-
-We return a **line-item immunity matrix**, lab options and a combined quote with emissions where needed.
+4. Target markets + customer EMC annex (if any)  
+5. Whether transmitters stay active in the mode under test  
 
 ## Related reading
 
-- [EMI/EMC overview & CISPR / MeitY](/blog/emi-emc-testing-services-cispr-meity-guide)  
+- [EMI/EMC overview & MeitY](/blog/emi-emc-testing-services-cispr-meity-guide)  
 - [Conducted & radiated emissions](/blog/cispr-conducted-radiated-emissions-testing)  
-- [Certko × Instacertify EMC help](/blog/certko-instacertify-emi-emc-testing-help)
+- [CISPR product-family map](/blog/cispr-standards-product-family-emi-emc-map)  
+- [How Certko + Instacertify help](/blog/certko-instacertify-emi-emc-testing-help)
 
 ${emcCta("IEC 61000 immunity campaigns")}
 
-> **Disclaimer:** Exact test levels, dwell times and performance criteria come from the product standard and edition named on your quotation. Confirm with the accredited laboratory before testing.
+> **Disclaimer:** Exact levels, dwell times and criteria come from the product standard edition on your quotation. Confirm with the accredited laboratory before testing.
 `,
   },
   {
     slug: "cispr-standards-product-family-emi-emc-map",
     title:
-      "CISPR Standards Map for EMI/EMC — IT, Lighting, Appliances & ISM Testing Services",
+      "CISPR Standards Map for EMI/EMC Testing — IT, Lighting, Appliances and ISM Compared",
     excerpt:
-      "Choose the right CISPR book before you book the chamber: CISPR 32, 15, 14 and 11 mapped to product families, plus ministry/export notes and how Certko prevents wrong-standard EMC spend.",
-    meta_title:
-      "CISPR Standards Product Map for EMI EMC Testing | Certko",
+      "Revised CISPR selector for hardware and compliance teams: when to use CISPR 32, 15, 14-1/14-2 or 11, how MeitY/export rules interact, and how Certko stops wrong-standard chamber spend.",
+    meta_title: "CISPR Standards Map for EMI/EMC Testing | Certko",
     meta_description:
-      "CISPR 32, 15, 14-1/14-2 and 11 explained for IT, lighting, appliances and ISM equipment. Plan EMI/EMC testing services with Certko and Instacertify lab coordination.",
+      "Rewritten CISPR 32, 15, 14 and 11 product-family map for EMI/EMC testing services — with MeitY/export notes and Certko + Instacertify lab scoping.",
     published_at: "2026-08-16",
-    content: `# CISPR Standards Map for EMI/EMC Testing Services — Pick the Right Book First
+    content: `# CISPR Standards Map for EMI/EMC Testing — IT, Lighting, Appliances and ISM Compared
 
-Most failed EMC budgets do not die in the chamber — they die in **scoping**. Teams book “EMC testing” without locking the **CISPR product family**, then discover the report cannot support CE, the buyer, or even the next SKU in the same housing.
+Most EMC budgets do not die in the chamber. They die in **scoping** — when a team buys “EMC testing” without locking the **CISPR product family**, then learns the report cannot support CE, the buyer, or the next SKU in the same housing.
 
-This enriched map helps compliance, design and sourcing teams speak the same language before Instacertify places a lab PO.
+This revised map is the conversation Certko runs before Instacertify places a lab purchase order.
 
-## Quick selector
+## Sixty-second selector
 
-| Your product story | Start with | Also budget |
+| If the product is mainly… | Open this book first | Also budget |
 | --- | --- | --- |
-| Laptop docks, STBs, info displays, IT power accessories, multimedia hosts | **CISPR 32** emissions | **CISPR 35** / IEC immunity set for CE-style files |
-| LED luminaires, controlgear in lighting scope | **CISPR 15** | Harmonics/flicker if mains EU path; photobiological/safety separately |
-| Mixers, vacuum cleaners, power tools, many household appliances | **CISPR 14-1** | **CISPR 14-2** immunity where applicable |
-| Industrial heaters, process RF, certain medical-lab ISM gear | **CISPR 11** | Environment class & special limits |
-| Automotive modules | **CISPR 25** (and OEM specs) | Vehicle OEM EMC manuals dominate |
+| Laptops docks, STBs, info displays, IT accessories, multimedia hosts | **CISPR 32** | Immunity via **CISPR 35** / IEC set named by your NB |
+| LED luminaires and lighting controlgear | **CISPR 15** | Harmonics/flicker on many EU mains paths; safety separately |
+| Mixers, vacuums, tools, many household appliances | **CISPR 14-1** | **CISPR 14-2** immunity where applicable |
+| Industrial heaters, process RF, certain ISM apparatus | **CISPR 11** | Group/class rules; sometimes in-situ work |
+| Vehicle modules | **CISPR 25** | OEM EMC manuals usually dominate |
 
-Borderline products (smart lamp with Wi-Fi, appliance with large display, tool with USB) need a **written rationale** for which standard applies. Certko drafts that rationale with the lab so the quotation is defensible.
+Smart lamps with Wi-Fi, appliances with large displays, or tools with USB ports are **borderline**. Demand a written rationale — Certko drafts it with the lab so the quotation is defensible.
 
-## CISPR 32 — multimedia & IT emissions
+## CISPR 32 — multimedia & IT emissions (enriched notes)
 
-**Use when:** the equipment’s primary function is information technology, audio-video or multimedia entertainment / presentation.
+**Use when** the primary function is information technology, audio-video or multimedia.
 
-**Enrichment notes for test planning**
-
-- Host + power adapter often tested as a **system** — adapter-alone data may not clear a host failure  
-- Telecommunication ports have dedicated conducted setups in many editions  
-- Wireless radios may need simultaneous operation strategies agreed with the lab  
-- Class B is the usual consumer expectation  
-
-Pairs naturally with immunity expectations from **CISPR 35** (or the IEC product/generic immunity path your NB names).
+- Host + adapter are often one **system EUT**  
+- Telecom ports may need dedicated conducted setups  
+- Agree wireless simultaneous-operation strategy with the lab  
+- Class B is the default consumer expectation  
 
 ## CISPR 15 — lighting equipment
 
-**Use when:** luminaires, modules and controlgear fall under lighting EMC scope rather than pure IT.
+**Use when** luminaires / modules / controlgear sit in lighting EMC scope.
 
-**Enrichment notes**
-
-- LED drivers are prolific conducted emitters — filter design early  
-- Multifunction “lamp + speaker + camera” products may trigger multimedia thinking; resolve scope **before** samples ship  
-- Keep photometric / safety standards on a separate sample track from EMC  
+- LED drivers are prolific conducted emitters — design filters early  
+- “Lamp + speaker + camera” hybrids may pull you toward multimedia thinking; resolve **before** samples travel  
+- Keep photometric and safety samples on a separate track from EMC  
 
 ## CISPR 14-1 & 14-2 — appliances and tools
 
-**Use when:** household and similar electrical appliances, electric tools and analogous apparatus.
+**Use when** household and similar appliances or electric tools apply.
 
-**Enrichment notes**
-
-- Motors, brushes and mechanical switching create click/discontinuous disturbance patterns the standard treats carefully  
-- Battery + mains hybrid tools need mode matrices  
-- **14-2** brings immunity so the appliance does not misbehave beside kitchen radios and ISM noise  
+- Motors and mechanical switching create click / discontinuous patterns the standard treats carefully  
+- Battery + mains hybrids need an explicit mode matrix  
+- **14-2** brings immunity so the product does not misbehave beside kitchen radios and ISM noise  
 
 ## CISPR 11 — ISM equipment
 
-**Use when:** industrial, scientific or medical equipment intentionally generates RF energy for non-communications work — or falls into the ISM emission framework.
+**Use when** industrial, scientific or medical equipment falls under the ISM emission framework (including intentional non-communications RF in many cases).
 
-**Enrichment notes**
+- Group / class language differs from CISPR 32’s Class A/B storytelling  
+- Large apparatus may involve installation / in-situ considerations  
+- Never force an ISM product into a multimedia template just to reuse a quote  
 
-- Group / class concepts differ from CISPR 32’s Class A/B storytelling  
-- Site installation and in-situ testing can appear for large apparatus  
-- Never force an ISM product into a multimedia template to “reuse a quote”  
+## MeitY, BIS and export — one matrix, two truths
 
-## Ministry (MeitY) & BIS — how to talk about both without confusion
-
-| Programme | What it primarily proves | EMC angle |
+| Programme | Primary proof | EMC angle |
 | --- | --- | --- |
-| **MeitY CRS / BIS registration** | Safety registration for notified electronics | Plan samples & timelines in parallel with EMC if you also export |
-| **ISI / other QCOs** | Scheme I safety / factory path for many goods | EMC only if the standard or buyer demands it |
-| **CE EMC / UKCA** | Emissions + immunity against EU essential requirements | CISPR + IEC 61000 heavy |
-| **FCC** | US emissions rules for digital devices / ISM | Method family differs; do not paste a CISPR report and assume FCC is done |
+| **MeitY CRS / BIS** | Safety registration for notified electronics | Run samples/timelines in parallel with EMC if you also export |
+| **Other Indian QCOs / ISI** | Scheme I safety / factory path | Add EMC only when the standard or buyer demands it |
+| **CE EMC / UKCA** | Emissions + immunity for EU essential requirements | Heavy CISPR + IEC 61000 |
+| **FCC** | US emissions compliance | Related physics, different methods and filings |
 
-Certko’s consultants write a **one-page market × standard matrix** so purchasing does not issue three conflicting lab POs.
+Certko returns a **market × standard one-pager** so purchasing does not issue three conflicting lab POs.
 
-## SKU family strategy (save money without cheating)
+## SKU-family strategy that saves money without cheating
 
-1. Identify a **worst-case configuration** (highest clock, longest cable, maximum I/O population).  
-2. Document similarities for series — labs and NBs accept engineering judgement when it is honest.  
-3. Re-test when you change **switching power architecture, enclosure shielding, cable set or wireless module**.  
-4. Keep a revision table next to your SDS / safety file — EMC reports go stale when hardware drifts.
+1. Pick a honest **worst-case** configuration (clocks, I/O, cable length).  
+2. Document series similarity for engineering judgement the lab/NB can accept.  
+3. Re-test after changes to **power architecture, shielding, cable set or wireless module**.  
+4. Keep an EMC revision table next to safety and SDS files — reports go stale when hardware drifts.
 
 ## Related guides
 
 - [EMI/EMC services overview](/blog/emi-emc-testing-services-cispr-meity-guide)  
 - [Conducted & radiated deep dive](/blog/cispr-conducted-radiated-emissions-testing)  
-- [IEC 61000 immunity services](/blog/iec-61000-emc-immunity-testing-services)  
-- [How Certko + Instacertify help](/blog/certko-instacertify-emi-emc-testing-help)
+- [IEC 61000 immunity](/blog/iec-61000-emc-immunity-testing-services)  
+- [Certko + Instacertify help](/blog/certko-instacertify-emi-emc-testing-help)
 
 ${emcCta("CISPR product-family scoping")}
 
-> **Disclaimer:** Product definitions inside CISPR publications govern applicability. When in doubt, obtain written confirmation from the accredited laboratory or notified body for your model.
+> **Disclaimer:** Product definitions inside CISPR publications govern applicability. When unsure, obtain written confirmation from the accredited laboratory or notified body for your model.
 `,
   },
   {
     slug: "certko-instacertify-emi-emc-testing-help",
     title:
-      "How Certko & Instacertify Help You Pass EMI/EMC Testing — From CISPR Scoping to Lab Grant",
+      "How Certko and Instacertify Help You Clear EMI/EMC Testing — From CISPR Scope to Report Pack",
     excerpt:
-      "See how Certko, backed by Instacertify, runs EMI/EMC programmes: CISPR & IEC 61000 mapping, MeitY-aware calendars, accredited lab booking, debug loops and buyer-ready report packs.",
-    meta_title:
-      "Certko & Instacertify EMI EMC Testing Help | CISPR Labs",
+      "Revised playbook: how Certko, backed by Instacertify, runs EMI/EMC programmes — CISPR & IEC 61000 mapping, MeitY-aware calendars, accredited lab booking, debug loops and buyer-ready reports.",
+    meta_title: "Certko & Instacertify EMI/EMC Testing Help | Certko",
     meta_description:
-      "Certko and Instacertify help manufacturers plan CISPR emissions and IEC 61000 immunity testing, book accredited labs and deliver export-ready EMI/EMC report packs.",
+      "Rewritten guide to Certko and Instacertify EMI/EMC support — CISPR emissions, IEC 61000 immunity, lab coordination and export-ready report packs for electronics manufacturers.",
     published_at: "2026-08-17",
-    content: `# How Certko & Instacertify Become a Great Help on EMI / EMC Testing
+    content: `# How Certko and Instacertify Help You Clear EMI/EMC Testing — From CISPR Scope to Report Pack
 
-Chamber time is expensive. Wrong-standard quotes are more expensive. **Certko**, operated by **Instacertify Labs Private Limited**, exists to make EMI / EMC testing a managed project — not a scramble after a buyer rejection or a MeitY launch date moves forward.
+Chamber hours are expensive. A wrong-standard quote is more expensive. **Certko**, operated by **Instacertify Labs Private Limited**, turns EMI/EMC into a managed project — not a scramble after a buyer rejection or a MeitY launch date moves left.
 
-## The problem we see every week
+This revised playbook shows exactly what “help” means on an Instacertify EMC engagement.
 
-- Hardware teams finish functional bring-up with **zero EMC margin budget**  
-- Purchase orders demand **CE / FCC / OEM EMC** while India **MeitY CRS** safety is still in queue  
-- Vendors send a generic “EMC testing” quote with **no CISPR number**  
-- Samples arrive with debug firmware that **masks** the emissions of the shipping build  
-- Reports come back as PDFs nobody can defend in a retailer technical query  
+## Problems we inherit every week
 
-## What “great help” looks like on an Instacertify EMC engagement
+- Functional bring-up finished with **no EMC margin budget**  
+- PO demands **CE / FCC / OEM EMC** while **MeitY CRS** safety is still in queue  
+- Vendor quote says only “EMC testing” with **no CISPR number**  
+- Lab sample uses debug firmware that **hides** the shipping build’s noise  
+- PDF reports arrive that nobody can defend in a retailer technical query  
 
-### 1. Standards & ministry-aware scoping
-We map your SKU to the right **CISPR** emissions book and **IEC 61000** immunity set, then overlay **MeitY / BIS**, CE, FCC or Gulf buyer requirements so you know what is mandatory for which gate.
+## What great help looks like (step by step)
 
-### 2. Lab fit — not just lab logos
-Via Certko’s [labs](/labs) and [testing](/testing) workflows we shortlist accredited facilities with the right chamber, LISN sets and turnaround — including indicative commercial bands — instead of a single opaque broker quote.
+### 1. Standards and ministry-aware scoping
+We map your SKU to the correct **CISPR** emissions book and **IEC 61000** immunity set, then overlay MeitY / BIS, CE, FCC or Gulf buyer requirements so mandatory gates are obvious.
 
-### 3. Sample & mode matrix
-We help you define operating modes, cable sets and “worst-case” population so the report matches what you actually ship.
+### 2. Lab fit — not logo shopping
+Using Certko’s [labs](/labs) and [testing](/testing) workflows, we shortlist accredited facilities with the right chamber, LISN sets and turnaround — including indicative commercial bands.
 
-### 4. Pre-compliance → formal path
-When risk is high (new SMPS, first IoT enclosure, tight Class B target), we recommend a **debug / pre-compliance** loop before burning formal certification slots.
+### 3. Sample and mode matrix
+Operating modes, cable sets and worst-case population are written down so the report matches what you ship.
 
-### 5. Failure triage support
-If quasi-peak lines breach, you get a structured next-step list — filter, grounding, cable, firmware clocks — coordinated with your design owner.
+### 4. Pre-compliance before formal burn
+New SMPS designs, first IoT enclosures and tight Class B targets get a **debug loop** before certification-mode slots are consumed.
+
+### 5. Failure triage with your design owner
+When quasi-peak lines breach, you receive a structured next-step list (filter, ground, cable, firmware clocks) instead of a shrug and a retest invoice.
 
 ### 6. One calendar with safety certification
-EMI/EMC rarely travels alone. We align EMC samples with [BIS / CRS](/certifications/bis) and other Certko certification tracks so logistics teams see one timeline.
+EMI/EMC rarely travels alone. We align EMC samples with [BIS / CRS](/certifications/bis) and other Certko tracks so logistics sees one timeline.
 
 ## Engagement snapshot
 
-| Phase | Deliverable |
+| Phase | You receive |
 | --- | --- |
 | Kickoff (24h quote target) | Market × standard matrix, lab options, commercial estimate |
 | Prep | Sample instructions, mode list, document checklist |
 | Execution | Booking, query handling, setup photo review |
-| Close | Report pack + guidance on reuse for series models |
+| Close | Report pack + guidance on series-model reuse |
 
-## Who should talk to us first
+## Who should start a conversation now
 
 - Power adapter, LED driver, IT/AV and appliance exporters  
-- Brands facing **retailer EMC checklists** for the first time  
-- Factories migrating platforms while keeping old reports on life support  
+- Brands facing retailer EMC checklists for the first time  
+- Factories migrating platforms while old reports are on life support  
 - Teams that already **failed** conducted or radiated emissions once  
 
-## Start with the companion articles
+## Companion articles (all revised)
 
 1. [EMI/EMC testing services & CISPR + MeitY guide](/blog/emi-emc-testing-services-cispr-meity-guide)  
 2. [Conducted & radiated emissions under CISPR](/blog/cispr-conducted-radiated-emissions-testing)  
@@ -461,6 +488,6 @@ ${emcCta("end-to-end EMI / EMC delivery")}
 ];
 
 export function ensureEmcPosts(db: SqliteDatabase) {
-  // Insert-only: never updates existing posts or their admin-managed cover images.
-  insertBlogPostsIfMissing(db, EMC_POSTS);
+  // Refresh article copy when seed text changes; never touch posts.image (admin-owned).
+  upsertBlogPostCopyPreservingImage(db, EMC_POSTS);
 }
