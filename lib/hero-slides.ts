@@ -1,9 +1,20 @@
 import type { SqliteDatabase } from "./sqlite";
 import path from "path";
+import type { HeroSlide } from "./db";
 
 export const HERO_IMAGE_EXTS = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".avif", ".bmp"];
 export const HERO_VIDEO_EXTS = [".mp4", ".webm", ".mov", ".m4v", ".ogg"];
 export const HERO_MEDIA_EXTS = [...HERO_IMAGE_EXTS, ...HERO_VIDEO_EXTS];
+
+export type HeroBackgroundSlide = {
+  id: string;
+  label: string;
+  href: string;
+  ctaLabel: string;
+  videoSrc: string;
+  gifSrc?: string;
+  posterSrc: string;
+};
 
 export function mediaTypeFromPath(filePath: string): "image" | "gif" | "video" {
   const ext = path.extname(filePath).toLowerCase();
@@ -12,15 +23,15 @@ export function mediaTypeFromPath(filePath: string): "image" | "gif" | "video" {
   return "image";
 }
 
-/** Default homepage hero scroll: electronic → mechanical → lab. */
+/** Default homepage hero scroll: electronic → mechanical → EMC → chemical → certification. */
 export const DEFAULT_TESTING_HERO_SLIDES = [
   {
     title: "Electronic Testing",
-    subtitle: "Safety, EMC and performance tests for electrical & electronic products",
+    subtitle: "Safety, performance and quality tests for electrical & electronic products",
     media: "/images/testing/electrical-testing.mp4",
     poster: "/images/testing/electrical-poster.jpg",
     link_href: "/testing/electrical-testing",
-    link_label: "Browse electronic tests",
+    link_label: "Explore more",
     duration_ms: 7000,
     sort: 0,
   },
@@ -30,21 +41,65 @@ export const DEFAULT_TESTING_HERO_SLIDES = [
     media: "/images/testing/mechanical-testing.mp4",
     poster: "/images/testing/mechanical-poster.jpg",
     link_href: "/testing/mechanical-testing",
-    link_label: "Browse mechanical tests",
+    link_label: "Explore more",
     duration_ms: 7000,
     sort: 1,
   },
   {
-    title: "Lab-backed certification",
-    subtitle: "Testing coordination, recognised labs and clear cost ranges",
-    media: "/images/hero-lab.mp4",
-    poster: "/images/hero-lab-poster.jpg",
-    link_href: "/testing",
-    link_label: "Explore all testing",
+    title: "EMC Testing",
+    subtitle: "EMI/EMC emissions and immunity testing for product quality and market access",
+    media: "/images/testing/emc-testing.mp4",
+    poster: "/images/testing/emc-poster.jpg",
+    link_href: "/testing/emc-testing",
+    link_label: "Explore more",
     duration_ms: 7000,
     sort: 2,
   },
+  {
+    title: "Chemical & Quality Testing",
+    subtitle: "Composition, restricted substances and quality screens for safer products",
+    media: "/images/testing/chemical-testing.mp4",
+    poster: "/images/testing/chemical-poster.jpg",
+    link_href: "/testing/chemical-testing",
+    link_label: "Explore more",
+    duration_ms: 7000,
+    sort: 3,
+  },
+  {
+    title: "Certification Quality",
+    subtitle: "Lab-backed certification pathways across product categories — BIS, CE, SABER & more",
+    media: "/images/testing/certification-quality.mp4",
+    poster: "/images/testing/certification-poster.jpg",
+    link_href: "/certifications",
+    link_label: "Explore more",
+    duration_ms: 7000,
+    sort: 4,
+  },
 ] as const;
+
+/** Map DB hero slides into the full-bleed background video carousel. */
+export function heroSlidesToBackground(slides: HeroSlide[]): HeroBackgroundSlide[] {
+  return slides
+    .filter((s) => s.media)
+    .map((s) => {
+      const ext = path.extname(s.media).toLowerCase();
+      const base = s.media.replace(/\.[^.]+$/, "");
+      const isVideo = HERO_VIDEO_EXTS.includes(ext);
+      const isGif = ext === ".gif";
+      const guessedPoster = `${base
+        .replace(/-testing$/, "")
+        .replace(/-quality$/, "")}-poster.jpg`;
+      return {
+        id: String(s.id),
+        label: s.title || "Testing",
+        href: s.link_href || "/testing",
+        ctaLabel: (s.link_label || "Explore more").trim() || "Explore more",
+        videoSrc: isVideo ? s.media : `${base}.mp4`,
+        gifSrc: isGif ? s.media : `${base}.gif`,
+        posterSrc: s.poster || guessedPoster,
+      };
+    });
+}
 
 function insertSlide(
   db: SqliteDatabase,
@@ -105,7 +160,7 @@ export function ensureHeroSlidesCatalog(db: SqliteDatabase) {
     return;
   }
 
-  // Soft upgrade path B: single lab video seed → expand with electronic + mechanical
+  // Soft upgrade path B: single lab video seed → expand with full category set
   const active = db
     .prepare(`SELECT id, media FROM hero_slides WHERE active = 1 ORDER BY sort, id`)
     .all() as { id: number; media: string }[];
@@ -118,7 +173,7 @@ export function ensureHeroSlidesCatalog(db: SqliteDatabase) {
     return;
   }
 
-  // Soft upgrade path C: ensure electronic + mechanical slides exist when missing
+  // Soft upgrade path C: ensure all category slides exist when missing by media path
   const medias = new Set(
     (
       db.prepare("SELECT media FROM hero_slides").all() as { media: string }[]
@@ -127,4 +182,20 @@ export function ensureHeroSlidesCatalog(db: SqliteDatabase) {
   for (const slide of DEFAULT_TESTING_HERO_SLIDES) {
     if (!medias.has(slide.media)) insertSlide(db, slide);
   }
+
+  // Soft upgrade path D: replace retired lab-only seed if still present alongside new set
+  // and normalize Explore more labels on known default media rows.
+  db.prepare(
+    `UPDATE hero_slides SET link_label = 'Explore more'
+     WHERE media IN (?, ?, ?, ?, ?)
+       AND (link_label = '' OR link_label IN (
+         'Browse electronic tests', 'Browse mechanical tests', 'Explore all testing', 'Learn more'
+       ))`
+  ).run(
+    "/images/testing/electrical-testing.mp4",
+    "/images/testing/mechanical-testing.mp4",
+    "/images/testing/emc-testing.mp4",
+    "/images/testing/chemical-testing.mp4",
+    "/images/testing/certification-quality.mp4"
+  );
 }

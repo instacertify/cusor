@@ -55,9 +55,9 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       },
       {
         href: "/admin/hero",
-        label: "Hero Slider",
+        label: "Hero Banner",
         icon: "image",
-        description: "Homepage banner slides — image, GIF, video",
+        description: "Homepage hero videos/GIFs + Explore more buttons",
       },
       {
         href: "/admin/media",

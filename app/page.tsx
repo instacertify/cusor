@@ -16,6 +16,7 @@ import {
   getUpcomingQcos,
   getActiveHeroSlides,
 } from "@/lib/queries";
+import { heroSlidesToBackground } from "@/lib/hero-slides";
 import { formatNumber } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -57,7 +58,11 @@ export default async function HomePage() {
     <div>
       {/* Hero — full-bleed moving lab background */}
       <section className="relative overflow-hidden min-h-[min(88vh,720px)] flex flex-col justify-center">
-        <HeroLabBackground />
+        <HeroLabBackground
+          slides={
+            heroSlides.length > 0 ? heroSlidesToBackground(heroSlides) : undefined
+          }
+        />
         <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-8 sm:pt-14 pb-10 sm:pb-16 grid lg:grid-cols-[1.15fr_1fr] gap-8 sm:gap-10 items-center">
           <div className="animate-rise min-w-0">
             {settings.announcement?.trim() ? (

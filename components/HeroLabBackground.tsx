@@ -7,6 +7,7 @@ export type TestingVideoSlide = {
   id: string;
   label: string;
   href: string;
+  ctaLabel?: string;
   videoSrc: string;
   gifSrc?: string;
   posterSrc: string;
@@ -17,6 +18,7 @@ const DEFAULT_SLIDES: TestingVideoSlide[] = [
     id: "electrical",
     label: "Electronic Testing",
     href: "/testing/electrical-testing",
+    ctaLabel: "Explore more",
     videoSrc: "/images/testing/electrical-testing.mp4",
     gifSrc: "/images/testing/electrical-testing.gif",
     posterSrc: "/images/testing/electrical-poster.jpg",
@@ -25,25 +27,45 @@ const DEFAULT_SLIDES: TestingVideoSlide[] = [
     id: "mechanical",
     label: "Mechanical Testing",
     href: "/testing/mechanical-testing",
+    ctaLabel: "Explore more",
     videoSrc: "/images/testing/mechanical-testing.mp4",
     gifSrc: "/images/testing/mechanical-testing.gif",
     posterSrc: "/images/testing/mechanical-poster.jpg",
   },
   {
-    id: "lab",
-    label: "Lab Testing",
-    href: "/testing",
-    videoSrc: "/images/hero-lab.mp4",
-    gifSrc: "/images/hero-lab.gif",
-    posterSrc: "/images/hero-lab-poster.jpg",
+    id: "emc",
+    label: "EMC Testing",
+    href: "/testing/emc-testing",
+    ctaLabel: "Explore more",
+    videoSrc: "/images/testing/emc-testing.mp4",
+    gifSrc: "/images/testing/emc-testing.gif",
+    posterSrc: "/images/testing/emc-poster.jpg",
+  },
+  {
+    id: "chemical",
+    label: "Chemical & Quality Testing",
+    href: "/testing/chemical-testing",
+    ctaLabel: "Explore more",
+    videoSrc: "/images/testing/chemical-testing.mp4",
+    gifSrc: "/images/testing/chemical-testing.gif",
+    posterSrc: "/images/testing/chemical-poster.jpg",
+  },
+  {
+    id: "certification",
+    label: "Certification Quality",
+    href: "/certifications",
+    ctaLabel: "Explore more",
+    videoSrc: "/images/testing/certification-quality.mp4",
+    gifSrc: "/images/testing/certification-quality.gif",
+    posterSrc: "/images/testing/certification-poster.jpg",
   },
 ];
 
 const HOLD_MS = 7000;
 
 /**
- * Full-bleed homepage background that scrolls between electronic testing,
- * mechanical testing, and general lab footage.
+ * Full-bleed homepage background that scrolls between electronic, mechanical,
+ * EMC, chemical/quality and certification category footage.
  */
 export default function HeroLabBackground({
   slides = DEFAULT_SLIDES,
@@ -55,8 +77,9 @@ export default function HeroLabBackground({
   const [mode, setMode] = useState<"video" | "gif" | "still">("video");
   const [reduced, setReduced] = useState(false);
 
-  const slide = slides[index] ?? slides[0];
-  const count = slides.length;
+  const list = slides.length > 0 ? slides : DEFAULT_SLIDES;
+  const slide = list[index] ?? list[0];
+  const count = list.length;
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -85,7 +108,6 @@ export default function HeroLabBackground({
     return () => el.removeEventListener("error", onError);
   }, [mode, slide, reduced]);
 
-  // Auto-scroll to the next testing video
   useEffect(() => {
     if (reduced || count <= 1) return;
     const t = window.setTimeout(() => {
@@ -95,6 +117,8 @@ export default function HeroLabBackground({
   }, [index, count, reduced]);
 
   if (!slide) return null;
+
+  const cta = slide.ctaLabel?.trim() || "Explore more";
 
   return (
     <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
@@ -135,26 +159,29 @@ export default function HeroLabBackground({
           />
         ) : null}
 
-        {/* Brand cream wash — keeps Certko navy text readable */}
         <div className="absolute inset-0 bg-gradient-to-r from-cream-50 from-10% via-cream-50/90 via-45% to-cream-50/55" />
         <div className="absolute inset-0 bg-gradient-to-t from-cream-50 via-cream-50/20 to-cream-50/50" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_40%,transparent_0%,rgb(250_246_238_/0.35)_70%)]" />
       </div>
 
-      {/* Scroll indicators + labels */}
       <div className="pointer-events-auto absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-[1] flex flex-col items-end gap-2">
         <p className="sr-only" aria-live="polite">
           Showing {slide.label}
         </p>
-        <Link
-          href={slide.href}
-          className="rounded-xl bg-ink-950/70 hover:bg-ink-950/85 backdrop-blur px-3.5 py-2 text-xs sm:text-sm font-semibold text-cream-50 transition"
-        >
-          {slide.label} →
-        </Link>
+        <div className="rounded-2xl bg-ink-950/70 hover:bg-ink-950/85 backdrop-blur px-3.5 py-2.5 text-cream-50 transition shadow-lg max-w-[240px]">
+          <p className="text-[10px] sm:text-[11px] uppercase tracking-wide font-semibold text-cream-100/80">
+            {slide.label}
+          </p>
+          <Link
+            href={slide.href}
+            className="mt-0.5 inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-butter-300 hover:text-butter-200"
+          >
+            {cta} →
+          </Link>
+        </div>
         {count > 1 ? (
           <div className="flex gap-1.5" role="tablist" aria-label="Testing video slides">
-            {slides.map((s, i) => (
+            {list.map((s, i) => (
               <button
                 key={s.id}
                 type="button"

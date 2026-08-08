@@ -107,7 +107,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                     href={s.link_href}
                     className="mt-3 inline-flex items-center rounded-xl bg-butter-500 hover:bg-butter-400 text-ink-950 text-sm font-semibold px-4 py-2 transition"
                   >
-                    {s.link_label || "Learn more"}
+                    {s.link_label || "Explore more"}
                   </Link>
                 ) : null}
               </div>
