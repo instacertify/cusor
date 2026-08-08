@@ -5,6 +5,7 @@ import { slugify, formatPriceRange } from "./format";
 import { CERTIFICATIONS } from "./seed-certifications";
 import { POSTS } from "./seed-posts";
 import { PRIVACY_CONTENT, TERMS_CONTENT } from "./legal-content";
+import { buildProductFaqs, buildProductWriteup } from "./product-bis-copy";
 
 interface RawProduct {
   category: string;
@@ -318,22 +319,19 @@ function buildWriteup(
   maxPrice: number | null,
   timeline: string
 ): string {
-  const price = formatPriceRange(minPrice, maxPrice);
-  const std = standard || "the applicable Indian Standard";
-  const lines: string[] = [];
-  lines.push(
-    `## Why ${name} needs BIS certification\n\n${name} falls under the ${category} category and is covered by **${std}**. Manufacturers and importers must obtain the ${scheme === "CRS" ? "Compulsory Registration Scheme (CRS) registration" : "ISI mark licence"} from the Bureau of Indian Standards before the product can be manufactured, imported, stored or sold in India. Selling a notified product without a valid BIS licence can lead to seizure of stock, marketplace delisting and penalties under the BIS Act, 2016.`
-  );
-  lines.push(
-    `## Testing & costs\n\nSample testing for ${std} is currently available at **${labCount} BIS-recognised ${labCount === 1 ? "laboratory" : "laboratories"}** across India. Reported test charges range from **${price}** (excluding GST), depending on the laboratory, the number of models/varieties and the tests included in the scope. Certko can help you pick a lab that balances cost, turnaround time and location.`
-  );
-  lines.push(
-    `## Typical process\n\n1. **Standard & scope check** – confirm your exact product variant maps to ${std}.\n2. **Documentation** – factory details, quality control records, test equipment list and trademark proof.\n3. **Sample testing** – testing at a BIS-recognised lab against every clause of the standard.\n4. **Factory inspection** – BIS officers audit the manufacturing site (for ISI mark licences).\n5. **Grant of licence** – on successful evaluation, the licence/registration is issued, typically within ${timeline}.`
-  );
-  return lines.join("\n\n");
+  return buildProductWriteup({
+    name,
+    standard,
+    category,
+    scheme,
+    labCount,
+    minPrice,
+    maxPrice,
+    timeline,
+  });
 }
 
-function buildProductFaqs(
+function productFaqs(
   name: string,
   standard: string,
   scheme: string,
@@ -342,36 +340,15 @@ function buildProductFaqs(
   maxPrice: number | null,
   timeline: string
 ): { question: string; answer: string }[] {
-  const price = formatPriceRange(minPrice, maxPrice);
-  const std = standard || "the applicable Indian Standard";
-  return [
-    {
-      question: `Is BIS certification mandatory for ${name}?`,
-      answer: `Yes. ${name} is notified under ${std}, which means a valid BIS ${
-        scheme === "CRS" ? "CRS registration" : "ISI mark licence"
-      } is required before the product can be manufactured, imported or sold in India.`,
-    },
-    {
-      question: `How much does BIS testing cost for ${name}?`,
-      answer: `Laboratory test charges for ${std} currently range from ${price} (excluding GST) across ${labCount} BIS-recognised ${
-        labCount === 1 ? "lab" : "labs"
-      }. Total certification cost additionally includes BIS application fees, marking fees and consultant charges if you use one.`,
-    },
-    {
-      question: `How long does certification take for ${name}?`,
-      answer: `Most applicants complete the process in ${timeline}, covering documentation, sample testing and (for ISI licences) the factory inspection. Timelines vary with lab workload and how quickly queries from BIS are resolved.`,
-    },
-    {
-      question: `Which labs can test ${name}?`,
-      answer: `${labCount} BIS-recognised ${
-        labCount === 1 ? "laboratory is" : "laboratories are"
-      } currently approved to test against ${std}. Use the lab list on this page to compare locations and indicative prices, or ask Certko to shortlist one for you.`,
-    },
-    {
-      question: `Can Certko handle the entire BIS process for ${name}?`,
-      answer: `Yes. Certko's experts manage the end-to-end process — application drafting, technical file preparation, lab coordination, factory inspection readiness and licence grant follow-up. Request a free quote and we respond within 24 hours.`,
-    },
-  ];
+  return buildProductFaqs({
+    name,
+    standard,
+    scheme,
+    labCount,
+    minPrice,
+    maxPrice,
+    timeline,
+  });
 }
 
 const GLOBAL_FAQS: { question: string; answer: string }[] = [
@@ -383,7 +360,7 @@ const GLOBAL_FAQS: { question: string; answer: string }[] = [
   {
     question: "What is the difference between ISI mark and CRS registration?",
     answer:
-      "The ISI mark (Scheme I) requires product testing plus a factory inspection and applies to products like cement, steel, helmets and appliances. CRS (Scheme II) is a registration based on testing at a BIS-recognised lab, mainly for electronics and IT products. Certko's database tells you which scheme applies to your product.",
+      "The ISI mark (Scheme I) requires product testing plus a factory / onsite inspection and applies to products like cement, steel, helmets and many appliances. CRS (Scheme II) is for notified electronics and IT products and does **not** need an onsite factory audit: register on the BIS CRS portal, test at a BIS-empaneled lab, apply with the report, pay fees and get the R-number. Certko's product pages show which scheme applies.",
   },
   {
     question: "How much does BIS certification cost in India?",
@@ -393,7 +370,7 @@ const GLOBAL_FAQS: { question: string; answer: string }[] = [
   {
     question: "How long does it take to get a BIS licence?",
     answer:
-      "Simple CRS registrations can complete in 6-10 weeks. ISI mark licences involving factory inspection usually take 10-26 weeks depending on the product category, lab turnaround and how quickly BIS queries are resolved.",
+      "CRS registrations (no factory audit) can complete in about 6-10 weeks once lab testing and portal filing are done. ISI mark licences that include factory inspection usually take 10-26 weeks depending on the product category, lab turnaround and how quickly BIS queries are resolved.",
   },
   {
     question: "What happens if I sell a notified product without BIS certification?",
@@ -651,15 +628,24 @@ Products: cement, steel, LPG cylinders, helmets, pressure cookers, toys, footwea
 
 ### 2. Compulsory Registration Scheme (CRS / Scheme II)
 
-A registration model used mostly for **electronics and IT products**. It requires testing at a BIS-recognised lab, but no factory inspection. Registration is per product family and manufacturing location.
+A registration model used mostly for **electronics and IT products**. CRS does **not** require a BIS onsite factory audit. The practical path is:
+
+1. Register your account on the **BIS CRS portal** and get approved as a manufacturer / brand applicant  
+2. Send samples to a **BIS-empaneled (recognised) laboratory**  
+3. Get the test results  
+4. Apply for CRS certification on the portal  
+5. Pay the fees  
+6. Get approved (R-number) — then you are ready to sell  
+
+Registration is typically per brand / product family and manufacturing location.
 
 ## Step-by-step process
 
-1. **Identify the standard** — confirm which IS standard covers your exact product variant. Certko's database maps 1,400+ products to their standards.
-2. **Prepare documentation** — factory registration, plant and machinery list, test equipment list, quality control plan, trademark proof, and for imports an Authorised Indian Representative (AIR).
-3. **Sample testing** — submit samples to a BIS-recognised lab approved for your standard. Test charges vary widely between labs, so compare before committing.
-4. **Factory inspection** (ISI only) — BIS officers verify in-house testing capability and production process.
-5. **Grant of licence** — after clearing queries, BIS grants the licence. Renewals and surveillance follow.
+1. **Identify the standard** — confirm which IS standard covers your exact product variant. Certko's database maps 1,400+ products to their standards and whether the scheme is **ISI** or **CRS**.
+2. **Prepare documentation / portal registration** — for CRS, complete BIS CRS account registration first; for ISI, prepare factory and quality-control documentation (and AIR details for foreign manufacturers where required).
+3. **Sample testing** — submit samples to a BIS-recognised / empaneled lab approved for your standard. Test charges vary widely between labs, so compare before committing.
+4. **Factory inspection (ISI only)** — BIS officers verify in-house testing capability and production process. **CRS products skip this onsite audit step.**
+5. **Apply, pay fees & grant** — file on the relevant portal, pay fees, clear queries, and receive the licence / R-number. Renewals and surveillance follow as applicable.
 
 ## How much does it cost?
 
@@ -1057,25 +1043,38 @@ export function seedDatabase(db: SqliteDatabase) {
         },
         {
           question: `How long does BIS certification take for ${name}?`,
-          answer: `Most ${name} applications complete in ${meta.timeline}, covering documentation, sample testing at a BIS-recognised lab and, for ISI licences, the factory inspection.`,
+          answer: `Most ${name} applications complete in ${meta.timeline}. **CRS** products follow portal registration + BIS-empaneled lab testing (no onsite factory audit). **ISI** licences also include a factory inspection. Timelines vary with lab workload and BIS queries.`,
         },
         {
           question: `Can Certko manage the whole process for my ${name} product?`,
-          answer: `Yes — our consultants handle standard mapping, application drafting, lab coordination and inspection readiness end-to-end. Request a free quote and we respond within 24 hours.`,
+          answer: `Yes — our consultants handle standard mapping, application drafting, lab coordination and grant follow-up. For ISI products we also prepare factory-inspection readiness; for CRS products there is no onsite audit step. Request a free quote and we respond within 24 hours.`,
         },
       ];
       catFaqs.forEach((f, i) => insFaq.run(`category:${catId}`, f.question, f.answer, i));
     }
-    // per-product FAQs for featured products only (others generated on the fly if needed)
+    // per-product FAQs (scheme must match final CRS/ISI assignment used on the product row)
     for (const p of raw.products) {
       const key = `${p.category}|${p.standard}|${p.name}`;
       const pid = prodIds.get(key);
       if (!pid) continue;
       const displayName = titleCase(cleanProductName(p.name));
       const catMeta = CATEGORY_META[p.category] ?? { timeline: "8-16 weeks" };
-      const faqs = buildProductFaqs(
-        displayName, p.standard, productScheme(p.category, p.standard),
-        p.lab_count, p.min_price, p.max_price, catMeta.timeline
+      const isKey = normalizeIsNo(p.standard);
+      const qcoInfo = qcoByIs.get(isKey);
+      const feeInfo = lookupFees(isKey);
+      let scheme = productScheme(p.category, p.standard);
+      const status = feeInfo?.status || qcoInfo?.status || "";
+      if (crsStandards.has(isKey) || status.includes("CRS")) {
+        scheme = "CRS";
+      }
+      const faqs = productFaqs(
+        displayName,
+        p.standard,
+        scheme,
+        p.lab_count,
+        p.min_price,
+        p.max_price,
+        catMeta.timeline
       );
       faqs.forEach((f, i) => insFaq.run(`product:${pid}`, f.question, f.answer, i));
     }
