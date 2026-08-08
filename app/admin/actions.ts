@@ -1193,11 +1193,17 @@ export async function savePost(formData: FormData) {
     }
     slug = candidate;
   }
-  const status = String(formData.get("status") ?? "draft") === "published" ? "published" : "draft";
-  const publishedAt =
-    status === "published"
-      ? existing.published_at ?? new Date().toISOString().slice(0, 10)
-      : existing.published_at;
+  const { resolveBlogScheduleState } = await import("@/lib/blog-scheduler");
+  const schedule = resolveBlogScheduleState({
+    requestedStatus: String(formData.get("status") ?? "draft"),
+    publishAtRaw: String(formData.get("publish_at") ?? ""),
+    existingPublishedAt: existing.published_at,
+  });
+  if (schedule.error === "schedule_required") {
+    redirect(`/admin/blog/${id}?error=schedule_required`);
+  }
+  const status = schedule.status;
+  const publishedAt = schedule.publishedAt;
   const author = resolveAuthorFromForm(formData);
 
   let nextImage = existing.image ?? "";

@@ -16,6 +16,7 @@ import type {
   HeroSlide,
 } from "./db";
 import { relatedSearch } from "./search-index";
+import { publishDueBlogPosts } from "./blog-scheduler";
 
 // ---------- categories ----------
 export function getCategories(): Category[] {
@@ -355,35 +356,49 @@ export function getAuthorBySlug(slug: string): Author | undefined {
     | undefined;
 }
 
+// ---------- blog posts ----------
+function flushDueBlogPosts() {
+  try {
+    publishDueBlogPosts();
+  } catch {
+    /* public filters still hide future-dated posts */
+  }
+}
+
+/** Live posts are status=published. Scheduled posts stay hidden until the scheduler flips them. */
+const LIVE_POST_SQL = `p.status = 'published'`;
+
 export function getPublishedPostsByAuthor(authorId: number, limit = 50): Post[] {
+  flushDueBlogPosts();
   return getDb()
     .prepare(
       `SELECT ${POST_AUTHOR_SELECT}
        FROM posts p
        LEFT JOIN authors a ON a.id = p.author_id
-       WHERE p.status = 'published' AND p.author_id = ?
+       WHERE ${LIVE_POST_SQL} AND p.author_id = ?
        ORDER BY p.published_at DESC, p.id DESC
        LIMIT ?`
     )
     .all(authorId, limit) as Post[];
 }
 
-// ---------- blog posts ----------
 export function countPublishedPosts(): number {
+  flushDueBlogPosts();
   return (
     getDb()
-      .prepare("SELECT COUNT(*) AS n FROM posts WHERE status = 'published'")
+      .prepare(`SELECT COUNT(*) AS n FROM posts p WHERE ${LIVE_POST_SQL}`)
       .get() as { n: number }
   ).n;
 }
 
 export function getPublishedPosts(limit = 50, offset = 0): Post[] {
+  flushDueBlogPosts();
   return getDb()
     .prepare(
       `SELECT ${POST_AUTHOR_SELECT}
        FROM posts p
        LEFT JOIN authors a ON a.id = p.author_id
-       WHERE p.status = 'published'
+       WHERE ${LIVE_POST_SQL}
        ORDER BY p.published_at DESC, p.id DESC
        LIMIT ? OFFSET ?`
     )
@@ -391,6 +406,7 @@ export function getPublishedPosts(limit = 50, offset = 0): Post[] {
 }
 
 export function getPostBySlug(slug: string): Post | undefined {
+  flushDueBlogPosts();
   return getDb()
     .prepare(
       `SELECT ${POST_AUTHOR_SELECT}

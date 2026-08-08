@@ -23,7 +23,8 @@ export default async function AdminBlog({ searchParams }: Props) {
         <BulkImportLink entity="posts" />
       </div>
       <p className="text-ink-600 text-sm mb-6">
-        Write articles in Markdown, pick an author profile, then publish to /blog. Bulk-upload drafts via Excel.{" "}
+        Write articles in Markdown, pick an author profile, then publish or schedule a future go-live time.
+        Scheduled posts publish automatically when due. Bulk-upload drafts via Excel.{" "}
         <Link href="/admin/authors" className="font-semibold text-butter-700 hover:underline">
           Manage authors →
         </Link>
@@ -62,7 +63,7 @@ export default async function AdminBlog({ searchParams }: Props) {
             <tr className="text-left text-xs uppercase tracking-wide text-ink-500 border-b border-cream-200">
               <th className="px-5 py-3 font-bold">Post</th>
               <th className="px-5 py-3 font-bold">Status</th>
-              <th className="px-5 py-3 font-bold">Published</th>
+              <th className="px-5 py-3 font-bold">Go live</th>
               <th className="px-5 py-3 font-bold" />
             </tr>
           </thead>
@@ -80,13 +81,21 @@ export default async function AdminBlog({ searchParams }: Props) {
                     className={`text-xs font-bold rounded-full px-2.5 py-1 ${
                       p.status === "published"
                         ? "bg-green-100 text-green-700"
-                        : "bg-butter-300/50 text-butter-700"
+                        : p.status === "scheduled"
+                          ? "bg-sky-100 text-sky-800"
+                          : "bg-butter-300/50 text-butter-700"
                     }`}
                   >
                     {p.status}
                   </span>
                 </td>
-                <td className="px-5 py-3 text-ink-600 text-xs">{p.published_at ?? "—"}</td>
+                <td className="px-5 py-3 text-ink-600 text-xs">
+                  {p.published_at
+                    ? p.status === "scheduled"
+                      ? `Scheduled · ${p.published_at}`
+                      : p.published_at
+                    : "—"}
+                </td>
                 <td className="px-5 py-3 text-right">
                   <Link href={`/admin/blog/${p.id}`} className="text-butter-700 font-bold text-sm hover:text-butter-600">
                     Edit →

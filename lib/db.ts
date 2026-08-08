@@ -213,6 +213,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
     );
     CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status);
     CREATE INDEX IF NOT EXISTS idx_posts_author ON posts(author_id);
+    CREATE INDEX IF NOT EXISTS idx_posts_status_published_at ON posts(status, published_at);
 
     CREATE TABLE IF NOT EXISTS seo_meta (
       entity TEXT PRIMARY KEY,
