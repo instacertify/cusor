@@ -12,6 +12,7 @@ import { ensureTestingCatalog } from "./seed-testing";
 import { ensureAuthorsCatalog } from "./authors";
 import { ensureSeoLocationPosts } from "./seed-seo-posts";
 import { ensureMigrationPosts } from "./seed-migration-posts";
+import { ensureImportPosts } from "./seed-import-posts";
 import { ensurePagesNavColumns } from "./pages-nav";
 import { ensureHeroSlidesCatalog } from "./hero-slides";
 import { ensureTestimonialsLibrary } from "./seed-testimonials";
@@ -343,6 +344,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureAuthorsCatalog(db);
   ensureSeoLocationPosts(db);
   ensureMigrationPosts(db);
+  ensureImportPosts(db);
   ensurePagesNavColumns(db);
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
@@ -356,6 +358,7 @@ function runEnsures(db: SqliteDatabase) {
   ensureAuthorsCatalog(db);
   ensureSeoLocationPosts(db);
   ensureMigrationPosts(db);
+  ensureImportPosts(db);
   ensurePagesNavColumns(db);
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
