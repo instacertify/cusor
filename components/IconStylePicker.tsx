@@ -5,7 +5,7 @@ const PREVIEW = ["cpu", "flask", "shield", "leaf", "award", "bell"] as const;
 
 export default function IconStylePicker({ value }: { value: IconStyleId }) {
   return (
-    <div className="grid sm:grid-cols-3 gap-3">
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {ICON_STYLES.map((style) => {
         const selected = style.id === value;
         return (

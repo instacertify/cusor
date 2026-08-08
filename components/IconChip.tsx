@@ -1,18 +1,27 @@
 import Icon from "./Icon";
 import { iconHue } from "@/lib/icon-style";
 
-const SIZE_CLASS: Record<string, string> = {
-  sm: "w-8 h-8 rounded-lg",
-  md: "w-10 h-10 rounded-xl",
-  lg: "w-11 h-11 rounded-xl",
-  xl: "w-12 h-12 rounded-xl",
-  "2xl": "w-14 h-14 rounded-2xl",
-  hero: "w-16 h-16 rounded-2xl",
+const CHIP_PX: Record<string, number> = {
+  sm: 32,
+  md: 40,
+  lg: 44,
+  xl: 48,
+  "2xl": 56,
+  hero: 64,
+};
+
+const ROUND_CLASS: Record<string, string> = {
+  sm: "rounded-lg",
+  md: "rounded-xl",
+  lg: "rounded-xl",
+  xl: "rounded-xl",
+  "2xl": "rounded-2xl",
+  hero: "rounded-2xl",
 };
 
 /**
- * Sitewide icon chip — respects admin Icon style (outline / original / 3d)
- * via html[data-icon-style] CSS in globals.css.
+ * Sitewide icon chip — respects admin Icon style + scale
+ * via html[data-icon-style] / html[data-icon-scale] CSS in globals.css.
  */
 export default function IconChip({
   name,
@@ -26,7 +35,7 @@ export default function IconChip({
   name: string;
   size?: number;
   /** Chip box size */
-  chip?: keyof typeof SIZE_CLASS;
+  chip?: keyof typeof CHIP_PX;
   /** accent = butter-tinted plain mode; neutral = cream plain mode */
   tone?: "accent" | "neutral";
   className?: string;
@@ -34,11 +43,16 @@ export default function IconChip({
   strokeWidth?: number;
 }) {
   const hue = iconHue(name);
+  const base = CHIP_PX[chip] ?? CHIP_PX.md;
   return (
     <span
-      className={`icon-chip icon-chip--${tone} shrink-0 inline-flex items-center justify-center transition ${SIZE_CLASS[chip]} ${className}`}
+      className={`icon-chip icon-chip--${tone} shrink-0 inline-flex items-center justify-center transition ${ROUND_CLASS[chip] ?? ROUND_CLASS.md} ${className}`}
       data-hue={hue}
       aria-hidden={true}
+      style={{
+        width: `calc(${base}px * var(--icon-scale, 1.15))`,
+        height: `calc(${base}px * var(--icon-scale, 1.15))`,
+      }}
     >
       <Icon name={name} size={size} className={iconClassName} strokeWidth={strokeWidth} />
     </span>
