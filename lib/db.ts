@@ -378,7 +378,10 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureContactExpertCopy(db);
   ensureCanonicalContactAddress(db);
   ensureContactPageFaqsGlobalCopy(db);
+  ensureHomeHeroTestingSolutionCopy(db);
   ensureCanonicalCertMarketRegions(db);
+  ensureHomeStatLabels(db);
+  ensureExpertCtaSettings(db);
   scrubLabPublicContactDetails(db);
 }
 
@@ -401,8 +404,39 @@ function runEnsures(db: SqliteDatabase) {
   ensureContactExpertCopy(db);
   ensureCanonicalContactAddress(db);
   ensureContactPageFaqsGlobalCopy(db);
+  ensureHomeHeroTestingSolutionCopy(db);
   ensureCanonicalCertMarketRegions(db);
+  ensureHomeStatLabels(db);
+  ensureExpertCtaSettings(db);
   scrubLabPublicContactDetails(db);
+}
+
+/** Replace AI-ish default homepage stat labels on existing installs. */
+function ensureHomeStatLabels(db: SqliteDatabase) {
+  const row = db
+    .prepare("SELECT value FROM settings WHERE key = 'stat_3_label'")
+    .get() as { value: string } | undefined;
+  const value = (row?.value || "").trim();
+  if (!value || value === "Information Library") {
+    db.prepare(
+      "INSERT INTO settings (key, value) VALUES ('stat_3_label', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+    ).run("Free product data");
+  }
+}
+
+/** Seed editable expert-CTA labels (header / floating button) if missing. */
+function ensureExpertCtaSettings(db: SqliteDatabase) {
+  const defaults: Record<string, string> = {
+    expert_cta_label: "Talk to a certification expert",
+    expert_cta_label_short: "Talk to expert",
+    expert_cta_href: "/contact?intent=expert",
+  };
+  const upsert = db.prepare(
+    "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO NOTHING"
+  );
+  for (const [key, value] of Object.entries(defaults)) {
+    upsert.run(key, value);
+  }
 }
 
 /** Keep certification region labels aligned with market organisation. */
@@ -431,25 +465,28 @@ const CONTACT_PAGE_FAQS_GLOBAL: {
   {
     question: "What happens after I submit this form?",
     answer:
-      "A certification and testing specialist reviews your product details and target markets, maps the schemes that typically apply — such as BIS, BEE, GMARK, CE, FCC, SABER or WPC — and replies within 24 hours with an itemised estimate covering laboratory testing, scheme fees and consulting.",
+      "Someone on our certification desk reads your product notes and target markets, checks which schemes usually apply — BIS, BEE, GMARK, CE, FCC, SABER or WPC — and comes back within 24 hours with a line-by-line estimate for lab work, scheme fees and consulting.",
     legacyAnswers: [
       "A BIS specialist reviews your product details, maps the applicable IS standard and scheme, and replies within 24 hours with an itemised cost estimate covering lab testing, BIS fees and consulting.",
+      "A certification and testing specialist reviews your product details and target markets, maps the schemes that typically apply — such as BIS, BEE, GMARK, CE, FCC, SABER or WPC — and replies within 24 hours with an itemised estimate covering laboratory testing, scheme fees and consulting.",
     ],
   },
   {
     question: "Is the quote really free?",
     answer:
-      "Yes. Scheme mapping and the cost estimate are free with no obligation. You only pay if you engage us to manage certification, testing coordination or consulting.",
+      "Yes. Figuring out the scheme and the cost range costs you nothing. You only pay if you ask us to run the certification, testing or consulting work.",
     legacyAnswers: [
       "Yes. The standard mapping and cost estimate are free with no obligation. You only pay if you engage us to manage the certification.",
+      "Yes. Scheme mapping and the cost estimate are free with no obligation. You only pay if you engage us to manage certification, testing coordination or consulting.",
     ],
   },
   {
     question: "Do you help foreign manufacturers?",
     answer:
-      "Yes. We support overseas manufacturers and exporters for India and global market access — including BIS FMCS/CRS with Authorised Indian Representative (AIR) support where needed, plus pathways such as BEE, GMARK, CE, FCC, SABER and WPC, with lab coordination end to end.",
+      "Yes. We work with overseas factories and exporters selling into India and other markets — BIS FMCS/CRS (with an Authorised Indian Representative when you need one), plus BEE, GMARK, CE, FCC, SABER and WPC, including lab bookings.",
     legacyAnswers: [
       "Yes. We support overseas factories under the Foreign Manufacturers Certification Scheme (FMCS) and CRS, including acting as or arranging an Authorised Indian Representative (AIR).",
+      "Yes. We support overseas manufacturers and exporters for India and global market access — including BIS FMCS/CRS with Authorised Indian Representative (AIR) support where needed, plus pathways such as BEE, GMARK, CE, FCC, SABER and WPC, with lab coordination end to end.",
     ],
   },
 ];
@@ -527,14 +564,56 @@ function ensureContactExpertCopy(db: SqliteDatabase) {
   const nextSubheading =
     !subheading ||
     subheading ===
-      "Tell us about your product and we will map the standard, estimate the full cost and send a free quote within 24 hours."
-      ? "Tell us about your product and a certification expert will map the standard, estimate the full cost and send a free quote within 24 hours."
+      "Tell us about your product and we will map the standard, estimate the full cost and send a free quote within 24 hours." ||
+    subheading ===
+      "Tell us about your product and a certification expert will map the standard, estimate the full cost and send a free quote within 24 hours."
+      ? "Tell us what you make and where you sell. We’ll point to the standard, sketch the full cost, and send a free quote within 24 hours."
       : subheading;
 
   if (nextHeading === heading && nextSubheading === subheading) return;
   db.prepare(
     "UPDATE pages SET hero_heading = ?, hero_subheading = ? WHERE slug = 'contact'"
   ).run(nextHeading, nextSubheading);
+}
+
+const HOME_HERO_HEADING = "Find the right certification and testing for your product";
+const HOME_HERO_SUBHEADING =
+  "Type a product name or HSN. We’ll show the schemes that usually apply — BIS, BEE, GMARK, CE, FCC, SABER, WPC — plus the tests, labs and ballpark costs so you know what to book next.";
+
+/** Upgrade the default homepage hero on existing installs (seed is INSERT OR IGNORE). */
+function ensureHomeHeroTestingSolutionCopy(db: SqliteDatabase) {
+  const upsert = db.prepare(
+    "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+  );
+
+  const heading = (
+    db.prepare("SELECT value FROM settings WHERE key = 'hero_heading'").get() as
+      | { value: string }
+      | undefined
+  )?.value?.trim();
+  const subheading = (
+    db
+      .prepare("SELECT value FROM settings WHERE key = 'hero_subheading'")
+      .get() as { value: string } | undefined
+  )?.value?.trim();
+
+  const legacyHeadings = new Set([
+    "",
+    "Find the right certification and testing",
+    "Find the right certification and testing solution",
+  ]);
+  const legacySubheadings = new Set([
+    "",
+    "Search by product name or HSN code. Match BIS, BEE, GMARK, CE, FCC, SABER, WPC and the tests behind them — with labs, costs and expert help in one place.",
+    "Search by product name or HSN code to see which schemes apply — BIS, BEE, GMARK, CE, FCC, SABER, WPC — and the tests that unlock them. Compare recognised labs, indicative costs and expert support in one place.",
+  ]);
+
+  if (!heading || legacyHeadings.has(heading)) {
+    upsert.run("hero_heading", HOME_HERO_HEADING);
+  }
+  if (!subheading || legacySubheadings.has(subheading)) {
+    upsert.run("hero_subheading", HOME_HERO_SUBHEADING);
+  }
 }
 
 /** Remove the old default homepage announcement chip from existing installs. */

@@ -75,7 +75,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         href: "/admin/trusted-brands",
         label: "Trusted Brands",
         icon: "award",
-        description: "Logo library for the Trusted by Global Brands scroll",
+        description: "Logos for the Trusted by Global Brands scroll",
       },
       {
         href: "/admin/faqs",

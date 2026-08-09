@@ -187,6 +187,31 @@ export default async function SettingsPage({ searchParams }: Props) {
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
+          <h2 className="font-display font-bold text-ink-950">Talk to a certification expert</h2>
+          <p className="text-sm text-ink-600">
+            Controls the header button, footer button and floating button on public pages. Keep the
+            wording plain — short sentences work best for search and readers.
+          </p>
+          <Field
+            label="Full label"
+            name="expert_cta_label"
+            defaultValue={s.expert_cta_label || "Talk to a certification expert"}
+          />
+          <Field
+            label="Short label (header)"
+            name="expert_cta_label_short"
+            defaultValue={s.expert_cta_label_short || "Talk to expert"}
+          />
+          <Field
+            label="Link"
+            name="expert_cta_href"
+            defaultValue={s.expert_cta_href || "/contact?intent=expert"}
+            placeholder="/contact?intent=expert"
+          />
+          <p className="text-xs text-ink-500">Must start with / — usually /contact?intent=expert</p>
+        </section>
+
+        <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Contact & Access</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <Field label="Contact Email" name="contact_email" defaultValue={s.contact_email} />

@@ -15,8 +15,9 @@ function BrandMark({ brand, tone }: { brand: TrustedBrand; tone: "light" | "dark
       src={brand.logo}
       alt={brand.name}
       className="trusted-brand-logo"
-      loading="lazy"
+      loading="eager"
       decoding="async"
+      draggable={false}
     />
   );
 
@@ -28,6 +29,7 @@ function BrandMark({ brand, tone }: { brand: TrustedBrand; tone: "light" | "dark
         target={brand.href.startsWith("http") ? "_blank" : undefined}
         rel={brand.href.startsWith("http") ? "noopener noreferrer" : undefined}
         title={brand.name}
+        tabIndex={-1}
       >
         {img}
         <span className="sr-only">{brand.name}</span>
@@ -43,9 +45,39 @@ function BrandMark({ brand, tone }: { brand: TrustedBrand; tone: "light" | "dark
   );
 }
 
+/** Repeat logos so one marquee group is always wider than typical viewports. */
+function expandBrands(brands: TrustedBrand[], minItems = 10): TrustedBrand[] {
+  if (brands.length === 0) return [];
+  const out: TrustedBrand[] = [];
+  while (out.length < minItems) {
+    out.push(...brands);
+  }
+  return out;
+}
+
+function BrandGroup({
+  brands,
+  tone,
+  groupKey,
+  ariaHidden,
+}: {
+  brands: TrustedBrand[];
+  tone: "light" | "dark";
+  groupKey: string;
+  ariaHidden?: boolean;
+}) {
+  return (
+    <div className="trusted-marquee-group" aria-hidden={ariaHidden || undefined}>
+      {brands.map((brand, i) => (
+        <BrandMark key={`${groupKey}-${brand.id}-${i}`} brand={brand} tone={tone} />
+      ))}
+    </div>
+  );
+}
+
 /**
- * Scrolling “Trusted by Global Brands” strip — logos from Admin → Trusted Brands.
- * Shown on the homepage and on every page that uses TestimonialStrip.
+ * Continuous scrolling “Trusted by Global Brands” strip.
+ * Logos from Admin → Trusted Brands. Seamless loop on homepage and every trust page.
  */
 export default async function TrustedBrandsStrip({
   tone = "light",
@@ -58,8 +90,10 @@ export default async function TrustedBrandsStrip({
   const brands = getActiveTrustedBrands();
   if (brands.length === 0) return null;
 
-  // Duplicate the set so the CSS marquee can loop seamlessly.
-  const loop = [...brands, ...brands];
+  // Enough logos per group for a seamless -50% loop on wide screens.
+  const group = expandBrands(brands, Math.max(10, brands.length * 2));
+  // Duration scales with group size so speed stays roughly constant.
+  const durationSec = Math.max(28, Math.round(group.length * 3.2));
 
   return (
     <section
@@ -67,6 +101,7 @@ export default async function TrustedBrandsStrip({
         tone === "dark" ? "bg-ink-950 text-white" : "bg-cream-50"
       } overflow-hidden ${className}`}
       aria-label="Trusted by Global Brands"
+      style={{ ["--trusted-marquee-duration" as string]: `${durationSec}s` }}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-10 sm:pt-12 pb-3">
         <h2
@@ -80,7 +115,7 @@ export default async function TrustedBrandsStrip({
 
       <div className="trusted-marquee relative pb-10 sm:pb-12">
         <div
-          className={`pointer-events-none absolute inset-y-0 left-0 z-10 w-10 sm:w-20 ${
+          className={`pointer-events-none absolute inset-y-0 left-0 z-10 w-10 sm:w-16 ${
             tone === "dark"
               ? "bg-gradient-to-r from-ink-950 to-transparent"
               : "bg-gradient-to-r from-cream-50 to-transparent"
@@ -88,17 +123,17 @@ export default async function TrustedBrandsStrip({
           aria-hidden
         />
         <div
-          className={`pointer-events-none absolute inset-y-0 right-0 z-10 w-10 sm:w-20 ${
+          className={`pointer-events-none absolute inset-y-0 right-0 z-10 w-10 sm:w-16 ${
             tone === "dark"
               ? "bg-gradient-to-l from-ink-950 to-transparent"
               : "bg-gradient-to-l from-cream-50 to-transparent"
           }`}
           aria-hidden
         />
-        <div className="trusted-marquee-track gap-3 sm:gap-4 px-4">
-          {loop.map((brand, i) => (
-            <BrandMark key={`${brand.id}-${i}`} brand={brand} tone={tone} />
-          ))}
+        {/* Two identical groups → animate -50% for a gapless continuous loop */}
+        <div className="trusted-marquee-track">
+          <BrandGroup brands={group} tone={tone} groupKey="a" />
+          <BrandGroup brands={group} tone={tone} groupKey="b" ariaHidden />
         </div>
       </div>
     </section>

@@ -479,17 +479,17 @@ const PAGE_FAQS: Record<string, { question: string; answer: string }[]> = {
     {
       question: "What happens after I submit this form?",
       answer:
-        "A certification and testing specialist reviews your product details and target markets, maps the schemes that typically apply — such as BIS, BEE, GMARK, CE, FCC, SABER or WPC — and replies within 24 hours with an itemised estimate covering laboratory testing, scheme fees and consulting.",
+        "Someone on our certification desk reads your product notes and target markets, checks which schemes usually apply — BIS, BEE, GMARK, CE, FCC, SABER or WPC — and comes back within 24 hours with a line-by-line estimate for lab work, scheme fees and consulting.",
     },
     {
       question: "Is the quote really free?",
       answer:
-        "Yes. Scheme mapping and the cost estimate are free with no obligation. You only pay if you engage us to manage certification, testing coordination or consulting.",
+        "Yes. Figuring out the scheme and the cost range costs you nothing. You only pay if you ask us to run the certification, testing or consulting work.",
     },
     {
       question: "Do you help foreign manufacturers?",
       answer:
-        "Yes. We support overseas manufacturers and exporters for India and global market access — including BIS FMCS/CRS with Authorised Indian Representative (AIR) support where needed, plus pathways such as BEE, GMARK, CE, FCC, SABER and WPC, with lab coordination end to end.",
+        "Yes. We work with overseas factories and exporters selling into India and other markets — BIS FMCS/CRS (with an Authorised Indian Representative when you need one), plus BEE, GMARK, CE, FCC, SABER and WPC, including lab bookings.",
     },
   ],
   guide: [
@@ -754,9 +754,9 @@ export function seedDatabase(db: SqliteDatabase) {
     const defaults: Record<string, string> = {
       site_name: "Certko",
       tagline: "Your trusted global compliance partner.",
-      hero_heading: "Find the right certification and testing",
+      hero_heading: "Find the right certification and testing for your product",
       hero_subheading:
-        "Search by product name or HSN code. Match BIS, BEE, GMARK, CE, FCC, SABER, WPC and the tests behind them — with labs, costs and expert help in one place.",
+        "Type a product name or HSN. We’ll show the schemes that usually apply — BIS, BEE, GMARK, CE, FCC, SABER, WPC — plus the tests, labs and ballpark costs so you know what to book next.",
       contact_email: "info@certko.com",
       contact_phone: "+91-9999118039",
       contact_address:
@@ -770,11 +770,14 @@ export function seedDatabase(db: SqliteDatabase) {
       smtp_from: "contact@instacertify.com",
       smtp_secure: "0",
       footer_text:
-        "Certko is an independent compliance intelligence and product-testing guidance platform operated by Instacertify Labs Private Limited. We are not a government authority. Prices and schedules are indicative — always verify with the relevant regulator and laboratory.",
+        "Certko is run by Instacertify Labs Private Limited. We publish product, lab and scheme guidance — we are not a government body. Fees and timelines are indicative; confirm with the regulator and lab before you commit.",
       announcement: "",
-      cta_heading: "Need certification or testing help?",
+      cta_heading: "Need a hand with certification or testing?",
       cta_text:
-        "Connect with verified compliance consultants who handle certification, lab testing, inspection and registration end-to-end across India and export markets. Free quote in 24 hours.",
+        "Our consultants handle filings, lab coordination and inspections for India and export markets. Ask for a free quote — we reply within 24 hours.",
+      expert_cta_label: "Talk to a certification expert",
+      expert_cta_label_short: "Talk to expert",
+      expert_cta_href: "/contact?intent=expert",
       stat_1_value: "2,500+",
       stat_1_label: "Products",
       stat_1_icon: "",
@@ -782,7 +785,7 @@ export function seedDatabase(db: SqliteDatabase) {
       stat_2_label: "Testing Solutions",
       stat_2_icon: "",
       stat_3_value: "Free",
-      stat_3_label: "Information Library",
+      stat_3_label: "Free product data",
       stat_3_icon: "",
       stat_4_value: "10+",
       stat_4_label: "Years of Legacy",
@@ -853,7 +856,7 @@ export function seedDatabase(db: SqliteDatabase) {
         "Connect with verified BIS consultants. Application, testing, factory inspection and licence grant handled end-to-end. Free quote in 24 hours.",
       hero_heading: "Talk to a certification expert",
       hero_subheading:
-        "Tell us about your product and a certification expert will map the standard, estimate the full cost and send a free quote within 24 hours.",
+        "Tell us what you make and where you sell. We’ll point to the standard, sketch the full cost, and send a free quote within 24 hours.",
       content: "",
       image: "/images/pages/contact.png",
     });

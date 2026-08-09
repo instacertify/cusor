@@ -6,6 +6,7 @@ import {
   EXPERT_CTA_HREF,
   EXPERT_CTA_LABEL,
   EXPERT_CTA_LABEL_SHORT,
+  type ExpertCta,
 } from "@/lib/expert-cta";
 
 type Variant = "button" | "header" | "header-mobile" | "footer" | "link";
@@ -24,25 +25,30 @@ const VARIANT_CLASS: Record<Variant, string> = {
 
 /**
  * Primary CTA used across header, footer, home, and page sections.
- * Always points at the certification-expert contact intent.
+ * Labels/href can be overridden from Admin → Settings.
  */
 export function TalkToCertificationExpertLink({
   variant = "button",
   short = false,
   className = "",
   children,
+  cta,
 }: {
   variant?: Variant;
   short?: boolean;
   className?: string;
   children?: ReactNode;
+  cta?: ExpertCta;
 }) {
-  const label = children ?? (short ? EXPERT_CTA_LABEL_SHORT : EXPERT_CTA_LABEL);
+  const labelFull = cta?.label || EXPERT_CTA_LABEL;
+  const labelShort = cta?.labelShort || EXPERT_CTA_LABEL_SHORT;
+  const href = cta?.href || EXPERT_CTA_HREF;
+  const label = children ?? (short ? labelShort : labelFull);
   return (
     <a
-      href={EXPERT_CTA_HREF}
+      href={href}
       className={`${VARIANT_CLASS[variant]} ${className}`}
-      aria-label={EXPERT_CTA_LABEL}
+      aria-label={labelFull}
     >
       {label}
     </a>
@@ -51,11 +57,16 @@ export function TalkToCertificationExpertLink({
 
 /**
  * Persistent floating CTA on every public page except contact itself.
- * Keeps “Talk to a certification expert” always one tap away.
  */
-export default function TalkToCertificationExpertBar() {
+export default function TalkToCertificationExpertBar({
+  cta,
+}: {
+  cta?: ExpertCta;
+} = {}) {
   const pathname = usePathname() || "";
   const [visible, setVisible] = useState(false);
+  const label = cta?.label || EXPERT_CTA_LABEL;
+  const href = cta?.href || EXPERT_CTA_HREF;
 
   useEffect(() => {
     setVisible(true);
@@ -68,11 +79,11 @@ export default function TalkToCertificationExpertBar() {
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:justify-end sm:px-6">
       <a
-        href={EXPERT_CTA_HREF}
+        href={href}
         className="pointer-events-auto inline-flex min-h-12 max-w-full items-center justify-center rounded-full bg-butter-500 px-5 py-3 text-sm font-semibold text-ink-950 shadow-card-hover transition hover:bg-butter-400 sm:min-h-11"
-        aria-label={EXPERT_CTA_LABEL}
+        aria-label={label}
       >
-        <span className="truncate">{EXPERT_CTA_LABEL}</span>
+        <span className="truncate">{label}</span>
       </a>
     </div>
   );
