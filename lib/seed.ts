@@ -479,17 +479,17 @@ const PAGE_FAQS: Record<string, { question: string; answer: string }[]> = {
     {
       question: "What happens after I submit this form?",
       answer:
-        "A BIS specialist reviews your product details, maps the applicable IS standard and scheme, and replies within 24 hours with an itemised cost estimate covering lab testing, BIS fees and consulting.",
+        "A certification and testing specialist reviews your product details and target markets, maps the schemes that typically apply — such as BIS, BEE, GMARK, CE, FCC, SABER or WPC — and replies within 24 hours with an itemised estimate covering laboratory testing, scheme fees and consulting.",
     },
     {
       question: "Is the quote really free?",
       answer:
-        "Yes. The standard mapping and cost estimate are free with no obligation. You only pay if you engage us to manage the certification.",
+        "Yes. Scheme mapping and the cost estimate are free with no obligation. You only pay if you engage us to manage certification, testing coordination or consulting.",
     },
     {
       question: "Do you help foreign manufacturers?",
       answer:
-        "Yes. We support overseas factories under the Foreign Manufacturers Certification Scheme (FMCS) and CRS, including acting as or arranging an Authorised Indian Representative (AIR).",
+        "Yes. We support overseas manufacturers and exporters for India and global market access — including BIS FMCS/CRS with Authorised Indian Representative (AIR) support where needed, plus pathways such as BEE, GMARK, CE, FCC, SABER and WPC, with lab coordination end to end.",
     },
   ],
   guide: [
