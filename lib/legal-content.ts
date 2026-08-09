@@ -91,7 +91,8 @@ This Policy may be updated periodically. The "Last Updated" date at the top of t
 ## 14. Contact
 
 **Privacy Officer**
-Instacertify Labs Private Limited
+Instacertify Labs Private Limited  
+A-34, 4th Floor, Sector 63A, Noida, Gautam Buddha Nagar, Uttar Pradesh – 201301, India
 
 Email: [info@certko.com](mailto:info@certko.com)
 Phone: +91-9999118039

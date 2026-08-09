@@ -760,7 +760,7 @@ export function seedDatabase(db: SqliteDatabase) {
       contact_email: "info@certko.com",
       contact_phone: "+91-9999118039",
       contact_address:
-        "A-34, 4th Floor, Sector 63A, Noida, Gautam Buddha Nagar, Uttar Pradesh – 201301",
+        "A-34, 4th Floor, Sector 63A, Noida, Gautam Buddha Nagar, Uttar Pradesh – 201301, India",
       lead_notify_email: "contact@instacertify.com",
       smtp_enabled: "1",
       smtp_host: "smtp.gmail.com",
