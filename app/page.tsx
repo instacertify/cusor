@@ -101,7 +101,7 @@ export default async function HomePage() {
       <section className="relative overflow-hidden border-y border-ink-950 bg-ink-950 text-cream-50">
         <div className="pointer-events-none absolute -left-16 top-0 h-40 w-40 rounded-full bg-butter-500/20 blur-3xl" aria-hidden />
         <div className="pointer-events-none absolute -right-12 bottom-0 h-36 w-36 rounded-full bg-butter-500/15 blur-3xl" aria-hidden />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5 sm:gap-6">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
           {stats.map((s, i) => (
             <div key={i} className="min-w-0">
               {s.icon ? (
