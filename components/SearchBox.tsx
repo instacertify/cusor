@@ -149,12 +149,15 @@ function searchPageHref(term: string, scope: SearchScope): string {
 
 export default function SearchBox({
   large = false,
+  compact = false,
   placeholder,
   initialQuery = "",
   showScopes = false,
   initialScope = "all",
 }: {
   large?: boolean;
+  /** Compact header/toolbar search — quieter chrome, shorter control */
+  compact?: boolean;
   placeholder?: string;
   /** Prefill from /search?q=… so the box matches the results page */
   initialQuery?: string;
@@ -345,16 +348,18 @@ export default function SearchBox({
       ) : null}
 
       <div
-        className={`flex items-center gap-2 bg-white rounded-2xl border border-cream-300 focus-within:border-butter-500 focus-within:ring-4 focus-within:ring-butter-300/30 transition ${
+        className={`flex items-center gap-2 bg-white border border-cream-300 focus-within:border-butter-500 focus-within:ring-4 focus-within:ring-butter-300/30 transition ${
           large
-            ? "flex-col sm:flex-row px-3 py-3 sm:px-5 sm:py-4 shadow-butter"
-            : "px-3 py-2.5 sm:px-4 shadow-card"
+            ? "flex-col sm:flex-row rounded-2xl px-3 py-3 sm:px-5 sm:py-4 shadow-butter"
+            : compact
+              ? "rounded-xl px-2.5 py-2 shadow-none"
+              : "rounded-2xl px-3 py-2.5 sm:px-4 shadow-card"
         }`}
       >
         <div className={`flex items-center gap-2 w-full ${large ? "px-1 sm:px-0" : ""}`}>
           <svg
-            width={large ? 22 : 18}
-            height={large ? 22 : 18}
+            width={large ? 22 : compact ? 16 : 18}
+            height={large ? 22 : compact ? 16 : 18}
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -395,7 +400,7 @@ export default function SearchBox({
             aria-label={meta.label}
             autoComplete="off"
             className={`w-full min-w-0 bg-transparent outline-none placeholder:text-ink-400 text-ink-950 ${
-              large ? "text-base sm:text-lg py-1.5" : "text-sm"
+              large ? "text-base sm:text-lg py-1.5" : compact ? "text-[13px]" : "text-sm"
             }`}
           />
           {loading ? (
@@ -410,13 +415,7 @@ export default function SearchBox({
             onClick={submit}
             className="w-full sm:w-auto shrink-0 min-h-11 bg-ink-900 hover:bg-ink-800 text-white font-semibold rounded-xl px-5 py-2.5 text-sm transition"
           >
-            {scope === "lab"
-              ? "Find Lab"
-              : scope === "certification"
-                ? "Find Cert"
-                : scope === "standard"
-                  ? "Find Standard"
-                  : "Check Now"}
+            Search
           </button>
         )}
       </div>
