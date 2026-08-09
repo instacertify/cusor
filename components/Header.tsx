@@ -7,6 +7,10 @@ import { EXPERT_CTA_HREF, EXPERT_CTA_LABEL } from "@/lib/expert-cta";
 import { ensureDbReady } from "@/lib/db";
 import { getCertifications, getTestingCategories, getPagesForNav } from "@/lib/queries";
 import { pagePublicPath } from "@/lib/pages-nav";
+import {
+  certMarketLabel,
+  groupCertificationsByMarket,
+} from "@/lib/market-applicability";
 
 /** Top-level CMS pages already covered elsewhere in the header. */
 const MENU_SKIP = new Set(["contact", "blog", "sitemap", "home"]);
@@ -18,12 +22,15 @@ export default async function Header() {
   const menuPages = getPagesForNav("menu").filter((p) => !MENU_SKIP.has(p.slug));
   const submenuPages = getPagesForNav("submenu");
 
-  const certItems = certs.map((c) => ({
-    href: `/certifications/${c.slug}`,
-    label: c.name,
-    detail: c.region,
-    icon: c.icon,
-  }));
+  const certItems = groupCertificationsByMarket(certs).flatMap(({ market, certs: group }) =>
+    group.map((c) => ({
+      href: `/certifications/${c.slug}`,
+      label: c.name,
+      detail: `Required in ${certMarketLabel(c.slug, c.region)}`,
+      icon: c.icon,
+      section: market.heading,
+    }))
+  );
 
   const testingItems = [
     {
@@ -107,17 +114,25 @@ export default async function Header() {
           <MobileNav
             groups={[
               {
-                label: "Certifications",
-                items: [
-                  { href: "/certifications", label: "All certifications" },
-                  ...certItems.map(({ href, label }) => ({ href, label })),
-                ],
+                label: "Certifications by market",
+                items: [{ href: "/certifications", label: "All certifications by market" }],
               },
+              ...groupCertificationsByMarket(certs).map(({ market, certs: group }) => ({
+                label: market.heading,
+                items: group.map((c) => ({
+                  href: `/certifications/${c.slug}`,
+                  label: `${c.name} · ${certMarketLabel(c.slug, c.region)}`,
+                })),
+              })),
               {
                 label: "Testing",
                 items: [
                   { href: "/testing", label: "All product testing" },
-                  ...testingItems.map(({ href, label }) => ({ href, label })),
+                  { href: "/labs", label: "Testing Labs" },
+                  ...testingCats.map((c) => ({
+                    href: `/testing/${c.slug}`,
+                    label: c.name,
+                  })),
                 ],
               },
               {

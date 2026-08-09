@@ -8,6 +8,7 @@ import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import SearchBox from "@/components/SearchBox";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
+import { TestingStandardFamiliesPanel } from "@/components/MarketApplicability";
 import { getFaqs, getTestingCategories } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -31,9 +32,9 @@ export default function TestingIndexPage() {
         Explore the Right Quality Assurance Solutions
       </h1>
       <p className="mt-3 text-ink-600 max-w-2xl">
-        Browse master testing categories (also in the header menu), open product test pages with
-        tentative prices, book testing, or book certification consulting. Leads are answered within
-        24 working hours.
+        Browse testing by discipline, then check whether the method is an Indian Standard (IS) for
+        India or an IEC / international method for global market access. Book testing or consulting
+        — we reply within 24 working hours.
       </p>
 
       <div className="mt-6 flex flex-col sm:flex-row flex-wrap gap-3">
@@ -54,6 +55,8 @@ export default function TestingIndexPage() {
           Tip: search results also appear under the <Link href="/search?type=testing" className="font-semibold text-butter-700 hover:underline">Product Testing</Link> tab.
         </p>
       </div>
+
+      <TestingStandardFamiliesPanel />
 
       <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {categories.map((c) => (

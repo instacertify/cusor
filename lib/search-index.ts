@@ -116,7 +116,7 @@ function buildIndex(): IndexRow[] {
       {
         type: "certification",
         name: `${c.name} Certification`,
-        detail: `${c.region} · ${c.full_name}`,
+        detail: `Required in ${c.region} · ${c.full_name}`,
         href: `/certifications/${c.slug}`,
       },
       [c.name, c.full_name, c.slug, c.region, c.summary],

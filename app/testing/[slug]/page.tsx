@@ -10,6 +10,7 @@ import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
+import { StandardApplicabilityChips } from "@/components/MarketApplicability";
 import {
   getFaqs,
   getTestingCategories,
@@ -116,7 +117,8 @@ export default async function TestingCategoryPage({ params }: Props) {
           Tests & services in this category
         </h2>
         <p className="text-sm text-ink-600 mb-6 max-w-2xl">
-          Open a testing solution for standards, tentative prices, accreditation notes and booking.
+          Open a testing solution for standards, market acceptance (IS · India / IEC · Global),
+          tentative prices and booking.
         </p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {services.map((s) => (
@@ -131,6 +133,7 @@ export default async function TestingCategoryPage({ params }: Props) {
                     {[s.test_type, s.standards].filter(Boolean).join(" · ")}
                   </p>
                 )}
+                <StandardApplicabilityChips standards={s.standards || ""} />
                 <p className="text-sm text-ink-600 line-clamp-3">{s.summary}</p>
                 <p className="text-sm font-semibold text-ink-900">
                   <span className="text-xs font-bold uppercase tracking-wide text-ink-500">Tentative price: </span>
