@@ -5,7 +5,6 @@ import SearchBox from "@/components/SearchBox";
 import ProductCard from "@/components/ProductCard";
 import FaqAccordion from "@/components/FaqAccordion";
 import CtaBanner from "@/components/CtaBanner";
-import HeroSlider from "@/components/HeroSlider";
 import HeroLabBackground from "@/components/HeroLabBackground";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import { ensureDbReady, getSettings } from "@/lib/db";
@@ -56,19 +55,20 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* Hero — one clear job: find what your product needs */}
-      <section className="relative overflow-hidden min-h-[min(72vh,640px)] flex flex-col justify-center">
+      {/* Hero — media stays as a soft watermark behind the content wall */}
+      <section className="relative overflow-hidden min-h-[min(68vh,600px)] flex flex-col justify-center">
         <HeroLabBackground
+          watermark
           slides={
             heroSlides.length > 0 ? heroSlidesToBackground(heroSlides) : undefined
           }
         />
-        <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-8 sm:pt-12 pb-10 sm:pb-14 grid lg:grid-cols-[1.1fr_0.9fr] gap-8 lg:gap-12 items-center">
-          <div className="animate-rise min-w-0">
+        <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-10 sm:pt-14 pb-12 sm:pb-16">
+          <div className="animate-rise min-w-0 max-w-2xl">
             <p className="font-display text-sm font-semibold tracking-wide text-ink-800 mb-3 sm:mb-4">
               Certko
             </p>
-            <h1 className="font-display text-[1.85rem] leading-[1.12] sm:text-4xl lg:text-[2.85rem] font-semibold sm:leading-[1.1] tracking-tight text-ink-950 max-w-xl">
+            <h1 className="font-display text-[1.85rem] leading-[1.12] sm:text-4xl lg:text-[2.85rem] font-semibold sm:leading-[1.1] tracking-tight text-ink-950">
               {settings.hero_heading}
             </h1>
             <p className="mt-3 sm:mt-4 text-sm sm:text-[15px] text-ink-700 max-w-lg leading-relaxed">
@@ -92,11 +92,6 @@ export default async function HomePage() {
               </Link>
             </p>
           </div>
-          {heroSlides.length > 0 ? (
-            <div className="animate-rise min-w-0 order-first lg:order-none">
-              <HeroSlider slides={heroSlides} />
-            </div>
-          ) : null}
         </div>
       </section>
 
