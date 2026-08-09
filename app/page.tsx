@@ -56,44 +56,59 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* Hero — full-bleed moving lab background */}
-      <section className="relative overflow-hidden min-h-[min(88vh,720px)] flex flex-col justify-center">
+      {/* Hero — one clear job: find what your product needs */}
+      <section className="relative overflow-hidden min-h-[min(72vh,640px)] flex flex-col justify-center">
         <HeroLabBackground
           slides={
             heroSlides.length > 0 ? heroSlidesToBackground(heroSlides) : undefined
           }
         />
-        <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-8 sm:pt-14 pb-10 sm:pb-16 grid lg:grid-cols-[1.15fr_1fr] gap-8 sm:gap-10 items-center">
+        <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-8 sm:pt-12 pb-10 sm:pb-14 grid lg:grid-cols-[1.1fr_0.9fr] gap-8 lg:gap-12 items-center">
           <div className="animate-rise min-w-0">
-            {settings.announcement?.trim() ? (
-              <p className="inline-flex max-w-full items-center gap-2 bg-white border border-cream-200 rounded-full px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs font-semibold text-ink-700 mb-5 sm:mb-6">
-                <span className="w-2 h-2 rounded-full bg-butter-500 animate-pulse shrink-0" aria-hidden />
-                <span className="truncate">{settings.announcement}</span>
-              </p>
-            ) : null}
-            <h1 className="font-display text-[1.7rem] leading-[1.12] sm:text-4xl lg:text-[3.1rem] font-semibold sm:leading-[1.08] tracking-tight text-ink-950">
+            <p className="font-display text-sm font-semibold tracking-wide text-ink-800 mb-3 sm:mb-4">
+              Certko
+            </p>
+            <h1 className="font-display text-[1.85rem] leading-[1.12] sm:text-4xl lg:text-[2.85rem] font-semibold sm:leading-[1.1] tracking-tight text-ink-950 max-w-xl">
               {settings.hero_heading}
             </h1>
-            <p className="mt-4 sm:mt-5 text-sm sm:text-base text-ink-700 max-w-xl leading-relaxed">
+            <p className="mt-3 sm:mt-4 text-sm sm:text-[15px] text-ink-700 max-w-lg leading-relaxed">
               {settings.hero_subheading}
             </p>
-            <div className="mt-6 sm:mt-8 max-w-xl">
-              <SearchBox large showScopes />
+            <div className="mt-6 sm:mt-7 max-w-xl">
+              <SearchBox
+                large
+                placeholder="Search a product, IS standard, or certification…"
+              />
             </div>
-            <div className="mt-8 sm:mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-              {stats.map((s, i) => (
-                <div key={i} className="bg-white border border-cream-300 rounded-2xl px-3 sm:px-4 py-3">
-                  <div className="font-display text-xl sm:text-2xl font-semibold text-ink-950">{s.value}</div>
-                  <div className="text-[11px] sm:text-xs font-medium text-ink-600 leading-snug">{s.label}</div>
-                </div>
-              ))}
-            </div>
+            <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-ink-600">
+              <Link href="/products" className="font-semibold text-ink-800 hover:text-butter-700">
+                Browse products
+              </Link>
+              <Link href="/certifications" className="font-semibold text-ink-800 hover:text-butter-700">
+                View certifications
+              </Link>
+              <Link href="/contact" className="font-semibold text-butter-700 hover:text-butter-600">
+                Talk to an expert
+              </Link>
+            </p>
           </div>
           {heroSlides.length > 0 ? (
             <div className="animate-rise min-w-0 order-first lg:order-none">
               <HeroSlider slides={heroSlides} />
             </div>
           ) : null}
+        </div>
+      </section>
+
+      {/* Quiet proof strip — kept out of the hero */}
+      <section className="border-b border-cream-200 bg-cream-50/80">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-5 sm:py-6 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+          {stats.map((s, i) => (
+            <div key={i} className="min-w-0">
+              <div className="font-display text-xl sm:text-2xl font-semibold text-ink-950">{s.value}</div>
+              <div className="text-xs sm:text-sm text-ink-600 leading-snug mt-0.5">{s.label}</div>
+            </div>
+          ))}
         </div>
       </section>
 

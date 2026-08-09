@@ -137,12 +137,7 @@ export default async function Footer() {
             <FooterHeading>Contact</FooterHeading>
             <ul className="space-y-3 text-[13px]">
               {settings.contact_address ? (
-                <li className="leading-relaxed text-ink-400">
-                  <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-ink-500 mb-1.5">
-                    Headquarters
-                  </span>
-                  {settings.contact_address}
-                </li>
+                <li className="leading-relaxed text-ink-400">{settings.contact_address}</li>
               ) : null}
               {settings.contact_email ? (
                 <li>

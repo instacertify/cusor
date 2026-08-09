@@ -21,8 +21,8 @@ const FALLBACK_GROUPS: Group[] = [
   {
     label: "Products",
     items: [
-      { href: "/products", label: "Browse by Category" },
-      { href: "/products/all", label: "Product Search Table" },
+      { href: "/products", label: "Browse products" },
+      { href: "/products/all", label: "Search table" },
       { href: "/qco", label: "Upcoming QCOs" },
     ],
   },
@@ -35,17 +35,20 @@ const FALLBACK_GROUPS: Group[] = [
       { href: "/certifications/g-mark", label: "GMARK" },
       { href: "/certifications/ce", label: "CE" },
       { href: "/certifications/fcc", label: "FCC" },
-      { href: "/certifications/saber", label: "SABER" },
-      { href: "/certifications/wpc", label: "WPC" },
     ],
   },
   {
-    label: "More",
+    label: "Testing",
     items: [
-      { href: "/testing", label: "Product Testing" },
+      { href: "/testing", label: "All product testing" },
       { href: "/labs", label: "Testing Labs" },
+    ],
+  },
+  {
+    label: "Resources",
+    items: [
       { href: "/blog", label: "Blog" },
-      { href: "/contact", label: "Get Expert Help" },
+      { href: "/contact", label: "Contact" },
     ],
   },
 ];
