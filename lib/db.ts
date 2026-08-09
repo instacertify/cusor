@@ -441,25 +441,22 @@ function ensureContactPageFaqsGlobalCopy(db: SqliteDatabase) {
     "SELECT id, answer FROM faqs WHERE scope = 'page:contact' AND question = ?"
   );
   const update = db.prepare("UPDATE faqs SET answer = ? WHERE id = ?");
+  const insert = db.prepare(
+    "INSERT INTO faqs (scope, question, answer, sort) VALUES ('page:contact', ?, ?, ?)"
+  );
 
-  for (const faq of CONTACT_PAGE_FAQS_GLOBAL) {
+  CONTACT_PAGE_FAQS_GLOBAL.forEach((faq, sort) => {
     const row = select.get(faq.question) as { id: number; answer: string } | undefined;
     if (!row) {
-      db.prepare(
-        "INSERT INTO faqs (scope, question, answer, sort) VALUES ('page:contact', ?, ?, ?)"
-      ).run(
-        faq.question,
-        faq.answer,
-        CONTACT_PAGE_FAQS_GLOBAL.findIndex((f) => f.question === faq.question)
-      );
-      continue;
+      insert.run(faq.question, faq.answer, sort);
+      return;
     }
     const current = (row.answer || "").trim();
-    if (current === faq.answer) continue;
+    if (current === faq.answer) return;
     if (faq.legacyAnswers.some((legacy) => legacy.trim() === current)) {
       update.run(faq.answer, row.id);
     }
-  }
+  });
 }
 
 /** Canonical HQ address shown on Contact Us and in the footer. */
