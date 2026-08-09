@@ -119,7 +119,7 @@ export default async function TestimonialStrip({
             </h2>
           </div>
           <p className="text-xs text-ink-500 max-w-sm">
-            Featured from our testimonial library — a fresh selection each visit.
+            A fresh selection of client stories each visit.
           </p>
         </div>
         <div

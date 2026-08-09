@@ -782,7 +782,7 @@ export function seedDatabase(db: SqliteDatabase) {
       stat_2_label: "Testing Solutions",
       stat_2_icon: "",
       stat_3_value: "Free",
-      stat_3_label: "Information Library",
+      stat_3_label: "Free product data",
       stat_3_icon: "",
       stat_4_value: "10+",
       stat_4_label: "Years of Legacy",

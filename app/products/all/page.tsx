@@ -114,7 +114,7 @@ export default async function ProductsTablePage({ searchParams }: Props) {
           Check the right certification — search by product, IS, HSN or QCO.
         </span>
         <span className="hidden sm:inline">
-          Check for the right certification against your product. Search IS standard, HSN code,
+          Match the right certification to your product. Search IS standard, HSN code,
           QCO status, marking fees, lab test cost range and approved laboratories in one place.
         </span>
       </p>

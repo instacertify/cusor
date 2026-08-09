@@ -334,9 +334,9 @@ export default async function HomePage() {
           Certification solutions &amp; product categories
         </h2>
         <p className="text-ink-600 mt-2 mb-6 sm:mb-8 text-sm sm:text-base">
-          Check for the right certification against your product, then browse by category — or{" "}
+          Match the right mark to your product, then browse by category — or{" "}
           <Link href="/certifications" className="font-semibold text-butter-700">
-            open all certification programmes
+            view certifications by market
           </Link>
           .
         </p>

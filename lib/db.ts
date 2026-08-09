@@ -378,6 +378,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureContactExpertCopy(db);
   ensureCanonicalContactAddress(db);
   ensureContactPageFaqsGlobalCopy(db);
+  ensureHomeStatLabels(db);
   scrubLabPublicContactDetails(db);
 }
 
@@ -400,7 +401,21 @@ function runEnsures(db: SqliteDatabase) {
   ensureContactExpertCopy(db);
   ensureCanonicalContactAddress(db);
   ensureContactPageFaqsGlobalCopy(db);
+  ensureHomeStatLabels(db);
   scrubLabPublicContactDetails(db);
+}
+
+/** Replace AI-ish default homepage stat labels. */
+function ensureHomeStatLabels(db: SqliteDatabase) {
+  const row = db
+    .prepare("SELECT value FROM settings WHERE key = 'stat_3_label'")
+    .get() as { value: string } | undefined;
+  const value = (row?.value || "").trim();
+  if (!value || value === "Information Library") {
+    db.prepare(
+      "INSERT INTO settings (key, value) VALUES ('stat_3_label', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+    ).run("Free product data");
+  }
 }
 
 /** Contact “Before You Ask” FAQs — global certification & testing framing. */
