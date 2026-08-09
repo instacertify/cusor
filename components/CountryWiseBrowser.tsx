@@ -63,33 +63,37 @@ export default function CountryWiseBrowser({
           scheme (BIS, CE, FCC, GMARK, SABER).
         </p>
       ) : (
-        <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((c) => (
-            <li key={c.slug}>
-              <Link
-                href={c.href}
-                className="group flex h-full flex-col rounded-3xl border border-cream-300 bg-white p-6 shadow-card transition hover:-translate-y-0.5 hover:shadow-card-hover"
+        <div className="mt-6 -mx-4 sm:mx-0">
+          <ul className="flex gap-3 overflow-x-auto px-4 sm:px-0 pb-2 sm:grid sm:grid-cols-5 sm:gap-4 snap-x snap-mandatory sm:overflow-visible">
+            {filtered.map((c) => (
+              <li
+                key={c.slug}
+                className="min-w-[12.5rem] max-w-[15rem] shrink-0 snap-start sm:min-w-0 sm:max-w-none"
               >
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-500">
-                  {c.schemeCount} scheme{c.schemeCount === 1 ? "" : "s"}
-                </p>
-                <h2 className="mt-2 font-display text-2xl font-semibold text-ink-950 group-hover:text-butter-700 transition">
-                  {c.name}
-                </h2>
-                <p className="mt-2 text-sm leading-relaxed text-ink-600 line-clamp-3">
-                  {c.intro}
-                </p>
-                <p className="mt-4 text-xs font-semibold text-ink-700">
-                  {c.schemeNames.join(" · ")}
-                </p>
-                <span className="mt-auto pt-5 inline-flex items-center gap-1.5 text-sm font-bold text-butter-700">
-                  View country guide
-                  <Icon name="arrow-right" size={15} />
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+                <Link
+                  href={c.href}
+                  className="group flex h-full min-h-[11.5rem] flex-col justify-between rounded-2xl border border-cream-300 bg-white p-5 transition hover:border-butter-500 hover:bg-cream-50"
+                >
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-500">
+                      {c.schemeCount} scheme{c.schemeCount === 1 ? "" : "s"}
+                    </p>
+                    <h2 className="mt-2 font-display text-xl font-semibold text-ink-950 group-hover:text-butter-700 transition leading-snug">
+                      {c.shortName}
+                    </h2>
+                    <p className="mt-2 text-xs font-medium text-ink-500 leading-relaxed">
+                      {c.schemeNames.join(" · ")}
+                    </p>
+                  </div>
+                  <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-butter-700">
+                    Open guide
+                    <Icon name="arrow-right" size={15} />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );
