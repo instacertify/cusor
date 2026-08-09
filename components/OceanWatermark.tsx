@@ -16,7 +16,6 @@ export default function OceanWatermark({
   className?: string;
 }) {
   const [reduced, setReduced] = useState(false);
-  const [useGif, setUseGif] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -31,34 +30,36 @@ export default function OceanWatermark({
       className={`pointer-events-none absolute inset-0 -z-10 overflow-hidden ${className}`}
       aria-hidden
     >
-      {/* Moving water under the hero wall (MP4 with GIF fallback) */}
+      {/* Moving water GIF watermark under the hero wall */}
       {reduced ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={WATER_STILL}
           alt=""
-          className="absolute inset-0 h-full w-full scale-110 object-cover opacity-[0.4] saturate-[0.85]"
-        />
-      ) : useGif ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={WATER_GIF}
-          alt=""
-          className="absolute inset-0 h-full w-full scale-110 object-cover opacity-[0.42] saturate-[0.85] contrast-[0.95] animate-ocean-drift"
+          className="absolute inset-0 h-full w-full scale-110 object-cover opacity-70 saturate-[0.95]"
         />
       ) : (
-        <video
-          className="absolute inset-0 h-full w-full scale-110 object-cover opacity-[0.42] saturate-[0.85] contrast-[0.95] animate-ocean-drift"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster={WATER_STILL}
-          onError={() => setUseGif(true)}
-        >
-          <source src={WATER_MP4} type="video/mp4" />
-        </video>
+        <>
+          {/* Prefer light MP4 loop; GIF sits as visual twin / fallback */}
+          <video
+            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-75 saturate-[0.95] animate-ocean-drift"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster={WATER_STILL}
+          >
+            <source src={WATER_MP4} type="video/mp4" />
+          </video>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={WATER_GIF}
+            alt=""
+            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-0"
+            onError={() => undefined}
+          />
+        </>
       )}
 
       {/* Revolving ocean blobs — fill empty right / open space */}
@@ -68,11 +69,9 @@ export default function OceanWatermark({
         <span className="ocean-blob ocean-blob--c" />
       </div>
 
-      {/* Cream hero wall wash — copy stays readable */}
-      <div className="absolute inset-0 bg-cream-50/72" />
-      <div className="absolute inset-0 bg-gradient-to-r from-cream-50 via-cream-50/86 to-cream-50/38" />
-      <div className="absolute inset-0 bg-gradient-to-t from-cream-50 via-cream-50/12 to-cream-50/65" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_40%,transparent_0%,rgb(250_246_238_/0.42)_70%)]" />
+      {/* Cream hero wall — stronger on the left for copy, lighter on the right for ocean */}
+      <div className="absolute inset-0 bg-gradient-to-r from-cream-50 from-0% via-cream-50/88 via-42% to-cream-50/28" />
+      <div className="absolute inset-0 bg-gradient-to-t from-cream-50/90 via-transparent to-cream-50/45" />
     </div>
   );
 }

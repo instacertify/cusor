@@ -415,42 +415,42 @@ video {
 .ocean-blob {
   position: absolute;
   border-radius: 60% 40% 55% 45% / 45% 55% 45% 55%;
-  filter: blur(2px);
-  opacity: 0.55;
+  filter: blur(1px);
+  opacity: 0.85;
   will-change: transform;
 }
 .ocean-blob--a {
-  top: 8%;
-  right: -6%;
-  width: min(46vw, 420px);
-  height: min(46vw, 420px);
+  top: 6%;
+  right: -8%;
+  width: min(52vw, 480px);
+  height: min(52vw, 480px);
   background:
-    radial-gradient(circle at 35% 35%, rgb(125 211 252 / 0.55), transparent 58%),
-    radial-gradient(circle at 70% 65%, rgb(14 116 144 / 0.4), transparent 60%),
-    radial-gradient(circle at 50% 50%, rgb(56 189 248 / 0.28), rgb(8 47 73 / 0.08));
+    radial-gradient(circle at 35% 35%, rgb(125 211 252 / 0.75), transparent 58%),
+    radial-gradient(circle at 70% 65%, rgb(14 116 144 / 0.55), transparent 60%),
+    radial-gradient(circle at 50% 50%, rgb(56 189 248 / 0.4), rgb(8 47 73 / 0.12));
   animation: ocean-blob-spin 36s linear infinite;
 }
 .ocean-blob--b {
-  bottom: 4%;
-  right: 8%;
-  width: min(34vw, 300px);
-  height: min(34vw, 300px);
+  bottom: 2%;
+  right: 6%;
+  width: min(38vw, 340px);
+  height: min(38vw, 340px);
   background:
-    radial-gradient(circle at 40% 40%, rgb(103 232 249 / 0.45), transparent 55%),
-    radial-gradient(circle at 65% 60%, rgb(3 105 161 / 0.35), transparent 62%);
+    radial-gradient(circle at 40% 40%, rgb(103 232 249 / 0.65), transparent 55%),
+    radial-gradient(circle at 65% 60%, rgb(3 105 161 / 0.5), transparent 62%);
   animation: ocean-blob-spin-reverse 48s linear infinite;
-  opacity: 0.45;
+  opacity: 0.75;
 }
 .ocean-blob--c {
-  top: 28%;
-  right: 22%;
-  width: min(22vw, 190px);
-  height: min(22vw, 190px);
+  top: 26%;
+  right: 20%;
+  width: min(26vw, 220px);
+  height: min(26vw, 220px);
   background:
-    radial-gradient(circle at 50% 45%, rgb(186 230 253 / 0.5), transparent 60%),
-    radial-gradient(circle at 60% 70%, rgb(14 165 233 / 0.3), transparent 65%);
+    radial-gradient(circle at 50% 45%, rgb(186 230 253 / 0.7), transparent 60%),
+    radial-gradient(circle at 60% 70%, rgb(14 165 233 / 0.45), transparent 65%);
   animation: ocean-blob-spin 54s linear infinite;
-  opacity: 0.4;
+  opacity: 0.7;
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-ocean-drift,
