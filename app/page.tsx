@@ -8,6 +8,7 @@ import CtaBanner from "@/components/CtaBanner";
 import GlobeWatermark from "@/components/GlobeWatermark";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import TestimonialStrip from "@/components/TestimonialStrip";
+import CertificationSolutionRow from "@/components/CertificationSolutionRow";
 import { ensureDbReady, getSettings } from "@/lib/db";
 import {
   getCategories,
@@ -315,14 +316,17 @@ export default async function HomePage() {
       {/* Categories */}
       <section className="bg-cream-100 border-y border-cream-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
-        <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950">Browse product categories</h2>
+        <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950">
+          Certification solutions &amp; product categories
+        </h2>
         <p className="text-ink-600 mt-2 mb-6 sm:mb-8 text-sm sm:text-base">
-          Find the right certification path by category — or{" "}
+          Check for the right certification against your product, then browse by category — or{" "}
           <Link href="/certifications" className="font-semibold text-butter-700">
-            browse all certifications
+            open all certification programmes
           </Link>
           .
         </p>
+        <CertificationSolutionRow className="mb-8" />
         <div className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {categories.slice(0, 12).map((c) => (
             <Link
