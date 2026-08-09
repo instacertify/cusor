@@ -133,11 +133,11 @@ export default async function HomePage() {
 
       {/* Dual path — certification vs testing */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
-        <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 text-center">
-          What do you need for this product?
+        <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 text-center px-2 leading-snug">
+          Certification and Testing Solutions to Make You Ready for the Global Market
         </h2>
         <p className="text-center text-ink-600 mt-2 mb-8 sm:mb-10 text-sm sm:text-base px-2 max-w-2xl mx-auto">
-          Start with the mark you need to sell, or the lab work that unlocks it.
+          Start with the mark you need to sell, or the lab work that unlocks it — for India and export markets.
         </p>
         <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
           <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-cream-300 bg-white p-5 sm:p-8 shadow-card">

@@ -375,6 +375,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureTestimonialsLibrary(db);
   ensureTrustedBrandsLibrary(db);
   clearLegacyHomeAnnouncement(db);
+  ensureContactAddressIncludesIndia(db);
   scrubLabPublicContactDetails(db);
 }
 
@@ -394,6 +395,7 @@ function runEnsures(db: SqliteDatabase) {
   ensureTestimonialsLibrary(db);
   ensureTrustedBrandsLibrary(db);
   clearLegacyHomeAnnouncement(db);
+  ensureContactAddressIncludesIndia(db);
   scrubLabPublicContactDetails(db);
 }
 
@@ -412,6 +414,21 @@ function clearLegacyHomeAnnouncement(db: SqliteDatabase) {
       "INSERT INTO settings (key, value) VALUES ('announcement', '') ON CONFLICT(key) DO UPDATE SET value = excluded.value"
     ).run();
   }
+}
+
+/** Ensure public address shows India after Uttar Pradesh (footer + contact). */
+function ensureContactAddressIncludesIndia(db: SqliteDatabase) {
+  const row = db
+    .prepare("SELECT value FROM settings WHERE key = 'contact_address'")
+    .get() as { value: string } | undefined;
+  const value = (row?.value || "").trim();
+  if (!value) return;
+  if (!/Uttar Pradesh/i.test(value)) return;
+  if (/\bIndia\b/i.test(value)) return;
+  const next = value.replace(/Uttar Pradesh/i, "Uttar Pradesh, India");
+  db.prepare(
+    "INSERT INTO settings (key, value) VALUES ('contact_address', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+  ).run(next);
 }
 
 /**
