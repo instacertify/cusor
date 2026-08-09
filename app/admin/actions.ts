@@ -124,6 +124,14 @@ const SOCIAL_ICON_KEYS = [
   "social_youtube_icon",
 ] as const;
 
+const STAT_ICON_KEYS = [
+  "stat_1_icon",
+  "stat_2_icon",
+  "stat_3_icon",
+  "stat_4_icon",
+  "stat_5_icon",
+] as const;
+
 const SECRET_SETTINGS = new Set(["smtp_pass", "admin_password", "admin_username"]);
 
 // ---------- admin credentials ----------
@@ -207,6 +215,15 @@ export async function saveSettings(formData: FormData) {
   }
 
   for (const key of SOCIAL_ICON_KEYS) {
+    const uploaded = await saveUploadedImage(formData.get(`${key}_file`) as File | null);
+    if (uploaded) {
+      setSetting(key, uploaded);
+    } else if (formData.get(`clear_${key}`) === "1") {
+      setSetting(key, "");
+    }
+  }
+
+  for (const key of STAT_ICON_KEYS) {
     const uploaded = await saveUploadedImage(formData.get(`${key}_file`) as File | null);
     if (uploaded) {
       setSetting(key, uploaded);

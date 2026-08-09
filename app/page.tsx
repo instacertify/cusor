@@ -5,8 +5,7 @@ import SearchBox from "@/components/SearchBox";
 import ProductCard from "@/components/ProductCard";
 import FaqAccordion from "@/components/FaqAccordion";
 import CtaBanner from "@/components/CtaBanner";
-import HeroSlider from "@/components/HeroSlider";
-import HeroLabBackground from "@/components/HeroLabBackground";
+import GlobeWatermark from "@/components/GlobeWatermark";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import { ensureDbReady, getSettings } from "@/lib/db";
 import {
@@ -14,9 +13,7 @@ import {
   getFeaturedProducts,
   getFaqs,
   getUpcomingQcos,
-  getActiveHeroSlides,
 } from "@/lib/queries";
-import { heroSlidesToBackground } from "@/lib/hero-slides";
 import { formatNumber } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -42,33 +39,31 @@ const HOW_IT_WORKS = [
 export default async function HomePage() {
   await ensureDbReady();
   const settings = getSettings();
-  const heroSlides = getActiveHeroSlides();
   const categories = getCategories();
   const featured = getFeaturedProducts(8);
   const faqs = getFaqs("global");
   const totalProducts = categories.reduce((s, c) => s + (c.product_count ?? 0), 0);
   const upcomingQcos = getUpcomingQcos().slice(0, 3);
 
-  const stats = [1, 2, 3, 4].map((i) => ({
-    value: settings[`stat_${i}_value`],
-    label: settings[`stat_${i}_label`],
-  }));
+  const stats = [1, 2, 3, 4, 5]
+    .map((i) => ({
+      value: (settings[`stat_${i}_value`] || "").trim(),
+      label: (settings[`stat_${i}_label`] || "").trim(),
+      icon: (settings[`stat_${i}_icon`] || "").trim(),
+    }))
+    .filter((s) => s.value && s.label);
 
   return (
-    <div>
-      {/* Hero — one clear job: find what your product needs */}
-      <section className="relative overflow-hidden min-h-[min(72vh,640px)] flex flex-col justify-center">
-        <HeroLabBackground
-          slides={
-            heroSlides.length > 0 ? heroSlidesToBackground(heroSlides) : undefined
-          }
-        />
-        <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-8 sm:pt-12 pb-10 sm:pb-14 grid lg:grid-cols-[1.1fr_0.9fr] gap-8 lg:gap-12 items-center">
-          <div className="animate-rise min-w-0">
+    <div className="relative">
+      {/* Hero — refined tilted revolving line-art globe on the right */}
+      <section className="relative overflow-hidden min-h-[min(74vh,680px)] flex flex-col justify-center">
+        <GlobeWatermark />
+        <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-10 sm:pt-14 pb-12 sm:pb-16">
+          <div className="animate-rise min-w-0 max-w-xl sm:max-w-lg lg:max-w-xl">
             <p className="font-display text-sm font-semibold tracking-wide text-ink-800 mb-3 sm:mb-4">
               Certko
             </p>
-            <h1 className="font-display text-[1.85rem] leading-[1.12] sm:text-4xl lg:text-[2.85rem] font-semibold sm:leading-[1.1] tracking-tight text-ink-950 max-w-xl">
+            <h1 className="font-display text-[1.85rem] leading-[1.12] sm:text-4xl lg:text-[2.85rem] font-semibold sm:leading-[1.1] tracking-tight text-ink-950">
               {settings.hero_heading}
             </h1>
             <p className="mt-3 sm:mt-4 text-sm sm:text-[15px] text-ink-700 max-w-lg leading-relaxed">
@@ -92,21 +87,33 @@ export default async function HomePage() {
               </Link>
             </p>
           </div>
-          {heroSlides.length > 0 ? (
-            <div className="animate-rise min-w-0 order-first lg:order-none">
-              <HeroSlider slides={heroSlides} />
-            </div>
-          ) : null}
         </div>
       </section>
 
-      {/* Quiet proof strip — kept out of the hero */}
-      <section className="border-b border-cream-200 bg-cream-50/80">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-5 sm:py-6 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+      {/* Highlighted proof strip — kept out of the hero */}
+      <section className="relative overflow-hidden border-y border-ink-950 bg-ink-950 text-cream-50">
+        <div className="pointer-events-none absolute -left-16 top-0 h-40 w-40 rounded-full bg-butter-500/20 blur-3xl" aria-hidden />
+        <div className="pointer-events-none absolute -right-12 bottom-0 h-36 w-36 rounded-full bg-butter-500/15 blur-3xl" aria-hidden />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5 sm:gap-6">
           {stats.map((s, i) => (
             <div key={i} className="min-w-0">
-              <div className="font-display text-xl sm:text-2xl font-semibold text-ink-950">{s.value}</div>
-              <div className="text-xs sm:text-sm text-ink-600 leading-snug mt-0.5">{s.label}</div>
+              {s.icon ? (
+                <span className="mb-2.5 inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-cream-50/95 p-1.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={s.icon}
+                    alt=""
+                    className="h-full w-full object-contain"
+                  />
+                </span>
+              ) : null}
+              <div className="font-display text-2xl sm:text-[1.75rem] font-semibold tracking-tight text-cream-50">
+                {s.value}
+              </div>
+              <div className="mt-1.5 h-0.5 w-8 bg-butter-500" aria-hidden />
+              <div className="mt-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.08em] text-cream-100/80 leading-snug">
+                {s.label}
+              </div>
             </div>
           ))}
         </div>
