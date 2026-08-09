@@ -378,6 +378,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureContactExpertCopy(db);
   ensureCanonicalContactAddress(db);
   ensureContactPageFaqsGlobalCopy(db);
+  ensureCanonicalCertMarketRegions(db);
   scrubLabPublicContactDetails(db);
 }
 
@@ -400,7 +401,25 @@ function runEnsures(db: SqliteDatabase) {
   ensureContactExpertCopy(db);
   ensureCanonicalContactAddress(db);
   ensureContactPageFaqsGlobalCopy(db);
+  ensureCanonicalCertMarketRegions(db);
   scrubLabPublicContactDetails(db);
+}
+
+/** Keep certification region labels aligned with market organisation. */
+function ensureCanonicalCertMarketRegions(db: SqliteDatabase) {
+  const updates: [string, string][] = [
+    ["bis", "India"],
+    ["bee", "India"],
+    ["wpc-eta", "India"],
+    ["ce", "European Union"],
+    ["fcc", "United States"],
+    ["g-mark", "GCC countries"],
+    ["saber", "Saudi Arabia"],
+  ];
+  const stmt = db.prepare("UPDATE certifications SET region = ? WHERE slug = ? AND IFNULL(region, '') != ?");
+  for (const [slug, region] of updates) {
+    stmt.run(region, slug, region);
+  }
 }
 
 /** Contact “Before You Ask” FAQs — global certification & testing framing. */

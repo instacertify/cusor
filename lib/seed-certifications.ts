@@ -105,7 +105,7 @@ The Bureau of Energy Efficiency runs India's Standards & Labelling programme. Ap
     slug: "g-mark",
     name: "GMARK",
     full_name: "Gulf Conformity Mark (GSO G Mark)",
-    region: "GCC / Middle East",
+    region: "GCC countries",
     icon: "globe",
     summary:
       "Gulf Conformity Mark (GMARK) for regulated products across GCC states — low-voltage appliances, electrical accessories, children's toys and water-conservation products under GSO technical regulations.",
