@@ -30,6 +30,7 @@ const PUBLIC_CACHE_PATHS = [
   "/products/all",
   "/certifications",
   "/certifications/countries",
+  "/certifications/global-market-access",
   "/testing",
   "/labs",
   "/blog",
@@ -790,6 +791,7 @@ export async function createCountryHub(formData: FormData) {
   const sort = sortRaw ? Number(sortRaw) || maxSort + 10 : maxSort + 10;
   const shortName = String(formData.get("short_name") ?? "").trim() || name;
   const marketId = String(formData.get("market_id") ?? "").trim() || slug;
+  const region = String(formData.get("region") ?? "").trim();
   const intro =
     String(formData.get("intro") ?? "").trim() ||
     `Certification pathways for selling into ${name}.`;
@@ -802,11 +804,21 @@ export async function createCountryHub(formData: FormData) {
   const res = db
     .prepare(
       `INSERT INTO country_hubs (
-        slug, market_id, name, short_name, meta_title, meta_description,
-        intro, overview, authority, filing_tip, first_checks, sort, active
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, '', '', '', '[]', ?, 1)`
+        slug, market_id, region, name, short_name, meta_title, meta_description,
+        intro, overview, authority, filing_tip, first_checks, pillars, sort, active, featured
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, '', '', '', '[]', '{}', ?, 1, 0)`
     )
-    .run(slug, marketId, name, shortName, metaTitle, metaDescription, intro, sort);
+    .run(
+      slug,
+      marketId,
+      region,
+      name,
+      shortName,
+      metaTitle,
+      metaDescription,
+      intro,
+      sort
+    );
   const newId = Number(res.lastInsertRowid);
   const insFaq = db.prepare(
     "INSERT INTO faqs (scope, question, answer, sort) VALUES (?, ?, ?, ?)"
@@ -847,20 +859,30 @@ export async function saveCountryHub(formData: FormData) {
 
   const shortName = String(formData.get("short_name") ?? "").trim() || name;
   const marketId = String(formData.get("market_id") ?? "").trim() || slug;
+  const region = String(formData.get("region") ?? "").trim();
   const sort = Number(formData.get("sort") ?? 0) || 0;
   const active = formData.getAll("active").map(String).includes("1") ? 1 : 0;
+  const featured = formData.getAll("featured").map(String).includes("1") ? 1 : 0;
   const firstChecks = encodeChecksOrExamples(
     linesFromTextarea(String(formData.get("first_checks") ?? ""))
   );
+  const pillars = JSON.stringify({
+    safety: String(formData.get("pillar_safety") ?? "").trim(),
+    emcWireless: String(formData.get("pillar_emc") ?? "").trim(),
+    telecom: String(formData.get("pillar_telecom") ?? "").trim(),
+    energyEnv: String(formData.get("pillar_energy") ?? "").trim(),
+    localRep: String(formData.get("pillar_local_rep") ?? "").trim(),
+  });
 
   db.prepare(
     `UPDATE country_hubs SET
-      slug=?, market_id=?, name=?, short_name=?, meta_title=?, meta_description=?,
-      intro=?, overview=?, authority=?, filing_tip=?, first_checks=?, sort=?, active=?
+      slug=?, market_id=?, region=?, name=?, short_name=?, meta_title=?, meta_description=?,
+      intro=?, overview=?, authority=?, filing_tip=?, first_checks=?, pillars=?, sort=?, active=?, featured=?
      WHERE id=?`
   ).run(
     slug,
     marketId,
+    region,
     name,
     shortName,
     String(formData.get("meta_title") ?? "").trim(),
@@ -870,8 +892,10 @@ export async function saveCountryHub(formData: FormData) {
     String(formData.get("authority") ?? "").trim(),
     String(formData.get("filing_tip") ?? "").trim(),
     firstChecks,
+    pillars,
     sort,
     active,
+    featured,
     id
   );
 

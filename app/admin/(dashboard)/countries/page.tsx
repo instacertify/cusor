@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAllCountryHubRecords } from "@/lib/country-certifications";
+import { GMA_REGIONS, gmaRegionLabel } from "@/lib/gma-regions";
 import { createCountryHub } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton } from "@/components/admin/Field";
 
@@ -32,6 +33,7 @@ export default async function AdminCountriesPage({ searchParams }: Props) {
           <thead className="bg-cream-100 text-left text-xs uppercase tracking-wide text-ink-500">
             <tr>
               <th className="px-4 py-3 font-semibold">Country</th>
+              <th className="px-4 py-3 font-semibold hidden md:table-cell">Region</th>
               <th className="px-4 py-3 font-semibold hidden sm:table-cell">Slug</th>
               <th className="px-4 py-3 font-semibold">Sort</th>
               <th className="px-4 py-3 font-semibold">Status</th>
@@ -43,7 +45,13 @@ export default async function AdminCountriesPage({ searchParams }: Props) {
               <tr key={h.id} className="hover:bg-cream-50/80">
                 <td className="px-4 py-3">
                   <div className="font-semibold text-ink-950">{h.name}</div>
-                  <div className="text-xs text-ink-500">{h.short_name}</div>
+                  <div className="text-xs text-ink-500">
+                    {h.short_name}
+                    {h.featured ? " · Featured" : ""}
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-xs text-ink-600 hidden md:table-cell">
+                  {gmaRegionLabel(h.region)}
                 </td>
                 <td className="px-4 py-3 font-mono text-xs text-ink-600 hidden sm:table-cell">
                   {h.slug}
@@ -68,7 +76,7 @@ export default async function AdminCountriesPage({ searchParams }: Props) {
             ))}
             {hubs.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-ink-500">
+                <td colSpan={6} className="px-4 py-8 text-center text-ink-500">
                   No countries yet — add one below.
                 </td>
               </tr>
@@ -96,6 +104,20 @@ export default async function AdminCountriesPage({ searchParams }: Props) {
               placeholder="e.g. brazil — links market grouping"
             />
           </div>
+          <label className="block text-sm">
+            <span className="font-semibold text-ink-800">Region</span>
+            <select
+              name="region"
+              defaultValue="asia-pacific"
+              className="mt-1.5 w-full rounded-xl border border-cream-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-butter-500"
+            >
+              {GMA_REGIONS.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+          </label>
           <Field label="Menu sort" name="sort" type="number" placeholder="auto" />
           <TextArea
             label="Intro (optional)"

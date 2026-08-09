@@ -6,6 +6,7 @@ import {
   getCountrySchemesByCountryId,
   linesFromTextarea,
 } from "@/lib/country-certifications";
+import { GMA_REGIONS } from "@/lib/gma-regions";
 import { getCertifications, getFaqs } from "@/lib/queries";
 import {
   saveCountryHub,
@@ -35,6 +36,27 @@ function parseJsonLines(raw: string): string {
   }
 }
 
+function parsePillars(raw: string) {
+  try {
+    const parsed = JSON.parse(raw || "{}") as Record<string, string>;
+    return {
+      safety: parsed.safety || "",
+      emcWireless: parsed.emcWireless || "",
+      telecom: parsed.telecom || "",
+      energyEnv: parsed.energyEnv || "",
+      localRep: parsed.localRep || "",
+    };
+  } catch {
+    return {
+      safety: "",
+      emcWireless: "",
+      telecom: "",
+      energyEnv: "",
+      localRep: "",
+    };
+  }
+}
+
 export default async function AdminCountryEditPage({ params, searchParams }: Props) {
   const { id } = await params;
   const sp = await searchParams;
@@ -44,6 +66,7 @@ export default async function AdminCountryEditPage({ params, searchParams }: Pro
   const schemes = getCountrySchemesByCountryId(hub.id);
   const faqs = getFaqs(`country:${hub.slug}`);
   const certs = getCertifications();
+  const pillars = parsePillars(hub.pillars);
   const back = `/admin/countries/${hub.id}`;
 
   return (
@@ -84,7 +107,7 @@ export default async function AdminCountryEditPage({ params, searchParams }: Pro
             <Field label="Name" name="name" defaultValue={hub.name} required />
             <Field label="Short name" name="short_name" defaultValue={hub.short_name} />
           </div>
-          <div className="grid sm:grid-cols-3 gap-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <Field label="URL slug" name="slug" defaultValue={hub.slug} required />
             <Field
               label="Market id (optional)"
@@ -92,6 +115,22 @@ export default async function AdminCountryEditPage({ params, searchParams }: Pro
               defaultValue={hub.market_id}
               placeholder="india, european-union, …"
             />
+            <label className="block text-sm">
+              <span className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">
+                Region
+              </span>
+              <select
+                name="region"
+                defaultValue={hub.region || "asia-pacific"}
+                className="w-full rounded-xl border border-cream-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-butter-500"
+              >
+                {GMA_REGIONS.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+            </label>
             <Field label="Sort" name="sort" type="number" defaultValue={hub.sort} />
           </div>
           <Field label="Meta title" name="meta_title" defaultValue={hub.meta_title} />
@@ -127,6 +166,41 @@ export default async function AdminCountryEditPage({ params, searchParams }: Pro
             defaultValue={parseJsonLines(hub.first_checks)}
             hint="Shown as a numbered checklist on the public country page."
           />
+          <div className="pt-2">
+            <h3 className="font-display font-bold text-ink-950 mb-3">GMA pillars</h3>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <TextArea
+                label="Safety"
+                name="pillar_safety"
+                rows={2}
+                defaultValue={pillars.safety}
+              />
+              <TextArea
+                label="EMC & wireless"
+                name="pillar_emc"
+                rows={2}
+                defaultValue={pillars.emcWireless}
+              />
+              <TextArea
+                label="Telecom / network"
+                name="pillar_telecom"
+                rows={2}
+                defaultValue={pillars.telecom}
+              />
+              <TextArea
+                label="Energy / environment"
+                name="pillar_energy"
+                rows={2}
+                defaultValue={pillars.energyEnv}
+              />
+              <TextArea
+                label="Local representation"
+                name="pillar_local_rep"
+                rows={2}
+                defaultValue={pillars.localRep}
+              />
+            </div>
+          </div>
           <label className="flex items-center gap-2 text-sm text-ink-800">
             <input type="hidden" name="active" value="0" />
             <input
@@ -137,7 +211,20 @@ export default async function AdminCountryEditPage({ params, searchParams }: Pro
               className="rounded border-cream-300"
             />
             <span>
-              <strong>Active</strong> — show on public country browse / homepage
+              <strong>Active</strong> — show on public country browse
+            </span>
+          </label>
+          <label className="flex items-center gap-2 text-sm text-ink-800">
+            <input type="hidden" name="featured" value="0" />
+            <input
+              type="checkbox"
+              name="featured"
+              value="1"
+              defaultChecked={Boolean(hub.featured)}
+              className="rounded border-cream-300"
+            />
+            <span>
+              <strong>Featured</strong> — show on homepage “Where are you selling?”
             </span>
           </label>
           <SubmitButton label="Save country content" />

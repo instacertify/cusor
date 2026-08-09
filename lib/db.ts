@@ -867,6 +867,7 @@ export interface CountryHubRecord {
   id: number;
   slug: string;
   market_id: string;
+  region: string;
   name: string;
   short_name: string;
   meta_title: string;
@@ -876,8 +877,10 @@ export interface CountryHubRecord {
   authority: string;
   filing_tip: string;
   first_checks: string;
+  pillars: string;
   sort: number;
   active: number;
+  featured: number;
 }
 
 export interface CountrySchemeRecord {

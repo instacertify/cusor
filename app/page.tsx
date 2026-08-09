@@ -21,7 +21,7 @@ import {
   getUpcomingQcos,
 } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
-import { countryHubPath, getCountryHubs } from "@/lib/country-certifications";
+import { countryHubPath, getFeaturedCountryHubs } from "@/lib/country-certifications";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +48,7 @@ export default async function HomePage() {
   const settings = getSettings();
   const categories = getCategories();
   const certifications = getCertifications().slice(0, 7);
-  const countryHubs = getCountryHubs();
+  const countryHubs = getFeaturedCountryHubs();
   const testingCategories = getTestingCategories().slice(0, 6);
   const featured = getFeaturedProducts(8);
   const faqs = getFaqs("global");
