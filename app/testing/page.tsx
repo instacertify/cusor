@@ -31,10 +31,19 @@ export default function TestingIndexPage() {
         Explore the Right Quality Assurance Solutions
       </h1>
       <p className="mt-3 text-ink-600 max-w-2xl">
-        Search product testing categories and individual test services — chemical, electrical, EMC,
-        physical, microbiology and mechanical. Open a category for standards, FAQs and scopes, then
-        request a mapped lab quote.
+        Browse master testing categories (also in the header menu), open product test pages with
+        tentative prices, book testing, or book certification consulting. Leads are answered within
+        24 working hours.
       </p>
+
+      <div className="mt-6 flex flex-col sm:flex-row flex-wrap gap-3">
+        <RequestQuoteButton subject="Product Testing" kind="test" />
+        <RequestQuoteButton
+          subject="Testing / certification consulting"
+          kind="consulting"
+          variant="secondary"
+        />
+      </div>
 
       <div className="mt-8 max-w-2xl">
         <SearchBox
@@ -67,8 +76,14 @@ export default function TestingIndexPage() {
                 Browse tests <Icon name="arrow-right" size={15} />
               </span>
             </Link>
-            <div className="mt-auto pt-2 border-t border-cream-200">
+            <div className="mt-auto pt-2 border-t border-cream-200 flex flex-wrap gap-x-3 gap-y-1">
               <RequestQuoteButton subject={c.name} kind="test" variant="compact" short />
+              <RequestQuoteButton
+                subject={`${c.name} consulting`}
+                kind="consulting"
+                variant="compact"
+                short
+              />
             </div>
           </div>
         ))}

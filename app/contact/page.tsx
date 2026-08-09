@@ -52,19 +52,23 @@ export default async function ContactPage({ searchParams }: Props) {
       <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
         <div>
           <h1 className="font-display text-2xl sm:text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
-            {sp.intent === "book"
-              ? "Contact Instacertify"
-              : sp.intent === "expert"
-                ? "Talk to an expert"
-                : page?.hero_heading || "Talk to a BIS expert"}
+            {sp.intent === "consulting"
+              ? "Book testing / certification consulting"
+              : sp.intent === "book" || sp.intent === "test"
+                ? "Book product testing"
+                : sp.intent === "expert"
+                  ? "Talk to an expert"
+                  : page?.hero_heading || "Talk to a BIS expert"}
           </h1>
           <p className="mt-4 text-base sm:text-lg text-ink-600 leading-relaxed">
-            {sp.intent === "book"
-              ? "Tell us about the lab or product you need help with. Someone from our team will connect with you within 24 hours."
-              : sp.intent === "expert"
-                ? "Couldn’t find the right certification or testing path? Share your product or HSN and we’ll map the solution — free quote in 24 hours."
-                : page?.hero_subheading ||
-                  "Tell us about your product and we will map the standard, estimate the full cost and send a free quote within 24 hours."}
+            {sp.intent === "consulting"
+              ? "Share your testing or certification goal. We save your request as a lead and someone from our team will update you within 24 working hours."
+              : sp.intent === "book" || sp.intent === "test"
+                ? "Tell us about the product or lab test you need. Your request becomes a lead — our team will update you within 24 working hours."
+                : sp.intent === "expert"
+                  ? "Couldn’t find the right certification or testing path? Share your product or HSN and we’ll map the solution — free quote in 24 hours."
+                  : page?.hero_subheading ||
+                    "Tell us about your product and we will map the standard, estimate the full cost and send a free quote within 24 hours."}
           </p>
           <div className="mt-8 space-y-5">
             {PROMISES.map((p) => (
@@ -100,7 +104,7 @@ export default async function ContactPage({ searchParams }: Props) {
 
         <div className="bg-white rounded-2xl sm:rounded-3xl border border-cream-300 shadow-card-hover p-5 sm:p-8">
           {initiallySent ? (
-            <ContactThankYou />
+            <ContactThankYou intent={sp.intent} />
           ) : (
             <ContactForm
               product={sp.product ?? ""}

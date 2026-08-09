@@ -172,6 +172,31 @@ export default async function AdminTestingServiceEdit({ params, searchParams }: 
             <Field label="Testing timeline" name="timeline" defaultValue={service.timeline} />
             <Field label="Sample size required" name="sample_size" defaultValue={service.sample_size} />
           </div>
+          <div className="grid sm:grid-cols-3 gap-3">
+            <Field
+              label="Min price (₹)"
+              name="min_price"
+              type="number"
+              defaultValue={service.min_price ?? ""}
+              placeholder="e.g. 15000"
+            />
+            <Field
+              label="Max price (₹)"
+              name="max_price"
+              type="number"
+              defaultValue={service.max_price ?? ""}
+              placeholder="e.g. 45000"
+            />
+            <Field
+              label="Price note"
+              name="price_note"
+              defaultValue={service.price_note || ""}
+              placeholder="Indicative; confirm on quote"
+            />
+          </div>
+          <p className="text-xs text-ink-500">
+            Tentative prices are shown publicly as an indicative range. Leave blank for “On request”.
+          </p>
           <TextArea label="Summary" name="summary" defaultValue={service.summary} rows={2} />
           <ImageUpload current={service.image} label="Test image" />
         </section>

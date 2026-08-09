@@ -19,12 +19,14 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
+    const intent = String(formData.get("intent") ?? "").trim();
     const result = await createInquiry({
       name: String(formData.get("name") ?? ""),
       email: String(formData.get("email") ?? ""),
       phone: String(formData.get("phone") ?? ""),
       product: String(formData.get("product") ?? ""),
       message: String(formData.get("message") ?? ""),
+      intent,
     });
 
     if (!result.ok) {
@@ -43,7 +45,9 @@ export async function POST(req: NextRequest) {
     if (json) {
       return NextResponse.json({ ok: true });
     }
-    return redirectTo(req, "/contact?sent=1");
+    const params = new URLSearchParams({ sent: "1" });
+    if (intent) params.set("intent", intent);
+    return redirectTo(req, `/contact?${params.toString()}`);
   } catch (err) {
     console.error("[api/contact] unexpected error:", err);
     if (json) {

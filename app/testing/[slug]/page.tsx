@@ -16,6 +16,7 @@ import {
   getTestingCategoryBySlug,
   getTestingServices,
 } from "@/lib/queries";
+import { formatPriceRange } from "@/lib/format";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -87,8 +88,9 @@ export default async function TestingCategoryPage({ params }: Props) {
             </div>
           </div>
           <p className="mt-5 text-lg text-ink-600 leading-relaxed">{cat.summary}</p>
-          <div className="mt-6">
+          <div className="mt-6 flex flex-col sm:flex-row flex-wrap gap-3">
             <RequestQuoteButton subject={cat.name} kind="test" />
+            <RequestQuoteButton subject={`${cat.name} consulting`} kind="consulting" variant="secondary" />
           </div>
         </div>
         {cat.image ? (
@@ -114,8 +116,7 @@ export default async function TestingCategoryPage({ params }: Props) {
           Tests & services in this category
         </h2>
         <p className="text-sm text-ink-600 mb-6 max-w-2xl">
-          Open a test for standards, accreditation notes, writeup and FAQs. Editors can update each
-          page from the Product Testing admin.
+          Open a testing solution for standards, tentative prices, accreditation notes and booking.
         </p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {services.map((s) => (
@@ -131,6 +132,10 @@ export default async function TestingCategoryPage({ params }: Props) {
                   </p>
                 )}
                 <p className="text-sm text-ink-600 line-clamp-3">{s.summary}</p>
+                <p className="text-sm font-semibold text-ink-900">
+                  <span className="text-xs font-bold uppercase tracking-wide text-ink-500">Tentative price: </span>
+                  {formatPriceRange(s.min_price, s.max_price)}
+                </p>
                 {(s.timeline || s.sample_size) && (
                   <div className="mt-1 space-y-1 text-xs text-ink-700">
                     {s.timeline ? (
@@ -146,11 +151,17 @@ export default async function TestingCategoryPage({ params }: Props) {
                   </div>
                 )}
                 <span className="text-sm font-bold text-butter-700 inline-flex items-center gap-1.5">
-                  View test <Icon name="arrow-right" size={14} />
+                  View details <Icon name="arrow-right" size={14} />
                 </span>
               </Link>
-              <div className="mt-auto pt-2 border-t border-cream-200">
+              <div className="mt-auto pt-2 border-t border-cream-200 flex flex-wrap gap-x-3 gap-y-1">
                 <RequestQuoteButton subject={s.name} kind="test" variant="compact" short />
+                <RequestQuoteButton
+                  subject={`${s.name} consulting`}
+                  kind="consulting"
+                  variant="compact"
+                  short
+                />
               </div>
             </div>
           ))}

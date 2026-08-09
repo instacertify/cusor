@@ -60,6 +60,7 @@ export default function AdminDashboard() {
     name: string;
     email: string;
     product: string;
+    intent?: string;
     created_at: string;
     status: string;
   }[];
@@ -177,7 +178,14 @@ export default function AdminDashboard() {
                       <span className="font-semibold text-ink-950">{r.name}</span>
                       <span className="block text-xs text-ink-500">{r.email}</span>
                     </td>
-                    <td className="px-5 py-3 text-ink-700">{r.product || "—"}</td>
+                    <td className="px-5 py-3 text-ink-700">
+                      {r.intent ? (
+                        <span className="block text-[10px] font-bold uppercase tracking-wide text-butter-700 mb-0.5">
+                          {r.intent}
+                        </span>
+                      ) : null}
+                      {r.product || "—"}
+                    </td>
                     <td className="px-5 py-3 text-ink-500 text-xs">{r.created_at}</td>
                     <td className="px-5 py-3">
                       <span

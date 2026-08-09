@@ -40,6 +40,14 @@ export default async function AdminInquiries({ searchParams }: Props) {
                   <h2 className="font-display font-bold text-ink-950">{i.name}</h2>
                   <p className="text-xs text-ink-500 mt-0.5">
                     {i.email}{i.phone ? ` · ${i.phone}` : ""} · {i.created_at} UTC
+                    {i.intent ? (
+                      <>
+                        {" · "}
+                        <span className="inline-flex items-center rounded-full bg-butter-300/40 text-butter-800 px-2 py-0.5 font-bold uppercase tracking-wide">
+                          {i.intent}
+                        </span>
+                      </>
+                    ) : null}
                   </p>
                 </div>
                 <form action={setInquiryStatus} className="flex items-center gap-2">

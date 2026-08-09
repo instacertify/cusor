@@ -246,6 +246,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
       phone TEXT NOT NULL DEFAULT '',
       product TEXT NOT NULL DEFAULT '',
       message TEXT NOT NULL DEFAULT '',
+      intent TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       status TEXT NOT NULL DEFAULT 'new'
     );
@@ -296,6 +297,9 @@ function bootstrapSchema(db: SqliteDatabase): void {
       accreditation TEXT NOT NULL DEFAULT 'ISO/IEC 17025 / NABL',
       timeline TEXT NOT NULL DEFAULT '',
       sample_size TEXT NOT NULL DEFAULT '',
+      min_price REAL,
+      max_price REAL,
+      price_note TEXT NOT NULL DEFAULT '',
       summary TEXT NOT NULL DEFAULT '',
       content TEXT NOT NULL DEFAULT '',
       image TEXT NOT NULL DEFAULT '',
@@ -657,6 +661,7 @@ export interface Inquiry {
   phone: string;
   product: string;
   message: string;
+  intent: string;
   created_at: string;
   status: string;
 }
@@ -708,6 +713,9 @@ export interface TestingService {
   accreditation: string;
   timeline: string;
   sample_size: string;
+  min_price: number | null;
+  max_price: number | null;
+  price_note: string;
   summary: string;
   content: string;
   image: string;
