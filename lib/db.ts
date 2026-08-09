@@ -377,6 +377,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   clearLegacyHomeAnnouncement(db);
   ensureContactExpertCopy(db);
   ensureCanonicalContactAddress(db);
+  ensureContactPageFaqsGlobalCopy(db);
   scrubLabPublicContactDetails(db);
 }
 
@@ -398,7 +399,67 @@ function runEnsures(db: SqliteDatabase) {
   clearLegacyHomeAnnouncement(db);
   ensureContactExpertCopy(db);
   ensureCanonicalContactAddress(db);
+  ensureContactPageFaqsGlobalCopy(db);
   scrubLabPublicContactDetails(db);
+}
+
+/** Contact “Before You Ask” FAQs — global certification & testing framing. */
+const CONTACT_PAGE_FAQS_GLOBAL: {
+  question: string;
+  answer: string;
+  legacyAnswers: string[];
+}[] = [
+  {
+    question: "What happens after I submit this form?",
+    answer:
+      "A certification and testing specialist reviews your product details and target markets, maps the schemes that typically apply — such as BIS, BEE, GMARK, CE, FCC, SABER or WPC — and replies within 24 hours with an itemised estimate covering laboratory testing, scheme fees and consulting.",
+    legacyAnswers: [
+      "A BIS specialist reviews your product details, maps the applicable IS standard and scheme, and replies within 24 hours with an itemised cost estimate covering lab testing, BIS fees and consulting.",
+    ],
+  },
+  {
+    question: "Is the quote really free?",
+    answer:
+      "Yes. Scheme mapping and the cost estimate are free with no obligation. You only pay if you engage us to manage certification, testing coordination or consulting.",
+    legacyAnswers: [
+      "Yes. The standard mapping and cost estimate are free with no obligation. You only pay if you engage us to manage the certification.",
+    ],
+  },
+  {
+    question: "Do you help foreign manufacturers?",
+    answer:
+      "Yes. We support overseas manufacturers and exporters for India and global market access — including BIS FMCS/CRS with Authorised Indian Representative (AIR) support where needed, plus pathways such as BEE, GMARK, CE, FCC, SABER and WPC, with lab coordination end to end.",
+    legacyAnswers: [
+      "Yes. We support overseas factories under the Foreign Manufacturers Certification Scheme (FMCS) and CRS, including acting as or arranging an Authorised Indian Representative (AIR).",
+    ],
+  },
+];
+
+/** Upgrade legacy BIS-only contact FAQs to global certification & testing copy. */
+function ensureContactPageFaqsGlobalCopy(db: SqliteDatabase) {
+  const select = db.prepare(
+    "SELECT id, answer FROM faqs WHERE scope = 'page:contact' AND question = ?"
+  );
+  const update = db.prepare("UPDATE faqs SET answer = ? WHERE id = ?");
+
+  for (const faq of CONTACT_PAGE_FAQS_GLOBAL) {
+    const row = select.get(faq.question) as { id: number; answer: string } | undefined;
+    if (!row) {
+      db.prepare(
+        "INSERT INTO faqs (scope, question, answer, sort) VALUES ('page:contact', ?, ?, ?)"
+      ).run(
+        faq.question,
+        faq.answer,
+        CONTACT_PAGE_FAQS_GLOBAL.findIndex((f) => f.question === faq.question)
+      );
+      continue;
+    }
+    const current = (row.answer || "").trim();
+    if (current === faq.answer) continue;
+    if (faq.legacyAnswers.some((legacy) => legacy.trim() === current)) {
+      update.run(faq.answer, row.id);
+    }
+  }
 }
 
 /** Canonical HQ address shown on Contact Us and in the footer. */
