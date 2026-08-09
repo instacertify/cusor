@@ -164,7 +164,8 @@ export function buildJsonLd(types: string[], ctx: SchemaContext): object | null 
 
   for (const type of types) {
     switch (type) {
-      case "Organization":
+      case "Organization": {
+        const address = (settings.contact_address || "").trim();
         graph.push({
           "@type": "Organization",
           name: orgName,
@@ -172,8 +173,21 @@ export function buildJsonLd(types: string[], ctx: SchemaContext): object | null 
           email: settings.contact_email,
           telephone: settings.contact_phone,
           description: settings.tagline,
+          ...(address
+            ? {
+                address: {
+                  "@type": "PostalAddress",
+                  streetAddress: address,
+                  addressLocality: "Noida",
+                  addressRegion: "Uttar Pradesh",
+                  postalCode: "201301",
+                  addressCountry: "IN",
+                },
+              }
+            : {}),
         });
         break;
+      }
       case "Service":
         graph.push({
           "@type": "Service",

@@ -376,6 +376,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureTrustedBrandsLibrary(db);
   clearLegacyHomeAnnouncement(db);
   ensureContactExpertCopy(db);
+  ensureCanonicalContactAddress(db);
   scrubLabPublicContactDetails(db);
 }
 
@@ -396,7 +397,41 @@ function runEnsures(db: SqliteDatabase) {
   ensureTrustedBrandsLibrary(db);
   clearLegacyHomeAnnouncement(db);
   ensureContactExpertCopy(db);
+  ensureCanonicalContactAddress(db);
   scrubLabPublicContactDetails(db);
+}
+
+/** Canonical HQ address shown on Contact Us and in the footer. */
+const CANONICAL_CONTACT_ADDRESS =
+  "A-34, 4th Floor, Sector 63A, Noida, Gautam Buddha Nagar, Uttar Pradesh – 201301, India";
+
+/**
+ * Normalize known Noida HQ address variants (India placement / punctuation)
+ * so Contact Us + footer always show the canonical line.
+ */
+function ensureCanonicalContactAddress(db: SqliteDatabase) {
+  const upsert = db.prepare(
+    "INSERT INTO settings (key, value) VALUES ('contact_address', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+  );
+  const row = db
+    .prepare("SELECT value FROM settings WHERE key = 'contact_address'")
+    .get() as { value: string } | undefined;
+  const value = (row?.value || "").trim();
+  if (!value) {
+    upsert.run(CANONICAL_CONTACT_ADDRESS);
+    return;
+  }
+  if (value === CANONICAL_CONTACT_ADDRESS) return;
+
+  const isNoidaHq =
+    /A-34/i.test(value) &&
+    /Sector\s*63A/i.test(value) &&
+    /Noida/i.test(value) &&
+    /Uttar Pradesh/i.test(value) &&
+    /201301/.test(value);
+  if (!isNoidaHq) return;
+
+  upsert.run(CANONICAL_CONTACT_ADDRESS);
 }
 
 /** Upgrade legacy contact-page hero to “Talk to a certification expert”. */
