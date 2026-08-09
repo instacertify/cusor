@@ -7,6 +7,8 @@ import { saveSettings } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import ColorSchemePicker from "@/components/ColorSchemePicker";
 import IconStylePicker from "@/components/IconStylePicker";
+import SocialIconGlyph from "@/components/SocialIconGlyph";
+import { SOCIAL_NETWORKS } from "@/lib/social-links";
 
 export const dynamic = "force-dynamic";
 
@@ -153,6 +155,60 @@ export default async function SettingsPage({ searchParams }: Props) {
             </Link>{" "}
             (requires current password and double confirmation).
           </p>
+        </section>
+
+        <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-5">
+          <div>
+            <h2 className="font-display font-bold text-ink-950">Social media</h2>
+            <p className="text-sm text-ink-600 mt-1">
+              Add profile URLs for the footer. Leave a URL blank to hide that network.
+              Optionally upload a custom icon (PNG/SVG) to replace the default brand glyph.
+            </p>
+          </div>
+          <div className="grid gap-5 lg:grid-cols-3">
+            {SOCIAL_NETWORKS.map((network) => {
+              const url = s[network.urlKey] || "";
+              const icon = s[network.iconKey] || "";
+              return (
+                <div
+                  key={network.id}
+                  className="rounded-2xl border border-cream-300 bg-cream-50/60 p-4 space-y-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-ink-950 text-cream-50">
+                      {icon ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={icon} alt="" className="h-4 w-4 object-contain" />
+                      ) : (
+                        <SocialIconGlyph id={network.id} className="h-4 w-4" />
+                      )}
+                    </span>
+                    <div>
+                      <p className="font-display font-bold text-ink-950">{network.label}</p>
+                      <p className="text-[11px] text-ink-500">Footer social link</p>
+                    </div>
+                  </div>
+                  <Field
+                    label={`${network.label} URL`}
+                    name={network.urlKey}
+                    defaultValue={url}
+                    type="url"
+                    placeholder={network.placeholder}
+                  />
+                  <ImageUpload
+                    current={icon || undefined}
+                    name={network.fileKey}
+                    label={`${network.label} icon (optional)`}
+                    clearName={network.clearKey}
+                    clearLabel="Use default brand icon"
+                    previewFit="contain"
+                    previewAspect="aspect-square max-w-[7rem]"
+                    hint="Square PNG or SVG works best. Leave empty to keep the built-in icon."
+                  />
+                </div>
+              );
+            })}
+          </div>
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-3">

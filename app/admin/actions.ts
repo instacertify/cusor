@@ -118,6 +118,12 @@ const LOGO_DEFAULTS = {
   logo_on_dark: "/brand/certko-logo-light.png",
 } as const;
 
+const SOCIAL_ICON_KEYS = [
+  "social_twitter_icon",
+  "social_linkedin_icon",
+  "social_youtube_icon",
+] as const;
+
 const SECRET_SETTINGS = new Set(["smtp_pass", "admin_password", "admin_username"]);
 
 // ---------- admin credentials ----------
@@ -197,6 +203,15 @@ export async function saveSettings(formData: FormData) {
       setSetting(key, uploaded);
     } else if (formData.get(`clear_${key}`) === "1") {
       setSetting(key, LOGO_DEFAULTS[key]);
+    }
+  }
+
+  for (const key of SOCIAL_ICON_KEYS) {
+    const uploaded = await saveUploadedImage(formData.get(`${key}_file`) as File | null);
+    if (uploaded) {
+      setSetting(key, uploaded);
+    } else if (formData.get(`clear_${key}`) === "1") {
+      setSetting(key, "");
     }
   }
 
