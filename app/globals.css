@@ -631,6 +631,8 @@ video {
   --trusted-brand-slot-h: 4.25rem;
   --trusted-brand-gap: 0.75rem;
   overflow: hidden;
+  /* Prevent hover/focus from interrupting the continuous scroll */
+  pointer-events: none;
 }
 
 @media (min-width: 640px) {
@@ -647,7 +649,13 @@ video {
   align-items: center;
   animation: trusted-marquee var(--trusted-marquee-duration) linear infinite;
   will-change: transform;
-  /* Keep scrolling even while hovering logos / track */
+  /* Keep scrolling continuously on every page — never pause */
+  animation-play-state: running !important;
+}
+
+.trusted-marquee:hover .trusted-marquee-track,
+.trusted-marquee:focus-within .trusted-marquee-track,
+.trusted-marquee-track:hover {
   animation-play-state: running !important;
 }
 
