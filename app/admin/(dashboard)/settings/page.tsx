@@ -206,8 +206,9 @@ export default async function SettingsPage({ searchParams }: Props) {
             label="Link"
             name="expert_cta_href"
             defaultValue={s.expert_cta_href || "/contact?intent=expert"}
-            hint="Must start with / — usually /contact?intent=expert"
+            placeholder="/contact?intent=expert"
           />
+          <p className="text-xs text-ink-500">Must start with / — usually /contact?intent=expert</p>
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
