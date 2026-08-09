@@ -378,11 +378,10 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureContactExpertCopy(db);
   ensureCanonicalContactAddress(db);
   ensureContactPageFaqsGlobalCopy(db);
-<<<<<<< HEAD
   ensureHomeHeroTestingSolutionCopy(db);
-=======
   ensureCanonicalCertMarketRegions(db);
->>>>>>> origin/cursor/market-applicability-org-328e
+  ensureHomeStatLabels(db);
+  ensureExpertCtaSettings(db);
   scrubLabPublicContactDetails(db);
 }
 
@@ -405,12 +404,39 @@ function runEnsures(db: SqliteDatabase) {
   ensureContactExpertCopy(db);
   ensureCanonicalContactAddress(db);
   ensureContactPageFaqsGlobalCopy(db);
-<<<<<<< HEAD
   ensureHomeHeroTestingSolutionCopy(db);
-=======
   ensureCanonicalCertMarketRegions(db);
->>>>>>> origin/cursor/market-applicability-org-328e
+  ensureHomeStatLabels(db);
+  ensureExpertCtaSettings(db);
   scrubLabPublicContactDetails(db);
+}
+
+/** Replace AI-ish default homepage stat labels on existing installs. */
+function ensureHomeStatLabels(db: SqliteDatabase) {
+  const row = db
+    .prepare("SELECT value FROM settings WHERE key = 'stat_3_label'")
+    .get() as { value: string } | undefined;
+  const value = (row?.value || "").trim();
+  if (!value || value === "Information Library") {
+    db.prepare(
+      "INSERT INTO settings (key, value) VALUES ('stat_3_label', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+    ).run("Free product data");
+  }
+}
+
+/** Seed editable expert-CTA labels (header / floating button) if missing. */
+function ensureExpertCtaSettings(db: SqliteDatabase) {
+  const defaults: Record<string, string> = {
+    expert_cta_label: "Talk to a certification expert",
+    expert_cta_label_short: "Talk to expert",
+    expert_cta_href: "/contact?intent=expert",
+  };
+  const upsert = db.prepare(
+    "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO NOTHING"
+  );
+  for (const [key, value] of Object.entries(defaults)) {
+    upsert.run(key, value);
+  }
 }
 
 /** Keep certification region labels aligned with market organisation. */

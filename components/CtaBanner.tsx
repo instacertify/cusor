@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ensureDbReady, getSettings } from "@/lib/db";
 import RequestQuoteButton, { type QuoteKind } from "./RequestQuoteButton";
 import { TalkToCertificationExpertLink } from "./TalkToCertificationExpert";
+import { resolveExpertCta } from "@/lib/expert-cta";
 
 export default async function CtaBanner({
   subject,
@@ -12,6 +13,7 @@ export default async function CtaBanner({
 } = {}) {
   await ensureDbReady();
   const settings = getSettings();
+  const expertCta = resolveExpertCta(settings);
   const heading =
     kind === "book" && subject
       ? `Need testing help with ${subject}?`
@@ -63,7 +65,7 @@ export default async function CtaBanner({
                 ) : null}
               </>
             ) : (
-              <TalkToCertificationExpertLink />
+              <TalkToCertificationExpertLink cta={expertCta} />
             )}
             <Link
               href="/blog"

@@ -11,6 +11,7 @@ import {
 } from "@/lib/queries";
 import { pagePublicPath } from "@/lib/pages-nav";
 import { getSocialLinks } from "@/lib/social-links";
+import { resolveExpertCta } from "@/lib/expert-cta";
 
 function FooterHeading({ children }: { children: ReactNode }) {
   return (
@@ -49,6 +50,7 @@ function FooterColumn({
 export default async function Footer() {
   await ensureDbReady();
   const settings = getSettings();
+  const expertCta = resolveExpertCta(settings);
   const certifications = getCertifications().slice(0, 5);
   const testingCategories = getTestingCategories().slice(0, 4);
   const footerPages = getPagesForNav("footer").filter(
@@ -73,7 +75,7 @@ export default async function Footer() {
           </div>
           <div className="flex flex-col gap-4 sm:items-end">
             <FooterSocialLinks links={socialLinks} className="sm:text-right" />
-            <TalkToCertificationExpertLink variant="footer" />
+            <TalkToCertificationExpertLink variant="footer" cta={expertCta} />
           </div>
         </div>
       </div>

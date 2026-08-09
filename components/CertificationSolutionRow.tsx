@@ -6,12 +6,12 @@ import {
 } from "@/lib/certification-solutions";
 
 /**
- * Extra row in the product library — certification solutions so users can
- * search / open the right mark against their product. Uses existing URLs only.
+ * Certification solution paths so users can open the right mark for their product.
+ * Uses existing URLs only.
  */
 export default function CertificationSolutionRow({
   heading = "Certification solutions",
-  prompt = "Check for the right certification against your product — start with the mark below, then search by product name or HSN.",
+  prompt = "Match your product to the right mark — start below, then search by product name or HSN.",
   chips = CERTIFICATION_SOLUTIONS,
   className = "",
   showSearchCta = true,
@@ -29,7 +29,7 @@ export default function CertificationSolutionRow({
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-butter-700">
-            Same product library
+            Choose a path
           </p>
           <h2 className="font-display text-lg sm:text-xl font-semibold text-ink-950 mt-1">
             {heading}
@@ -41,7 +41,7 @@ export default function CertificationSolutionRow({
             href="/products/all"
             className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-xl bg-ink-950 px-4 py-2.5 text-sm font-semibold text-cream-50 hover:bg-ink-800 transition"
           >
-            Search product → certification
+            Search by product / HSN
           </Link>
         ) : null}
       </div>
@@ -59,7 +59,7 @@ export default function CertificationSolutionRow({
                   {chip.label}
                 </span>
               </span>
-              <span className="text-xs text-ink-600 leading-relaxed line-clamp-2">
+              <span className="text-xs text-ink-600 leading-relaxed line-clamp-3">
                 {chip.description}
               </span>
             </Link>

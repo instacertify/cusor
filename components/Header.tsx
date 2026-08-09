@@ -3,8 +3,8 @@ import SearchBox from "./SearchBox";
 import MobileNav from "./MobileNav";
 import NavDropdown from "./NavDropdown";
 import { TalkToCertificationExpertLink } from "./TalkToCertificationExpert";
-import { EXPERT_CTA_HREF, EXPERT_CTA_LABEL } from "@/lib/expert-cta";
-import { ensureDbReady } from "@/lib/db";
+import { resolveExpertCta } from "@/lib/expert-cta";
+import { ensureDbReady, getSettings } from "@/lib/db";
 import { getCertifications, getTestingCategories, getPagesForNav } from "@/lib/queries";
 import { pagePublicPath } from "@/lib/pages-nav";
 import {
@@ -17,6 +17,8 @@ const MENU_SKIP = new Set(["contact", "blog", "sitemap", "home"]);
 
 export default async function Header() {
   await ensureDbReady();
+  const settings = getSettings();
+  const expertCta = resolveExpertCta(settings);
   const certs = getCertifications();
   const testingCats = getTestingCategories();
   const menuPages = getPagesForNav("menu").filter((p) => !MENU_SKIP.has(p.slug));
@@ -48,7 +50,7 @@ export default async function Header() {
   ];
 
   const resourceItems = [
-    { href: "/products", label: "Browse products", detail: "Certification solutions by category", icon: "folder" },
+    { href: "/products", label: "Browse products", detail: "Products by category", icon: "folder" },
     { href: "/products/all", label: "Search by HSN", detail: "Check the right certification", icon: "table" },
     { href: "/qco", label: "Upcoming QCOs", detail: "New mandatory deadlines", icon: "bell" },
     ...menuPages.map((p) => ({
@@ -103,14 +105,14 @@ export default async function Header() {
           <div className="flex-1 min-w-0">
             <SearchBox compact placeholder="Product, HSN, or standard…" />
           </div>
-          <TalkToCertificationExpertLink variant="header" short />
+          <TalkToCertificationExpertLink variant="header" short cta={expertCta} />
         </div>
 
         <div className="lg:hidden ml-auto flex items-center gap-2 min-w-0 flex-1 justify-end max-w-[16rem] sm:max-w-xs">
           <div className="flex-1 min-w-0 hidden min-[480px]:block">
             <SearchBox compact placeholder="Search…" />
           </div>
-          <TalkToCertificationExpertLink variant="header-mobile" short />
+          <TalkToCertificationExpertLink variant="header-mobile" short cta={expertCta} />
           <MobileNav
             groups={[
               {
@@ -147,7 +149,7 @@ export default async function Header() {
               },
               {
                 label: "",
-                items: [{ href: EXPERT_CTA_HREF, label: EXPERT_CTA_LABEL }],
+                items: [{ href: expertCta.href, label: expertCta.label }],
               },
             ]}
           />

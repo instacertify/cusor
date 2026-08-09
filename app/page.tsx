@@ -13,6 +13,7 @@ import CertificationSolutionRow from "@/components/CertificationSolutionRow";
 import { TalkToCertificationExpertLink } from "@/components/TalkToCertificationExpert";
 import { MarketBadge } from "@/components/MarketApplicability";
 import { ensureDbReady, getSettings } from "@/lib/db";
+import { resolveExpertCta } from "@/lib/expert-cta";
 import {
   getCategories,
   getCertifications,
@@ -47,6 +48,7 @@ const HOW_IT_WORKS = [
 export default async function HomePage() {
   await ensureDbReady();
   const settings = getSettings();
+  const expertCta = resolveExpertCta(settings);
   const categories = getCategories();
   const allCertifications = getCertifications();
   const certifications = allCertifications.slice(0, 7);
@@ -97,7 +99,7 @@ export default async function HomePage() {
               <Link href="/products/all" className="font-semibold text-ink-800 hover:text-butter-700">
                 Search by HSN
               </Link>
-              <TalkToCertificationExpertLink variant="link" />
+              <TalkToCertificationExpertLink variant="link" cta={expertCta} />
             </p>
           </div>
         </div>
@@ -333,9 +335,9 @@ export default async function HomePage() {
           Certification solutions &amp; product categories
         </h2>
         <p className="text-ink-600 mt-2 mb-6 sm:mb-8 text-sm sm:text-base">
-          Check for the right certification against your product, then browse by category — or{" "}
+          Match the right mark to your product, then browse by category — or{" "}
           <Link href="/certifications" className="font-semibold text-butter-700">
-            open all certification programmes
+            view certifications by market
           </Link>
           .
         </p>
@@ -424,13 +426,13 @@ export default async function HomePage() {
           <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-cream-300 bg-white px-5 py-8 sm:px-8 sm:py-10 shadow-card">
             <IconChip name="handshake" size={26} chip="xl" className="sm:w-14 sm:h-14 sm:rounded-2xl" />
             <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 mt-4 leading-tight">
-              Can’t find the right solution?
+              Still unsure which path fits?
             </h2>
             <p className="mt-3 text-sm text-ink-600 leading-relaxed max-w-md">
-              If your product, HSN or market path isn’t clear, talk to a certification expert. We’ll map the certification and testing route — free quote in 24 hours.
+              Send the product or HSN and we’ll sketch the certification and testing route. Quote comes back free within 24 hours.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <TalkToCertificationExpertLink />
+              <TalkToCertificationExpertLink cta={expertCta} />
               <Link
                 href="/products/all"
                 className="inline-flex min-h-11 items-center justify-center rounded-xl border border-cream-300 px-6 py-3 text-sm font-semibold text-ink-800 hover:border-butter-500 transition"

@@ -6,7 +6,7 @@ import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import ContactForm from "@/components/ContactForm";
 import ContactThankYou from "@/components/ContactThankYou";
-import { EXPERT_CTA_LABEL } from "@/lib/expert-cta";
+import { resolveExpertCta } from "@/lib/expert-cta";
 import { getPage, getFaqs } from "@/lib/queries";
 import { ensureDbReady, getSettings } from "@/lib/db";
 
@@ -38,6 +38,7 @@ export default async function ContactPage({ searchParams }: Props) {
   const sp = await searchParams;
   const page = getPage("contact");
   const settings = getSettings();
+  const expertCta = resolveExpertCta(settings);
   const faqs = getFaqs("page:contact");
   const initiallySent = sp.sent === "1" || sp.sent === "true";
   const errorMessage =
@@ -58,18 +59,18 @@ export default async function ContactPage({ searchParams }: Props) {
               : sp.intent === "book" || sp.intent === "test"
                 ? "Book product testing"
                 : sp.intent === "expert"
-                  ? EXPERT_CTA_LABEL
-                  : page?.hero_heading || EXPERT_CTA_LABEL}
+                  ? expertCta.label
+                  : page?.hero_heading || expertCta.label}
           </h1>
           <p className="mt-4 text-base sm:text-lg text-ink-600 leading-relaxed">
             {sp.intent === "consulting"
-              ? "Share your testing or certification goal. We save your request as a lead and someone from our team will update you within 24 working hours."
+              ? "Tell us what you need help with. We log the request and someone from the team gets back within 24 working hours."
               : sp.intent === "book" || sp.intent === "test"
-                ? "Tell us about the product or lab test you need. Your request becomes a lead — our team will update you within 24 working hours."
+                ? "Describe the product or lab test. We save it as a lead and update you within 24 working hours."
                 : sp.intent === "expert"
-                  ? "Couldn’t find the right certification or testing path? Share your product or HSN and a certification expert will map the solution — free quote in 24 hours."
+                  ? "Stuck on which mark or test to book? Share the product or HSN and we’ll sketch the path — free quote in 24 hours."
                   : page?.hero_subheading ||
-                    "Tell us about your product and a certification expert will map the standard, estimate the full cost and send a free quote within 24 hours."}
+                    "Tell us what you make and where you sell. We’ll point to the standard, sketch the full cost, and send a free quote within 24 hours."}
           </p>
           <div className="mt-8 space-y-5">
             {PROMISES.map((p) => (

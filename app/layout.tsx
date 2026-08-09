@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import TalkToCertificationExpertBar from "@/components/TalkToCertificationExpert";
 import SiteIntegrations, { SiteIntegrationsBody } from "@/components/SiteIntegrations";
 import { ensureDbReady, getSettings } from "@/lib/db";
+import { resolveExpertCta } from "@/lib/expert-cta";
 import { getPage } from "@/lib/queries";
 import { buildJsonLd } from "@/lib/seo";
 import { resolveColorScheme } from "@/lib/color-schemes";
@@ -98,6 +99,7 @@ export default async function RootLayout({
   const settings = getSettings();
   const scheme = resolveColorScheme(settings.color_scheme);
   const iconStyle = resolveIconStyle(settings.icon_style);
+  const expertCta = resolveExpertCta(settings);
   const pathname = (await headers()).get("x-pathname") || "";
   const isAdminShell = pathname.startsWith("/admin");
   const orgJsonLd = isAdminShell
@@ -125,7 +127,7 @@ export default async function RootLayout({
         {!isAdminShell && <Header />}
         <main className="flex-1">{children}</main>
         {!isAdminShell && <Footer />}
-        {!isAdminShell && <TalkToCertificationExpertBar />}
+        {!isAdminShell && <TalkToCertificationExpertBar cta={expertCta} />}
       </body>
     </html>
   );

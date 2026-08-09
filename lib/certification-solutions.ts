@@ -1,5 +1,5 @@
 /**
- * Certification solution chips for the product library.
+ * Certification solution chips shown above product categories.
  * All hrefs use existing public routes — no new URLs.
  */
 export type CertificationSolutionChip = {
@@ -15,14 +15,14 @@ export const CERTIFICATION_SOLUTIONS: CertificationSolutionChip[] = [
     id: "bis",
     label: "BIS Certification",
     href: "/certifications/bis",
-    description: "ISI / CRS marks for India — map your product to the right IS standard.",
+    description: "Required in India — map your product to the right ISI / CRS path and IS standard.",
     icon: "award",
   },
   {
     id: "bee",
     label: "BEE Certification",
     href: "/certifications/bee",
-    description: "Star labelling for energy-related appliances and equipment.",
+    description: "Required in India for energy-related appliances under star labelling.",
     icon: "zap",
   },
   {
@@ -33,17 +33,17 @@ export const CERTIFICATION_SOLUTIONS: CertificationSolutionChip[] = [
     icon: "bell",
   },
   {
-    id: "general",
-    label: "General",
+    id: "global-markets",
+    label: "Global markets",
     href: "/certifications",
-    description: "Browse every certification programme — India and export markets.",
+    description: "CE, FCC, GMARK, SABER and more — schemes for the EU, US, GCC and Saudi Arabia.",
     icon: "globe",
   },
   {
-    id: "others",
-    label: "Others",
-    href: "/category/others",
-    description: "Other products in this library — still check which certification applies.",
+    id: "product-categories",
+    label: "Product categories",
+    href: "/products#product-categories",
+    description: "Browse products by category, then match the certification that applies.",
     icon: "box",
   },
 ];

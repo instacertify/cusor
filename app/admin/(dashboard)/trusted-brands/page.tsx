@@ -90,7 +90,7 @@ export default async function AdminTrustedBrands({ searchParams }: Props) {
       <div className="bg-cream-100 rounded-2xl border border-cream-300 p-5">
         <h2 className="font-display font-bold text-ink-950 mb-1">Add brand logo</h2>
         <p className="text-xs text-ink-600 mb-4">
-          New logos join the backend library and scroll on public trust sections once marked Active.
+          New logos appear in the Trusted by scroll on public pages once marked Active.
         </p>
         <form action={saveTrustedBrand} className="space-y-3">
           <div className="grid sm:grid-cols-[1fr_1fr_100px] gap-3">

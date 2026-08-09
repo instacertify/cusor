@@ -87,32 +87,32 @@ export const CERT_APPLICABILITY: Record<string, CertApplicability> = {
     primaryMarketId: "india",
     role: "required",
     insight:
-      "Required in India for products notified under Quality Control Orders — ISI Mark (Scheme I) or CRS (Scheme II) before sale or import.",
-    alsoAcceptedIn: ["Often requested by Indian buyers and marketplaces as proof of compliance"],
+      "If your product sits under an Indian Quality Control Order, you need BIS before you sell or import — ISI Mark (Scheme I) or CRS (Scheme II).",
+    alsoAcceptedIn: ["Indian buyers and marketplaces often ask for the licence number as proof"],
   },
   bee: {
     slug: "bee",
     primaryMarketId: "india",
     role: "required",
     insight:
-      "Required in India for appliances under BEE star-labelling regulations (for example ACs, refrigerators, fans and water heaters).",
+      "Appliances sold in India under BEE star-labelling rules need the right star label — think ACs, refrigerators, fans and water heaters.",
   },
   "wpc-eta": {
     slug: "wpc-eta",
     primaryMarketId: "india",
     role: "required",
     insight:
-      "Required in India for wireless / licence-exempt radio equipment (Bluetooth, Wi-Fi and similar) before import or sale — Equipment Type Approval (ETA).",
+      "Wireless gear for India (Bluetooth, Wi-Fi and similar licence-exempt radios) needs Equipment Type Approval before import or sale.",
   },
   ce: {
     slug: "ce",
     primaryMarketId: "european-union",
     role: "required",
     insight:
-      "Required to place many products on the European Union / EEA market. CE evidence is also widely reused as a buyer or importer reference in other regions.",
+      "Many products need CE before they can sit on EU / EEA shelves. Buyers outside Europe also ask for CE files as a common safety pack.",
     alsoAcceptedIn: [
-      "Commonly accepted by global buyers as baseline safety / EMC evidence",
-      "May support parallel filings (for example Gulf or Saudi) when standards align",
+      "Useful baseline evidence for safety / EMC conversations worldwide",
+      "Can shorten Gulf or Saudi work when the standards line up",
     ],
   },
   fcc: {
@@ -120,24 +120,24 @@ export const CERT_APPLICABILITY: Record<string, CertApplicability> = {
     primaryMarketId: "united-states",
     role: "required",
     insight:
-      "Required in the United States for devices that emit radio frequency energy. Often expected by US retailers and platforms before listing.",
-    alsoAcceptedIn: ["Referenced by many global buyers for RF / EMC confidence"],
+      "Devices that put out radio energy generally need FCC before US sale. Retailers and platforms check for it before listings go live.",
+    alsoAcceptedIn: ["Buyers elsewhere often treat FCC as a solid RF / EMC signal"],
   },
   "g-mark": {
     slug: "g-mark",
     primaryMarketId: "gcc",
     role: "required",
     insight:
-      "Required for regulated categories across GCC / GSO member countries (for example Saudi Arabia, UAE, Kuwait, Qatar, Bahrain, Oman and Yemen) under Gulf technical regulations.",
-    alsoAcceptedIn: ["Saudi shipments may still need SABER registration in parallel"],
+      "Regulated Gulf categories need GMARK across GSO member countries — Saudi Arabia, UAE, Kuwait, Qatar, Bahrain, Oman and Yemen.",
+    alsoAcceptedIn: ["Saudi cargo may still need SABER on top of GMARK"],
   },
   saber: {
     slug: "saber",
     primaryMarketId: "saudi-arabia",
     role: "required",
     insight:
-      "Required for regulated products imported into Saudi Arabia — Product and Shipment Certificates of Conformity on the SABER platform before customs clearance.",
-    alsoAcceptedIn: ["Distinct from GMARK; some products need both"],
+      "Regulated goods into Saudi Arabia clear through SABER — product and shipment certificates before customs will release the cargo.",
+    alsoAcceptedIn: ["Not the same as GMARK; some SKUs need both"],
   },
 };
 
