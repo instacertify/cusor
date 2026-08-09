@@ -392,8 +392,8 @@ video {
 /* Spherical 3D wireframe globe (hero right) — true Y-axis spin */
 /* Note: do NOT put opacity/filter on 3D parents — they flatten preserve-3d. */
 .globe-stage {
-  /* 0.82× previous footprint */
-  --globe-size: min(91.84vw, 639.6px);
+  /* Prior footprint × 0.75 (−25%) */
+  --globe-size: min(68.88vw, 479.7px);
   --globe-r: calc(var(--globe-size) * 0.42);
   --globe-stroke: 1.3; /* line thickness multiplier */
   width: var(--globe-size);
