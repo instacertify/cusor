@@ -28,7 +28,14 @@ export default async function Header() {
     {
       href: "/certifications/countries",
       label: "By country",
-      detail: "Search certifications country wise",
+      detail: "Search certifications by market",
+      icon: "globe",
+      section: "Browse",
+    },
+    {
+      href: "/certifications/global-market-access",
+      label: "GMA framework",
+      detail: "Pillars, horizontal regimes, shortcuts",
       icon: "globe",
       section: "Browse",
     },
@@ -129,7 +136,11 @@ export default async function Header() {
                 items: [
                   {
                     href: "/certifications/countries",
-                    label: "Search by country",
+                    label: "Search by market / country",
+                  },
+                  {
+                    href: "/certifications/global-market-access",
+                    label: "GMA framework",
                   },
                   { href: "/certifications", label: "All certifications by market" },
                 ],

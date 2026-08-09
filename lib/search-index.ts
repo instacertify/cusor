@@ -7,6 +7,7 @@ export type QuickSearchResult = {
     | "lab"
     | "certification"
     | "cert-product"
+    | "country"
     | "testing-category"
     | "testing-service";
   name: string;
@@ -74,7 +75,7 @@ const SCOPE_TYPES: Record<QuickSearchScope, QuickSearchResult["type"][] | null> 
   all: null,
   standard: ["product", "cert-product", "testing-service", "category"],
   lab: ["lab"],
-  certification: ["certification", "cert-product"],
+  certification: ["certification", "cert-product", "country"],
   testing: ["testing-category", "testing-service"],
 };
 
@@ -122,6 +123,100 @@ function buildIndex(): IndexRow[] {
       [c.name, c.full_name, c.slug, c.region, c.summary],
       0
     );
+  }
+
+  // Country-wise GMA hubs + scheme names (SONCAP, ANATEL, CCC, …)
+  try {
+    const hubs = db
+      .prepare(
+        `SELECT id, slug, name, short_name, region, intro, overview, market_id
+         FROM country_hubs WHERE active = 1 ORDER BY sort, id`
+      )
+      .all() as Array<{
+      id: number;
+      slug: string;
+      name: string;
+      short_name: string;
+      region: string;
+      intro: string;
+      overview: string;
+      market_id: string;
+    }>;
+    const schemeStmt = db.prepare(
+      `SELECT name, cert_slug, role, summary FROM country_schemes
+       WHERE country_id = ? ORDER BY sort, id`
+    );
+    for (const h of hubs) {
+      const schemes = schemeStmt.all(h.id) as Array<{
+        name: string;
+        cert_slug: string;
+        role: string;
+        summary: string;
+      }>;
+      const schemeNames = schemes.map((s) => s.name).filter(Boolean);
+      const schemeText = schemes
+        .flatMap((s) => [s.name, s.cert_slug, s.role, s.summary])
+        .filter(Boolean);
+      push(
+        rows,
+        {
+          type: "country",
+          name: `${h.short_name || h.name} certifications`,
+          detail:
+            schemeNames.length > 0
+              ? `By market · ${schemeNames.slice(0, 4).join(" · ")}`
+              : "Country-wise certification guide",
+          href: `/certifications/countries/${h.slug}`,
+        },
+        [
+          h.name,
+          h.short_name,
+          h.slug,
+          h.market_id,
+          h.region,
+          h.intro,
+          h.overview,
+          ...schemeText,
+          "country",
+          "market",
+          "gma",
+        ],
+        0
+      );
+    }
+    push(
+      rows,
+      {
+        type: "country",
+        name: "Global Market Access",
+        detail: "GMA framework · pillars, horizontal regimes, browse by country",
+        href: "/certifications/global-market-access",
+      },
+      [
+        "global market access",
+        "gma",
+        "country wise",
+        "by market",
+        "horizontal regimes",
+        "rohs",
+        "reach",
+        "cb scheme",
+      ],
+      1
+    );
+    push(
+      rows,
+      {
+        type: "country",
+        name: "Certifications by country",
+        detail: "Search all destination markets",
+        href: "/certifications/countries",
+      },
+      ["countries", "by country", "by market", "country wise", "markets"],
+      2
+    );
+  } catch {
+    /* country_hubs may be missing on very old DBs before ensure runs */
   }
 
   const certProducts = db
@@ -369,6 +464,8 @@ export function quickSearch(
     }
     if (scope === "lab" && row.type === "lab") score -= 10;
     if (scope === "certification" && row.type === "certification") score -= 12;
+    if (scope === "certification" && row.type === "country") score -= 10;
+    if (scope === "all" && row.type === "country") score -= 4;
     scored.push({ row, score });
   }
 
