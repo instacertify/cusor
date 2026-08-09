@@ -98,12 +98,14 @@ export default async function HomePage() {
           {stats.map((s, i) => (
             <div key={i} className="min-w-0">
               {s.icon ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={s.icon}
-                  alt=""
-                  className="mb-2.5 h-8 w-8 sm:h-9 sm:w-9 object-contain"
-                />
+                <span className="mb-2.5 inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-cream-50/95 p-1.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={s.icon}
+                    alt=""
+                    className="h-full w-full object-contain"
+                  />
+                </span>
               ) : null}
               <div className="font-display text-2xl sm:text-[1.75rem] font-semibold tracking-tight text-cream-50">
                 {s.value}
