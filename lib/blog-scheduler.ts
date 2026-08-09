@@ -5,6 +5,7 @@ import {
   seedStatusForPublishAt,
   toDatetimeLocalValue,
 } from "./blog-schedule-time";
+import { syncBlogScheduleStatuses } from "./blog-schedule-sync";
 
 export type BlogPostStatus = "draft" | "scheduled" | "published";
 
@@ -41,93 +42,29 @@ export type PublishDueResult = {
   demotedSlugs: string[];
 };
 
-/**
- * Demote mistakenly live posts whose publish stamp is still in the future.
- * Idempotent. Fixes seed/import rows that were inserted as status=published too early.
- */
+/** @deprecated Prefer sync via publishDueBlogPosts — kept for direct repair calls. */
 export function demoteFuturePublishedPosts(now = new Date()): {
   demotedIds: number[];
   demotedSlugs: string[];
 } {
-  const db = getDb();
-  const rows = db
-    .prepare(
-      `SELECT id, slug, published_at FROM posts
-       WHERE status = 'published'
-         AND published_at IS NOT NULL
-         AND published_at != ''`
-    )
-    .all() as Array<{ id: number; slug: string; published_at: string }>;
-
-  const demotedIds: number[] = [];
-  const demotedSlugs: string[] = [];
-  const update = db.prepare(
-    `UPDATE posts SET status = 'scheduled' WHERE id = ? AND status = 'published'`
-  );
-
-  const tx = db.transaction(() => {
-    for (const row of rows) {
-      if (isBlogPublishDue(row.published_at, now)) continue;
-      const res = update.run(row.id);
-      if (res.changes > 0) {
-        demotedIds.push(row.id);
-        demotedSlugs.push(row.slug);
-      }
-    }
-  });
-  tx();
-
-  if (demotedIds.length > 0) {
-    console.info(
-      `[certko] blog scheduler demoted ${demotedIds.length} future-dated post(s):`,
-      demotedSlugs.join(", ")
-    );
-  }
-
-  return { demotedIds, demotedSlugs };
+  const result = syncBlogScheduleStatuses(getDb(), now);
+  return { demotedIds: result.demotedIds, demotedSlugs: result.demotedSlugs };
 }
 
 /**
- * Flip due `scheduled` posts to `published`, and demote future-dated `published` posts.
+ * Align all posts with the scheduler:
+ * demote future-dated published posts, publish due scheduled posts (including FAQ).
  * Safe to call often (idempotent). Never touches cover images.
  */
 export function publishDueBlogPosts(now = new Date()): PublishDueResult {
-  const demoted = demoteFuturePublishedPosts(now);
-
-  const db = getDb();
+  const result = syncBlogScheduleStatuses(getDb(), now);
   const nowIso = now.toISOString();
-  const due = db
-    .prepare(
-      `SELECT id, slug, published_at FROM posts
-       WHERE status = 'scheduled'
-         AND published_at IS NOT NULL
-         AND published_at != ''`
-    )
-    .all() as Array<{ id: number; slug: string; published_at: string }>;
 
-  const publishedIds: number[] = [];
-  const publishedSlugs: string[] = [];
-  const update = db.prepare(
-    `UPDATE posts SET status = 'published' WHERE id = ? AND status = 'scheduled'`
-  );
-
-  const tx = db.transaction(() => {
-    for (const row of due) {
-      if (!isBlogPublishDue(row.published_at, now)) continue;
-      const res = update.run(row.id);
-      if (res.changes > 0) {
-        publishedIds.push(row.id);
-        publishedSlugs.push(row.slug);
-      }
-    }
-  });
-  tx();
-
-  if (publishedIds.length > 0 || demoted.demotedIds.length > 0) {
-    if (publishedIds.length > 0) {
+  if (result.publishedIds.length > 0 || result.demotedIds.length > 0) {
+    if (result.publishedIds.length > 0) {
       console.info(
-        `[certko] blog scheduler published ${publishedIds.length} post(s) at ${nowIso}:`,
-        publishedSlugs.join(", ")
+        `[certko] blog scheduler published ${result.publishedIds.length} post(s) at ${nowIso}:`,
+        result.publishedSlugs.join(", ")
       );
     }
     void import("./sitemap-xml")
@@ -137,12 +74,7 @@ export function publishDueBlogPosts(now = new Date()): PublishDueResult {
       });
   }
 
-  return {
-    publishedIds,
-    publishedSlugs,
-    demotedIds: demoted.demotedIds,
-    demotedSlugs: demoted.demotedSlugs,
-  };
+  return result;
 }
 
 /** Resolve form status + publish_at into a safe DB status / timestamp pair. */
