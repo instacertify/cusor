@@ -213,29 +213,34 @@ export default async function HomePage() {
             Pick a market to open its certification path — then confirm against your product or HSN.
           </p>
 
-          <ul className="mx-auto max-w-3xl divide-y divide-cream-300 rounded-2xl border border-cream-300 bg-white shadow-card overflow-hidden">
-            {countryHubs.map((hub) => (
-              <li key={hub.slug}>
-                <Link
-                  href={countryHubPath(hub.slug)}
-                  className="group flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-5 sm:px-6 py-4 sm:py-5 hover:bg-cream-50 transition"
+          <div className="-mx-4 sm:mx-0">
+            <ul className="flex gap-3 overflow-x-auto px-4 sm:px-0 pb-2 sm:pb-0 sm:grid sm:grid-cols-5 sm:gap-4 snap-x snap-mandatory sm:overflow-visible">
+              {countryHubs.map((hub) => (
+                <li
+                  key={hub.slug}
+                  className="min-w-[11.5rem] max-w-[14rem] shrink-0 snap-start sm:min-w-0 sm:max-w-none"
                 >
-                  <div className="min-w-0">
-                    <p className="font-display text-lg font-semibold text-ink-950 group-hover:text-butter-700 transition">
-                      {hub.name}
-                    </p>
-                    <p className="mt-1 text-xs sm:text-sm font-medium text-ink-500 tracking-wide">
-                      {hub.schemes.map((s) => s.name).join(" · ")}
-                    </p>
-                  </div>
-                  <span className="inline-flex shrink-0 items-center gap-1 text-sm font-bold text-butter-700">
-                    Open guide
-                    <Icon name="arrow-right" size={15} />
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+                  <Link
+                    href={countryHubPath(hub.slug)}
+                    className="group flex h-full flex-col justify-between rounded-2xl border border-cream-300 bg-white px-4 py-5 transition hover:border-butter-500 hover:bg-cream-50"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-display text-lg font-semibold text-ink-950 group-hover:text-butter-700 transition leading-snug">
+                        {hub.shortName}
+                      </p>
+                      <p className="mt-2 text-xs font-medium text-ink-500 leading-relaxed">
+                        {hub.schemes.map((s) => s.name).join(" · ")}
+                      </p>
+                    </div>
+                    <span className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-butter-700">
+                      Open
+                      <Icon name="arrow-right" size={15} />
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5">
             <Link
