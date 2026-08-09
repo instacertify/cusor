@@ -492,6 +492,33 @@ video {
     rotateX(var(--globe-p, 0deg))
     translateZ(var(--globe-r));
 }
+
+/* Consumer product line-art riding inside the rotating sphere */
+.globe-item {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: clamp(24px, 3.4vw, 36px);
+  height: clamp(24px, 3.4vw, 36px);
+  margin: calc(clamp(24px, 3.4vw, 36px) / -2);
+  color: var(--color-ink-950);
+  transform-style: preserve-3d;
+  /* Sit just inside the sphere surface, facing outward */
+  transform:
+    rotateY(var(--globe-a, 0deg))
+    rotateX(var(--globe-p, 0deg))
+    translateZ(calc(var(--globe-r) * 0.88));
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  opacity: 0.95;
+}
+.globe-item-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 1px 0 rgb(250 246 238 / 0.7));
+}
 .globe-glow {
   position: absolute;
   border-radius: 9999px;
