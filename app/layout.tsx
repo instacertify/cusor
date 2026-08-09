@@ -4,6 +4,7 @@ import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import TalkToCertificationExpertBar from "@/components/TalkToCertificationExpert";
 import SiteIntegrations, { SiteIntegrationsBody } from "@/components/SiteIntegrations";
 import { ensureDbReady, getSettings } from "@/lib/db";
 import { getPage } from "@/lib/queries";
@@ -124,6 +125,7 @@ export default async function RootLayout({
         {!isAdminShell && <Header />}
         <main className="flex-1">{children}</main>
         {!isAdminShell && <Footer />}
+        {!isAdminShell && <TalkToCertificationExpertBar />}
       </body>
     </html>
   );

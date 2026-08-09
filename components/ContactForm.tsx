@@ -82,9 +82,7 @@ export default function ContactForm({
         ? "Book testing"
         : intent === "certification"
           ? "Request a quote for this certification"
-          : intent === "expert"
-            ? "Talk to an expert"
-            : "Request a free quote";
+          : "Talk to a certification expert";
 
   const productLabel =
     intent === "consulting"

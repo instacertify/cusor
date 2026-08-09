@@ -6,6 +6,7 @@ import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import ContactForm from "@/components/ContactForm";
 import ContactThankYou from "@/components/ContactThankYou";
+import { EXPERT_CTA_LABEL } from "@/lib/expert-cta";
 import { getPage, getFaqs } from "@/lib/queries";
 import { ensureDbReady, getSettings } from "@/lib/db";
 
@@ -57,8 +58,8 @@ export default async function ContactPage({ searchParams }: Props) {
               : sp.intent === "book" || sp.intent === "test"
                 ? "Book product testing"
                 : sp.intent === "expert"
-                  ? "Talk to an expert"
-                  : page?.hero_heading || "Talk to a BIS expert"}
+                  ? EXPERT_CTA_LABEL
+                  : page?.hero_heading || EXPERT_CTA_LABEL}
           </h1>
           <p className="mt-4 text-base sm:text-lg text-ink-600 leading-relaxed">
             {sp.intent === "consulting"
@@ -66,9 +67,9 @@ export default async function ContactPage({ searchParams }: Props) {
               : sp.intent === "book" || sp.intent === "test"
                 ? "Tell us about the product or lab test you need. Your request becomes a lead — our team will update you within 24 working hours."
                 : sp.intent === "expert"
-                  ? "Couldn’t find the right certification or testing path? Share your product or HSN and we’ll map the solution — free quote in 24 hours."
+                  ? "Couldn’t find the right certification or testing path? Share your product or HSN and a certification expert will map the solution — free quote in 24 hours."
                   : page?.hero_subheading ||
-                    "Tell us about your product and we will map the standard, estimate the full cost and send a free quote within 24 hours."}
+                    "Tell us about your product and a certification expert will map the standard, estimate the full cost and send a free quote within 24 hours."}
           </p>
           <div className="mt-8 space-y-5">
             {PROMISES.map((p) => (

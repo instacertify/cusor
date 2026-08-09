@@ -10,6 +10,7 @@ import NewsletterSignup from "@/components/NewsletterSignup";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import TrustedBrandsStrip from "@/components/TrustedBrandsStrip";
 import CertificationSolutionRow from "@/components/CertificationSolutionRow";
+import { TalkToCertificationExpertLink } from "@/components/TalkToCertificationExpert";
 import { ensureDbReady, getSettings } from "@/lib/db";
 import {
   getCategories,
@@ -96,9 +97,7 @@ export default async function HomePage() {
               <Link href="/products/all" className="font-semibold text-ink-800 hover:text-butter-700">
                 Search by HSN
               </Link>
-              <Link href="/contact" className="font-semibold text-butter-700 hover:text-butter-600">
-                Talk to an expert
-              </Link>
+              <TalkToCertificationExpertLink variant="link" />
             </p>
           </div>
         </div>
@@ -418,15 +417,10 @@ export default async function HomePage() {
               Can’t find the right solution?
             </h2>
             <p className="mt-3 text-sm text-ink-600 leading-relaxed max-w-md">
-              If your product, HSN or market path isn’t clear, talk to a Certko expert. We’ll map the certification and testing route — free quote in 24 hours.
+              If your product, HSN or market path isn’t clear, talk to a certification expert. We’ll map the certification and testing route — free quote in 24 hours.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/contact?intent=expert"
-                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-butter-500 px-6 py-3 text-sm font-semibold text-ink-950 hover:bg-butter-400 transition"
-              >
-                Talk to an expert
-              </Link>
+              <TalkToCertificationExpertLink />
               <Link
                 href="/products/all"
                 className="inline-flex min-h-11 items-center justify-center rounded-xl border border-cream-300 px-6 py-3 text-sm font-semibold text-ink-800 hover:border-butter-500 transition"

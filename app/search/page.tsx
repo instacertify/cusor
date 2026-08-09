@@ -798,7 +798,7 @@ export default async function SearchPage({ searchParams }: Props) {
           ) : !showBrowsePicks ? (
             <p className="mt-4 text-ink-600 text-sm">
               No products matched. Try a shorter keyword (e.g. “cable” instead of the full product name), or{" "}
-              <Link href="/contact" className="font-bold text-butter-700">ask an expert</Link> — we answer within 24 hours.
+              <Link href="/contact?intent=expert" className="font-bold text-butter-700">talk to a certification expert</Link> — we answer within 24 hours.
             </p>
           ) : null}
           {tab === "all" && productTotal > products.length && (
