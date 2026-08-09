@@ -11,7 +11,6 @@ import TestimonialStrip from "@/components/TestimonialStrip";
 import TrustedBrandsStrip from "@/components/TrustedBrandsStrip";
 import CertificationSolutionRow from "@/components/CertificationSolutionRow";
 import { TalkToCertificationExpertLink } from "@/components/TalkToCertificationExpert";
-import { MarketBadge } from "@/components/MarketApplicability";
 import { ensureDbReady, getSettings } from "@/lib/db";
 import {
   getCategories,
@@ -22,7 +21,7 @@ import {
   getUpcomingQcos,
 } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
-import { groupCertificationsByMarket } from "@/lib/market-applicability";
+import { countryHubPath, getCountryHubs } from "@/lib/country-certifications";
 
 export const dynamic = "force-dynamic";
 
@@ -48,9 +47,8 @@ export default async function HomePage() {
   await ensureDbReady();
   const settings = getSettings();
   const categories = getCategories();
-  const allCertifications = getCertifications();
-  const certifications = allCertifications.slice(0, 7);
-  const globalMarketGroups = groupCertificationsByMarket(allCertifications);
+  const certifications = getCertifications().slice(0, 7);
+  const countryHubs = getCountryHubs();
   const testingCategories = getTestingCategories().slice(0, 6);
   const featured = getFeaturedProducts(8);
   const faqs = getFaqs("global");
@@ -205,48 +203,40 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Certification pathways organised by market */}
+      {/* Markets — destination picker only; scheme detail lives on country / cert pages */}
       <section className="bg-cream-100 border-y border-cream-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
           <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 text-center px-2 leading-snug">
-            Certification pathways by market
+            Where are you selling?
           </h2>
-          <p className="text-center text-ink-600 mt-2 mb-8 sm:mb-10 text-sm sm:text-base px-2 max-w-2xl mx-auto">
-            See where each scheme is required — India, European Union, United States, GCC countries and Saudi Arabia — then confirm against your product or HSN.
+          <p className="text-center text-ink-600 mt-2 mb-8 sm:mb-10 text-sm sm:text-base px-2 max-w-xl mx-auto">
+            Pick a market to open its certification path — then confirm against your product or HSN.
           </p>
-          <div className="space-y-10">
-            {globalMarketGroups.map(({ market, certs: groupCerts }) => (
-              <div key={market.id}>
-                <div className="mb-4 max-w-2xl mx-auto text-center sm:text-left sm:mx-0">
-                  <h3 className="font-display text-xl font-semibold text-ink-950">{market.heading}</h3>
-                  <p className="mt-1 text-sm text-ink-600">{market.blurb}</p>
-                </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  {groupCerts.map((c) => (
-                    <Link
-                      key={c.id}
-                      href={`/certifications/${c.slug}`}
-                      className="group relative bg-white rounded-2xl sm:rounded-3xl border border-cream-300 shadow-card p-5 sm:p-7 hover:border-butter-500 transition block"
-                    >
-                      <IconChip name={c.icon || "award"} size={26} chip="xl" className="sm:w-14 sm:h-14 sm:rounded-2xl" />
-                      <div className="mt-4">
-                        <MarketBadge slug={c.slug} region={c.region} />
-                      </div>
-                      <h3 className="font-display text-lg font-semibold text-ink-950 mt-2 group-hover:text-butter-700 transition">
-                        {c.name}
-                      </h3>
-                      <p className="mt-2 text-sm text-ink-600 leading-relaxed line-clamp-3">
-                        {c.summary}
-                      </p>
-                      <span className="mt-4 inline-flex text-sm font-bold text-butter-700">
-                        View requirements →
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
+
+          <ul className="mx-auto max-w-3xl divide-y divide-cream-300 rounded-2xl border border-cream-300 bg-white shadow-card overflow-hidden">
+            {countryHubs.map((hub) => (
+              <li key={hub.slug}>
+                <Link
+                  href={countryHubPath(hub.slug)}
+                  className="group flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-5 sm:px-6 py-4 sm:py-5 hover:bg-cream-50 transition"
+                >
+                  <div className="min-w-0">
+                    <p className="font-display text-lg font-semibold text-ink-950 group-hover:text-butter-700 transition">
+                      {hub.name}
+                    </p>
+                    <p className="mt-1 text-xs sm:text-sm font-medium text-ink-500 tracking-wide">
+                      {hub.schemes.map((s) => s.name).join(" · ")}
+                    </p>
+                  </div>
+                  <span className="inline-flex shrink-0 items-center gap-1 text-sm font-bold text-butter-700">
+                    Open guide
+                    <Icon name="arrow-right" size={15} />
+                  </span>
+                </Link>
+              </li>
             ))}
-          </div>
+          </ul>
+
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5">
             <Link
               href="/products/all"
@@ -255,10 +245,10 @@ export default async function HomePage() {
               Check your product / HSN
             </Link>
             <Link
-              href="/certifications"
+              href="/certifications/countries"
               className="inline-flex min-h-11 items-center justify-center text-sm font-semibold text-butter-700 hover:text-butter-600"
             >
-              Browse certifications by market →
+              Search all countries →
             </Link>
           </div>
         </div>
