@@ -47,8 +47,8 @@ function Card({ t, tone }: { t: Testimonial; tone: "dark" | "light" }) {
 }
 
 /**
- * Sitewide trust strip — Trusted by Global Brands marquee (Admin logo library)
- * plus random featured testimonials from the CMS library.
+ * Sitewide trust strip — Trusted by Global Brands marquee
+ * plus random featured testimonials from the CMS.
  * Homepage uses variant="full"; inner pages use the compact strip (default).
  */
 export default async function TestimonialStrip({
@@ -71,7 +71,7 @@ export default async function TestimonialStrip({
       ? (() => {
           const featured = getRandomFeaturedTestimonials(Math.max(count, 3));
           if (featured.length >= 3) return featured.slice(0, Math.max(count, 3));
-          // Fall back to full library order if not enough featured rows
+          // Fall back to full list order if not enough featured rows
           return getTestimonials().slice(0, Math.max(count, 3));
         })()
       : getRandomFeaturedTestimonials(count);
