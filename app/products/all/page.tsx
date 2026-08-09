@@ -6,6 +6,7 @@ import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import ScrollTable from "@/components/ScrollTable";
 import ProductsTableFilters from "@/components/ProductsTableFilters";
+import CertificationSolutionRow from "@/components/CertificationSolutionRow";
 import {
   queryProductsTable,
   getCategories,
@@ -106,18 +107,19 @@ export default async function ProductsTablePage({ searchParams }: Props) {
         crumbs={[{ label: "Products", href: "/products" }, { label: "Search Table" }]}
       />
       <h1 className="font-display text-[1.65rem] leading-tight sm:text-4xl font-semibold text-ink-950 tracking-tight">
-        BIS Product Search
+        Search product for certification
       </h1>
       <p className="mt-2 sm:mt-3 text-ink-600 max-w-3xl text-sm sm:text-base">
         <span className="sm:hidden">
-          Find any notified product — IS, HSN, QCO, fees and labs.
+          Check the right certification — search by product, IS, HSN or QCO.
         </span>
         <span className="hidden sm:inline">
-          Every notified product with all its aspects in one place — IS standard, HSN code,
-          QCO status, annual marking fees, real lab test cost range and approved laboratories.
-          Search by any of them.
+          Check for the right certification against your product. Search IS standard, HSN code,
+          QCO status, marking fees, lab test cost range and approved laboratories in one place.
         </span>
       </p>
+
+      <CertificationSolutionRow className="mt-5 sm:mt-6" showSearchCta={false} />
 
       <ProductsTableFilters
         q={q}

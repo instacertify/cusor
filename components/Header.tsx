@@ -39,8 +39,8 @@ export default async function Header() {
   ];
 
   const resourceItems = [
-    { href: "/products", label: "Browse products", detail: "By notified category", icon: "folder" },
-    { href: "/products/all", label: "Search by HSN", detail: "HSN, QCO, fees & labs", icon: "table" },
+    { href: "/products", label: "Browse products", detail: "Certification solutions by category", icon: "folder" },
+    { href: "/products/all", label: "Search by HSN", detail: "Check the right certification", icon: "table" },
     { href: "/qco", label: "Upcoming QCOs", detail: "New mandatory deadlines", icon: "bell" },
     ...menuPages.map((p) => ({
       href: pagePublicPath(p.slug),
