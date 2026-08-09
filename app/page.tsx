@@ -48,8 +48,19 @@ export default async function HomePage() {
   const categories = getCategories();
   const allCertifications = getCertifications();
   const certifications = allCertifications.slice(0, 7);
-  const indiaMandatory = allCertifications.filter((c) =>
-    /india/i.test(c.region || "")
+  /** Curated global pathways — India + key export markets. */
+  const GLOBAL_MARKET_ORDER = [
+    "bis",
+    "ce",
+    "fcc",
+    "g-mark",
+    "saber",
+    "bee",
+    "wpc-eta",
+  ];
+  const bySlug = new Map(allCertifications.map((c) => [c.slug, c]));
+  const globalMarketCerts = GLOBAL_MARKET_ORDER.map((slug) => bySlug.get(slug)).filter(
+    (c): c is NonNullable<typeof c> => Boolean(c)
   );
   const testingCategories = getTestingCategories().slice(0, 6);
   const featured = getFeaturedProducts(8);
@@ -205,17 +216,17 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Mandatory certification for India */}
+      {/* Certification pathways for global markets */}
       <section className="bg-cream-100 border-y border-cream-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
-          <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 text-center">
-            Mandatory certification for India
+          <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 text-center px-2 leading-snug">
+            Certification pathways for global markets
           </h2>
           <p className="text-center text-ink-600 mt-2 mb-8 sm:mb-10 text-sm sm:text-base px-2 max-w-2xl mx-auto">
-            Core India regimes most manufacturers and importers must clear before sale — start here, then check your HSN.
+            Map the schemes that open India and export shelves — BIS, BEE, GMARK, CE, FCC, SABER, WPC — then confirm against your product or HSN.
           </p>
-          <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
-            {indiaMandatory.map((c) => (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {globalMarketCerts.map((c) => (
               <Link
                 key={c.id}
                 href={`/certifications/${c.slug}`}
@@ -223,7 +234,7 @@ export default async function HomePage() {
               >
                 <IconChip name={c.icon || "award"} size={26} chip="xl" className="sm:w-14 sm:h-14 sm:rounded-2xl" />
                 <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-butter-700">
-                  India · Mandatory
+                  {c.region || "Global"}
                 </p>
                 <h3 className="font-display text-lg font-semibold text-ink-950 mt-1 group-hover:text-butter-700 transition">
                   {c.name}
@@ -245,10 +256,10 @@ export default async function HomePage() {
               Check your product / HSN
             </Link>
             <Link
-              href="/qco"
+              href="/certifications"
               className="inline-flex min-h-11 items-center justify-center text-sm font-semibold text-butter-700 hover:text-butter-600"
             >
-              Upcoming QCO deadlines →
+              Browse all certifications →
             </Link>
           </div>
         </div>
