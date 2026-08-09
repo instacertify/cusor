@@ -6,6 +6,7 @@ import SearchBox from "@/components/SearchBox";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
+import { MarketBadge } from "@/components/MarketApplicability";
 import {
   searchProducts,
   countSearchProducts,
@@ -626,8 +627,8 @@ export default async function SearchPage({ searchParams }: Props) {
                     className="bg-white rounded-2xl border border-cream-300 p-5 hover:border-butter-500 transition flex flex-col gap-3"
                   >
                     <Link href={`/certifications/${c.slug}`}>
-                      <div className="text-xs font-semibold uppercase tracking-wide text-butter-700">{c.region}</div>
-                      <div className="mt-1 font-display font-semibold text-ink-950">{c.name}</div>
+                      <MarketBadge slug={c.slug} region={c.region} />
+                      <div className="mt-2 font-display font-semibold text-ink-950">{c.name}</div>
                       <p className="mt-2 text-sm text-ink-600 line-clamp-2">{c.summary}</p>
                     </Link>
                     <RequestQuoteButton subject={c.name} kind="certification" variant="compact" short />

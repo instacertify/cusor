@@ -11,12 +11,14 @@ import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import CertProductCatalog from "@/components/CertProductCatalog";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
+import { CertMarketInsight, MarketBadge } from "@/components/MarketApplicability";
 import {
   getCertificationBySlug,
   getCertifications,
   getFaqs,
   getCertificationCoveredProducts,
 } from "@/lib/queries";
+import { certMarketLabel } from "@/lib/market-applicability";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -83,9 +85,10 @@ export default async function CertificationPage({ params }: Props) {
 
       <div className="grid lg:grid-cols-[1.4fr_1fr] gap-10 items-center">
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-xs font-bold uppercase tracking-wide bg-butter-300/50 text-butter-700 rounded-full px-3 py-1">
-              {cert.region}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <MarketBadge slug={cert.slug} region={cert.region} />
+            <span className="text-xs font-semibold text-ink-500">
+              {certMarketLabel(cert.slug, cert.region)}
             </span>
           </div>
           <div className="flex items-center gap-4">
@@ -98,6 +101,7 @@ export default async function CertificationPage({ params }: Props) {
             </div>
           </div>
           <p className="mt-5 text-lg text-ink-600 leading-relaxed">{cert.summary}</p>
+          <CertMarketInsight slug={cert.slug} region={cert.region} />
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <RequestQuoteButton subject={cert.name} kind="certification" />
             {catalog.length > 0 && (
@@ -194,7 +198,9 @@ export default async function CertificationPage({ params }: Props) {
                 <IconChip name={c.icon} size={19} chip="sm" tone="neutral" className="w-9 h-9" />
                 <span>
                   <span className="block text-sm font-bold text-ink-950 group-hover:text-butter-700 transition">{c.name}</span>
-                  <span className="block text-[11px] text-ink-500">{c.region}</span>
+                  <span className="block text-[11px] text-ink-500">
+                    {certMarketLabel(c.slug, c.region)}
+                  </span>
                 </span>
               </Link>
               <RequestQuoteButton subject={c.name} kind="certification" variant="compact" short />
