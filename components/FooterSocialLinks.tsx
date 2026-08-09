@@ -12,10 +12,10 @@ export default function FooterSocialLinks({
 
   return (
     <div className={className}>
-      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-ink-500 mb-3">
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-500 mb-2.5">
         Follow us
       </p>
-      <ul className="flex flex-wrap items-center gap-2.5">
+      <ul className="flex flex-wrap items-center gap-2 sm:justify-end">
         {links.map((link) => (
           <li key={link.id}>
             <a
@@ -24,17 +24,17 @@ export default function FooterSocialLinks({
               rel="noopener noreferrer"
               aria-label={link.label}
               title={link.label}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-ink-700 bg-ink-900 text-cream-100 transition hover:border-butter-400 hover:bg-ink-800 hover:text-butter-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-butter-400"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-ink-700 bg-ink-900/80 text-cream-100 transition hover:border-butter-400 hover:bg-ink-800 hover:text-butter-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-butter-400"
             >
               {link.iconSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={link.iconSrc}
                   alt=""
-                  className="h-4 w-4 object-contain"
+                  className="h-3.5 w-3.5 object-contain"
                 />
               ) : (
-                <SocialIconGlyph id={link.id} className="h-4 w-4" />
+                <SocialIconGlyph id={link.id} className="h-3.5 w-3.5" />
               )}
             </a>
           </li>
