@@ -851,9 +851,9 @@ export function seedDatabase(db: SqliteDatabase) {
       meta_title: "Get BIS Certification Help | Free Quote in 24 Hours | Certko",
       meta_description:
         "Connect with verified BIS consultants. Application, testing, factory inspection and licence grant handled end-to-end. Free quote in 24 hours.",
-      hero_heading: "Talk to a BIS expert",
+      hero_heading: "Talk to a certification expert",
       hero_subheading:
-        "Tell us about your product and we will map the standard, estimate the full cost and send a free quote within 24 hours.",
+        "Tell us about your product and a certification expert will map the standard, estimate the full cost and send a free quote within 24 hours.",
       content: "",
       image: "/images/pages/contact.png",
     });

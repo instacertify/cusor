@@ -199,8 +199,8 @@ export default async function ProductsTablePage({ searchParams }: Props) {
         {products.length === 0 && (
           <div className="bg-white rounded-2xl border border-cream-300 px-4 py-10 text-center text-ink-500 text-sm">
             No products matched. Try a shorter keyword, or{" "}
-            <Link href="/contact" className="font-semibold text-butter-700">
-              ask an expert
+            <Link href="/contact?intent=expert" className="font-semibold text-butter-700">
+              talk to a certification expert
             </Link>
             .
           </div>
@@ -272,8 +272,8 @@ export default async function ProductsTablePage({ searchParams }: Props) {
                   <tr>
                     <td colSpan={7} className="px-4 py-10 text-center text-ink-500 text-sm">
                       No products matched. Try a shorter keyword, or{" "}
-                      <Link href="/contact" className="font-semibold text-butter-700">
-                        ask an expert
+                      <Link href="/contact?intent=expert" className="font-semibold text-butter-700">
+                        talk to a certification expert
                       </Link>
                       .
                     </td>

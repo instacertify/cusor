@@ -375,6 +375,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureTestimonialsLibrary(db);
   ensureTrustedBrandsLibrary(db);
   clearLegacyHomeAnnouncement(db);
+  ensureContactExpertCopy(db);
   scrubLabPublicContactDetails(db);
 }
 
@@ -394,7 +395,34 @@ function runEnsures(db: SqliteDatabase) {
   ensureTestimonialsLibrary(db);
   ensureTrustedBrandsLibrary(db);
   clearLegacyHomeAnnouncement(db);
+  ensureContactExpertCopy(db);
   scrubLabPublicContactDetails(db);
+}
+
+/** Upgrade legacy contact-page hero to “Talk to a certification expert”. */
+function ensureContactExpertCopy(db: SqliteDatabase) {
+  const row = db
+    .prepare("SELECT hero_heading, hero_subheading FROM pages WHERE slug = 'contact'")
+    .get() as { hero_heading: string; hero_subheading: string } | undefined;
+  if (!row) return;
+
+  const heading = (row.hero_heading || "").trim();
+  const subheading = (row.hero_subheading || "").trim();
+  const nextHeading =
+    !heading || heading === "Talk to a BIS expert" || heading === "Talk to an expert"
+      ? "Talk to a certification expert"
+      : heading;
+  const nextSubheading =
+    !subheading ||
+    subheading ===
+      "Tell us about your product and we will map the standard, estimate the full cost and send a free quote within 24 hours."
+      ? "Tell us about your product and a certification expert will map the standard, estimate the full cost and send a free quote within 24 hours."
+      : subheading;
+
+  if (nextHeading === heading && nextSubheading === subheading) return;
+  db.prepare(
+    "UPDATE pages SET hero_heading = ?, hero_subheading = ? WHERE slug = 'contact'"
+  ).run(nextHeading, nextSubheading);
 }
 
 /** Remove the old default homepage announcement chip from existing installs. */

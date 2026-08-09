@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ensureDbReady, getSettings } from "@/lib/db";
-import RequestQuoteButton, { type QuoteKind, quoteLabel } from "./RequestQuoteButton";
+import RequestQuoteButton, { type QuoteKind } from "./RequestQuoteButton";
+import { TalkToCertificationExpertLink } from "./TalkToCertificationExpert";
 
 export default async function CtaBanner({
   subject,
@@ -62,12 +63,7 @@ export default async function CtaBanner({
                 ) : null}
               </>
             ) : (
-              <a
-                href="/contact"
-                className="inline-flex items-center justify-center min-h-11 bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3 text-sm transition"
-              >
-                {quoteLabel("general")}
-              </a>
+              <TalkToCertificationExpertLink />
             )}
             <Link
               href="/blog"

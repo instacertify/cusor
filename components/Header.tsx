@@ -2,6 +2,8 @@ import Logo from "./Logo";
 import SearchBox from "./SearchBox";
 import MobileNav from "./MobileNav";
 import NavDropdown from "./NavDropdown";
+import { TalkToCertificationExpertLink } from "./TalkToCertificationExpert";
+import { EXPERT_CTA_HREF, EXPERT_CTA_LABEL } from "@/lib/expert-cta";
 import { ensureDbReady } from "@/lib/db";
 import { getCertifications, getTestingCategories, getPagesForNav } from "@/lib/queries";
 import { pagePublicPath } from "@/lib/pages-nav";
@@ -90,28 +92,18 @@ export default async function Header() {
           <NavDropdown label="Resources" items={uniqueResources} />
         </nav>
 
-        <div className="hidden lg:flex items-center gap-2.5 ml-auto shrink-0 w-full max-w-xs xl:max-w-sm">
+        <div className="hidden lg:flex items-center gap-2.5 ml-auto shrink-0 w-full max-w-md xl:max-w-lg">
           <div className="flex-1 min-w-0">
             <SearchBox compact placeholder="Product, HSN, or standard…" />
           </div>
-          <a
-            href="/contact"
-            className="shrink-0 bg-butter-500 hover:bg-butter-400 text-ink-950 text-sm font-semibold rounded-xl px-4 py-2.5 transition"
-          >
-            Get help
-          </a>
+          <TalkToCertificationExpertLink variant="header" short />
         </div>
 
-        <div className="lg:hidden ml-auto flex items-center gap-2 min-w-0 flex-1 justify-end max-w-[14rem] sm:max-w-xs">
-          <div className="flex-1 min-w-0 hidden min-[420px]:block">
+        <div className="lg:hidden ml-auto flex items-center gap-2 min-w-0 flex-1 justify-end max-w-[16rem] sm:max-w-xs">
+          <div className="flex-1 min-w-0 hidden min-[480px]:block">
             <SearchBox compact placeholder="Search…" />
           </div>
-          <a
-            href="/contact"
-            className="inline-flex items-center justify-center min-h-11 rounded-xl bg-butter-500 hover:bg-butter-400 px-3 text-xs font-bold text-ink-950 transition shrink-0"
-          >
-            Help
-          </a>
+          <TalkToCertificationExpertLink variant="header-mobile" short />
           <MobileNav
             groups={[
               {
@@ -137,6 +129,10 @@ export default async function Header() {
                   (item, index, arr) =>
                     arr.findIndex((other) => other.href === item.href) === index
                 ),
+              },
+              {
+                label: "",
+                items: [{ href: EXPERT_CTA_HREF, label: EXPERT_CTA_LABEL }],
               },
             ]}
           />
