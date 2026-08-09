@@ -80,9 +80,9 @@ export default function GlobeWatermark({
         </div>
       </div>
 
-      {/* Cream wall — strong on the left for copy, open on the right for the sphere */}
-      <div className="absolute inset-0 bg-gradient-to-r from-cream-50 from-0% via-cream-50/90 via-48% to-cream-50/18" />
-      <div className="absolute inset-0 bg-gradient-to-t from-cream-50/90 via-transparent to-cream-50/40" />
+      {/* Cream wall — strong on the left for copy, mostly clear on the right for navy lines */}
+      <div className="absolute inset-0 bg-gradient-to-r from-cream-50 from-0% via-cream-50/85 via-45% to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-cream-50/85 via-transparent to-cream-50/30" />
     </div>
   );
 }

@@ -435,7 +435,7 @@ video {
 .globe-ring {
   position: absolute;
   border-radius: 9999px;
-  border: 1.7px solid color-mix(in srgb, var(--color-ink-950) 78%, transparent);
+  border: 2px solid var(--color-ink-950);
   background: transparent;
   transform-style: preserve-3d;
   backface-visibility: visible;
@@ -446,8 +446,8 @@ video {
   transform: rotateY(var(--globe-a, 0deg));
 }
 .globe-ring--meridian:nth-child(odd) {
-  border-color: color-mix(in srgb, var(--color-ink-950) 48%, transparent);
-  border-width: 1.25px;
+  border-color: var(--color-ink-800);
+  border-width: 1.45px;
 }
 .globe-ring--latitude {
   left: 50%;
@@ -457,8 +457,8 @@ video {
   margin-left: calc(var(--globe-r) * -1 * var(--globe-s, 1));
   margin-top: calc(var(--globe-r) * -1 * var(--globe-s, 1));
   transform: rotateX(90deg) translateZ(calc(var(--globe-r) * var(--globe-z, 0)));
-  border-color: color-mix(in srgb, var(--color-ink-950) 70%, transparent);
-  border-width: 1.45px;
+  border-color: var(--color-ink-900);
+  border-width: 1.7px;
 }
 .globe-rim {
   position: absolute;
@@ -468,10 +468,10 @@ video {
   height: calc(var(--globe-r) * 2);
   margin: calc(var(--globe-r) * -1) 0 0 calc(var(--globe-r) * -1);
   border-radius: 9999px;
-  border: 2.6px solid color-mix(in srgb, var(--color-ink-950) 88%, transparent);
+  border: 2.8px solid var(--color-ink-950);
   box-shadow:
-    0 18px 40px rgb(22 38 61 / 0.14),
-    0 0 0 12px rgb(22 38 61 / 0.04);
+    0 18px 40px rgb(22 38 61 / 0.18),
+    0 0 0 12px rgb(22 38 61 / 0.05);
   transform: translateZ(2px);
   transform-style: preserve-3d;
 }
@@ -483,7 +483,7 @@ video {
   height: 8px;
   margin: -4px;
   border-radius: 9999px;
-  background: color-mix(in srgb, var(--color-ink-950) 70%, transparent);
+  background: var(--color-ink-950);
   transform-style: preserve-3d;
   transform:
     rotateY(var(--globe-a, 0deg))
