@@ -16,7 +16,7 @@ import type {
   HeroSlide,
 } from "./db";
 import { relatedSearch } from "./search-index";
-import { publishDueBlogPosts } from "./blog-scheduler";
+import { isBlogPubliclyVisible, publishDueBlogPosts } from "./blog-scheduler";
 
 // ---------- categories ----------
 export function getCategories(): Category[] {
@@ -365,44 +365,50 @@ function flushDueBlogPosts() {
   }
 }
 
-/** Live posts are status=published. Scheduled posts stay hidden until the scheduler flips them. */
+/**
+ * Live posts are status=published.
+ * `flushDueBlogPosts()` demotes future-dated published rows to scheduled first,
+ * so this filter stays accurate for lists / counts / sitemaps.
+ */
 const LIVE_POST_SQL = `p.status = 'published'`;
 
 export function getPublishedPostsByAuthor(authorId: number, limit = 50): Post[] {
   flushDueBlogPosts();
-  return getDb()
+  const rows = getDb()
     .prepare(
       `SELECT ${POST_AUTHOR_SELECT}
        FROM posts p
        LEFT JOIN authors a ON a.id = p.author_id
        WHERE ${LIVE_POST_SQL} AND p.author_id = ?
-       ORDER BY p.published_at DESC, p.id DESC
-       LIMIT ?`
+       ORDER BY p.published_at DESC, p.id DESC`
     )
-    .all(authorId, limit) as Post[];
+    .all(authorId) as Post[];
+  return rows.filter((p) => isBlogPubliclyVisible(p)).slice(0, limit);
 }
 
 export function countPublishedPosts(): number {
   flushDueBlogPosts();
-  return (
-    getDb()
-      .prepare(`SELECT COUNT(*) AS n FROM posts p WHERE ${LIVE_POST_SQL}`)
-      .get() as { n: number }
-  ).n;
+  const rows = getDb()
+    .prepare(
+      `SELECT p.status, p.published_at FROM posts p WHERE ${LIVE_POST_SQL}`
+    )
+    .all() as Array<{ status: string; published_at: string | null }>;
+  return rows.filter((p) => isBlogPubliclyVisible(p)).length;
 }
 
 export function getPublishedPosts(limit = 50, offset = 0): Post[] {
   flushDueBlogPosts();
-  return getDb()
+  // Filter in JS so a future-dated row can never appear, even before demote lands.
+  const rows = getDb()
     .prepare(
       `SELECT ${POST_AUTHOR_SELECT}
        FROM posts p
        LEFT JOIN authors a ON a.id = p.author_id
        WHERE ${LIVE_POST_SQL}
-       ORDER BY p.published_at DESC, p.id DESC
-       LIMIT ? OFFSET ?`
+       ORDER BY p.published_at DESC, p.id DESC`
     )
-    .all(limit, offset) as Post[];
+    .all() as Post[];
+  return rows.filter((p) => isBlogPubliclyVisible(p)).slice(offset, offset + limit);
 }
 
 export function getPostBySlug(slug: string): Post | undefined {

@@ -14,6 +14,7 @@ import { ensureSeoLocationPosts } from "./seed-seo-posts";
 import { ensureMigrationPosts } from "./seed-migration-posts";
 import { ensureMsdsPosts } from "./seed-msds-posts";
 import { ensureScheduledFaqPosts } from "./seed-scheduled-faq-posts";
+import { syncBlogScheduleStatuses } from "./blog-schedule-sync";
 import { ensurePagesNavColumns } from "./pages-nav";
 import { ensureLandingPages } from "./seed-landing-pages";
 import { ensureHeroSlidesCatalog } from "./hero-slides";
@@ -352,6 +353,8 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureMigrationPosts(db);
   ensureMsdsPosts(db);
   ensureScheduledFaqPosts(db);
+  // FAQ + other seeded posts: never leave future dates live.
+  syncBlogScheduleStatuses(db);
   ensurePagesNavColumns(db);
   ensureLandingPages(db);
   ensureHeroSlidesCatalog(db);
@@ -368,6 +371,8 @@ function runEnsures(db: SqliteDatabase) {
   ensureMigrationPosts(db);
   ensureMsdsPosts(db);
   ensureScheduledFaqPosts(db);
+  // FAQ + other seeded posts: never leave future dates live.
+  syncBlogScheduleStatuses(db);
   ensurePagesNavColumns(db);
   ensureLandingPages(db);
   ensureHeroSlidesCatalog(db);

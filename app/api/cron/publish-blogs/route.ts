@@ -24,7 +24,7 @@ export async function GET(request: Request) {
 
   await ensureDbReady();
   const result = publishDueBlogPosts();
-  if (result.publishedIds.length > 0) {
+  if (result.publishedIds.length > 0 || result.demotedIds.length > 0) {
     void refreshSitemapFiles();
   }
 
@@ -32,6 +32,8 @@ export async function GET(request: Request) {
     ok: true,
     published: result.publishedIds.length,
     slugs: result.publishedSlugs,
+    demoted: result.demotedIds.length,
+    demotedSlugs: result.demotedSlugs,
     at: new Date().toISOString(),
   });
 }

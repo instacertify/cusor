@@ -1,6 +1,7 @@
 import * as XLSX from "xlsx";
 import { getDb } from "./db";
 import { slugify } from "./format";
+import { resolveBlogScheduleState } from "./blog-scheduler";
 
 export type BulkEntity =
   | "testimonials"
@@ -844,9 +845,21 @@ export function importBulkRows(entityId: BulkEntity, rows: Record<string, unknow
           const content =
             cell(row, "content") ||
             "Write your post here using **Markdown**.";
-          const status = cell(row, "status") === "published" ? "published" : "draft";
-          const published_at =
-            status === "published" ? cell(row, "published_at") || new Date().toISOString().slice(0, 10) : null;
+          const requestedStatus = cell(row, "status").toLowerCase();
+          const publishAtRaw = cell(row, "published_at");
+          let status: "draft" | "scheduled" | "published" = "draft";
+          let published_at: string | null = publishAtRaw || null;
+          if (requestedStatus === "scheduled" || requestedStatus === "published") {
+            const schedule = resolveBlogScheduleState({
+              requestedStatus: requestedStatus === "scheduled" ? "scheduled" : "published",
+              publishAtRaw:
+                publishAtRaw ||
+                (requestedStatus === "published" ? new Date().toISOString() : ""),
+              existingPublishedAt: null,
+            });
+            status = schedule.status;
+            published_at = schedule.publishedAt;
+          }
           const existing = db.prepare("SELECT id FROM posts WHERE slug = ?").get(slug) as
             | { id: number }
             | undefined;
