@@ -52,11 +52,11 @@ export default async function HomePage() {
 
   return (
     <div className="relative">
-      {/* Hero — large tilted revolving line-art globe on the left */}
+      {/* Hero — refined tilted revolving line-art globe on the right */}
       <section className="relative overflow-hidden min-h-[min(74vh,680px)] flex flex-col justify-center">
         <GlobeWatermark />
         <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-10 sm:pt-14 pb-12 sm:pb-16">
-          <div className="animate-rise min-w-0 max-w-xl sm:max-w-lg lg:max-w-xl ml-auto lg:mr-2">
+          <div className="animate-rise min-w-0 max-w-xl sm:max-w-lg lg:max-w-xl">
             <p className="font-display text-sm font-semibold tracking-wide text-ink-800 mb-3 sm:mb-4">
               Certko
             </p>

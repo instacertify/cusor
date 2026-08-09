@@ -389,35 +389,37 @@ video {
   animation: ocean-drift 22s ease-in-out infinite;
 }
 
-/* Large tilted revolving line-art globe (hero left) */
+/* Large tilted revolving line-art globe (hero right) */
 .globe-stage {
-  width: min(118vw, 820px);
+  width: min(120vw, 840px);
   aspect-ratio: 1;
   transform: translate3d(0, -50%, 0);
-  perspective: 1100px;
+  perspective: 1200px;
 }
 .globe-tilt {
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
-  transform: rotateX(12deg) rotateZ(-22deg) rotateY(-18deg);
+  transform: rotateX(14deg) rotateZ(18deg) rotateY(22deg);
 }
 .globe-tilt--still {
-  transform: rotateX(12deg) rotateZ(-22deg) rotateY(-28deg);
+  transform: rotateX(14deg) rotateZ(18deg) rotateY(26deg);
 }
 .globe-svg {
-  opacity: 0.52;
-  filter: drop-shadow(0 18px 28px rgb(22 38 61 / 0.12));
+  opacity: 0.58;
+  /* Site navy/blue highlight stroke via currentColor */
+  color: var(--color-ink-950);
+  filter: drop-shadow(0 20px 32px rgb(22 38 61 / 0.14));
 }
 @keyframes globe-revolve {
   0% {
-    transform: rotateX(12deg) rotateZ(-22deg) rotateY(-28deg) translate3d(0, 0, 0);
+    transform: rotateX(14deg) rotateZ(18deg) rotateY(26deg) translate3d(0, 0, 0);
   }
   50% {
-    transform: rotateX(14deg) rotateZ(-18deg) rotateY(28deg) translate3d(1.5%, -1.5%, 0);
+    transform: rotateX(16deg) rotateZ(14deg) rotateY(-26deg) translate3d(-1.5%, -1.5%, 0);
   }
   100% {
-    transform: rotateX(12deg) rotateZ(-22deg) rotateY(-28deg) translate3d(0, 0, 0);
+    transform: rotateX(14deg) rotateZ(18deg) rotateY(26deg) translate3d(0, 0, 0);
   }
 }
 @keyframes globe-meridian {
@@ -430,32 +432,32 @@ video {
 }
 .animate-globe-revolve {
   transform-origin: center center;
-  animation: globe-revolve 28s ease-in-out infinite;
+  animation: globe-revolve 30s ease-in-out infinite;
 }
 .animate-globe-meridian {
   transform-box: fill-box;
   transform-origin: center;
-  animation: globe-meridian 48s linear infinite;
+  animation: globe-meridian 42s linear infinite;
 }
 .globe-glow {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(34px);
+  filter: blur(36px);
   pointer-events: none;
 }
 .globe-glow--a {
-  top: 8%;
-  left: -4%;
-  width: min(62vw, 560px);
-  height: min(62vw, 560px);
-  background: radial-gradient(circle, rgb(22 38 61 / 0.12), transparent 68%);
+  top: 6%;
+  right: -2%;
+  width: min(64vw, 580px);
+  height: min(64vw, 580px);
+  background: radial-gradient(circle, rgb(22 38 61 / 0.14), transparent 68%);
 }
 .globe-glow--b {
-  bottom: 6%;
-  left: 10%;
-  width: min(40vw, 340px);
-  height: min(40vw, 340px);
-  background: radial-gradient(circle, rgb(212 175 55 / 0.12), transparent 70%);
+  bottom: 8%;
+  right: 12%;
+  width: min(42vw, 360px);
+  height: min(42vw, 360px);
+  background: radial-gradient(circle, rgb(247 196 83 / 0.14), transparent 70%);
 }
 
 /* Revolving ocean blobs — fill empty hero / page space */
