@@ -15,11 +15,15 @@ export type InquiryResult =
 
 /** Persist a contact/lead inquiry and best-effort email the team. */
 export async function createInquiry(input: InquiryInput): Promise<InquiryResult> {
-  const name = (input.name || "").trim();
   const email = (input.email || "").trim();
   const phone = (input.phone || "").trim();
   const product = (input.product || "").trim();
   const message = (input.message || "").trim();
+  // Newsletter signups may send email only — derive a display name.
+  let name = (input.name || "").trim();
+  if (!name && email && /^newsletter$/i.test(product)) {
+    name = email.split("@")[0] || "Subscriber";
+  }
 
   if (!name || !email) {
     return { ok: false, error: "missing_fields" };

@@ -6,12 +6,15 @@ import ProductCard from "@/components/ProductCard";
 import FaqAccordion from "@/components/FaqAccordion";
 import CtaBanner from "@/components/CtaBanner";
 import GlobeWatermark from "@/components/GlobeWatermark";
+import NewsletterSignup from "@/components/NewsletterSignup";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import { ensureDbReady, getSettings } from "@/lib/db";
 import {
   getCategories,
+  getCertifications,
   getFeaturedProducts,
   getFaqs,
+  getTestingCategories,
   getUpcomingQcos,
 } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
@@ -21,18 +24,18 @@ export const dynamic = "force-dynamic";
 const HOW_IT_WORKS = [
   {
     icon: "search",
-    title: "Check Your Product",
-    text: "Search by product name, standard or HSN. See whether you need BIS, BEE, GMARK, CE, FCC, SABER, WPC or another route — and what testing typically costs.",
+    title: "Search your product or HSN",
+    text: "Start with a product name, IS standard or HSN code. Certko maps the certification and testing routes that usually apply.",
+  },
+  {
+    icon: "award",
+    title: "Pick the right certification",
+    text: "Compare BIS, BEE, GMARK, CE, FCC, SABER, WPC and more — with scheme notes so you know what is mandatory vs buyer-driven.",
   },
   {
     icon: "microscope",
-    title: "Compare Testing Options",
-    text: "Review indicative lab charges, recognised laboratories and scheme notes before you commit budget or a production timeline.",
-  },
-  {
-    icon: "handshake",
-    title: "Get Expert Help",
-    text: "Hand certification and testing coordination to a vetted consultant — application, lab booking, inspection readiness and grant. Free quote in 24 hours.",
+    title: "Lock the testing path",
+    text: "See indicative lab charges, recognised laboratories and what to book next. Hand the rest to an expert when you are ready.",
   },
 ];
 
@@ -40,6 +43,12 @@ export default async function HomePage() {
   await ensureDbReady();
   const settings = getSettings();
   const categories = getCategories();
+  const allCertifications = getCertifications();
+  const certifications = allCertifications.slice(0, 7);
+  const indiaMandatory = allCertifications.filter((c) =>
+    /india/i.test(c.region || "")
+  );
+  const testingCategories = getTestingCategories().slice(0, 6);
   const featured = getFeaturedProducts(8);
   const faqs = getFaqs("global");
   const totalProducts = categories.reduce((s, c) => s + (c.product_count ?? 0), 0);
@@ -72,15 +81,18 @@ export default async function HomePage() {
             <div className="mt-6 sm:mt-7 max-w-xl">
               <SearchBox
                 large
-                placeholder="Search a product, IS standard, or certification…"
+                placeholder="Search product name, HSN code, or standard…"
               />
             </div>
             <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-ink-600">
-              <Link href="/products" className="font-semibold text-ink-800 hover:text-butter-700">
-                Browse products
-              </Link>
               <Link href="/certifications" className="font-semibold text-ink-800 hover:text-butter-700">
-                View certifications
+                Find certification
+              </Link>
+              <Link href="/testing" className="font-semibold text-ink-800 hover:text-butter-700">
+                Find testing
+              </Link>
+              <Link href="/products/all" className="font-semibold text-ink-800 hover:text-butter-700">
+                Search by HSN
               </Link>
               <Link href="/contact" className="font-semibold text-butter-700 hover:text-butter-600">
                 Talk to an expert
@@ -94,7 +106,7 @@ export default async function HomePage() {
       <section className="relative overflow-hidden border-y border-ink-950 bg-ink-950 text-cream-50">
         <div className="pointer-events-none absolute -left-16 top-0 h-40 w-40 rounded-full bg-butter-500/20 blur-3xl" aria-hidden />
         <div className="pointer-events-none absolute -right-12 bottom-0 h-36 w-36 rounded-full bg-butter-500/15 blur-3xl" aria-hidden />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5 sm:gap-6">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
           {stats.map((s, i) => (
             <div key={i} className="min-w-0">
               {s.icon ? (
@@ -119,98 +131,197 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Dual path — certification vs testing */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
+        <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 text-center">
+          What do you need for this product?
+        </h2>
+        <p className="text-center text-ink-600 mt-2 mb-8 sm:mb-10 text-sm sm:text-base px-2 max-w-2xl mx-auto">
+          Start with the mark you need to sell, or the lab work that unlocks it.
+        </p>
+        <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-cream-300 bg-white p-5 sm:p-8 shadow-card">
+            <IconChip name="award" size={26} chip="xl" className="sm:w-14 sm:h-14 sm:rounded-2xl" />
+            <h3 className="font-display text-xl font-semibold text-ink-950 mt-4">Right certification</h3>
+            <p className="mt-2 text-sm text-ink-600 leading-relaxed">
+              Map BIS, BEE, GMARK, CE, FCC, SABER, WPC and more for India and export markets.
+            </p>
+            <ul className="mt-5 flex flex-wrap gap-2">
+              {certifications.map((c) => (
+                <li key={c.id}>
+                  <Link
+                    href={`/certifications/${c.slug}`}
+                    className="inline-flex min-h-9 items-center rounded-lg border border-cream-300 bg-cream-50 px-3 text-xs font-semibold text-ink-800 hover:border-butter-500 hover:text-butter-700 transition"
+                  >
+                    {c.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/certifications"
+              className="mt-6 inline-flex text-sm font-bold text-butter-700 hover:text-butter-600"
+            >
+              Browse all certifications →
+            </Link>
+          </div>
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-cream-300 bg-white p-5 sm:p-8 shadow-card">
+            <IconChip name="microscope" size={26} chip="xl" className="sm:w-14 sm:h-14 sm:rounded-2xl" />
+            <h3 className="font-display text-xl font-semibold text-ink-950 mt-4">Right testing</h3>
+            <p className="mt-2 text-sm text-ink-600 leading-relaxed">
+              Find the lab path — electrical, EMC, chemical, mechanical and more — with indicative costs.
+            </p>
+            <ul className="mt-5 flex flex-wrap gap-2">
+              {testingCategories.map((c) => (
+                <li key={c.id}>
+                  <Link
+                    href={`/testing/${c.slug}`}
+                    className="inline-flex min-h-9 items-center rounded-lg border border-cream-300 bg-cream-50 px-3 text-xs font-semibold text-ink-800 hover:border-butter-500 hover:text-butter-700 transition"
+                  >
+                    {c.name}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link
+                  href="/labs"
+                  className="inline-flex min-h-9 items-center rounded-lg border border-cream-300 bg-cream-50 px-3 text-xs font-semibold text-ink-800 hover:border-butter-500 hover:text-butter-700 transition"
+                >
+                  Labs
+                </Link>
+              </li>
+            </ul>
+            <Link
+              href="/testing"
+              className="mt-6 inline-flex text-sm font-bold text-butter-700 hover:text-butter-600"
+            >
+              Browse all testing →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Mandatory certification for India */}
+      <section className="bg-cream-100 border-y border-cream-200">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
+          <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 text-center">
+            Mandatory certification for India
+          </h2>
+          <p className="text-center text-ink-600 mt-2 mb-8 sm:mb-10 text-sm sm:text-base px-2 max-w-2xl mx-auto">
+            Core India regimes most manufacturers and importers must clear before sale — start here, then check your HSN.
+          </p>
+          <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
+            {indiaMandatory.map((c) => (
+              <Link
+                key={c.id}
+                href={`/certifications/${c.slug}`}
+                className="group relative bg-white rounded-2xl sm:rounded-3xl border border-cream-300 shadow-card p-5 sm:p-7 hover:border-butter-500 transition block"
+              >
+                <IconChip name={c.icon || "award"} size={26} chip="xl" className="sm:w-14 sm:h-14 sm:rounded-2xl" />
+                <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-butter-700">
+                  India · Mandatory
+                </p>
+                <h3 className="font-display text-lg font-semibold text-ink-950 mt-1 group-hover:text-butter-700 transition">
+                  {c.name}
+                </h3>
+                <p className="mt-2 text-sm text-ink-600 leading-relaxed line-clamp-3">
+                  {c.summary}
+                </p>
+                <span className="mt-4 inline-flex text-sm font-bold text-butter-700">
+                  View requirements →
+                </span>
+              </Link>
+            ))}
+          </div>
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5">
+            <Link
+              href="/products/all"
+              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-ink-950 px-6 py-3 text-sm font-semibold text-cream-50 hover:bg-ink-800 transition"
+            >
+              Check your product / HSN
+            </Link>
+            <Link
+              href="/qco"
+              className="inline-flex min-h-11 items-center justify-center text-sm font-semibold text-butter-700 hover:text-butter-600"
+            >
+              Upcoming QCO deadlines →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
-        <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 text-center">How It Works</h2>
-        <p className="text-center text-ink-600 mt-2 mb-8 sm:mb-10 text-sm sm:text-base px-2">
-          Three steps from “is it mandatory?” to certified.
-        </p>
-        <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
-          {HOW_IT_WORKS.map((s, i) => {
-            const isHelp = s.title === "Get Expert Help";
-            const Card = (
-              <>
+        <div>
+          <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 text-center">How it works</h2>
+          <p className="text-center text-ink-600 mt-2 mb-8 sm:mb-10 text-sm sm:text-base px-2">
+            From HSN or product name to the right mark and the right lab plan.
+          </p>
+          <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
+            {HOW_IT_WORKS.map((s, i) => (
+              <div
+                key={i}
+                className="relative bg-white rounded-2xl sm:rounded-3xl border border-cream-300 shadow-card p-5 sm:p-7"
+              >
                 <span className="absolute top-5 right-5 font-display text-4xl sm:text-5xl font-semibold text-cream-200" aria-hidden>
                   {i + 1}
                 </span>
                 <IconChip name={s.icon} size={26} chip="xl" className="sm:w-14 sm:h-14 sm:rounded-2xl" />
                 <h3 className="font-display text-lg font-semibold text-ink-950 mt-4 mb-2">{s.title}</h3>
                 <p className="text-sm text-ink-600 leading-relaxed">{s.text}</p>
-                {isHelp ? (
-                  <span className="mt-4 inline-flex text-sm font-bold text-butter-700">
-                    Contact us →
-                  </span>
-                ) : null}
-              </>
-            );
-            return isHelp ? (
-              <a
-                key={i}
-                href="/contact"
-                className="relative bg-white rounded-2xl sm:rounded-3xl border border-cream-300 shadow-card p-5 sm:p-7 hover:border-butter-500 transition block"
-              >
-                {Card}
-              </a>
-            ) : (
-              <div
-                key={i}
-                className="relative bg-white rounded-2xl sm:rounded-3xl border border-cream-300 shadow-card p-5 sm:p-7"
-              >
-                {Card}
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Popular products */}
-      <section className="bg-cream-100 border-y border-cream-200">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
-          <div className="flex items-end justify-between mb-6 sm:mb-8 gap-4">
-            <div className="min-w-0">
-              <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950">Popular BIS Products</h2>
-              <p className="text-ink-600 mt-2 text-sm sm:text-base">
-                Frequently searched Indian BIS requirements — also explore BEE, GMARK and export certifications.
-              </p>
-            </div>
-            <Link href="/products" className="hidden sm:inline-flex text-sm font-semibold text-butter-700 hover:text-butter-600 shrink-0">
-              Browse all {formatNumber(totalProducts)} products →
-            </Link>
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
+        <div className="flex items-end justify-between mb-6 sm:mb-8 gap-4">
+          <div className="min-w-0">
+            <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950">Popular products to check</h2>
+            <p className="text-ink-600 mt-2 text-sm sm:text-base">
+              Start here, then open the HSN search table for standards, fees and labs.
+            </p>
           </div>
-          <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {featured.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-          <div className="sm:hidden mt-6 text-center">
-            <Link href="/products" className="inline-flex min-h-11 items-center text-sm font-semibold text-butter-700">
-              Browse all {formatNumber(totalProducts)} products →
-            </Link>
-          </div>
-          <div className="mt-6 sm:mt-8 text-center">
-            <Link
-              href="/products/all"
-              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto bg-white border border-cream-300 hover:border-butter-500 text-ink-950 text-sm font-semibold rounded-xl px-5 py-3.5 min-h-11 shadow-card transition text-left sm:text-center"
-            >
-              <Icon name="table" size={18} className="text-butter-700 shrink-0" />
-              <span className="sm:hidden">Open full product search table</span>
-              <span className="hidden sm:inline">
-                Open the full search table — standards, HSN, QCO status, fees & labs
-              </span>
-            </Link>
-          </div>
+          <Link href="/products" className="hidden sm:inline-flex text-sm font-semibold text-butter-700 hover:text-butter-600 shrink-0">
+            Browse all {formatNumber(totalProducts)} products →
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {featured.map((p) => (
+            <ProductCard key={p.id} product={p} />
+          ))}
+        </div>
+        <div className="sm:hidden mt-6 text-center">
+          <Link href="/products" className="inline-flex min-h-11 items-center text-sm font-semibold text-butter-700">
+            Browse all {formatNumber(totalProducts)} products →
+          </Link>
+        </div>
+        <div className="mt-6 sm:mt-8 text-center">
+          <Link
+            href="/products/all"
+            className="inline-flex items-center justify-center gap-2 w-full sm:w-auto bg-white border border-cream-300 hover:border-butter-500 text-ink-950 text-sm font-semibold rounded-xl px-5 py-3.5 min-h-11 shadow-card transition text-left sm:text-center"
+          >
+            <Icon name="table" size={18} className="text-butter-700 shrink-0" />
+            <span className="sm:hidden">Search by HSN code</span>
+            <span className="hidden sm:inline">
+              Search by HSN — standards, QCO status, fees and labs
+            </span>
+          </Link>
         </div>
       </section>
 
       {/* Categories */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
-        <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950">Browse BIS Categories</h2>
+      <section className="bg-cream-100 border-y border-cream-200">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
+        <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950">Browse product categories</h2>
         <p className="text-ink-600 mt-2 mb-6 sm:mb-8 text-sm sm:text-base">
-          Indian BIS notified categories — or{" "}
+          Find the right certification path by category — or{" "}
           <Link href="/certifications" className="font-semibold text-butter-700">
             browse all certifications
-          </Link>{" "}
-          for BEE, GMARK, CE, FCC and more.
+          </Link>
+          .
         </p>
         <div className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {categories.slice(0, 12).map((c) => (
@@ -231,6 +342,7 @@ export default async function HomePage() {
           <Link href="/products" className="inline-flex items-center justify-center min-h-11 w-full sm:w-auto bg-ink-900 hover:bg-ink-800 text-white text-sm font-semibold rounded-xl px-6 py-3 transition">
             View all categories
           </Link>
+        </div>
         </div>
       </section>
 
@@ -273,6 +385,50 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      {/* Newsletter + expert help */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
+        <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-ink-950 text-cream-50 px-5 py-8 sm:px-8 sm:py-10">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-butter-500">
+              Newsletter
+            </p>
+            <h2 className="font-display text-2xl sm:text-3xl font-semibold mt-2 leading-tight">
+              Stay ahead of mandatory changes
+            </h2>
+            <p className="mt-3 text-sm text-ink-300 leading-relaxed max-w-md">
+              Sign up for free updates on India QCO deadlines, certification routes and testing guidance.
+            </p>
+            <div className="mt-6">
+              <NewsletterSignup />
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-cream-300 bg-white px-5 py-8 sm:px-8 sm:py-10 shadow-card">
+            <IconChip name="handshake" size={26} chip="xl" className="sm:w-14 sm:h-14 sm:rounded-2xl" />
+            <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 mt-4 leading-tight">
+              Can’t find the right solution?
+            </h2>
+            <p className="mt-3 text-sm text-ink-600 leading-relaxed max-w-md">
+              If your product, HSN or market path isn’t clear, talk to a Certko expert. We’ll map the certification and testing route — free quote in 24 hours.
+            </p>
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <Link
+                href="/contact?intent=expert"
+                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-butter-500 px-6 py-3 text-sm font-semibold text-ink-950 hover:bg-butter-400 transition"
+              >
+                Talk to an expert
+              </Link>
+              <Link
+                href="/products/all"
+                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-cream-300 px-6 py-3 text-sm font-semibold text-ink-800 hover:border-butter-500 transition"
+              >
+                Search by HSN again
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <TestimonialStrip variant="full" count={3} />
 

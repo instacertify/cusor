@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Logo from "./Logo";
 import SearchBox from "./SearchBox";
 import MobileNav from "./MobileNav";
@@ -39,18 +38,21 @@ export default async function Header() {
     })),
   ];
 
-  const productItems = [
-    { href: "/products", label: "Browse products", detail: "By notified category", icon: "folder" },
-    { href: "/products/all", label: "Search table", detail: "HSN, QCO, fees & labs", icon: "table" },
-    { href: "/qco", label: "Upcoming QCOs", detail: "New mandatory deadlines", icon: "bell" },
-  ];
-
   const resourceItems = [
+    { href: "/products", label: "Browse products", detail: "By notified category", icon: "folder" },
+    { href: "/products/all", label: "Search by HSN", detail: "HSN, QCO, fees & labs", icon: "table" },
+    { href: "/qco", label: "Upcoming QCOs", detail: "New mandatory deadlines", icon: "bell" },
+    ...menuPages.map((p) => ({
+      href: pagePublicPath(p.slug),
+      label: p.nav_label || p.title,
+      detail: p.nav_detail || "",
+      icon: "file" as const,
+    })),
     ...submenuPages.map((p) => ({
       href: pagePublicPath(p.slug),
       label: p.nav_label || p.title,
       detail: p.nav_detail || "",
-      icon: "file",
+      icon: "file" as const,
     })),
     { href: "/blog", label: "Blog", detail: "Guides and compliance notes", icon: "file" },
   ];
@@ -75,7 +77,6 @@ export default async function Header() {
         </a>
 
         <nav className="hidden lg:flex items-center gap-0.5 min-w-0">
-          <NavDropdown label="Products" items={productItems} />
           <NavDropdown
             label="Certifications"
             items={certItems}
@@ -86,21 +87,12 @@ export default async function Header() {
             items={testingItems}
             footerItem={{ href: "/testing", label: "All product testing" }}
           />
-          {menuPages.map((p) => (
-            <Link
-              key={p.slug}
-              href={pagePublicPath(p.slug)}
-              className="px-3 py-2 rounded-lg text-sm font-medium text-ink-700 hover:text-ink-950 hover:bg-cream-200 transition"
-            >
-              {p.nav_label || p.title}
-            </Link>
-          ))}
           <NavDropdown label="Resources" items={uniqueResources} />
         </nav>
 
         <div className="hidden lg:flex items-center gap-2.5 ml-auto shrink-0 w-full max-w-xs xl:max-w-sm">
           <div className="flex-1 min-w-0">
-            <SearchBox compact placeholder="Search products, IS, labs…" />
+            <SearchBox compact placeholder="Product, HSN, or standard…" />
           </div>
           <a
             href="/contact"
@@ -123,10 +115,6 @@ export default async function Header() {
           <MobileNav
             groups={[
               {
-                label: "Products",
-                items: productItems.map(({ href, label }) => ({ href, label })),
-              },
-              {
                 label: "Certifications",
                 items: [
                   { href: "/certifications", label: "All certifications" },
@@ -143,10 +131,6 @@ export default async function Header() {
               {
                 label: "Resources",
                 items: [
-                  ...menuPages.map((p) => ({
-                    href: pagePublicPath(p.slug),
-                    label: p.nav_label || p.title,
-                  })),
                   ...uniqueResources.map(({ href, label }) => ({ href, label })),
                   { href: "/contact", label: "Contact" },
                 ].filter(
