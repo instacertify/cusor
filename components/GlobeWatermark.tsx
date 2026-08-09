@@ -377,7 +377,7 @@ export default function GlobeWatermark({
         <span className="globe-glow globe-glow--b" />
       </div>
 
-      <div className="globe-stage absolute right-[-18%] top-[48%] sm:right-[-10%] lg:right-[-4%] xl:right-[0%]">
+      <div className="globe-stage absolute right-[-12%] top-[48%] sm:right-[-5%] lg:right-[0%] xl:right-[2%]">
         <div className="globe-axis">
           <div
             className={`globe-sphere ${reduced ? "" : "animate-globe-spin-y"}`}
