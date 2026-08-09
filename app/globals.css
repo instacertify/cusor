@@ -373,7 +373,7 @@ video {
   }
 }
 
-/* Soft ocean watermark drift */
+/* Soft ocean watermark drift (legacy helper) */
 @keyframes ocean-drift {
   0% {
     transform: scale(1.08) translate3d(0, 0, 0);
@@ -387,6 +387,55 @@ video {
 }
 .animate-ocean-drift {
   animation: ocean-drift 22s ease-in-out infinite;
+}
+
+/* Line-art globe watermark motion */
+@keyframes globe-spin {
+  0% {
+    transform: rotate(-9deg) scale(1);
+  }
+  50% {
+    transform: rotate(9deg) scale(1.03);
+  }
+  100% {
+    transform: rotate(-9deg) scale(1);
+  }
+}
+@keyframes globe-float {
+  0%,
+  100% {
+    transform: translate3d(0, -50%, 0);
+  }
+  50% {
+    transform: translate3d(-2.5%, calc(-50% - 14px), 0);
+  }
+}
+.animate-globe-spin {
+  transform-origin: center center;
+  animation: globe-spin 22s ease-in-out infinite;
+}
+.animate-globe-float {
+  animation: globe-float 14s ease-in-out infinite;
+}
+.globe-glow {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(28px);
+  pointer-events: none;
+}
+.globe-glow--a {
+  top: 12%;
+  right: 4%;
+  width: min(48vw, 420px);
+  height: min(48vw, 420px);
+  background: radial-gradient(circle, rgb(22 38 61 / 0.08), transparent 68%);
+}
+.globe-glow--b {
+  bottom: 8%;
+  right: 18%;
+  width: min(32vw, 280px);
+  height: min(32vw, 280px);
+  background: radial-gradient(circle, rgb(212 175 55 / 0.1), transparent 70%);
 }
 
 /* Revolving ocean blobs — fill empty hero / page space */
@@ -454,6 +503,8 @@ video {
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-ocean-drift,
+  .animate-globe-spin,
+  .animate-globe-float,
   .ocean-blob--a,
   .ocean-blob--b,
   .ocean-blob--c {

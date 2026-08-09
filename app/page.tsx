@@ -5,7 +5,7 @@ import SearchBox from "@/components/SearchBox";
 import ProductCard from "@/components/ProductCard";
 import FaqAccordion from "@/components/FaqAccordion";
 import CtaBanner from "@/components/CtaBanner";
-import OceanWatermark from "@/components/OceanWatermark";
+import GlobeWatermark from "@/components/GlobeWatermark";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import { ensureDbReady, getSettings } from "@/lib/db";
 import {
@@ -52,18 +52,9 @@ export default async function HomePage() {
 
   return (
     <div className="relative">
-      {/* Soft ocean atmosphere for empty page space below the hero */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-[40%] bottom-0 -z-10 overflow-hidden"
-        aria-hidden
-      >
-        <span className="ocean-blob ocean-blob--b opacity-30 right-[-8%] bottom-[12%]" />
-        <span className="ocean-blob ocean-blob--c opacity-25 left-[-4%] top-[20%]" />
-      </div>
-
-      {/* Hero — moving water GIF watermark + revolving ocean blobs */}
+      {/* Hero — moving line-art globe watermark */}
       <section className="relative overflow-hidden min-h-[min(70vh,620px)] flex flex-col justify-center">
-        <OceanWatermark />
+        <GlobeWatermark />
         <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-10 sm:pt-14 pb-12 sm:pb-16">
           <div className="animate-rise min-w-0 max-w-2xl">
             <p className="font-display text-sm font-semibold tracking-wide text-ink-800 mb-3 sm:mb-4">
