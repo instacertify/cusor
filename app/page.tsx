@@ -47,8 +47,9 @@ export default async function HomePage() {
 
   const stats = [1, 2, 3, 4, 5]
     .map((i) => ({
-      value: settings[`stat_${i}_value`],
-      label: settings[`stat_${i}_label`],
+      value: (settings[`stat_${i}_value`] || "").trim(),
+      label: (settings[`stat_${i}_label`] || "").trim(),
+      icon: (settings[`stat_${i}_icon`] || "").trim(),
     }))
     .filter((s) => s.value && s.label);
 
@@ -96,6 +97,14 @@ export default async function HomePage() {
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5 sm:gap-6">
           {stats.map((s, i) => (
             <div key={i} className="min-w-0">
+              {s.icon ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={s.icon}
+                  alt=""
+                  className="mb-2.5 h-8 w-8 sm:h-9 sm:w-9 object-contain"
+                />
+              ) : null}
               <div className="font-display text-2xl sm:text-[1.75rem] font-semibold tracking-tight text-cream-50">
                 {s.value}
               </div>
