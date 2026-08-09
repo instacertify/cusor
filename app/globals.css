@@ -373,6 +373,94 @@ video {
   }
 }
 
+/* Soft ocean watermark drift */
+@keyframes ocean-drift {
+  0% {
+    transform: scale(1.08) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.14) translate3d(-2%, 1.5%, 0);
+  }
+  100% {
+    transform: scale(1.08) translate3d(0, 0, 0);
+  }
+}
+.animate-ocean-drift {
+  animation: ocean-drift 22s ease-in-out infinite;
+}
+
+/* Revolving ocean blobs — fill empty hero / page space */
+@keyframes ocean-blob-spin {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translate3d(-4%, 3%, 0) rotate(180deg) scale(1.08);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(360deg) scale(1);
+  }
+}
+@keyframes ocean-blob-spin-reverse {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1.05);
+  }
+  50% {
+    transform: translate3d(3%, -4%, 0) rotate(-180deg) scale(0.95);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-360deg) scale(1.05);
+  }
+}
+.ocean-blob {
+  position: absolute;
+  border-radius: 60% 40% 55% 45% / 45% 55% 45% 55%;
+  filter: blur(2px);
+  opacity: 0.55;
+  will-change: transform;
+}
+.ocean-blob--a {
+  top: 8%;
+  right: -6%;
+  width: min(46vw, 420px);
+  height: min(46vw, 420px);
+  background:
+    radial-gradient(circle at 35% 35%, rgb(125 211 252 / 0.55), transparent 58%),
+    radial-gradient(circle at 70% 65%, rgb(14 116 144 / 0.4), transparent 60%),
+    radial-gradient(circle at 50% 50%, rgb(56 189 248 / 0.28), rgb(8 47 73 / 0.08));
+  animation: ocean-blob-spin 36s linear infinite;
+}
+.ocean-blob--b {
+  bottom: 4%;
+  right: 8%;
+  width: min(34vw, 300px);
+  height: min(34vw, 300px);
+  background:
+    radial-gradient(circle at 40% 40%, rgb(103 232 249 / 0.45), transparent 55%),
+    radial-gradient(circle at 65% 60%, rgb(3 105 161 / 0.35), transparent 62%);
+  animation: ocean-blob-spin-reverse 48s linear infinite;
+  opacity: 0.45;
+}
+.ocean-blob--c {
+  top: 28%;
+  right: 22%;
+  width: min(22vw, 190px);
+  height: min(22vw, 190px);
+  background:
+    radial-gradient(circle at 50% 45%, rgb(186 230 253 / 0.5), transparent 60%),
+    radial-gradient(circle at 60% 70%, rgb(14 165 233 / 0.3), transparent 65%);
+  animation: ocean-blob-spin 54s linear infinite;
+  opacity: 0.4;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-ocean-drift,
+  .ocean-blob--a,
+  .ocean-blob--b,
+  .ocean-blob--c {
+    animation: none;
+  }
+}
+
 /* ---------- Sitewide icon chips (outline / original / 3d) ---------- */
 /* Controlled by html[data-icon-style] and admin preview [data-icon-style-preview] */
 
