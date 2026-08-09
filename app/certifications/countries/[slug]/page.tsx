@@ -13,7 +13,7 @@ import {
   getCountryHubBySlug,
   getCountryHubs,
 } from "@/lib/country-certifications";
-import { getCertificationBySlug } from "@/lib/queries";
+import { getCertificationBySlug, getFaqs } from "@/lib/queries";
 import { ensureDbReady } from "@/lib/db";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
@@ -51,14 +51,7 @@ export default async function CountryCertificationPage({ params }: Props) {
   });
 
   const otherCountries = getCountryHubs().filter((h) => h.slug !== hub.slug);
-
-  const faqs = hub.faqs.map((f, index) => ({
-    id: index + 1,
-    scope: `country:${hub.slug}`,
-    question: f.question,
-    answer: f.answer,
-    sort: index,
-  }));
+  const faqs = getFaqs(`country:${hub.slug}`);
 
   const jsonLd = buildJsonLd(enabledSchemaTypes(`country:${hub.slug}`, "page"), {
     name: `${hub.name} product certifications`,

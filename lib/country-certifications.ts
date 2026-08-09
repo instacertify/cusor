@@ -1,12 +1,14 @@
 /**
  * Country-wise certification hubs — browse schemes by market / country.
- * Content is unique per country and per scheme (not copied from scheme detail pages).
+ * Public pages read from SQLite (Admin → Countries). DEFAULT_COUNTRY_HUBS seeds empty DBs.
  */
 
+import { getDb } from "@/lib/db";
 import type { MarketId } from "@/lib/market-applicability";
-import { CERT_MARKETS, marketById } from "@/lib/market-applicability";
+import { CERT_MARKETS } from "@/lib/market-applicability";
 
 export interface CountrySchemeCopy {
+  id?: number;
   /** Matches certifications.slug in the database */
   certSlug: string;
   /** Scheme name as shown on the country hub */
@@ -22,8 +24,10 @@ export interface CountrySchemeCopy {
 }
 
 export interface CountryHub {
+  id?: number;
   slug: string;
-  marketId: MarketId;
+  /** Optional link to market-applicability id (india, european-union, …) */
+  marketId: string;
   name: string;
   /** Short label for nav / chips */
   shortName: string;
@@ -42,9 +46,12 @@ export interface CountryHub {
   firstChecks: string[];
   schemes: CountrySchemeCopy[];
   faqs: { question: string; answer: string }[];
+  sort?: number;
+  active?: number;
 }
 
-export const COUNTRY_HUBS: CountryHub[] = [
+/** Seed content for first boot / empty country_hubs table. */
+export const DEFAULT_COUNTRY_HUBS: CountryHub[] = [
   {
     slug: "india",
     marketId: "india",
@@ -330,23 +337,142 @@ export const COUNTRY_HUBS: CountryHub[] = [
   },
 ];
 
+type CountryHubRow = {
+  id: number;
+  slug: string;
+  market_id: string;
+  name: string;
+  short_name: string;
+  meta_title: string;
+  meta_description: string;
+  intro: string;
+  overview: string;
+  authority: string;
+  filing_tip: string;
+  first_checks: string;
+  sort: number;
+  active: number;
+};
+
+type CountrySchemeRow = {
+  id: number;
+  country_id: number;
+  cert_slug: string;
+  name: string;
+  role: string;
+  summary: string;
+  who_needs_it: string;
+  examples: string;
+  sort: number;
+};
+
+function parseJsonStringArray(raw: string): string[] {
+  try {
+    const parsed = JSON.parse(raw || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((v) => String(v)).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function assembleHub(row: CountryHubRow, schemes: CountrySchemeRow[], faqs: CountryHub["faqs"]): CountryHub {
+  return {
+    id: row.id,
+    slug: row.slug,
+    marketId: row.market_id || row.slug,
+    name: row.name,
+    shortName: row.short_name || row.name,
+    metaTitle: row.meta_title,
+    metaDescription: row.meta_description,
+    intro: row.intro,
+    overview: row.overview,
+    authority: row.authority,
+    filingTip: row.filing_tip,
+    firstChecks: parseJsonStringArray(row.first_checks),
+    schemes: schemes.map((s) => ({
+      id: s.id,
+      certSlug: s.cert_slug,
+      name: s.name,
+      role: s.role,
+      summary: s.summary,
+      whoNeedsIt: s.who_needs_it,
+      examples: parseJsonStringArray(s.examples),
+    })),
+    faqs,
+    sort: row.sort,
+    active: row.active,
+  };
+}
+
+function loadFaqsForSlug(slug: string): CountryHub["faqs"] {
+  return (
+    getDb()
+      .prepare(
+        "SELECT question, answer FROM faqs WHERE scope = ? ORDER BY sort, id"
+      )
+      .all(`country:${slug}`) as { question: string; answer: string }[]
+  ).map((f) => ({ question: f.question, answer: f.answer }));
+}
+
+function loadSchemesForCountry(countryId: number): CountrySchemeRow[] {
+  return getDb()
+    .prepare(
+      "SELECT * FROM country_schemes WHERE country_id = ? ORDER BY sort, id"
+    )
+    .all(countryId) as CountrySchemeRow[];
+}
+
+/** Active country hubs for public pages (homepage, browse, sitemap). */
 export function getCountryHubs(): CountryHub[] {
-  return COUNTRY_HUBS.slice().sort((a, b) => {
-    const am = marketById(a.marketId)?.sort ?? 99;
-    const bm = marketById(b.marketId)?.sort ?? 99;
-    return am - bm;
-  });
+  const rows = getDb()
+    .prepare(
+      "SELECT * FROM country_hubs WHERE active = 1 ORDER BY sort, id"
+    )
+    .all() as CountryHubRow[];
+  return rows.map((row) =>
+    assembleHub(row, loadSchemesForCountry(row.id), loadFaqsForSlug(row.slug))
+  );
+}
+
+/** All hubs including inactive — for Admin list. */
+export function getAllCountryHubRecords(): CountryHubRow[] {
+  return getDb()
+    .prepare("SELECT * FROM country_hubs ORDER BY sort, id")
+    .all() as CountryHubRow[];
+}
+
+export function getCountryHubRecordById(id: number): CountryHubRow | undefined {
+  return getDb()
+    .prepare("SELECT * FROM country_hubs WHERE id = ?")
+    .get(id) as CountryHubRow | undefined;
+}
+
+export function getCountrySchemesByCountryId(countryId: number): CountrySchemeRow[] {
+  return loadSchemesForCountry(countryId);
 }
 
 export function getCountryHubBySlug(slug: string): CountryHub | undefined {
-  return COUNTRY_HUBS.find((c) => c.slug === slug);
+  const row = getDb()
+    .prepare(
+      "SELECT * FROM country_hubs WHERE slug = ? AND active = 1"
+    )
+    .get(slug) as CountryHubRow | undefined;
+  if (!row) return undefined;
+  return assembleHub(row, loadSchemesForCountry(row.id), loadFaqsForSlug(row.slug));
 }
 
-/** Map market-applicability id → country hub slug (same today; kept for clarity). */
-export function countryHubSlugForMarket(marketId: MarketId): string | null {
+/** Map market-applicability id → country hub slug. */
+export function countryHubSlugForMarket(marketId: MarketId | string): string | null {
   if (marketId === "global") return null;
-  const hub = COUNTRY_HUBS.find((c) => c.marketId === marketId);
-  return hub?.slug ?? null;
+  const row = getDb()
+    .prepare(
+      `SELECT slug FROM country_hubs
+       WHERE active = 1 AND (market_id = ? OR slug = ?)
+       ORDER BY sort, id LIMIT 1`
+    )
+    .get(marketId, marketId) as { slug: string } | undefined;
+  return row?.slug ?? null;
 }
 
 export function countryHubPath(slug: string): string {
@@ -368,7 +494,7 @@ export function buildCountrySearchIndex(): {
     certName: string;
     haystack: string;
   }[] = [];
-  for (const hub of COUNTRY_HUBS) {
+  for (const hub of getCountryHubs()) {
     for (const scheme of hub.schemes) {
       const haystack = [
         hub.name,
@@ -395,4 +521,15 @@ export function buildCountrySearchIndex(): {
 
 export function marketsWithCountryHubs() {
   return CERT_MARKETS.filter((m) => countryHubSlugForMarket(m.id));
+}
+
+export function encodeChecksOrExamples(lines: string[]): string {
+  return JSON.stringify(lines.map((l) => l.trim()).filter(Boolean));
+}
+
+export function linesFromTextarea(value: string): string[] {
+  return value
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
 }

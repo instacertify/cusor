@@ -20,6 +20,7 @@ import { ensureLandingPages } from "./seed-landing-pages";
 import { ensureHeroSlidesCatalog } from "./hero-slides";
 import { ensureTestimonialsLibrary } from "./seed-testimonials";
 import { ensureTrustedBrandsLibrary } from "./seed-trusted-brands";
+import { ensureCountryHubsLibrary } from "./seed-country-hubs";
 
 /** Prefer ./data; fall back to /tmp when the app dir is not writable (some Node hosts). */
 export function getWritableDataDir(): string {
@@ -374,6 +375,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
   ensureTrustedBrandsLibrary(db);
+  ensureCountryHubsLibrary(db);
   clearLegacyHomeAnnouncement(db);
   ensureContactExpertCopy(db);
   ensureCanonicalContactAddress(db);
@@ -400,6 +402,7 @@ function runEnsures(db: SqliteDatabase) {
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
   ensureTrustedBrandsLibrary(db);
+  ensureCountryHubsLibrary(db);
   clearLegacyHomeAnnouncement(db);
   ensureContactExpertCopy(db);
   ensureCanonicalContactAddress(db);
@@ -858,6 +861,35 @@ export interface TrustedBrand {
   href: string;
   sort: number;
   active: number;
+}
+
+export interface CountryHubRecord {
+  id: number;
+  slug: string;
+  market_id: string;
+  name: string;
+  short_name: string;
+  meta_title: string;
+  meta_description: string;
+  intro: string;
+  overview: string;
+  authority: string;
+  filing_tip: string;
+  first_checks: string;
+  sort: number;
+  active: number;
+}
+
+export interface CountrySchemeRecord {
+  id: number;
+  country_id: number;
+  cert_slug: string;
+  name: string;
+  role: string;
+  summary: string;
+  who_needs_it: string;
+  examples: string;
+  sort: number;
 }
 
 export interface Author {
