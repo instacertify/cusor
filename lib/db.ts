@@ -416,19 +416,35 @@ function clearLegacyHomeAnnouncement(db: SqliteDatabase) {
   }
 }
 
-/** Ensure public address shows India after Uttar Pradesh (footer + contact). */
+/** Canonical Noida HQ address for footer + contact (India after PIN). */
+const CANONICAL_CONTACT_ADDRESS =
+  "A-34, 4th Floor, Sector 63A, Noida, Gautam Buddha Nagar, Uttar Pradesh – 201301 India";
+
+/** Normalize legacy HQ address variants to the canonical public address. */
 function ensureContactAddressIncludesIndia(db: SqliteDatabase) {
   const row = db
     .prepare("SELECT value FROM settings WHERE key = 'contact_address'")
     .get() as { value: string } | undefined;
   const value = (row?.value || "").trim();
-  if (!value) return;
-  if (!/Uttar Pradesh/i.test(value)) return;
-  if (/\bIndia\b/i.test(value)) return;
-  const next = value.replace(/Uttar Pradesh/i, "Uttar Pradesh, India");
+  if (!value) {
+    db.prepare(
+      "INSERT INTO settings (key, value) VALUES ('contact_address', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+    ).run(CANONICAL_CONTACT_ADDRESS);
+    return;
+  }
+  if (value === CANONICAL_CONTACT_ADDRESS) return;
+
+  // Rewrite known Noida HQ variants (with/without India, comma placement).
+  const isNoidaHq =
+    /A-34/i.test(value) &&
+    /Sector\s*63A/i.test(value) &&
+    /Noida/i.test(value) &&
+    /Uttar Pradesh/i.test(value);
+  if (!isNoidaHq) return;
+
   db.prepare(
     "INSERT INTO settings (key, value) VALUES ('contact_address', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
-  ).run(next);
+  ).run(CANONICAL_CONTACT_ADDRESS);
 }
 
 /**

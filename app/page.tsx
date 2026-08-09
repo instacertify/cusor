@@ -134,7 +134,7 @@ export default async function HomePage() {
       {/* Dual path — certification vs testing */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
         <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 text-center px-2 leading-snug">
-          Certification and Testing Solutions to Make You Ready for the Global Market
+          Certification and Testing Solution to Make You Ready for the Global Market
         </h2>
         <p className="text-center text-ink-600 mt-2 mb-8 sm:mb-10 text-sm sm:text-base px-2 max-w-2xl mx-auto">
           Start with the mark you need to sell, or the lab work that unlocks it — for India and export markets.
