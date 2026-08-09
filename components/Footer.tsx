@@ -104,6 +104,9 @@ export default async function Footer() {
           </FooterColumn>
 
           <FooterColumn title="Certifications">
+            <li>
+              <FooterLink href="/certifications/countries">By country</FooterLink>
+            </li>
             {certifications.map((c) => (
               <li key={c.id}>
                 <FooterLink href={`/certifications/${c.slug}`}>{c.name}</FooterLink>
