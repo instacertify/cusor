@@ -754,9 +754,9 @@ export function seedDatabase(db: SqliteDatabase) {
     const defaults: Record<string, string> = {
       site_name: "Certko",
       tagline: "Your trusted global compliance partner.",
-      hero_heading: "Which Certification Does Your Product Need?",
+      hero_heading: "Find the right certification and testing",
       hero_subheading:
-        "Search by product name, standard or HSN to map BIS, BEE, GMARK, CE, FCC, SABER, WPC and more — with testing costs, labs and expert help in one place.",
+        "Search by product name or HSN code. Match BIS, BEE, GMARK, CE, FCC, SABER, WPC and the tests behind them — with labs, costs and expert help in one place.",
       contact_email: "info@certko.com",
       contact_phone: "+91-9999118039",
       contact_address:

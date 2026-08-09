@@ -19,14 +19,6 @@ interface Group {
 /** Always-available links if CMS/DB groups fail to serialize on the client. */
 const FALLBACK_GROUPS: Group[] = [
   {
-    label: "Products",
-    items: [
-      { href: "/products", label: "Browse products" },
-      { href: "/products/all", label: "Search table" },
-      { href: "/qco", label: "Upcoming QCOs" },
-    ],
-  },
-  {
     label: "Certifications",
     items: [
       { href: "/certifications", label: "All certifications" },
@@ -47,6 +39,9 @@ const FALLBACK_GROUPS: Group[] = [
   {
     label: "Resources",
     items: [
+      { href: "/products", label: "Browse products" },
+      { href: "/products/all", label: "Search by HSN" },
+      { href: "/qco", label: "Upcoming QCOs" },
       { href: "/blog", label: "Blog" },
       { href: "/contact", label: "Contact" },
     ],
