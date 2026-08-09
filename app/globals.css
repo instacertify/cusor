@@ -614,6 +614,44 @@ video {
   }
 }
 
+/* ---------- Trusted by Global Brands marquee (Admin → Trusted Brands library) ---------- */
+@keyframes trusted-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.trusted-marquee {
+  --trusted-marquee-duration: 42s;
+}
+
+.trusted-marquee-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  animation: trusted-marquee var(--trusted-marquee-duration) linear infinite;
+  will-change: transform;
+}
+
+.trusted-marquee:hover .trusted-marquee-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trusted-marquee-track {
+    animation: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    row-gap: 0.75rem;
+  }
+}
+
 /* ---------- Sitewide icon chips (outline / original / 3d) ---------- */
 /* Controlled by html[data-icon-style] and admin preview [data-icon-style-preview] */
 

@@ -14,6 +14,7 @@ import type {
   TestingCategory,
   TestingService,
   HeroSlide,
+  TrustedBrand,
 } from "./db";
 import { relatedSearch } from "./search-index";
 import { isBlogPubliclyVisible, publishDueBlogPosts } from "./blog-scheduler";
@@ -505,6 +506,23 @@ export function getRandomFeaturedTestimonials(limit = 2): Testimonial[] {
        LIMIT ?`
     )
     .all(n) as Testimonial[];
+}
+
+export function getTrustedBrands(): TrustedBrand[] {
+  return getDb()
+    .prepare("SELECT * FROM trusted_brands ORDER BY sort, id")
+    .all() as TrustedBrand[];
+}
+
+/** Active logos for the sitewide “Trusted by Global Brands” marquee. */
+export function getActiveTrustedBrands(): TrustedBrand[] {
+  return getDb()
+    .prepare(
+      `SELECT * FROM trusted_brands
+       WHERE active = 1 AND logo != ''
+       ORDER BY sort, id`
+    )
+    .all() as TrustedBrand[];
 }
 
 // ---------- hero slider ----------

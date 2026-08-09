@@ -19,6 +19,7 @@ import { ensurePagesNavColumns } from "./pages-nav";
 import { ensureLandingPages } from "./seed-landing-pages";
 import { ensureHeroSlidesCatalog } from "./hero-slides";
 import { ensureTestimonialsLibrary } from "./seed-testimonials";
+import { ensureTrustedBrandsLibrary } from "./seed-trusted-brands";
 
 /** Prefer ./data; fall back to /tmp when the app dir is not writable (some Node hosts). */
 export function getWritableDataDir(): string {
@@ -161,6 +162,15 @@ function bootstrapSchema(db: SqliteDatabase): void {
       rating INTEGER NOT NULL DEFAULT 5,
       sort INTEGER NOT NULL DEFAULT 0,
       featured INTEGER NOT NULL DEFAULT 1
+    );
+
+    CREATE TABLE IF NOT EXISTS trusted_brands (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      logo TEXT NOT NULL DEFAULT '',
+      href TEXT NOT NULL DEFAULT '',
+      sort INTEGER NOT NULL DEFAULT 0,
+      active INTEGER NOT NULL DEFAULT 1
     );
 
     CREATE TABLE IF NOT EXISTS certifications (
@@ -359,6 +369,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureLandingPages(db);
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
+  ensureTrustedBrandsLibrary(db);
   clearLegacyHomeAnnouncement(db);
   scrubLabPublicContactDetails(db);
 }
@@ -377,6 +388,7 @@ function runEnsures(db: SqliteDatabase) {
   ensureLandingPages(db);
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
+  ensureTrustedBrandsLibrary(db);
   clearLegacyHomeAnnouncement(db);
   scrubLabPublicContactDetails(db);
 }
@@ -614,6 +626,15 @@ export interface Testimonial {
   rating: number;
   sort: number;
   featured: number;
+}
+
+export interface TrustedBrand {
+  id: number;
+  name: string;
+  logo: string;
+  href: string;
+  sort: number;
+  active: number;
 }
 
 export interface Author {
