@@ -7,6 +7,7 @@ import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { MarketBadge } from "@/components/MarketApplicability";
+import MarketCard from "@/components/MarketCard";
 import {
   searchProducts,
   countSearchProducts,
@@ -668,26 +669,20 @@ export default async function SearchPage({ searchParams }: Props) {
               )}
               {countryHubs.length > 0 && (
                 <>
-                  <h3 className="mt-4 font-display text-lg font-semibold text-ink-950">
+                  <h3 className="mt-6 font-display text-lg font-semibold text-ink-950">
                     Markets / countries
                   </h3>
-                  <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {countryHubs.slice(0, tab === "certs" ? 24 : 6).map((h) => (
-                      <Link
+                      <MarketCard
                         key={h.slug}
                         href={countryHubPath(h.slug)}
-                        className="bg-white rounded-2xl border border-cream-300 p-5 hover:border-butter-500 transition block"
-                      >
-                        <div className="text-[11px] font-semibold uppercase tracking-wide text-ink-500">
-                          {gmaRegionLabel(h.region)}
-                        </div>
-                        <div className="mt-1 font-display font-semibold text-ink-950">
-                          {h.name}
-                        </div>
-                        <p className="mt-2 text-sm text-ink-600 line-clamp-2">
-                          {h.schemes.map((s) => s.name).join(" · ") || h.intro}
-                        </p>
-                      </Link>
+                        title={h.name}
+                        eyebrow={gmaRegionLabel(h.region)}
+                        schemesLine={
+                          h.schemes.map((s) => s.name).join(" · ") || h.intro
+                        }
+                      />
                     ))}
                   </div>
                   <p className="mt-3 text-sm">
@@ -700,21 +695,35 @@ export default async function SearchPage({ searchParams }: Props) {
                   </p>
                 </>
               )}
-              <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {certProgrammes.map((c) => (
-                  <div
-                    key={c.id}
-                    className="bg-white rounded-2xl border border-cream-300 p-5 hover:border-butter-500 transition flex flex-col gap-3"
-                  >
-                    <Link href={`/certifications/${c.slug}`}>
-                      <MarketBadge slug={c.slug} region={c.region} />
-                      <div className="mt-2 font-display font-semibold text-ink-950">{c.name}</div>
-                      <p className="mt-2 text-sm text-ink-600 line-clamp-2">{c.summary}</p>
-                    </Link>
-                    <RequestQuoteButton subject={c.name} kind="certification" variant="compact" short />
+              {certProgrammes.length > 0 && (
+                <>
+                  <h3 className="mt-8 font-display text-lg font-semibold text-ink-950">
+                    Certification programmes
+                  </h3>
+                  <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {certProgrammes.map((c) => (
+                      <div
+                        key={c.id}
+                        className="bg-white rounded-2xl border border-cream-300 p-5 hover:border-butter-500 transition flex flex-col gap-3"
+                      >
+                        <Link href={`/certifications/${c.slug}`}>
+                          <MarketBadge slug={c.slug} region={c.region} />
+                          <div className="mt-2 font-display font-semibold text-ink-950">
+                            {c.name}
+                          </div>
+                          <p className="mt-2 text-sm text-ink-600 line-clamp-2">{c.summary}</p>
+                        </Link>
+                        <RequestQuoteButton
+                          subject={c.name}
+                          kind="certification"
+                          variant="compact"
+                          short
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </>
+              )}
               {certProducts.length > 0 && (
                 <>
                   <h3 className="mt-8 font-display text-lg font-semibold text-ink-950">

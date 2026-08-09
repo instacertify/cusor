@@ -136,13 +136,13 @@ export default async function Header() {
                 items: [
                   {
                     href: "/certifications/countries",
-                    label: "Search by market / country",
+                    label: "By country",
                   },
                   {
                     href: "/certifications/global-market-access",
                     label: "GMA framework",
                   },
-                  { href: "/certifications", label: "All certifications by market" },
+                  { href: "/certifications", label: "All certifications" },
                 ],
               },
               ...groupCertificationsByMarket(certs).map(({ market, certs: group }) => ({

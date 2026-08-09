@@ -1,8 +1,8 @@
 "use client";
 
 import { useDeferredValue, useMemo, useState } from "react";
-import Link from "next/link";
 import Icon from "@/components/Icon";
+import MarketCard from "@/components/MarketCard";
 
 export type CountryBrowseCard = {
   slug: string;
@@ -124,29 +124,15 @@ export default function CountryWiseBrowser({
               >
                 {group.label}
               </h2>
-              <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {group.hubs.map((c) => (
-                  <li key={c.slug}>
-                    <Link
+                  <li key={c.slug} className="h-full">
+                    <MarketCard
                       href={c.href}
-                      className="group flex h-full min-h-[9.5rem] flex-col justify-between rounded-2xl border border-cream-300 bg-white p-5 transition hover:border-butter-500 hover:bg-cream-50"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-500">
-                          {c.schemeCount} scheme{c.schemeCount === 1 ? "" : "s"}
-                        </p>
-                        <h3 className="mt-2 font-display text-lg font-semibold text-ink-950 group-hover:text-butter-700 transition leading-snug">
-                          {c.shortName}
-                        </h3>
-                        <p className="mt-2 text-xs font-medium text-ink-500 leading-relaxed line-clamp-2">
-                          {c.schemeNames.join(" · ")}
-                        </p>
-                      </div>
-                      <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-butter-700">
-                        Open guide
-                        <Icon name="arrow-right" size={15} />
-                      </span>
-                    </Link>
+                      title={c.shortName}
+                      eyebrow={`${c.schemeCount} scheme${c.schemeCount === 1 ? "" : "s"}`}
+                      schemesLine={c.schemeNames.join(" · ")}
+                    />
                   </li>
                 ))}
               </ul>

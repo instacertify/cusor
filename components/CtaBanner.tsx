@@ -7,9 +7,12 @@ import { resolveExpertCta } from "@/lib/expert-cta";
 export default async function CtaBanner({
   subject,
   kind = "general",
+  /** When true, skip the outer max-w-7xl shell — use inside a page that already has gutters. */
+  embedded = false,
 }: {
   subject?: string;
   kind?: QuoteKind;
+  embedded?: boolean;
 } = {}) {
   await ensureDbReady();
   const settings = getSettings();
@@ -37,45 +40,51 @@ export default async function CtaBanner({
             ? "Our consultants handle application, testing coordination, inspection readiness and grant follow-up. Free quote in 24 hours."
             : settings.cta_text;
 
-  return (
-    <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-4">
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-ink-950 text-cream-50 px-5 py-8 sm:px-14 sm:py-12">
-        <div className="relative max-w-2xl">
-          <h2 className="font-display text-2xl sm:text-3xl font-semibold leading-tight">
-            {heading}
-          </h2>
-          <p className="mt-3 text-sm sm:text-base text-ink-300 leading-relaxed">{text}</p>
-          <div className="mt-6 sm:mt-7 flex flex-col sm:flex-row flex-wrap gap-3">
-            {kind === "book" ? (
-              <a
-                href="#lab-contact"
-                className="inline-flex items-center justify-center min-h-11 bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3 text-sm transition"
-              >
-                Contact
-              </a>
-            ) : subject ? (
-              <>
-                <RequestQuoteButton subject={subject} kind={kind} />
-                {kind === "test" ? (
-                  <RequestQuoteButton
-                    subject={`${subject} consulting`}
-                    kind="consulting"
-                    variant="secondary"
-                  />
-                ) : null}
-              </>
-            ) : (
-              <TalkToCertificationExpertLink cta={expertCta} />
-            )}
-            <Link
-              href="/blog"
+  const panel = (
+    <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-ink-950 text-cream-50 px-5 py-8 sm:px-14 sm:py-12">
+      <div className="relative max-w-2xl">
+        <h2 className="font-display text-2xl sm:text-3xl font-semibold leading-tight">
+          {heading}
+        </h2>
+        <p className="mt-3 text-sm sm:text-base text-ink-300 leading-relaxed">{text}</p>
+        <div className="mt-6 sm:mt-7 flex flex-col sm:flex-row flex-wrap gap-3">
+          {kind === "book" ? (
+            <a
+              href="#lab-contact"
               className="inline-flex items-center justify-center min-h-11 bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3 text-sm transition"
             >
-              Latest Blog
-            </Link>
-          </div>
+              Contact
+            </a>
+          ) : subject ? (
+            <>
+              <RequestQuoteButton subject={subject} kind={kind} />
+              {kind === "test" ? (
+                <RequestQuoteButton
+                  subject={`${subject} consulting`}
+                  kind="consulting"
+                  variant="secondary"
+                />
+              ) : null}
+            </>
+          ) : (
+            <TalkToCertificationExpertLink cta={expertCta} />
+          )}
+          <Link
+            href="/blog"
+            className="inline-flex items-center justify-center min-h-11 bg-butter-500 hover:bg-butter-400 text-ink-950 font-semibold rounded-xl px-6 py-3 text-sm transition"
+          >
+            Latest Blog
+          </Link>
         </div>
       </div>
-    </section>
+    </div>
+  );
+
+  if (embedded) {
+    return <section className="pb-4">{panel}</section>;
+  }
+
+  return (
+    <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-4">{panel}</section>
   );
 }
