@@ -7,6 +7,7 @@ import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { MarketBadge } from "@/components/MarketApplicability";
+import { countryHubPath, countryHubSlugForMarket } from "@/lib/country-certifications";
 import { getCertifications, getCertificationCoveredProducts } from "@/lib/queries";
 import { groupCertificationsByMarket } from "@/lib/market-applicability";
 
@@ -39,18 +40,46 @@ export default function CertificationsPage() {
         the United States, GCC countries and Saudi Arabia — so you can see which mark unlocks
         which market before you test or file.
       </p>
+      <p className="mt-4">
+        <Link
+          href="/certifications/countries"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-butter-700 hover:text-butter-600"
+        >
+          Search certifications country wise
+          <Icon name="arrow-right" size={15} />
+        </Link>
+      </p>
 
       <div className="mt-10 space-y-12">
-        {marketGroups.map(({ market, certs: groupCerts }) => (
+        {marketGroups.map(({ market, certs: groupCerts }) => {
+          const countrySlug = countryHubSlugForMarket(market.id);
+          return (
           <section key={market.id} id={market.id} aria-labelledby={`market-${market.id}`}>
             <div className="mb-5 max-w-2xl">
               <h2
                 id={`market-${market.id}`}
                 className="font-display text-2xl font-semibold text-ink-950"
               >
-                {market.heading}
+                {countrySlug ? (
+                  <Link
+                    href={countryHubPath(countrySlug)}
+                    className="hover:text-butter-700 transition"
+                  >
+                    {market.heading}
+                  </Link>
+                ) : (
+                  market.heading
+                )}
               </h2>
               <p className="mt-1.5 text-sm text-ink-600 leading-relaxed">{market.blurb}</p>
+              {countrySlug ? (
+                <Link
+                  href={countryHubPath(countrySlug)}
+                  className="mt-2 inline-flex text-xs font-semibold text-butter-700 hover:underline"
+                >
+                  {market.heading} country guide →
+                </Link>
+              ) : null}
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {groupCerts.map((c) => (
@@ -86,7 +115,8 @@ export default function CertificationsPage() {
               ))}
             </div>
           </section>
-        ))}
+          );
+        })}
       </div>
 
       <div className="mt-16">

@@ -22,15 +22,24 @@ export default async function Header() {
   const menuPages = getPagesForNav("menu").filter((p) => !MENU_SKIP.has(p.slug));
   const submenuPages = getPagesForNav("submenu");
 
-  const certItems = groupCertificationsByMarket(certs).flatMap(({ market, certs: group }) =>
-    group.map((c) => ({
-      href: `/certifications/${c.slug}`,
-      label: c.name,
-      detail: `Required in ${certMarketLabel(c.slug, c.region)}`,
-      icon: c.icon,
-      section: market.heading,
-    }))
-  );
+  const certItems = [
+    {
+      href: "/certifications/countries",
+      label: "By country",
+      detail: "Search certifications country wise",
+      icon: "globe",
+      section: "Browse",
+    },
+    ...groupCertificationsByMarket(certs).flatMap(({ market, certs: group }) =>
+      group.map((c) => ({
+        href: `/certifications/${c.slug}`,
+        label: c.name,
+        detail: `Required in ${certMarketLabel(c.slug, c.region)}`,
+        icon: c.icon,
+        section: market.heading,
+      }))
+    ),
+  ];
 
   const testingItems = [
     {
@@ -114,8 +123,14 @@ export default async function Header() {
           <MobileNav
             groups={[
               {
-                label: "Certifications by market",
-                items: [{ href: "/certifications", label: "All certifications by market" }],
+                label: "Certifications",
+                items: [
+                  {
+                    href: "/certifications/countries",
+                    label: "Search by country",
+                  },
+                  { href: "/certifications", label: "All certifications by market" },
+                ],
               },
               ...groupCertificationsByMarket(certs).map(({ market, certs: group }) => ({
                 label: market.heading,

@@ -11,6 +11,7 @@ import {
   getRoutableContentPages,
 } from "@/lib/queries";
 import { pagePublicPath } from "@/lib/pages-nav";
+import { countryHubPath, getCountryHubs } from "@/lib/country-certifications";
 import { ensureDbReady, getDb, getWritableDataDir } from "@/lib/db";
 import { getSeoExclusions } from "@/lib/seo";
 
@@ -117,6 +118,11 @@ function minimalXml(): string {
     { url: SITEMAP_BASE, changeFrequency: "weekly", priority: 1 },
     { url: `${SITEMAP_BASE}/products`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITEMAP_BASE}/certifications`, changeFrequency: "monthly", priority: 0.8 },
+    {
+      url: `${SITEMAP_BASE}/certifications/countries`,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
     { url: `${SITEMAP_BASE}/testing`, changeFrequency: "weekly", priority: 0.85 },
     { url: `${SITEMAP_BASE}/contact`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITEMAP_BASE}/sitemap`, changeFrequency: "weekly", priority: 0.4 },
@@ -141,6 +147,11 @@ export async function buildSitemapEntries(): Promise<SitemapEntry[]> {
     { url: `${SITEMAP_BASE}/products`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITEMAP_BASE}/products/all`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITEMAP_BASE}/certifications`, changeFrequency: "monthly", priority: 0.8 },
+    {
+      url: `${SITEMAP_BASE}/certifications/countries`,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
     { url: `${SITEMAP_BASE}/testing`, changeFrequency: "weekly", priority: 0.85 },
     { url: `${SITEMAP_BASE}/blog`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITEMAP_BASE}/labs`, changeFrequency: "weekly", priority: 0.8 },
@@ -174,6 +185,12 @@ export async function buildSitemapEntries(): Promise<SitemapEntry[]> {
       changeFrequency: "monthly" as const,
       priority: 0.8,
     }));
+
+  const countryHubs = getCountryHubs().map((h) => ({
+    url: `${SITEMAP_BASE}${countryHubPath(h.slug)}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.75,
+  }));
 
   const testingCategories = getTestingCategories()
     .filter((c) => !excludedTestCats.has(String(c.id)))
@@ -228,6 +245,7 @@ export async function buildSitemapEntries(): Promise<SitemapEntry[]> {
     ...staticPages,
     ...categories,
     ...certifications,
+    ...countryHubs,
     ...testingCategories,
     ...testingServices,
     ...posts,

@@ -49,6 +49,12 @@ const SCOPE_META: Record<
       },
       {
         type: "browse",
+        name: "Certifications by country",
+        detail: "India, EU, USA, GCC, Saudi Arabia",
+        href: "/certifications/countries",
+      },
+      {
+        type: "browse",
         name: "Testing labs",
         detail: "400+ BIS-recognised labs",
         href: "/labs",
@@ -116,6 +122,12 @@ const SCOPE_META: Record<
     placeholder: "Search BIS, BEE, GMARK, CE, FCC, SABER…",
     pageType: "certs",
     browse: [
+      {
+        type: "browse",
+        name: "By country",
+        detail: "Search certifications country wise",
+        href: "/certifications/countries",
+      },
       {
         type: "browse",
         name: "All certifications",
