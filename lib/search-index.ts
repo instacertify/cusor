@@ -157,6 +157,7 @@ function buildIndex(): IndexRow[] {
       const schemeText = schemes
         .flatMap((s) => [s.name, s.cert_slug, s.role, s.summary])
         .filter(Boolean);
+      // Prefer scheme names / country name early so codes like SONCAP, ANATEL, CCC rank the right market.
       push(
         rows,
         {
@@ -169,14 +170,15 @@ function buildIndex(): IndexRow[] {
           href: `/certifications/countries/${h.slug}`,
         },
         [
+          ...schemeNames,
           h.name,
           h.short_name,
           h.slug,
           h.market_id,
+          ...schemeText,
           h.region,
           h.intro,
           h.overview,
-          ...schemeText,
           "country",
           "market",
           "gma",
@@ -429,8 +431,11 @@ function scoreExact(row: IndexRow, terms: string[]): number | null {
     if (idx < 0) return null;
     score += idx === 0 || row.haystack.startsWith(term) ? 0 : Math.min(40, idx);
     const name = row.name.toLowerCase();
+    const detail = row.detail.toLowerCase();
     if (name.includes(term)) score -= 8;
     if (name.startsWith(term)) score -= 16;
+    // Country scheme codes live in detail ("By market · SONCAP · …") — prefer those over casual mentions in body copy.
+    if (row.type === "country" && detail.includes(term)) score -= 22;
   }
   return score + row.boost * 10;
 }

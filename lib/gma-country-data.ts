@@ -2205,7 +2205,7 @@ export const GMA_COUNTRY_SEEDS: GmaCountrySeed[] = [
     intro:
       "Kenya uses KEBS PVoC pre-shipment Certificates of Conformity, with CA type approval for communications equipment.",
     overview:
-      "PVoC requires inspection/conformity assessment before shipment for regulated goods. CA type approval covers telecom/radio devices. Like SONCAP, this is operational and recurring.",
+      "PVoC requires inspection/conformity assessment before shipment for regulated goods. CA type approval covers telecom/radio devices. Like other pre-shipment CoC programmes, this is operational and recurring.",
     authority: "KEBS (PVoC), Communications Authority (CA).",
     filingTip:
       "Book PVoC inspection early in the logistics timeline — last-minute CoCs are a common cause of rolled sailings.",
