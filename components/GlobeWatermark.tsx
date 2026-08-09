@@ -322,6 +322,13 @@ const GLOBE_ITEMS: GlobeItem[] = [
   { key: "helmet-2", id: "helmet", yaw: 310, pitch: -38 },
   { key: "cup-2", id: "cup", yaw: 185, pitch: -2 },
   { key: "stamp-2", id: "stamp", yaw: 25, pitch: -20 },
+  // ~10% denser third accents
+  { key: "mouse-2", id: "mouse", yaw: 72, pitch: -34 },
+  { key: "table-fan-2", id: "table-fan", yaw: 142, pitch: 10 },
+  { key: "lab-glass-2", id: "lab-glass", yaw: 188, pitch: -30 },
+  { key: "mechanical-2", id: "mechanical-tool", yaw: 232, pitch: 30 },
+  { key: "fridge-2", id: "fridge", yaw: 292, pitch: -20 },
+  { key: "phone-2", id: "phone", yaw: 8, pitch: 28 },
 ];
 
 function GlobeProductIcon({ id }: { id: keyof typeof ITEM_PATHS }) {

@@ -45,10 +45,12 @@ export default async function HomePage() {
   const totalProducts = categories.reduce((s, c) => s + (c.product_count ?? 0), 0);
   const upcomingQcos = getUpcomingQcos().slice(0, 3);
 
-  const stats = [1, 2, 3, 4].map((i) => ({
-    value: settings[`stat_${i}_value`],
-    label: settings[`stat_${i}_label`],
-  }));
+  const stats = [1, 2, 3, 4, 5]
+    .map((i) => ({
+      value: settings[`stat_${i}_value`],
+      label: settings[`stat_${i}_label`],
+    }))
+    .filter((s) => s.value && s.label);
 
   return (
     <div className="relative">
@@ -87,13 +89,20 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Quiet proof strip — kept out of the hero */}
-      <section className="border-b border-cream-200 bg-cream-50/80">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-5 sm:py-6 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+      {/* Highlighted proof strip — kept out of the hero */}
+      <section className="relative overflow-hidden border-y border-ink-950 bg-ink-950 text-cream-50">
+        <div className="pointer-events-none absolute -left-16 top-0 h-40 w-40 rounded-full bg-butter-500/20 blur-3xl" aria-hidden />
+        <div className="pointer-events-none absolute -right-12 bottom-0 h-36 w-36 rounded-full bg-butter-500/15 blur-3xl" aria-hidden />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5 sm:gap-6">
           {stats.map((s, i) => (
             <div key={i} className="min-w-0">
-              <div className="font-display text-xl sm:text-2xl font-semibold text-ink-950">{s.value}</div>
-              <div className="text-xs sm:text-sm text-ink-600 leading-snug mt-0.5">{s.label}</div>
+              <div className="font-display text-2xl sm:text-[1.75rem] font-semibold tracking-tight text-cream-50">
+                {s.value}
+              </div>
+              <div className="mt-1.5 h-0.5 w-8 bg-butter-500" aria-hidden />
+              <div className="mt-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.08em] text-cream-100/80 leading-snug">
+                {s.label}
+              </div>
             </div>
           ))}
         </div>

@@ -120,8 +120,8 @@ export default async function SettingsPage({ searchParams }: Props) {
           </p>
           <Field label="Hero Heading" name="hero_heading" defaultValue={s.hero_heading} />
           <TextArea label="Hero Subheading" name="hero_subheading" defaultValue={s.hero_subheading} rows={3} />
-          <div className="grid sm:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="space-y-2">
                 <Field label={`Stat ${i} Value`} name={`stat_${i}_value`} defaultValue={s[`stat_${i}_value`]} />
                 <Field label={`Stat ${i} Label`} name={`stat_${i}_label`} defaultValue={s[`stat_${i}_label`]} />
