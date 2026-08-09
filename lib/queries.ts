@@ -365,7 +365,11 @@ function flushDueBlogPosts() {
   }
 }
 
-/** Live posts are status=published. Scheduled posts stay hidden until the scheduler flips them. */
+/**
+ * Live posts are status=published.
+ * `flushDueBlogPosts()` demotes future-dated published rows to scheduled first,
+ * so this filter stays accurate for lists / counts / sitemaps.
+ */
 const LIVE_POST_SQL = `p.status = 'published'`;
 
 export function getPublishedPostsByAuthor(authorId: number, limit = 50): Post[] {

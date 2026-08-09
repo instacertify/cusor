@@ -1,9 +1,21 @@
 import { getDb, type Post } from "./db";
+import {
+  isBlogPublishDue,
+  parseScheduleInput,
+  seedStatusForPublishAt,
+  toDatetimeLocalValue,
+} from "./blog-schedule-time";
 
 export type BlogPostStatus = "draft" | "scheduled" | "published";
 
+export {
+  isBlogPublishDue,
+  parseScheduleInput,
+  seedStatusForPublishAt,
+  toDatetimeLocalValue,
+};
+
 const SCHEDULER_INTERVAL_MS = 30_000;
-const DUE_GRACE_MS = 2_000;
 
 declare global {
   // eslint-disable-next-line no-var
@@ -12,59 +24,76 @@ declare global {
   var __certkoBlogSchedulerTimer: ReturnType<typeof setInterval> | undefined;
 }
 
-/** Parse admin datetime-local / ISO / date-only into a valid Date, or null. */
-export function parseScheduleInput(raw: string): Date | null {
-  const value = raw.trim();
-  if (!value) return null;
-  // date-only → local noon (avoids previous-day UTC surprises in most TZ)
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    const d = new Date(`${value}T12:00:00`);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? null : d;
-}
-
-/** Value for `<input type="datetime-local">` from a stored published_at. */
-export function toDatetimeLocalValue(stored: string | null | undefined): string {
-  if (!stored) return "";
-  if (/^\d{4}-\d{2}-\d{2}$/.test(stored)) return `${stored}T09:00`;
-  const d = new Date(stored);
-  if (Number.isNaN(d.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-export function isBlogPublishDue(
-  publishedAt: string | null | undefined,
-  now = new Date()
-): boolean {
-  if (!publishedAt) return false;
-  const when = parseScheduleInput(publishedAt);
-  if (!when) return false;
-  return when.getTime() <= now.getTime() + DUE_GRACE_MS;
-}
-
 export function isBlogPubliclyVisible(
   post: Pick<Post, "status" | "published_at">,
-  _now = new Date()
+  now = new Date()
 ): boolean {
-  // Scheduled / draft stay hidden. Once status flips to published, the post is live.
-  // (published_at may be an editorial date and must not hide already-published posts.)
-  void _now;
-  return post.status === "published";
+  if (post.status !== "published") return false;
+  // No stamp → treat as live (legacy rows). Future stamp → stay hidden.
+  if (!post.published_at) return true;
+  return isBlogPublishDue(post.published_at, now);
 }
 
 export type PublishDueResult = {
   publishedIds: number[];
   publishedSlugs: string[];
+  demotedIds: number[];
+  demotedSlugs: string[];
 };
 
 /**
- * Flip due `scheduled` posts to `published`.
+ * Demote mistakenly live posts whose publish stamp is still in the future.
+ * Idempotent. Fixes seed/import rows that were inserted as status=published too early.
+ */
+export function demoteFuturePublishedPosts(now = new Date()): {
+  demotedIds: number[];
+  demotedSlugs: string[];
+} {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `SELECT id, slug, published_at FROM posts
+       WHERE status = 'published'
+         AND published_at IS NOT NULL
+         AND published_at != ''`
+    )
+    .all() as Array<{ id: number; slug: string; published_at: string }>;
+
+  const demotedIds: number[] = [];
+  const demotedSlugs: string[] = [];
+  const update = db.prepare(
+    `UPDATE posts SET status = 'scheduled' WHERE id = ? AND status = 'published'`
+  );
+
+  const tx = db.transaction(() => {
+    for (const row of rows) {
+      if (isBlogPublishDue(row.published_at, now)) continue;
+      const res = update.run(row.id);
+      if (res.changes > 0) {
+        demotedIds.push(row.id);
+        demotedSlugs.push(row.slug);
+      }
+    }
+  });
+  tx();
+
+  if (demotedIds.length > 0) {
+    console.info(
+      `[certko] blog scheduler demoted ${demotedIds.length} future-dated post(s):`,
+      demotedSlugs.join(", ")
+    );
+  }
+
+  return { demotedIds, demotedSlugs };
+}
+
+/**
+ * Flip due `scheduled` posts to `published`, and demote future-dated `published` posts.
  * Safe to call often (idempotent). Never touches cover images.
  */
 export function publishDueBlogPosts(now = new Date()): PublishDueResult {
+  const demoted = demoteFuturePublishedPosts(now);
+
   const db = getDb();
   const nowIso = now.toISOString();
   const due = db
@@ -94,14 +123,13 @@ export function publishDueBlogPosts(now = new Date()): PublishDueResult {
   });
   tx();
 
-  // Also catch status=published with a future stamp that somehow got set — leave those
-  // hidden via isBlogPubliclyVisible until due; do not auto-change them here.
-
-  if (publishedIds.length > 0) {
-    console.info(
-      `[certko] blog scheduler published ${publishedIds.length} post(s) at ${nowIso}:`,
-      publishedSlugs.join(", ")
-    );
+  if (publishedIds.length > 0 || demoted.demotedIds.length > 0) {
+    if (publishedIds.length > 0) {
+      console.info(
+        `[certko] blog scheduler published ${publishedIds.length} post(s) at ${nowIso}:`,
+        publishedSlugs.join(", ")
+      );
+    }
     void import("./sitemap-xml")
       .then((m) => m.refreshSitemapFiles())
       .catch(() => {
@@ -109,7 +137,12 @@ export function publishDueBlogPosts(now = new Date()): PublishDueResult {
       });
   }
 
-  return { publishedIds, publishedSlugs };
+  return {
+    publishedIds,
+    publishedSlugs,
+    demotedIds: demoted.demotedIds,
+    demotedSlugs: demoted.demotedSlugs,
+  };
 }
 
 /** Resolve form status + publish_at into a safe DB status / timestamp pair. */
