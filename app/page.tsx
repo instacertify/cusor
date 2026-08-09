@@ -8,6 +8,7 @@ import CtaBanner from "@/components/CtaBanner";
 import GlobeWatermark from "@/components/GlobeWatermark";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import TestimonialStrip from "@/components/TestimonialStrip";
+import TrustedBrandsStrip from "@/components/TrustedBrandsStrip";
 import CertificationSolutionRow from "@/components/CertificationSolutionRow";
 import { ensureDbReady, getSettings } from "@/lib/db";
 import {
@@ -131,6 +132,9 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* Trusted by — homepage placement (also sitewide via TestimonialStrip) */}
+      <TrustedBrandsStrip tone="light" />
 
       {/* Dual path — certification vs testing */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
@@ -434,7 +438,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <TestimonialStrip variant="full" count={3} />
+      <TestimonialStrip variant="full" count={3} includeBrands={false} />
 
       {/* FAQ */}
       <section className="mx-auto max-w-3xl px-4 sm:px-6 py-16">

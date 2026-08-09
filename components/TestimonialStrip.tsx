@@ -56,11 +56,14 @@ export default async function TestimonialStrip({
   variant = "strip",
   heading,
   className = "",
+  includeBrands = true,
 }: {
   count?: number;
   variant?: "strip" | "full";
   heading?: string;
   className?: string;
+  /** When false, skip the Trusted by strip (e.g. homepage already shows it higher up). */
+  includeBrands?: boolean;
 } = {}) {
   await ensureDbReady();
   const items =
@@ -74,15 +77,18 @@ export default async function TestimonialStrip({
       : getRandomFeaturedTestimonials(count);
 
   const brandsTone = variant === "full" ? "dark" : "light";
+  const brands = includeBrands ? (
+    <TrustedBrandsStrip tone={brandsTone} />
+  ) : null;
 
   if (items.length === 0) {
-    return <TrustedBrandsStrip tone={brandsTone} className={className} />;
+    return brands ? <div className={className}>{brands}</div> : null;
   }
 
   if (variant === "full") {
     return (
       <div className={className}>
-        <TrustedBrandsStrip tone="dark" />
+        {brands}
         <section className="bg-ink-950 text-white">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
             <h2 className="font-display text-2xl sm:text-3xl font-semibold text-center px-2 leading-snug">
@@ -101,7 +107,7 @@ export default async function TestimonialStrip({
 
   return (
     <div className={className}>
-      <TrustedBrandsStrip tone="light" />
+      {brands}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-12">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
           <div>
