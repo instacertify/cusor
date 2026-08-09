@@ -5,6 +5,10 @@ import ContactThankYou from "./ContactThankYou";
 
 type Intent = string | undefined;
 
+function isTestingIntent(intent?: string) {
+  return intent === "test" || intent === "book" || intent === "consulting";
+}
+
 export default function ContactForm({
   product = "",
   intent,
@@ -24,7 +28,7 @@ export default function ContactForm({
   const [pending, setPending] = useState(false);
 
   if (sent) {
-    return <ContactThankYou />;
+    return <ContactThankYou intent={intent} />;
   }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -59,7 +63,9 @@ export default function ContactForm({
 
       setSent(true);
       if (!stayOnPage && typeof window !== "undefined") {
-        window.history.replaceState(null, "", "/contact?sent=1");
+        const params = new URLSearchParams({ sent: "1" });
+        if (intent) params.set("intent", intent);
+        window.history.replaceState(null, "", `/contact?${params.toString()}`);
       }
     } catch {
       setError(
@@ -70,10 +76,10 @@ export default function ContactForm({
   }
 
   const submitLabel =
-    intent === "book"
-      ? "Submit testing request"
-      : intent === "test"
-        ? "Request a quote for this test"
+    intent === "consulting"
+      ? "Book consulting"
+      : intent === "book" || intent === "test"
+        ? "Book testing"
         : intent === "certification"
           ? "Request a quote for this certification"
           : intent === "expert"
@@ -81,22 +87,33 @@ export default function ContactForm({
             : "Request a free quote";
 
   const productLabel =
-    intent === "book"
-      ? "Lab / product"
-      : intent === "test"
-        ? "Test / service"
+    intent === "consulting"
+      ? "Testing / certification topic"
+      : intent === "book" || intent === "test"
+        ? "Lab / product / test"
         : intent === "certification"
           ? "Certification / scheme"
           : "Product / test / certification";
 
-  const messageLabel = intent === "book" ? "Testing requirements *" : "Tell us more";
+  const messageLabel =
+    intent === "consulting"
+      ? "Consulting requirements *"
+      : intent === "book" || intent === "test"
+        ? "Testing requirements *"
+        : "Tell us more";
+
   const messagePlaceholder =
-    intent === "book"
-      ? "Product name, IS standard / HSN if known, sample availability, city, and required timeline…"
-      : "Manufacturing location, import or domestic, sample availability, timeline…";
+    intent === "consulting"
+      ? "Product / HSN, certification or test needed, market (India / export), timeline…"
+      : intent === "book" || intent === "test"
+        ? "Product name, IS standard / HSN if known, sample availability, city, and required timeline…"
+        : "Manufacturing location, import or domestic, sample availability, timeline…";
+
+  const messageRequired = isTestingIntent(intent);
 
   return (
     <form action="/api/contact" method="post" onSubmit={onSubmit} className="space-y-4">
+      {intent ? <input type="hidden" name="intent" value={intent} /> : null}
       {error ? (
         <p className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
           {error}
@@ -163,7 +180,7 @@ export default function ContactForm({
           id="message"
           name="message"
           rows={4}
-          required={intent === "book"}
+          required={messageRequired}
           placeholder={messagePlaceholder}
           className="w-full rounded-xl border border-cream-300 px-4 py-3 text-base sm:text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30"
         />
@@ -176,7 +193,9 @@ export default function ContactForm({
         {pending ? "Sending…" : submitLabel}
       </button>
       <p className="text-[11px] text-ink-500 text-center">
-        No spam. Your request is saved as a lead for our team — we connect within 24 hours.
+        {isTestingIntent(intent)
+          ? "Your request is saved as a lead. Someone from our team will update you within 24 working hours."
+          : "No spam. Your request is saved as a lead for our team — we connect within 24 hours."}
       </p>
     </form>
   );

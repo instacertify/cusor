@@ -10,6 +10,7 @@ import FaqAccordion from "@/components/FaqAccordion";
 import IconChip from "@/components/IconChip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { getFaqs, getTestingServiceBySlug, getTestingServices } from "@/lib/queries";
+import { formatPriceRange } from "@/lib/format";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -116,10 +117,27 @@ export default async function TestingServicePage({ params }: Props) {
                 <dd className="mt-1 font-semibold text-ink-900">{svc.sample_size}</dd>
               </div>
             )}
+            <div className="rounded-xl border border-butter-400/50 bg-butter-500/10 px-4 py-3 sm:col-span-2">
+              <dt className="text-xs font-bold uppercase tracking-wide text-ink-500">
+                Tentative testing price
+              </dt>
+              <dd className="mt-1 font-display text-xl font-semibold text-ink-950">
+                {formatPriceRange(svc.min_price, svc.max_price)}
+              </dd>
+              <p className="mt-1 text-xs text-ink-600 leading-relaxed">
+                {svc.price_note ||
+                  "Indicative lab charges only — final quote depends on sample, scope and lab slot."}
+              </p>
+            </div>
           </dl>
 
-          <div className="mt-6">
+          <div className="mt-6 flex flex-col sm:flex-row flex-wrap gap-3">
             <RequestQuoteButton subject={svc.name} kind="test" />
+            <RequestQuoteButton
+              subject={`${svc.name} consulting`}
+              kind="consulting"
+              variant="secondary"
+            />
           </div>
         </div>
         {svc.image ? (

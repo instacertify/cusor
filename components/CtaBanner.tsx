@@ -14,21 +14,25 @@ export default async function CtaBanner({
   const heading =
     kind === "book" && subject
       ? `Need testing help with ${subject}?`
-      : kind === "test" && subject
-        ? `Need a quote for ${subject}?`
-        : kind === "certification" && subject
-          ? `Need a quote for ${subject} certification?`
-          : kind === "product" && subject
-            ? `Need a quote for ${subject}?`
-            : settings.cta_heading;
+      : kind === "consulting" && subject
+        ? `Need consulting on ${subject}?`
+        : kind === "test" && subject
+          ? `Need a quote for ${subject}?`
+          : kind === "certification" && subject
+            ? `Need a quote for ${subject} certification?`
+            : kind === "product" && subject
+              ? `Need a quote for ${subject}?`
+              : settings.cta_heading;
   const text =
     kind === "book"
-      ? "Tap Contact above, enter your testing requirements, and our team will connect within 24 hours."
-      : kind === "test"
-        ? "Share your product details and we’ll map the lab scope, sample size, timeline and indicative cost — free quote in 24 hours."
-        : kind === "certification"
-          ? "Our consultants handle application, testing coordination, inspection readiness and grant follow-up. Free quote in 24 hours."
-          : settings.cta_text;
+      ? "Submit your testing requirements — we save a lead and update you within 24 working hours."
+      : kind === "consulting"
+        ? "Book testing or certification consulting. Your request is logged as a lead — our team replies within 24 working hours."
+        : kind === "test"
+          ? "Book this testing or share your product details. We’ll map lab scope, sample size, timeline and tentative price — update within 24 working hours."
+          : kind === "certification"
+            ? "Our consultants handle application, testing coordination, inspection readiness and grant follow-up. Free quote in 24 hours."
+            : settings.cta_text;
 
   return (
     <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-4">
@@ -47,7 +51,16 @@ export default async function CtaBanner({
                 Contact
               </a>
             ) : subject ? (
-              <RequestQuoteButton subject={subject} kind={kind} />
+              <>
+                <RequestQuoteButton subject={subject} kind={kind} />
+                {kind === "test" ? (
+                  <RequestQuoteButton
+                    subject={`${subject} consulting`}
+                    kind="consulting"
+                    variant="secondary"
+                  />
+                ) : null}
+              </>
             ) : (
               <a
                 href="/contact"

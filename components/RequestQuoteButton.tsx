@@ -1,6 +1,12 @@
 import Icon from "./Icon";
 
-export type QuoteKind = "test" | "certification" | "product" | "general" | "book";
+export type QuoteKind =
+  | "test"
+  | "certification"
+  | "product"
+  | "general"
+  | "book"
+  | "consulting";
 
 export function quoteContactHref(subject: string, kind: QuoteKind = "general"): string {
   const label =
@@ -8,11 +14,13 @@ export function quoteContactHref(subject: string, kind: QuoteKind = "general"): 
       ? `${subject} — contact Instacertify`
       : kind === "test"
         ? `${subject} — request quote for this test`
-        : kind === "certification"
-          ? `${subject} — request quote for this certification`
-          : kind === "product"
-            ? `${subject} — request quote`
-            : subject;
+        : kind === "consulting"
+          ? `${subject} — book testing / certification consulting`
+          : kind === "certification"
+            ? `${subject} — request quote for this certification`
+            : kind === "product"
+              ? `${subject} — request quote`
+              : subject;
   const params = new URLSearchParams();
   if (label.trim()) params.set("product", label.trim());
   if (kind !== "general") params.set("intent", kind);
@@ -22,7 +30,10 @@ export function quoteContactHref(subject: string, kind: QuoteKind = "general"): 
 
 export function quoteLabel(kind: QuoteKind, short = false): string {
   if (kind === "book") return "Contact Instacertify";
-  if (kind === "test") return short ? "Request quote" : "Request a quote for this test";
+  if (kind === "consulting") {
+    return short ? "Book consulting" : "Book testing / certification consulting";
+  }
+  if (kind === "test") return short ? "Book testing" : "Book this testing";
   if (kind === "certification") {
     return short ? "Request quote" : "Request a quote for this certification";
   }

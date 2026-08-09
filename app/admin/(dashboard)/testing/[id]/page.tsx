@@ -151,12 +151,21 @@ export default async function AdminTestingEdit({ params, searchParams }: Props) 
               placeholder="e.g. 5 production units / 250 g"
             />
           </div>
+          <div className="grid sm:grid-cols-3 gap-3">
+            <Field label="Min price (₹)" name="min_price" type="number" placeholder="e.g. 15000" />
+            <Field label="Max price (₹)" name="max_price" type="number" placeholder="e.g. 45000" />
+            <Field
+              label="Price note"
+              name="price_note"
+              placeholder="Indicative; confirm on quote"
+            />
+          </div>
           <TextArea label="Summary" name="summary" rows={2} />
           <TextArea label="Content writeup (Markdown)" name="content" rows={5} />
           <Field label="Meta Title" name="meta_title" />
           <TextArea label="Meta Description" name="meta_description" rows={2} />
           <ImageUpload current="" label="Test image" allowClear={false} />
-          <SubmitButton label="Create test page" />
+          <SubmitButton label="Create testing product page" />
         </form>
       </section>
 

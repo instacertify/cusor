@@ -1498,6 +1498,10 @@ export async function saveTestingService(formData: FormData) {
   let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
   const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
   const clearImage = formData.get("clear_image") === "1";
+  const minPriceRaw = String(formData.get("min_price") ?? "").trim();
+  const maxPriceRaw = String(formData.get("max_price") ?? "").trim();
+  const minPrice = minPriceRaw ? Number(minPriceRaw) : null;
+  const maxPrice = maxPriceRaw ? Number(maxPriceRaw) : null;
   const values = {
     category_id: categoryId,
     name,
@@ -1508,6 +1512,9 @@ export async function saveTestingService(formData: FormData) {
       String(formData.get("accreditation") ?? "").trim() || "ISO/IEC 17025 / NABL",
     timeline: String(formData.get("timeline") ?? "").trim(),
     sample_size: String(formData.get("sample_size") ?? "").trim(),
+    min_price: Number.isFinite(minPrice as number) ? minPrice : null,
+    max_price: Number.isFinite(maxPrice as number) ? maxPrice : null,
+    price_note: String(formData.get("price_note") ?? "").trim(),
     summary: String(formData.get("summary") ?? "").trim(),
     content: String(formData.get("content") ?? "").trim(),
     meta_title: String(formData.get("meta_title") ?? "").trim(),
@@ -1528,7 +1535,7 @@ export async function saveTestingService(formData: FormData) {
     if (clash) slug = `${slug}-${id}`;
     db.prepare(
       `UPDATE testing_services SET category_id=?, slug=?, name=?, product_category=?, standards=?, test_type=?, accreditation=?,
-        timeline=?, sample_size=?, summary=?, content=?, image=?, meta_title=?, meta_description=?, sort=? WHERE id=?`
+        timeline=?, sample_size=?, min_price=?, max_price=?, price_note=?, summary=?, content=?, image=?, meta_title=?, meta_description=?, sort=? WHERE id=?`
     ).run(
       categoryId,
       slug,
@@ -1539,6 +1546,9 @@ export async function saveTestingService(formData: FormData) {
       values.accreditation,
       values.timeline,
       values.sample_size,
+      values.min_price,
+      values.max_price,
+      values.price_note,
       values.summary,
       values.content,
       image,
@@ -1556,8 +1566,8 @@ export async function saveTestingService(formData: FormData) {
     const res = db
       .prepare(
         `INSERT INTO testing_services
-        (category_id, slug, name, product_category, standards, test_type, accreditation, timeline, sample_size, summary, content, image, meta_title, meta_description, sort)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        (category_id, slug, name, product_category, standards, test_type, accreditation, timeline, sample_size, min_price, max_price, price_note, summary, content, image, meta_title, meta_description, sort)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         categoryId,
@@ -1569,6 +1579,9 @@ export async function saveTestingService(formData: FormData) {
         values.accreditation,
         values.timeline || "7–15 working days",
         values.sample_size || "As advised by the testing laboratory",
+        values.min_price,
+        values.max_price,
+        values.price_note,
         values.summary,
         values.content ||
           `## ${values.name}\n\nDescribe the test method, sample requirements, turnaround and how Certko helps.`,
