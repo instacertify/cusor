@@ -60,6 +60,7 @@ export default function AdminDashboard() {
     name: string;
     email: string;
     product: string;
+    intent?: string;
     created_at: string;
     status: string;
   }[];
