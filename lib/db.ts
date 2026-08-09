@@ -375,6 +375,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureTestimonialsLibrary(db);
   ensureTrustedBrandsLibrary(db);
   clearLegacyHomeAnnouncement(db);
+  ensureHomeHeroTestingSolutionCopy(db);
   scrubLabPublicContactDetails(db);
 }
 
@@ -394,7 +395,47 @@ function runEnsures(db: SqliteDatabase) {
   ensureTestimonialsLibrary(db);
   ensureTrustedBrandsLibrary(db);
   clearLegacyHomeAnnouncement(db);
+  ensureHomeHeroTestingSolutionCopy(db);
   scrubLabPublicContactDetails(db);
+}
+
+const HOME_HERO_HEADING =
+  "Find the right certification and testing solution";
+const HOME_HERO_SUBHEADING =
+  "Search by product name or HSN code to see which schemes apply — BIS, BEE, GMARK, CE, FCC, SABER, WPC — and the tests that unlock them. Compare recognised labs, indicative costs and expert support in one place.";
+
+/** Upgrade the default homepage hero to professional testing-solution copy. */
+function ensureHomeHeroTestingSolutionCopy(db: SqliteDatabase) {
+  const upsert = db.prepare(
+    "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+  );
+
+  const heading = (
+    db.prepare("SELECT value FROM settings WHERE key = 'hero_heading'").get() as
+      | { value: string }
+      | undefined
+  )?.value?.trim();
+  const subheading = (
+    db
+      .prepare("SELECT value FROM settings WHERE key = 'hero_subheading'")
+      .get() as { value: string } | undefined
+  )?.value?.trim();
+
+  const legacyHeadings = new Set([
+    "",
+    "Find the right certification and testing",
+  ]);
+  const legacySubheadings = new Set([
+    "",
+    "Search by product name or HSN code. Match BIS, BEE, GMARK, CE, FCC, SABER, WPC and the tests behind them — with labs, costs and expert help in one place.",
+  ]);
+
+  if (!heading || legacyHeadings.has(heading)) {
+    upsert.run("hero_heading", HOME_HERO_HEADING);
+  }
+  if (!subheading || legacySubheadings.has(subheading)) {
+    upsert.run("hero_subheading", HOME_HERO_SUBHEADING);
+  }
 }
 
 /** Remove the old default homepage announcement chip from existing installs. */
