@@ -13,7 +13,8 @@ import {
   getCountryHubBySlug,
   getCountryHubs,
 } from "@/lib/country-certifications";
-import { getCertificationBySlug } from "@/lib/queries";
+import { PILLAR_LABELS, gmaRegionLabel } from "@/lib/gma-regions";
+import { getCertificationBySlug, getFaqs } from "@/lib/queries";
 import { ensureDbReady } from "@/lib/db";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
@@ -51,14 +52,7 @@ export default async function CountryCertificationPage({ params }: Props) {
   });
 
   const otherCountries = getCountryHubs().filter((h) => h.slug !== hub.slug);
-
-  const faqs = hub.faqs.map((f, index) => ({
-    id: index + 1,
-    scope: `country:${hub.slug}`,
-    question: f.question,
-    answer: f.answer,
-    sort: index,
-  }));
+  const faqs = getFaqs(`country:${hub.slug}`);
 
   const jsonLd = buildJsonLd(enabledSchemaTypes(`country:${hub.slug}`, "page"), {
     name: `${hub.name} product certifications`,
@@ -93,13 +87,46 @@ export default async function CountryCertificationPage({ params }: Props) {
 
       <header className="max-w-3xl">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-500">
-          Country-wise certifications
+          {gmaRegionLabel(hub.region)} · Country-wise certifications
         </p>
         <h1 className="mt-2 font-display text-4xl font-semibold text-ink-950 tracking-tight">
           {hub.name}
         </h1>
         <p className="mt-3 text-lg text-ink-600 leading-relaxed">{hub.intro}</p>
       </header>
+
+      {(hub.pillars.safety ||
+        hub.pillars.emcWireless ||
+        hub.pillars.telecom ||
+        hub.pillars.energyEnv ||
+        hub.pillars.localRep) && (
+        <section className="mt-10" aria-labelledby="pillars">
+          <h2 id="pillars" className="font-display text-2xl font-semibold text-ink-950">
+            Compliance matrix
+          </h2>
+          <p className="mt-2 text-sm text-ink-600 max-w-2xl">
+            Four GMA pillars for this market, plus local representation — verify against the
+            live regulator list before quoting.
+          </p>
+          <dl className="mt-6 grid gap-3 sm:grid-cols-2">
+            {PILLAR_LABELS.map((p) => {
+              const value = hub.pillars[p.key];
+              if (!value) return null;
+              return (
+                <div
+                  key={p.key}
+                  className="rounded-2xl border border-cream-300 bg-white px-5 py-4"
+                >
+                  <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500">
+                    {p.label}
+                  </dt>
+                  <dd className="mt-2 text-sm text-ink-700 leading-relaxed">{value}</dd>
+                </div>
+              );
+            })}
+          </dl>
+        </section>
+      )}
 
       <section className="mt-10 max-w-3xl space-y-4">
         <h2 className="font-display text-2xl font-semibold text-ink-950">
@@ -138,8 +165,8 @@ export default async function CountryCertificationPage({ params }: Props) {
         <div className="mt-8 space-y-8">
           {schemeRows.map(({ scheme, cert }) => (
             <article
-              key={scheme.certSlug}
-              id={scheme.certSlug}
+              key={scheme.id ?? `${scheme.certSlug}-${scheme.name}`}
+              id={scheme.certSlug || undefined}
               className="rounded-3xl border border-cream-300 bg-white p-6 sm:p-8 shadow-card"
             >
               <div className="flex flex-wrap items-start justify-between gap-4">

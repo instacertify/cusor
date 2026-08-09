@@ -96,6 +96,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         description: "BIS, BEE, GMARK and more",
       },
       {
+        href: "/admin/countries",
+        label: "Countries",
+        icon: "globe",
+        description: "Country-wise certification guides",
+      },
+      {
         href: "/admin/testing",
         label: "Product Testing",
         icon: "microscope",

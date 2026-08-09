@@ -29,6 +29,8 @@ const PUBLIC_CACHE_PATHS = [
   "/products",
   "/products/all",
   "/certifications",
+  "/certifications/countries",
+  "/certifications/global-market-access",
   "/testing",
   "/labs",
   "/blog",
@@ -761,6 +763,233 @@ export async function deleteTrustedBrand(formData: FormData) {
   getDb().prepare("DELETE FROM trusted_brands WHERE id=?").run(Number(formData.get("id")));
   revalidateSoon("/", "layout");
   redirect("/admin/trusted-brands?saved=1");
+}
+
+// ---------- country hubs (country-wise certifications) ----------
+function revalidateCountryPages() {
+  revalidateSoon("/", "layout");
+  revalidateSoon("/certifications");
+  revalidateSoon("/certifications/countries");
+  revalidateSoon("/sitemap");
+}
+
+export async function createCountryHub(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) redirect("/admin/countries?error=1");
+  const db = getDb();
+  let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
+  let n = 2;
+  while (db.prepare("SELECT 1 FROM country_hubs WHERE slug = ?").get(slug)) {
+    slug = `${slugify(name)}-${n++}`;
+  }
+  const maxSort = (
+    db.prepare("SELECT COALESCE(MAX(sort), 0) AS m FROM country_hubs").get() as { m: number }
+  ).m;
+  const sortRaw = String(formData.get("sort") ?? "").trim();
+  const sort = sortRaw ? Number(sortRaw) || maxSort + 10 : maxSort + 10;
+  const shortName = String(formData.get("short_name") ?? "").trim() || name;
+  const marketId = String(formData.get("market_id") ?? "").trim() || slug;
+  const region = String(formData.get("region") ?? "").trim();
+  const intro =
+    String(formData.get("intro") ?? "").trim() ||
+    `Certification pathways for selling into ${name}.`;
+  const metaTitle =
+    String(formData.get("meta_title") ?? "").trim() ||
+    `${name} Certifications | Certko`;
+  const metaDescription =
+    String(formData.get("meta_description") ?? "").trim() ||
+    `Country-wise certification guide for ${name} — schemes, who needs them, and what to check first.`;
+  const res = db
+    .prepare(
+      `INSERT INTO country_hubs (
+        slug, market_id, region, name, short_name, meta_title, meta_description,
+        intro, overview, authority, filing_tip, first_checks, pillars, sort, active, featured
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, '', '', '', '[]', '{}', ?, 1, 0)`
+    )
+    .run(
+      slug,
+      marketId,
+      region,
+      name,
+      shortName,
+      metaTitle,
+      metaDescription,
+      intro,
+      sort
+    );
+  const newId = Number(res.lastInsertRowid);
+  const insFaq = db.prepare(
+    "INSERT INTO faqs (scope, question, answer, sort) VALUES (?, ?, ?, ?)"
+  );
+  insFaq.run(
+    `country:${slug}`,
+    `Which certifications apply in ${name}?`,
+    `Open this country guide for the schemes Certko lists for ${name}, then confirm against your product or HSN with an expert.`,
+    10
+  );
+  revalidateCountryPages();
+  redirect(`/admin/countries/${newId}?saved=1`);
+}
+
+export async function saveCountryHub(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const { encodeChecksOrExamples, linesFromTextarea } = await import(
+    "@/lib/country-certifications"
+  );
+  const id = Number(formData.get("id"));
+  const db = getDb();
+  const existing = db
+    .prepare("SELECT slug FROM country_hubs WHERE id = ?")
+    .get(id) as { slug: string } | undefined;
+  if (!existing) redirect("/admin/countries?error=1");
+
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) redirect(`/admin/countries/${id}?error=1`);
+
+  let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
+  const clash = db
+    .prepare("SELECT id FROM country_hubs WHERE slug = ? AND id != ?")
+    .get(slug, id) as { id: number } | undefined;
+  if (clash) {
+    slug = `${slug}-${id}`;
+  }
+
+  const shortName = String(formData.get("short_name") ?? "").trim() || name;
+  const marketId = String(formData.get("market_id") ?? "").trim() || slug;
+  const region = String(formData.get("region") ?? "").trim();
+  const sort = Number(formData.get("sort") ?? 0) || 0;
+  const active = formData.getAll("active").map(String).includes("1") ? 1 : 0;
+  const featured = formData.getAll("featured").map(String).includes("1") ? 1 : 0;
+  const firstChecks = encodeChecksOrExamples(
+    linesFromTextarea(String(formData.get("first_checks") ?? ""))
+  );
+  const pillars = JSON.stringify({
+    safety: String(formData.get("pillar_safety") ?? "").trim(),
+    emcWireless: String(formData.get("pillar_emc") ?? "").trim(),
+    telecom: String(formData.get("pillar_telecom") ?? "").trim(),
+    energyEnv: String(formData.get("pillar_energy") ?? "").trim(),
+    localRep: String(formData.get("pillar_local_rep") ?? "").trim(),
+  });
+
+  db.prepare(
+    `UPDATE country_hubs SET
+      slug=?, market_id=?, region=?, name=?, short_name=?, meta_title=?, meta_description=?,
+      intro=?, overview=?, authority=?, filing_tip=?, first_checks=?, pillars=?, sort=?, active=?, featured=?
+     WHERE id=?`
+  ).run(
+    slug,
+    marketId,
+    region,
+    name,
+    shortName,
+    String(formData.get("meta_title") ?? "").trim(),
+    String(formData.get("meta_description") ?? "").trim(),
+    String(formData.get("intro") ?? "").trim(),
+    String(formData.get("overview") ?? "").trim(),
+    String(formData.get("authority") ?? "").trim(),
+    String(formData.get("filing_tip") ?? "").trim(),
+    firstChecks,
+    pillars,
+    sort,
+    active,
+    featured,
+    id
+  );
+
+  if (existing.slug !== slug) {
+    db.prepare("UPDATE faqs SET scope = ? WHERE scope = ?").run(
+      `country:${slug}`,
+      `country:${existing.slug}`
+    );
+  }
+
+  revalidateCountryPages();
+  redirect(`/admin/countries/${id}?saved=1`);
+}
+
+export async function deleteCountryHub(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  const db = getDb();
+  const hub = db.prepare("SELECT slug FROM country_hubs WHERE id = ?").get(id) as
+    | { slug: string }
+    | undefined;
+  if (hub) {
+    db.prepare("DELETE FROM faqs WHERE scope = ?").run(`country:${hub.slug}`);
+    db.prepare("DELETE FROM country_schemes WHERE country_id = ?").run(id);
+    db.prepare("DELETE FROM country_hubs WHERE id = ?").run(id);
+  }
+  revalidateCountryPages();
+  redirect("/admin/countries?saved=1");
+}
+
+export async function saveCountryScheme(formData: FormData) {
+  await requireAdmin();
+  const { encodeChecksOrExamples, linesFromTextarea } = await import(
+    "@/lib/country-certifications"
+  );
+  const id = formData.get("id") ? Number(formData.get("id")) : null;
+  const countryId = Number(formData.get("country_id"));
+  const name = String(formData.get("name") ?? "").trim();
+  const back = `/admin/countries/${countryId}`;
+  if (!countryId || !name) redirect(withParam(back, "error=1"));
+
+  const db = getDb();
+  const certSlug = String(formData.get("cert_slug") ?? "").trim();
+  const role = String(formData.get("role") ?? "").trim();
+  const summary = String(formData.get("summary") ?? "").trim();
+  const whoNeedsIt = String(formData.get("who_needs_it") ?? "").trim();
+  const examples = encodeChecksOrExamples(
+    linesFromTextarea(String(formData.get("examples") ?? ""))
+  );
+  const sort = Number(formData.get("sort") ?? 0) || 0;
+
+  if (id) {
+    db.prepare(
+      `UPDATE country_schemes SET
+        cert_slug=?, name=?, role=?, summary=?, who_needs_it=?, examples=?, sort=?
+       WHERE id=? AND country_id=?`
+    ).run(certSlug, name, role, summary, whoNeedsIt, examples, sort, id, countryId);
+  } else {
+    const maxSort = (
+      db
+        .prepare(
+          "SELECT COALESCE(MAX(sort), 0) AS m FROM country_schemes WHERE country_id = ?"
+        )
+        .get(countryId) as { m: number }
+    ).m;
+    db.prepare(
+      `INSERT INTO country_schemes (
+        country_id, cert_slug, name, role, summary, who_needs_it, examples, sort
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(
+      countryId,
+      certSlug,
+      name,
+      role,
+      summary,
+      whoNeedsIt,
+      examples,
+      sort || maxSort + 10
+    );
+  }
+
+  revalidateCountryPages();
+  redirect(withParam(back, "saved=1"));
+}
+
+export async function deleteCountryScheme(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  const countryId = Number(formData.get("country_id"));
+  getDb()
+    .prepare("DELETE FROM country_schemes WHERE id = ? AND country_id = ?")
+    .run(id, countryId);
+  revalidateCountryPages();
+  redirect(`/admin/countries/${countryId}?saved=1`);
 }
 
 // ---------- certifications ----------

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import CountryWiseBrowser from "@/components/CountryWiseBrowser";
@@ -6,13 +7,14 @@ import {
   countryHubPath,
   getCountryHubs,
 } from "@/lib/country-certifications";
+import { GMA_REGIONS, gmaRegionLabel } from "@/lib/gma-regions";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Certifications by Country | India, EU, USA, GCC, Saudi Arabia | Certko",
+  title: "Global Market Access — Certifications by Country | Certko",
   description:
-    "Search product certifications country wise — India (BIS, BEE, WPC), European Union (CE), United States (FCC), GCC (GMARK) and Saudi Arabia (SABER).",
+    "Country-wise certification and compliance matrix across Asia-Pacific, Europe & Eurasia, the Americas, and Middle East & Africa — search schemes by market.",
   alternates: { canonical: "https://certko.com/certifications/countries" },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
@@ -24,10 +26,13 @@ export default function CertificationsByCountryPage() {
     name: h.name,
     shortName: h.shortName,
     intro: h.intro,
+    regionId: h.region || "other",
+    regionLabel: gmaRegionLabel(h.region),
     schemeNames: h.schemes.map((s) => s.name),
     schemeCount: h.schemes.length,
     href: countryHubPath(h.slug),
   }));
+  const regions = GMA_REGIONS.map((r) => ({ id: r.id, label: r.label }));
 
   return (
     <div className="relative">
@@ -43,15 +48,20 @@ export default function CertificationsByCountryPage() {
           ]}
         />
         <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">
-          Certifications by country
+          Global Market Access
         </h1>
-        <p className="mt-3 text-ink-600 max-w-2xl">
-          Find the mark that unlocks each market — then open that country’s guide for who
-          needs which scheme, what to check first, and links into Certko’s certification
-          pages.
+        <p className="mt-3 text-ink-600 max-w-3xl leading-relaxed">
+          Determine which regulations apply in each destination market, then open that
+          country’s guide for safety, EMC/wireless, telecom and energy pathways.{" "}
+          <Link
+            href="/certifications/global-market-access"
+            className="font-semibold text-butter-700 hover:underline"
+          >
+            How GMA works →
+          </Link>
         </p>
 
-        <CountryWiseBrowser countries={cards} />
+        <CountryWiseBrowser countries={cards} regions={regions} />
 
         <div className="mt-16">
           <CtaBanner />
