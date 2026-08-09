@@ -72,6 +72,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         description: "Homepage trust quotes",
       },
       {
+        href: "/admin/trusted-brands",
+        label: "Trusted Brands",
+        icon: "award",
+        description: "Logo library for the Trusted by Global Brands scroll",
+      },
+      {
         href: "/admin/faqs",
         label: "FAQs",
         icon: "help",

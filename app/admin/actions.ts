@@ -720,6 +720,49 @@ export async function deleteTestimonial(formData: FormData) {
   redirect("/admin/testimonials?saved=1");
 }
 
+// ---------- trusted brands (logo marquee library) ----------
+export async function saveTrustedBrand(formData: FormData) {
+  await requireAdmin();
+  const id = formData.get("id") ? Number(formData.get("id")) : null;
+  const name = String(formData.get("name") ?? "").trim();
+  const href = String(formData.get("href") ?? "").trim();
+  const sort = Number(formData.get("sort") ?? 0) || 0;
+  const active = formData.getAll("active").map(String).includes("1") ? 1 : 0;
+  if (!name) redirect("/admin/trusted-brands?error=1");
+
+  const db = getDb();
+  const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
+  const clearImage = formData.get("clear_image") === "1";
+  let logo = String(formData.get("logo") ?? "").trim();
+
+  if (id) {
+    const existing = db
+      .prepare("SELECT logo FROM trusted_brands WHERE id = ?")
+      .get(id) as { logo: string } | undefined;
+    logo = uploaded ?? (clearImage ? "" : existing?.logo || logo);
+    if (!logo) redirect("/admin/trusted-brands?error=logo");
+    db.prepare(
+      "UPDATE trusted_brands SET name=?, logo=?, href=?, sort=?, active=? WHERE id=?"
+    ).run(name, logo, href, sort, active, id);
+  } else {
+    logo = uploaded || logo;
+    if (!logo) redirect("/admin/trusted-brands?error=logo");
+    db.prepare(
+      "INSERT INTO trusted_brands (name, logo, href, sort, active) VALUES (?, ?, ?, ?, ?)"
+    ).run(name, logo, href, sort, active);
+  }
+
+  revalidateSoon("/", "layout");
+  redirect("/admin/trusted-brands?saved=1");
+}
+
+export async function deleteTrustedBrand(formData: FormData) {
+  await requireAdmin();
+  getDb().prepare("DELETE FROM trusted_brands WHERE id=?").run(Number(formData.get("id")));
+  revalidateSoon("/", "layout");
+  redirect("/admin/trusted-brands?saved=1");
+}
+
 // ---------- certifications ----------
 export async function createCertification(formData: FormData) {
   await requireAdmin();
