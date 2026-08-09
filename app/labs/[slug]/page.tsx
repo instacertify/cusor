@@ -49,12 +49,17 @@ export default async function LabDetailPage({ params }: Props) {
 
   const facts = [
     { label: "Location", value: [lab.city, lab.state].filter(Boolean).join(", ") || "India" },
+    {
+      label: "Accreditation",
+      value: lab.accreditation?.trim() || "BIS Recognised",
+    },
     { label: "BIS Lab Code", value: lab.code ?? "—" },
     { label: "Recognition Valid Till", value: lab.validity ?? "—" },
     { label: "Testing Scopes", value: String(lab.scope_count) },
     { label: "Reported Price Range", value: formatPriceRange(lab.min_price, lab.max_price) },
     { label: "Categories", value: String(cats.length) },
   ];
+  const badge = lab.accreditation?.trim() || "BIS Recognised";
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
@@ -62,7 +67,7 @@ export default async function LabDetailPage({ params }: Props) {
       <div className="flex items-start justify-between gap-6 flex-wrap">
         <div className="max-w-3xl">
           <span className="text-xs font-bold uppercase tracking-wide bg-butter-300/50 text-butter-700 rounded-full px-3 py-1">
-            BIS Recognised
+            {badge}
           </span>
           <h1 className="mt-3 font-display text-3xl sm:text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
             {lab.name}
@@ -77,7 +82,7 @@ export default async function LabDetailPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
         {facts.map((f) => (
           <div key={f.label} className="bg-white rounded-2xl border border-cream-300 shadow-card px-4 py-3">
             <div className="text-[11px] font-bold uppercase tracking-wide text-ink-500">{f.label}</div>

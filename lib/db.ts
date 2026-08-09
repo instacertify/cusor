@@ -130,6 +130,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
       phone TEXT,
       email TEXT,
       validity TEXT,
+      accreditation TEXT NOT NULL DEFAULT '',
       min_price INTEGER,
       max_price INTEGER,
       scope_count INTEGER NOT NULL DEFAULT 0,
@@ -379,6 +380,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureCanonicalContactAddress(db);
   ensureContactPageFaqsGlobalCopy(db);
   scrubLabPublicContactDetails(db);
+  ensureLabsAccreditationColumn(db);
 }
 
 function runEnsures(db: SqliteDatabase) {
@@ -401,6 +403,7 @@ function runEnsures(db: SqliteDatabase) {
   ensureCanonicalContactAddress(db);
   ensureContactPageFaqsGlobalCopy(db);
   scrubLabPublicContactDetails(db);
+  ensureLabsAccreditationColumn(db);
 }
 
 /** Contact “Before You Ask” FAQs — global certification & testing framing. */
@@ -567,6 +570,14 @@ function scrubLabPublicContactDetails(db: SqliteDatabase) {
   }
 }
 
+/** Add labs.accreditation for NABL / BIS recognition notes on existing DBs. */
+function ensureLabsAccreditationColumn(db: SqliteDatabase) {
+  const cols = db.prepare("PRAGMA table_info(labs)").all() as { name: string }[];
+  if (!cols.some((c) => c.name === "accreditation")) {
+    db.exec(`ALTER TABLE labs ADD COLUMN accreditation TEXT NOT NULL DEFAULT ''`);
+  }
+}
+
 /** Call once on server start (instrumentation / root layout). Idempotent. */
 export async function ensureDbReady(): Promise<void> {
   try {
@@ -709,6 +720,7 @@ export interface Lab {
   phone: string | null;
   email: string | null;
   validity: string | null;
+  accreditation: string;
   min_price: number | null;
   max_price: number | null;
   scope_count: number;
