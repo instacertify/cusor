@@ -5,11 +5,13 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import TalkToCertificationExpertBar from "@/components/TalkToCertificationExpert";
+import TimedContactPopup from "@/components/TimedContactPopup";
 import AnalyticsGate from "@/components/AnalyticsGate";
 import CookieConsent from "@/components/CookieConsent";
 import { ensureDbReady, getSettings } from "@/lib/db";
 import { getGdprPublicSettings } from "@/lib/gdpr";
 import { resolveExpertCta } from "@/lib/expert-cta";
+import { resolveContactPopup } from "@/lib/contact-popup";
 import { getPage } from "@/lib/queries";
 import {
   BASE_URL,
@@ -127,6 +129,7 @@ export default async function RootLayout({
   const scheme = resolveColorScheme(settings.color_scheme);
   const iconStyle = resolveIconStyle(settings.icon_style);
   const expertCta = resolveExpertCta(settings);
+  const contactPopup = resolveContactPopup(settings);
   const pathname = (await headers()).get("x-pathname") || "";
   const isAdminShell = pathname.startsWith("/admin");
   // Sitewide Organization + WebSite (site name, favicon attribution, sitelinks search box).
@@ -159,6 +162,12 @@ export default async function RootLayout({
         <main className="flex-1">{children}</main>
         {!isAdminShell && <Footer />}
         {!isAdminShell && <TalkToCertificationExpertBar cta={expertCta} />}
+        {!isAdminShell && contactPopup.enabled && (
+          <TimedContactPopup
+            config={contactPopup}
+            cookieBannerEnabled={gdprSettings.bannerEnabled}
+          />
+        )}
         {!isAdminShell && <CookieConsent settings={gdprSettings} />}
       </body>
     </html>

@@ -54,7 +54,9 @@ export default function NewsletterSignup({
         setError(
           data?.error === "missing_fields"
             ? "Please enter a valid email."
-            : "Could not subscribe just now. Please try again."
+            : data?.error === "privacy_consent_required"
+              ? "Please accept the privacy notice to subscribe."
+              : "Could not subscribe just now. Please try again."
         );
         setPending(false);
         return;
@@ -91,14 +93,22 @@ export default function NewsletterSignup({
         </button>
       </div>
       {error ? <p className="text-sm text-red-300">{error}</p> : null}
-      <p className="text-xs text-ink-400 leading-relaxed">
-        Free updates on mandatory India certifications, QCO deadlines and testing guidance.
-        By signing up you agree we may email you under our{" "}
-        <a href="/privacy" className="text-butter-400 hover:underline">
-          Privacy Policy
-        </a>
-        .
-      </p>
+      <label className="flex items-start gap-2.5 text-xs text-ink-300 leading-relaxed">
+        <input
+          type="checkbox"
+          name="privacy_consent"
+          value="1"
+          required
+          className="mt-0.5"
+        />
+        <span>
+          I agree Certko may email me updates and process my details under the{" "}
+          <a href="/privacy" className="text-butter-400 hover:underline">
+            Privacy Policy
+          </a>{" "}
+          (GDPR / DPDP).
+        </span>
+      </label>
     </form>
   );
 }

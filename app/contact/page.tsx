@@ -126,11 +126,29 @@ export default async function ContactPage({ searchParams }: Props) {
           {initiallySent ? (
             <ContactThankYou intent={sp.intent} />
           ) : (
-            <ContactForm
-              product={sp.product ?? ""}
-              intent={sp.intent}
-              errorMessage={errorMessage}
-            />
+            <>
+              {sp.intent === "expert" || !sp.intent ? (
+                <a
+                  href={`tel:${expertCta.phoneTel}`}
+                  className="mb-5 flex items-center gap-3 rounded-2xl border border-butter-400 bg-butter-300/35 px-4 py-3.5 transition hover:bg-butter-300/60"
+                >
+                  <IconChip name="phone" size={22} chip="lg" />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-bold text-ink-950">
+                      Prefer to talk now?
+                    </span>
+                    <span className="block text-sm font-semibold text-ink-800">
+                      Dial {expertCta.phoneDisplay}
+                    </span>
+                  </span>
+                </a>
+              ) : null}
+              <ContactForm
+                product={sp.product ?? ""}
+                intent={sp.intent}
+                errorMessage={errorMessage}
+              />
+            </>
           )}
         </div>
       </div>

@@ -3,18 +3,32 @@ import Icon from "./Icon";
 /** Shared success state for every contact / quote / book-a-test form submission. */
 export default function ContactThankYou({
   intent,
+  compact = false,
 }: {
   intent?: string;
+  compact?: boolean;
 } = {}) {
   const isTestingLead =
     intent === "test" || intent === "book" || intent === "consulting";
 
   return (
-    <div className="text-center py-12 sm:py-14 px-2" role="status" aria-live="polite">
-      <span className="inline-flex w-16 h-16 rounded-full bg-green-100 text-green-700 items-center justify-center">
-        <Icon name="check" size={32} strokeWidth={2.5} />
+    <div
+      className={`text-center px-2 ${compact ? "py-6" : "py-12 sm:py-14"}`}
+      role="status"
+      aria-live="polite"
+    >
+      <span
+        className={`inline-flex rounded-full bg-green-100 text-green-700 items-center justify-center ${
+          compact ? "w-12 h-12" : "w-16 h-16"
+        }`}
+      >
+        <Icon name="check" size={compact ? 24 : 32} strokeWidth={2.5} />
       </span>
-      <h2 className="font-display text-2xl sm:text-3xl font-bold text-ink-950 mt-4">
+      <h2
+        className={`font-display font-bold text-ink-950 mt-4 ${
+          compact ? "text-xl" : "text-2xl sm:text-3xl"
+        }`}
+      >
         {isTestingLead ? "We have received your request" : "Thank you!"}
       </h2>
       <p className="text-ink-800 mt-3 text-base sm:text-lg font-medium leading-relaxed max-w-lg mx-auto">

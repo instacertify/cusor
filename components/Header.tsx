@@ -173,10 +173,6 @@ export default async function Header() {
                     arr.findIndex((other) => other.href === item.href) === index
                 ),
               },
-              {
-                label: "",
-                items: [{ href: expertCta.href, label: expertCta.label }],
-              },
             ]}
           />
         </div>

@@ -23,6 +23,7 @@ import { ensureTrustedBrandsLibrary } from "./seed-trusted-brands";
 import { ensureCountryHubsLibrary } from "./seed-country-hubs";
 import { ensureGdprLibrary } from "./seed-gdpr";
 import { PRIVACY_CONTENT, TERMS_CONTENT } from "./legal-content";
+import { CONTACT_POPUP_DEFAULTS } from "./contact-popup";
 
 /** Prefer ./data; fall back to /tmp when the app dir is not writable (some Node hosts). */
 export function getWritableDataDir(): string {
@@ -387,6 +388,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureHomeStatLabels(db);
   ensureExpertCtaSettings(db);
   ensureSolutionPartnerIdentity(db);
+  ensureContactPopupSettings(db);
   scrubLabPublicContactDetails(db);
   ensureGdprLibrary(db);
 }
@@ -416,6 +418,7 @@ function runEnsures(db: SqliteDatabase) {
   ensureHomeStatLabels(db);
   ensureExpertCtaSettings(db);
   ensureSolutionPartnerIdentity(db);
+  ensureContactPopupSettings(db);
   scrubLabPublicContactDetails(db);
   ensureGdprLibrary(db);
 }
@@ -626,6 +629,16 @@ We combine free compliance data with practical execution support. Start with the
     ) {
       db.prepare("UPDATE pages SET content = ? WHERE slug = ?").run(next, slug);
     }
+  }
+}
+
+/** Seed timed GDPR contact popup defaults if missing. */
+function ensureContactPopupSettings(db: SqliteDatabase) {
+  const upsert = db.prepare(
+    "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO NOTHING"
+  );
+  for (const [key, value] of Object.entries(CONTACT_POPUP_DEFAULTS)) {
+    upsert.run(key, value);
   }
 }
 
