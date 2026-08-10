@@ -9,7 +9,13 @@ import SiteIntegrations, { SiteIntegrationsBody } from "@/components/SiteIntegra
 import { ensureDbReady, getSettings } from "@/lib/db";
 import { resolveExpertCta } from "@/lib/expert-cta";
 import { getPage } from "@/lib/queries";
-import { buildJsonLd } from "@/lib/seo";
+import {
+  BASE_URL,
+  DEFAULT_OG_IMAGE,
+  DEFAULT_OG_IMAGE_HEIGHT,
+  DEFAULT_OG_IMAGE_WIDTH,
+  buildJsonLd,
+} from "@/lib/seo";
 import { resolveColorScheme } from "@/lib/color-schemes";
 import { resolveIconStyle } from "@/lib/icon-style";
 
@@ -88,6 +94,22 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       siteName: settings.site_name || "Certko",
       type: "website",
+      locale: "en_IN",
+      url: BASE_URL,
+      images: [
+        {
+          url: DEFAULT_OG_IMAGE,
+          width: DEFAULT_OG_IMAGE_WIDTH,
+          height: DEFAULT_OG_IMAGE_HEIGHT,
+          alt: settings.site_name || "Certko",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: home?.meta_title || "Certko | BIS Certification Intelligence",
+      description: home?.meta_description || settings.tagline,
+      images: [DEFAULT_OG_IMAGE],
     },
   };
 }
@@ -102,12 +124,13 @@ export default async function RootLayout({
   const expertCta = resolveExpertCta(settings);
   const pathname = (await headers()).get("x-pathname") || "";
   const isAdminShell = pathname.startsWith("/admin");
+  // Sitewide Organization + WebSite (site name, favicon attribution, sitelinks search box).
   const orgJsonLd = isAdminShell
     ? null
-    : buildJsonLd(["Organization"], {
-        name: "Certko",
-        description: "",
-        url: "https://certko.com",
+    : buildJsonLd(["Organization", "WebSite"], {
+        name: settings.site_name || "Certko",
+        description: settings.tagline || "",
+        url: BASE_URL,
       });
   return (
     <html lang="en" data-color-scheme={scheme.id} data-icon-style={iconStyle}>
