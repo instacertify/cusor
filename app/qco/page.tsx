@@ -5,6 +5,7 @@ import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import { getUpcomingQcos, getFaqs } from "@/lib/queries";
+import { INDEX_FOLLOW_ROBOTS } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
   description:
     "Track upcoming Quality Control Orders (QCOs): products that will soon require mandatory BIS certification in India, with IS standards, HSN codes and enforcement dates.",
   alternates: { canonical: "https://certko.com/qco" },
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  robots: INDEX_FOLLOW_ROBOTS,
 };
 
 function parseDate(d: string): Date | null {

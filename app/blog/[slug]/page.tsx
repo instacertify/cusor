@@ -37,6 +37,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: post.meta_description || post.excerpt,
     path: `/blog/${post.slug}`,
     image: post.image,
+    openGraphType: "article",
+    publishedTime: post.published_at || post.created_at,
+    modifiedTime: post.published_at || post.created_at,
   });
 }
 

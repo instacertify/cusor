@@ -9,7 +9,7 @@ import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import { getCategories, getFaqs } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
-import { BASE_URL, buildJsonLd } from "@/lib/seo";
+import { BASE_URL, INDEX_FOLLOW_ROBOTS, buildJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description:
     "Match BIS, BEE, Mandatory QCO and global schemes to your product, then browse 1,400+ products by category with IS standards, testing costs and approved labs.",
   alternates: { canonical: "https://certko.com/products" },
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  robots: INDEX_FOLLOW_ROBOTS,
 };
 
 export default function ProductsPage() {

@@ -173,6 +173,21 @@ export async function buildSitemapEntries(): Promise<SitemapEntry[]> {
     ...(excludedPages.has("contact")
       ? []
       : [{ url: `${SITEMAP_BASE}/contact`, changeFrequency: "monthly" as const, priority: 0.6 }]),
+    {
+      url: `${SITEMAP_BASE}/privacy/cookies`,
+      changeFrequency: "yearly" as const,
+      priority: 0.3,
+    },
+    {
+      url: `${SITEMAP_BASE}/privacy/gdpr-and-dpdp`,
+      changeFrequency: "yearly" as const,
+      priority: 0.3,
+    },
+    {
+      url: `${SITEMAP_BASE}/privacy/data-request`,
+      changeFrequency: "yearly" as const,
+      priority: 0.3,
+    },
     ...getRoutableContentPages()
       .filter((p) => !excludedPages.has(p.slug))
       .map((p) => ({
