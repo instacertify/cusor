@@ -811,7 +811,14 @@ export function countTestingServices(categoryId?: number): number {
 
 /** Browse / related suggestions when search has no exact matches. */
 export type SearchBrowseSuggestion = {
-  type: "product" | "certification" | "testing" | "lab" | "category" | "related";
+  type:
+    | "product"
+    | "certification"
+    | "country"
+    | "testing"
+    | "lab"
+    | "category"
+    | "related";
   name: string;
   detail: string;
   href: string;
@@ -836,7 +843,7 @@ export function getRelatedSearchSuggestions(
 
 export function getSearchBrowseSuggestions(limit = 12): SearchBrowseSuggestion[] {
   const n = Math.max(4, Math.min(24, Math.floor(limit) || 12));
-  const per = Math.max(2, Math.ceil(n / 4));
+  const per = Math.max(2, Math.ceil(n / 5));
   const out: SearchBrowseSuggestion[] = [];
 
   const products = getDb()
@@ -863,6 +870,25 @@ export function getSearchBrowseSuggestions(limit = 12): SearchBrowseSuggestion[]
       detail: c.region || "Certification",
       href: `/certifications/${c.slug}`,
     });
+  }
+
+  try {
+    const countries = getDb()
+      .prepare(
+        `SELECT slug, name, short_name FROM country_hubs
+         WHERE active = 1 ORDER BY RANDOM() LIMIT ?`
+      )
+      .all(per) as Array<{ slug: string; name: string; short_name: string }>;
+    for (const c of countries) {
+      out.push({
+        type: "country",
+        name: `${c.short_name || c.name} certifications`,
+        detail: "By market · country guide",
+        href: `/certifications/countries/${c.slug}`,
+      });
+    }
+  } catch {
+    /* country_hubs may not exist yet */
   }
 
   const tests = getDb()

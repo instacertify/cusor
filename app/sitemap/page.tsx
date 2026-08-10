@@ -90,6 +90,7 @@ export default async function HtmlSitemapPage() {
     { href: "/products/all", label: "Product search table" },
     { href: "/certifications", label: "All certifications" },
     { href: "/certifications/countries", label: "Certifications by country" },
+    { href: "/certifications/global-market-access", label: "Global Market Access framework" },
     { href: "/testing", label: "Product testing" },
     { href: "/labs", label: "Testing labs directory" },
     { href: "/qco", label: "Upcoming QCOs" },
@@ -125,6 +126,11 @@ export default async function HtmlSitemapPage() {
                 href: "/certifications/countries",
                 label: "Browse by country",
                 detail: "Country-wise certification guides",
+              },
+              {
+                href: "/certifications/global-market-access",
+                label: "Global Market Access",
+                detail: "GMA pillars, horizontal regimes, shortcuts",
               },
               ...countryHubs.map((h) => ({
                 href: countryHubPath(h.slug),

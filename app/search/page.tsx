@@ -7,6 +7,7 @@ import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { MarketBadge } from "@/components/MarketApplicability";
+import MarketCard from "@/components/MarketCard";
 import {
   searchProducts,
   countSearchProducts,
@@ -32,6 +33,12 @@ import type {
   TestingService,
   Faq,
 } from "@/lib/db";
+import {
+  countryHubPath,
+  getCountryHubs,
+  type CountryHub,
+} from "@/lib/country-certifications";
+import { gmaRegionLabel } from "@/lib/gma-regions";
 import { formatNumber, formatPriceRange, formatINR } from "@/lib/format";
 import { ensureDbReady } from "@/lib/db";
 
@@ -69,6 +76,7 @@ type SearchData = {
   allCertifications: Certification[];
   certProgrammes: Certification[];
   certProducts: CertProduct[];
+  countryHubs: CountryHub[];
   allTestingCategories: TestingCategory[];
   testingCategories: TestingCategory[];
   uniqueTestingServices: TestingService[];
@@ -118,6 +126,32 @@ function loadSearchData(
             includesCI(c.slug, lq)
         )
       : allCertifications;
+
+  let countryHubs: CountryHub[] = [];
+  try {
+    const allCountryHubs = getCountryHubs();
+    countryHubs =
+      q.length >= 2
+        ? allCountryHubs.filter((h) => {
+            const schemeBlob = h.schemes
+              .flatMap((s) => [s.name, s.certSlug, s.role, s.summary])
+              .join(" ");
+            return (
+              includesCI(h.name, lq) ||
+              includesCI(h.shortName, lq) ||
+              includesCI(h.slug, lq) ||
+              includesCI(h.intro, lq) ||
+              includesCI(h.overview, lq) ||
+              includesCI(schemeBlob, lq) ||
+              includesCI(gmaRegionLabel(h.region), lq)
+            );
+          })
+        : tab === "certs"
+          ? allCountryHubs.slice(0, 12)
+          : [];
+  } catch (err) {
+    console.error("[certko] search country hubs failed:", err);
+  }
 
   let certProducts: CertProduct[] = [];
   try {
@@ -188,11 +222,15 @@ function loadSearchData(
       productTotal === 0 &&
       certProgrammes.length === 0 &&
       certProducts.length === 0 &&
+      countryHubs.length === 0 &&
       testingCategories.length === 0 &&
       uniqueTestingServices.length === 0 &&
       labs.length === 0) ||
       (tab === "products" && productTotal === 0) ||
-      (tab === "certs" && certProgrammes.length === 0 && certProducts.length === 0) ||
+      (tab === "certs" &&
+        certProgrammes.length === 0 &&
+        certProducts.length === 0 &&
+        countryHubs.length === 0) ||
       (tab === "testing" && testingCategories.length === 0 && uniqueTestingServices.length === 0) ||
       (tab === "labs" && labTotal === 0));
 
@@ -212,6 +250,7 @@ function loadSearchData(
     allCertifications,
     certProgrammes,
     certProducts,
+    countryHubs,
     allTestingCategories,
     testingCategories,
     uniqueTestingServices,
@@ -269,6 +308,7 @@ export default async function SearchPage({ searchParams }: Props) {
       allCertifications: [],
       certProgrammes: [],
       certProducts: [],
+      countryHubs: [],
       allTestingCategories: [],
       testingCategories: [],
       uniqueTestingServices: [],
@@ -293,6 +333,7 @@ export default async function SearchPage({ searchParams }: Props) {
     allCertifications,
     certProgrammes,
     certProducts,
+    countryHubs,
     allTestingCategories,
     testingCategories,
     uniqueTestingServices,
@@ -336,7 +377,9 @@ export default async function SearchPage({ searchParams }: Props) {
     {
       key: "certs",
       label: "Search Certification",
-      count: q ? certProgrammes.length + certProducts.length : allCertifications.length,
+      count: q
+        ? certProgrammes.length + certProducts.length + countryHubs.length
+        : allCertifications.length,
       icon: "award",
     },
     {
@@ -610,31 +653,77 @@ export default async function SearchPage({ searchParams }: Props) {
       {/* ---- Certifications tab / all ---- */}
       {(tab === "certs" || (tab === "all" && q)) && (
         <section className="mt-8">
-          {(tab === "certs" || certProgrammes.length > 0 || certProducts.length > 0) && (
+          {(tab === "certs" ||
+            certProgrammes.length > 0 ||
+            certProducts.length > 0 ||
+            countryHubs.length > 0) && (
             <>
               <h2 className="font-display text-xl font-semibold text-ink-950">
                 Certifications &amp; Schemes
               </h2>
               {tab === "certs" && !q && (
                 <p className="mt-2 text-sm text-ink-600">
-                  Browse every certification programme, or type your product to see matching BEE / GMARK schemes.
+                  Browse certification programmes and destination markets, or type a product /
+                  scheme (BIS, SONCAP, ANATEL, CCC…) to match.
                 </p>
               )}
-              <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {certProgrammes.map((c) => (
-                  <div
-                    key={c.id}
-                    className="bg-white rounded-2xl border border-cream-300 p-5 hover:border-butter-500 transition flex flex-col gap-3"
-                  >
-                    <Link href={`/certifications/${c.slug}`}>
-                      <MarketBadge slug={c.slug} region={c.region} />
-                      <div className="mt-2 font-display font-semibold text-ink-950">{c.name}</div>
-                      <p className="mt-2 text-sm text-ink-600 line-clamp-2">{c.summary}</p>
-                    </Link>
-                    <RequestQuoteButton subject={c.name} kind="certification" variant="compact" short />
+              {countryHubs.length > 0 && (
+                <>
+                  <h3 className="mt-6 font-display text-lg font-semibold text-ink-950">
+                    Markets / countries
+                  </h3>
+                  <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {countryHubs.slice(0, tab === "certs" ? 24 : 6).map((h) => (
+                      <MarketCard
+                        key={h.slug}
+                        href={countryHubPath(h.slug)}
+                        title={h.name}
+                        eyebrow={gmaRegionLabel(h.region)}
+                        schemesLine={
+                          h.schemes.map((s) => s.name).join(" · ") || h.intro
+                        }
+                      />
+                    ))}
                   </div>
-                ))}
-              </div>
+                  <p className="mt-3 text-sm">
+                    <Link
+                      href="/certifications/countries"
+                      className="font-semibold text-butter-700 hover:underline"
+                    >
+                      Browse all countries →
+                    </Link>
+                  </p>
+                </>
+              )}
+              {certProgrammes.length > 0 && (
+                <>
+                  <h3 className="mt-8 font-display text-lg font-semibold text-ink-950">
+                    Certification programmes
+                  </h3>
+                  <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {certProgrammes.map((c) => (
+                      <div
+                        key={c.id}
+                        className="bg-white rounded-2xl border border-cream-300 p-5 hover:border-butter-500 transition flex flex-col gap-3"
+                      >
+                        <Link href={`/certifications/${c.slug}`}>
+                          <MarketBadge slug={c.slug} region={c.region} />
+                          <div className="mt-2 font-display font-semibold text-ink-950">
+                            {c.name}
+                          </div>
+                          <p className="mt-2 text-sm text-ink-600 line-clamp-2">{c.summary}</p>
+                        </Link>
+                        <RequestQuoteButton
+                          subject={c.name}
+                          kind="certification"
+                          variant="compact"
+                          short
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
               {certProducts.length > 0 && (
                 <>
                   <h3 className="mt-8 font-display text-lg font-semibold text-ink-950">

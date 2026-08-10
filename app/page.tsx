@@ -10,6 +10,7 @@ import NewsletterSignup from "@/components/NewsletterSignup";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import TrustedBrandsStrip from "@/components/TrustedBrandsStrip";
 import CertificationSolutionRow from "@/components/CertificationSolutionRow";
+import MarketCard from "@/components/MarketCard";
 import { TalkToCertificationExpertLink } from "@/components/TalkToCertificationExpert";
 import { ensureDbReady, getSettings } from "@/lib/db";
 import {
@@ -206,37 +207,27 @@ export default async function HomePage() {
       {/* Markets — destination picker only; scheme detail lives on country / cert pages */}
       <section className="bg-cream-100 border-y border-cream-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
-          <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 text-center px-2 leading-snug">
+          <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 text-center leading-snug">
             Where are you selling?
           </h2>
-          <p className="text-center text-ink-600 mt-2 mb-8 sm:mb-10 text-sm sm:text-base px-2 max-w-xl mx-auto">
+          <p className="text-center text-ink-600 mt-2 mb-8 sm:mb-10 text-sm sm:text-base max-w-xl mx-auto">
             Pick a market to open its certification path — then confirm against your product or HSN.
           </p>
 
           <div className="-mx-4 sm:mx-0">
-            <ul className="flex gap-3 overflow-x-auto px-4 sm:px-0 pb-2 sm:pb-0 sm:grid sm:grid-cols-5 sm:gap-4 snap-x snap-mandatory sm:overflow-visible">
-              {countryHubs.map((hub) => (
+            <ul className="flex gap-4 overflow-x-auto px-4 sm:px-0 pb-2 sm:pb-0 sm:grid sm:grid-cols-5 sm:gap-4 snap-x snap-mandatory sm:overflow-visible">
+              {countryHubs.slice(0, 5).map((hub) => (
                 <li
                   key={hub.slug}
-                  className="min-w-[11.5rem] max-w-[14rem] shrink-0 snap-start sm:min-w-0 sm:max-w-none"
+                  className="min-w-[11.5rem] max-w-[14rem] shrink-0 snap-start sm:min-w-0 sm:max-w-none h-auto sm:h-full"
                 >
-                  <Link
+                  <MarketCard
                     href={countryHubPath(hub.slug)}
-                    className="group flex h-full flex-col justify-between rounded-2xl border border-cream-300 bg-white px-4 py-5 transition hover:border-butter-500 hover:bg-cream-50"
-                  >
-                    <div className="min-w-0">
-                      <p className="font-display text-lg font-semibold text-ink-950 group-hover:text-butter-700 transition leading-snug">
-                        {hub.shortName}
-                      </p>
-                      <p className="mt-2 text-xs font-medium text-ink-500 leading-relaxed">
-                        {hub.schemes.map((s) => s.name).join(" · ")}
-                      </p>
-                    </div>
-                    <span className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-butter-700">
-                      Open
-                      <Icon name="arrow-right" size={15} />
-                    </span>
-                  </Link>
+                    title={hub.shortName}
+                    schemesLine={hub.schemes.map((s) => s.name).join(" · ")}
+                    cta="Open"
+                    compact
+                  />
                 </li>
               ))}
             </ul>

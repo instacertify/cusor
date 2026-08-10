@@ -1,6 +1,7 @@
 import type { SqliteDatabase } from "./sqlite";
 import { GMA_COUNTRY_SEEDS } from "./gma-country-data";
 import { GMA_REGIONS } from "./gma-regions";
+import { invalidateSearchIndex } from "./search-index";
 
 function ensureColumn(
   db: SqliteDatabase,
@@ -88,6 +89,7 @@ export function ensureCountryHubsLibrary(db: SqliteDatabase) {
     ).map((r) => r.slug)
   );
 
+  let changed = false;
   const tx = db.transaction(() => {
     GMA_COUNTRY_SEEDS.forEach((hub, hubIndex) => {
       const sort = regionSortBase(hub.region) * 100 + hubIndex;
@@ -133,6 +135,7 @@ export function ensureCountryHubsLibrary(db: SqliteDatabase) {
           );
         });
         existing.add(hub.slug);
+        changed = true;
       } else {
         updateMeta.run(
           hub.region,
@@ -145,4 +148,5 @@ export function ensureCountryHubsLibrary(db: SqliteDatabase) {
     });
   });
   tx();
+  if (changed) invalidateSearchIndex();
 }

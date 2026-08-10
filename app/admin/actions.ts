@@ -679,6 +679,11 @@ export async function saveFaq(formData: FormData) {
     );
   }
   revalidatePath("/", "layout");
+  if (scope.startsWith("country:")) {
+    const countrySlug = scope.slice("country:".length);
+    revalidateSoon(`/certifications/countries/${countrySlug}`);
+    revalidateSoon("/certifications/countries");
+  }
   redirect(withParam(back, "saved=1"));
 }
 
@@ -686,8 +691,17 @@ export async function deleteFaq(formData: FormData) {
   await requireAdmin();
   const id = Number(formData.get("id"));
   const back = String(formData.get("back") ?? "/admin/faqs");
-  getDb().prepare("DELETE FROM faqs WHERE id=?").run(id);
+  const db = getDb();
+  const existing = db
+    .prepare("SELECT scope FROM faqs WHERE id = ?")
+    .get(id) as { scope: string } | undefined;
+  db.prepare("DELETE FROM faqs WHERE id=?").run(id);
   revalidatePath("/", "layout");
+  if (existing?.scope?.startsWith("country:")) {
+    const countrySlug = existing.scope.slice("country:".length);
+    revalidateSoon(`/certifications/countries/${countrySlug}`);
+    revalidateSoon("/certifications/countries");
+  }
   redirect(withParam(back, "saved=1"));
 }
 
@@ -766,11 +780,17 @@ export async function deleteTrustedBrand(formData: FormData) {
 }
 
 // ---------- country hubs (country-wise certifications) ----------
-function revalidateCountryPages() {
+function revalidateCountryPages(slug?: string, previousSlug?: string) {
   revalidateSoon("/", "layout");
   revalidateSoon("/certifications");
   revalidateSoon("/certifications/countries");
+  revalidateSoon("/certifications/global-market-access");
   revalidateSoon("/sitemap");
+  revalidateSoon("/sitemap.xml");
+  if (slug) revalidateSoon(`/certifications/countries/${slug}`);
+  if (previousSlug && previousSlug !== slug) {
+    revalidateSoon(`/certifications/countries/${previousSlug}`);
+  }
 }
 
 export async function createCountryHub(formData: FormData) {
@@ -829,7 +849,7 @@ export async function createCountryHub(formData: FormData) {
     `Open this country guide for the schemes Certko lists for ${name}, then confirm against your product or HSN with an expert.`,
     10
   );
-  revalidateCountryPages();
+  revalidateCountryPages(slug);
   redirect(`/admin/countries/${newId}?saved=1`);
 }
 
@@ -906,7 +926,7 @@ export async function saveCountryHub(formData: FormData) {
     );
   }
 
-  revalidateCountryPages();
+  revalidateCountryPages(slug, existing.slug);
   redirect(`/admin/countries/${id}?saved=1`);
 }
 
@@ -922,7 +942,7 @@ export async function deleteCountryHub(formData: FormData) {
     db.prepare("DELETE FROM country_schemes WHERE country_id = ?").run(id);
     db.prepare("DELETE FROM country_hubs WHERE id = ?").run(id);
   }
-  revalidateCountryPages();
+  revalidateCountryPages(hub?.slug);
   redirect("/admin/countries?saved=1");
 }
 
@@ -977,7 +997,10 @@ export async function saveCountryScheme(formData: FormData) {
     );
   }
 
-  revalidateCountryPages();
+  const hub = db
+    .prepare("SELECT slug FROM country_hubs WHERE id = ?")
+    .get(countryId) as { slug: string } | undefined;
+  revalidateCountryPages(hub?.slug);
   redirect(withParam(back, "saved=1"));
 }
 
@@ -985,10 +1008,15 @@ export async function deleteCountryScheme(formData: FormData) {
   await requireAdmin();
   const id = Number(formData.get("id"));
   const countryId = Number(formData.get("country_id"));
-  getDb()
-    .prepare("DELETE FROM country_schemes WHERE id = ? AND country_id = ?")
-    .run(id, countryId);
-  revalidateCountryPages();
+  const db = getDb();
+  const hub = db
+    .prepare("SELECT slug FROM country_hubs WHERE id = ?")
+    .get(countryId) as { slug: string } | undefined;
+  db.prepare("DELETE FROM country_schemes WHERE id = ? AND country_id = ?").run(
+    id,
+    countryId
+  );
+  revalidateCountryPages(hub?.slug);
   redirect(`/admin/countries/${countryId}?saved=1`);
 }
 

@@ -199,7 +199,7 @@ export function getFeaturedCountryHubs(): CountryHub[] {
     .all() as CountryHubRow[];
   const rows =
     featured.length > 0
-      ? featured
+      ? featured.slice(0, 5)
       : (getDb()
           .prepare(
             "SELECT * FROM country_hubs WHERE active = 1 ORDER BY sort, id LIMIT 5"

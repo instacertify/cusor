@@ -46,6 +46,18 @@ export default function AdminDashboard() {
       tone: "default" as const,
     },
     {
+      label: "Countries",
+      value: (() => {
+        try {
+          return n("SELECT COUNT(*) AS n FROM country_hubs WHERE active = 1");
+        } catch {
+          return 0;
+        }
+      })(),
+      href: "/admin/countries",
+      tone: "default" as const,
+    },
+    {
       label: "Authors",
       value: n("SELECT COUNT(*) AS n FROM authors"),
       href: "/admin/authors",

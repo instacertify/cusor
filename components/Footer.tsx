@@ -109,6 +109,11 @@ export default async function Footer() {
             <li>
               <FooterLink href="/certifications/countries">By country</FooterLink>
             </li>
+            <li>
+              <FooterLink href="/certifications/global-market-access">
+                GMA framework
+              </FooterLink>
+            </li>
             {certifications.map((c) => (
               <li key={c.id}>
                 <FooterLink href={`/certifications/${c.slug}`}>{c.name}</FooterLink>

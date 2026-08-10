@@ -62,10 +62,10 @@ export default function CertificationsByCountryPage() {
         </p>
 
         <CountryWiseBrowser countries={cards} regions={regions} />
+      </div>
 
-        <div className="mt-16">
-          <CtaBanner />
-        </div>
+      <div className="mt-16">
+        <CtaBanner />
       </div>
     </div>
   );
