@@ -47,6 +47,9 @@ export function ensureGdprLibrary(db: SqliteDatabase) {
     ["gdpr_privacy_officer_email", "info@certko.com"],
     ["gdpr_inquiry_retention_days", "365"],
     ["gdpr_policy_version", CONSENT_POLICY_VERSION],
+    ["gdpr_show_floating_cookie_button", "1"],
+    ["gdpr_banner_show_categories_default", "1"],
+    ["gdpr_cookie_categories_json", ""],
   ];
   for (const [k, v] of defaults) upsert.run(k, v);
 

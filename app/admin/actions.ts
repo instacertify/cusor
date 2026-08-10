@@ -42,6 +42,7 @@ const PUBLIC_CACHE_PATHS = [
   "/guide",
   "/about",
   "/privacy",
+  "/privacy/cookies",
   "/privacy/gdpr-and-dpdp",
   "/privacy/data-request",
 ] as const;

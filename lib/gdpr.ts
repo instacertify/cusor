@@ -6,7 +6,9 @@ import { getDb, getSetting, setSetting } from "./db";
 import {
   CONSENT_COOKIE,
   CONSENT_POLICY_VERSION,
+  DEFAULT_COOKIE_CATEGORIES,
   type ConsentPrefs,
+  type CookieCategoryConfig,
   type GdprPublicSettings,
   defaultConsent,
   parseConsentCookie,
@@ -21,11 +23,17 @@ export {
   CONSENT_COOKIE,
   CONSENT_POLICY_VERSION,
   GDPR_REQUEST_TYPES,
+  DEFAULT_COOKIE_CATEGORIES,
   defaultConsent,
   parseConsentCookie,
   serializeConsent,
 };
-export type { ConsentPrefs, GdprPublicSettings, GdprRequestType };
+export type {
+  ConsentPrefs,
+  CookieCategoryConfig,
+  GdprPublicSettings,
+  GdprRequestType,
+};
 
 export type GdprRequestStatus = "new" | "in_progress" | "completed" | "rejected";
 
@@ -53,6 +61,45 @@ export type GdprConsentEvent = {
   created_at: string;
 };
 
+function readCategoryOverrides(): Partial<
+  Record<"necessary" | "analytics" | "marketing", Partial<CookieCategoryConfig>>
+> {
+  const raw = getSetting("gdpr_cookie_categories_json", "");
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw) as Partial<
+      Record<"necessary" | "analytics" | "marketing", Partial<CookieCategoryConfig>>
+    >;
+  } catch {
+    return {};
+  }
+}
+
+export function getCookieCategories(): CookieCategoryConfig[] {
+  const overrides = readCategoryOverrides();
+  return DEFAULT_COOKIE_CATEGORIES.map((cat) => {
+    const o = overrides[cat.key] || {};
+    return {
+      ...cat,
+      label: typeof o.label === "string" && o.label.trim() ? o.label.trim() : cat.label,
+      description:
+        typeof o.description === "string" && o.description.trim()
+          ? o.description.trim()
+          : cat.description,
+      examples:
+        typeof o.examples === "string" && o.examples.trim()
+          ? o.examples.trim()
+          : cat.examples,
+      offered:
+        cat.key === "necessary"
+          ? true
+          : o.offered === undefined
+            ? cat.offered
+            : Boolean(o.offered),
+    };
+  });
+}
+
 export function getGdprPublicSettings(): GdprPublicSettings {
   const retention = Number(getSetting("gdpr_inquiry_retention_days", "365"));
   return {
@@ -66,6 +113,10 @@ export function getGdprPublicSettings(): GdprPublicSettings {
     privacyOfficerEmail: getSetting("gdpr_privacy_officer_email", "info@certko.com"),
     inquiryRetentionDays: Number.isFinite(retention) && retention > 0 ? retention : 365,
     policyVersion: getSetting("gdpr_policy_version", CONSENT_POLICY_VERSION),
+    showFloatingCookieButton: getSetting("gdpr_show_floating_cookie_button", "1") !== "0",
+    bannerShowCategoriesDefault:
+      getSetting("gdpr_banner_show_categories_default", "1") !== "0",
+    categories: getCookieCategories(),
   };
 }
 
@@ -169,6 +220,9 @@ export function saveGdprAdminSettings(values: Record<string, string>) {
     "gdpr_privacy_officer_email",
     "gdpr_inquiry_retention_days",
     "gdpr_policy_version",
+    "gdpr_show_floating_cookie_button",
+    "gdpr_banner_show_categories_default",
+    "gdpr_cookie_categories_json",
   ] as const;
   for (const key of allowed) {
     if (key in values) setSetting(key, values[key] ?? "");
@@ -182,4 +236,21 @@ export function countOpenGdprRequests(): number {
     )
     .get() as { n: number };
   return row?.n || 0;
+}
+
+export function consentStats() {
+  const row = getDb()
+    .prepare(
+      `SELECT
+         COUNT(*) AS total,
+         SUM(CASE WHEN analytics = 1 THEN 1 ELSE 0 END) AS analytics_yes,
+         SUM(CASE WHEN marketing = 1 THEN 1 ELSE 0 END) AS marketing_yes
+       FROM gdpr_consent_events`
+    )
+    .get() as { total: number; analytics_yes: number; marketing_yes: number };
+  return {
+    total: row?.total || 0,
+    analyticsYes: row?.analytics_yes || 0,
+    marketingYes: row?.marketing_yes || 0,
+  };
 }

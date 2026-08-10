@@ -174,6 +174,7 @@ export default async function HtmlSitemapPage() {
                 label: p.nav_label || p.title,
               })),
               { href: "/privacy", label: "Privacy Policy" },
+              { href: "/privacy/cookies", label: "Cookie options" },
               { href: "/privacy/gdpr-and-dpdp", label: "GDPR & DPDP" },
               { href: "/privacy/data-request", label: "Privacy data request" },
               { href: "/terms", label: "Terms of Service" },

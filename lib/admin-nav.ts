@@ -87,7 +87,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         href: "/admin/gdpr",
         label: "GDPR & DPDP",
         icon: "users",
-        description: "Cookie consent, data requests, retention",
+        description: "Cookie management, consent log, data requests",
       },
     ],
   },

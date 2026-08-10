@@ -213,6 +213,12 @@ export default async function Footer() {
               GDPR &amp; DPDP
             </Link>
             <Link
+              href="/privacy/cookies"
+              className="inline-flex min-h-8 items-center hover:text-butter-400"
+            >
+              Cookie options
+            </Link>
+            <Link
               href="/privacy/data-request"
               className="inline-flex min-h-8 items-center hover:text-butter-400"
             >
