@@ -46,9 +46,120 @@ export const DEFAULT_SCHEMA_TYPES: Record<string, string[]> = {
   category: ["BreadcrumbList", "FAQPage"],
   cert: ["Service", "FAQPage", "BreadcrumbList"],
   page: ["Article", "FAQPage", "BreadcrumbList"],
+  country: ["Service", "FAQPage", "BreadcrumbList"],
+  lab: ["Service", "FAQPage", "BreadcrumbList"],
   testcat: ["Service", "FAQPage", "BreadcrumbList"],
   test: ["Service", "FAQPage", "BreadcrumbList"],
 };
+
+/** Shared robots for indexable marketing pages (keeps image/snippet preview flags). */
+export const INDEX_FOLLOW_ROBOTS: Metadata["robots"] = {
+  index: true,
+  follow: true,
+  googleBot: {
+    index: true,
+    follow: true,
+    "max-image-preview": "large",
+    "max-snippet": -1,
+    "max-video-preview": -1,
+  },
+};
+
+/** Crawlable but not indexed — search UIs, thin pagination, redirects. */
+export const NOINDEX_FOLLOW_ROBOTS: Metadata["robots"] = {
+  index: false,
+  follow: true,
+  googleBot: {
+    index: false,
+    follow: true,
+    "max-image-preview": "large",
+    "max-snippet": -1,
+    "max-video-preview": -1,
+  },
+};
+
+/** Full document title budget (including brand) for typical SERP display. */
+const TITLE_MAX = 70;
+
+/** Strip a trailing brand suffix like "| Certko" / "— Certko". */
+export function stripTrailingBrand(title: string, siteName = "Certko"): string {
+  const escaped = siteName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return title
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(new RegExp(`\\s*[|–—-]\\s*${escaped}\\s*$`, "i"), "")
+    .trim();
+}
+
+function truncateTitleCore(core: string, budget: number): string {
+  if (core.length <= budget) return core;
+  const cut = core.slice(0, budget);
+  const soft = cut.replace(/\s+\S*$/, "").replace(/[|,:;–—-]\s*$/, "").trim();
+  return `${soft || cut.trim()}…`;
+}
+
+/**
+ * Build a single final document title for SERPs.
+ * Avoids "| Certko | Certko" from the root title template, and trims long titles.
+ */
+export function finalizeDocumentTitle(
+  raw: string,
+  siteName = "Certko",
+  maxLen = TITLE_MAX
+): string {
+  const escaped = siteName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  let core = stripTrailingBrand(raw, siteName)
+    // Drop low-value trailing marketing tails that inflate product titles
+    .replace(/\s*\|\s*Cost\s*&\s*Labs\s*$/i, "")
+    .trim();
+  if (!core) return siteName;
+  if (core.toLowerCase() === siteName.toLowerCase()) return siteName;
+
+  // Titles that already lead with the brand (e.g. home) keep a single brand mention.
+  const alreadyBranded = new RegExp(`^${escaped}\\b`, "i").test(core);
+  if (alreadyBranded) {
+    return truncateTitleCore(core, maxLen);
+  }
+
+  const suffix = ` | ${siteName}`;
+  const budget = Math.max(24, maxLen - suffix.length);
+  core = truncateTitleCore(core, budget);
+  return `${core}${suffix}`;
+}
+
+/** SERP-friendly meta description (~150–160 chars). */
+export function finalizeDescription(raw: string, maxLen = 158): string {
+  const text = (raw || "").trim().replace(/\s+/g, " ");
+  if (!text) return "";
+  if (text.length <= maxLen) return text;
+  const cut = text.slice(0, maxLen - 1);
+  const soft = cut.replace(/\s+\S*$/, "").replace(/[.,;:]\s*$/, "").trim();
+  return `${soft || cut.trim()}…`;
+}
+
+/** Concise product title: short name + IS code + brand (SERP-friendly). */
+export function buildProductDocumentTitle(
+  name: string,
+  standard?: string | null,
+  siteName = "Certko"
+): string {
+  let lead = (name || "").trim().replace(/\s+/g, " ");
+  const std = (standard || "").trim();
+  // Reserve room for " | {standard} | {brand}" or " BIS Certification | {brand}".
+  const reserved = std
+    ? ` | ${std} | ${siteName}`.length
+    : ` BIS Certification | ${siteName}`.length;
+  const leadBudget = Math.max(28, TITLE_MAX - reserved);
+  if (lead.length > leadBudget) {
+    const punct = lead.search(/\s[:—(]/);
+    if (punct >= 16 && punct <= leadBudget) lead = lead.slice(0, punct).trim();
+    else {
+      lead = `${lead.slice(0, leadBudget).replace(/\s+\S*$/, "").trim()}`;
+    }
+  }
+  const core = std ? `${lead} | ${std}` : `${lead} BIS Certification`;
+  return finalizeDocumentTitle(core, siteName, TITLE_MAX);
+}
 
 export function getSeoMeta(entity: string): SeoMeta | undefined {
   return getDb()
@@ -206,44 +317,74 @@ export function buildMetadata(
     description: string;
     path: string;
     image?: string;
+    /** Use absolute titles so the root `%s | Certko` template cannot double the brand. */
+    openGraphType?: "website" | "article";
+    index?: boolean;
+    follow?: boolean;
+    publishedTime?: string | null;
+    modifiedTime?: string | null;
   }
 ): Metadata {
+  const settings = getSettings();
+  const siteName = settings.site_name || "Certko";
   const seo = getSeoMeta(entity);
-  const title = seo?.title || fallback.title;
-  const description = seo?.description || fallback.description;
+  const title = finalizeDocumentTitle(seo?.title || fallback.title, siteName);
+  const description = finalizeDescription(
+    seo?.description || fallback.description || ""
+  );
   const canonical = seo?.canonical || `${BASE_URL}${fallback.path}`;
   const ogImage = seo?.og_image || fallback.image || DEFAULT_OG_IMAGE;
   const imageMeta = ogImageEntry(ogImage);
+  const index = fallback.index ?? (seo ? seo.robots_index === 1 : true);
+  const follow = fallback.follow ?? (seo ? seo.robots_follow === 1 : true);
+  const ogTitle = finalizeDocumentTitle(
+    seo?.og_title || title,
+    siteName
+  );
+  const ogDescription = finalizeDescription(
+    seo?.og_description || description
+  );
+  const ogType = fallback.openGraphType || "website";
+  const published = toIsoDate(fallback.publishedTime);
+  const modified = toIsoDate(fallback.modifiedTime) || published;
 
   return {
-    title,
+    // Absolute avoids "| Certko | Certko" when titles already include the brand.
+    title: { absolute: title },
     description,
     alternates: { canonical },
     robots: {
-      index: seo ? seo.robots_index === 1 : true,
-      follow: seo ? seo.robots_follow === 1 : true,
+      index,
+      follow,
       noarchive: seo ? seo.robots_noarchive === 1 : false,
       nosnippet: seo ? seo.robots_nosnippet === 1 : false,
       googleBot: {
-        index: seo ? seo.robots_index === 1 : true,
-        follow: seo ? seo.robots_follow === 1 : true,
+        index,
+        follow,
         "max-image-preview": "large",
         "max-snippet": -1,
         "max-video-preview": -1,
       },
     },
     openGraph: {
-      title: seo?.og_title || title,
-      description: seo?.og_description || description,
+      title: ogTitle,
+      description: ogDescription,
       url: canonical,
-      type: "website",
-      siteName: "Certko",
+      type: ogType,
+      siteName,
+      locale: "en_IN",
       images: [imageMeta],
+      ...(ogType === "article"
+        ? {
+            ...(published ? { publishedTime: published } : {}),
+            ...(modified ? { modifiedTime: modified } : {}),
+          }
+        : {}),
     },
     twitter: {
       card: "summary_large_image",
-      title: seo?.og_title || title,
-      description: seo?.og_description || description,
+      title: ogTitle,
+      description: ogDescription,
       images: [imageMeta.url],
     },
   };

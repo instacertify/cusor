@@ -17,7 +17,14 @@ import {
   getRelatedProducts,
 } from "@/lib/queries";
 import { formatPriceRange, formatINR } from "@/lib/format";
-import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
+import {
+  buildMetadata,
+  buildJsonLd,
+  buildProductDocumentTitle,
+  enabledSchemaTypes,
+  stripTrailingBrand,
+  BASE_URL,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -29,9 +36,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = getProductBySlug(slug);
   if (!product) return {};
+  // Prefer concise SERP titles — stored product meta_titles are often 100–300 chars.
+  const stored = stripTrailingBrand(product.meta_title || "");
+  const title =
+    stored && stored.length <= 55
+      ? product.meta_title
+      : buildProductDocumentTitle(product.name, product.standard);
   return buildMetadata(`product:${product.id}`, {
-    title: product.meta_title || `${product.name} BIS Certification`,
-    description: product.meta_description,
+    title,
+    description:
+      product.meta_description ||
+      `BIS certification for ${product.name}${
+        product.standard ? ` (${product.standard})` : ""
+      }: scheme notes, indicative lab costs and approved testing labs.`,
     path: `/product/${product.slug}`,
     image: product.image || product.category_image,
   });
@@ -58,7 +75,11 @@ export default async function ProductPage({ params }: Props) {
       faqs,
       breadcrumbs: [
         { name: "Home", url: "/" },
-        { name: product.category_name ?? "Products", url: `/category/${product.category_slug}` },
+        { name: "Products", url: "/products" },
+        {
+          name: product.category_name ?? "Category",
+          url: product.category_slug ? `/category/${product.category_slug}` : "/products",
+        },
         { name: product.name },
       ],
       offers: product.min_price

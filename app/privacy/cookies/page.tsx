@@ -7,7 +7,7 @@ import { getGdprPublicSettings } from "@/lib/gdpr";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Cookie options | Certko",
+  title: { absolute: "Cookie options | Certko" },
   description:
     "Manage Certko cookie preferences — necessary, analytics and marketing cookies under GDPR and India’s DPDP Act.",
   alternates: { canonical: "https://certko.com/privacy/cookies" },
