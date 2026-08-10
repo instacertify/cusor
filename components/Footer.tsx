@@ -111,7 +111,7 @@ export default async function Footer() {
               <FooterLink href="/certifications/countries">By country</FooterLink>
             </li>
             <li>
-              <FooterLink href="/certifications/global-market-access">
+              <FooterLink href="/certifications#global-market-access">
                 GMA framework
               </FooterLink>
             </li>

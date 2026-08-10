@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
+import GmaFrameworkSection from "@/components/GmaFrameworkSection";
 import MarketCard from "@/components/MarketCard";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import Icon from "@/components/Icon";
@@ -19,9 +20,10 @@ import { CERT_MARKETS, groupCertificationsByMarket } from "@/lib/market-applicab
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Product Certifications by Market | BIS, CE, FCC, GMARK, SABER & Country Guides",
+  title:
+    "Certifications & Global Market Access | BIS, CE, FCC, GMARK, SABER & Country Guides",
   description:
-    "Explore Certko certification programmes for India, the EU, the US, GCC and Saudi Arabia — plus country-wise guides for China, Japan, Brazil, Nigeria and 40+ other destination markets.",
+    "Global Market Access framework plus Certko certification programmes for India, the EU, the US, GCC and Saudi Arabia — and country guides for 40+ destination markets.",
   alternates: { canonical: "https://certko.com/certifications" },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
@@ -55,19 +57,33 @@ export default function CertificationsPage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
         <Breadcrumbs crumbs={[{ label: "Certifications" }]} />
         <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">
-          Certifications by market
+          Certifications &amp; Global Market Access
         </h1>
         <p className="mt-3 text-ink-600 max-w-3xl">
-          Full Certko programmes for India, the European Union, the United States, GCC and
-          Saudi Arabia — plus country guides for {otherCount} other destination markets
-          (China, Japan, Brazil, Nigeria, and more).
+          Start with the GMA framework, then open full Certko programmes for India, the EU, the
+          US, GCC and Saudi Arabia — plus country guides for {otherCount} other destination
+          markets (China, Japan, Brazil, Nigeria, and more).
         </p>
         <p className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
           <a
-            href="#more-markets"
+            href="#global-market-access"
             className="inline-flex items-center gap-1.5 text-sm font-bold text-butter-700 hover:text-butter-600"
           >
-            More countries on this page
+            How GMA works
+            <Icon name="arrow-right" size={15} />
+          </a>
+          <a
+            href="#programmes"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-600 hover:text-butter-700"
+          >
+            Certification programmes
+            <Icon name="arrow-right" size={15} />
+          </a>
+          <a
+            href="#more-markets"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-600 hover:text-butter-700"
+          >
+            More countries
             <Icon name="arrow-right" size={15} />
           </a>
           <Link
@@ -77,22 +93,29 @@ export default function CertificationsPage() {
             Search by country
             <Icon name="arrow-right" size={15} />
           </Link>
-          <Link
-            href="/certifications/global-market-access"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-600 hover:text-butter-700"
-          >
-            GMA framework
-            <Icon name="arrow-right" size={15} />
-          </Link>
         </p>
 
-        <div className="mt-10 space-y-12">
+        <div className="mt-14">
+          <GmaFrameworkSection showBrowseCta={false} />
+        </div>
+
+        <div id="programmes" className="mt-16 scroll-mt-24 space-y-12">
+          <div className="max-w-3xl">
+            <h2 className="font-display text-3xl font-semibold text-ink-950 tracking-tight">
+              Certification programmes
+            </h2>
+            <p className="mt-3 text-ink-600 leading-relaxed">
+              Full Certko catalogue pages for the schemes we deliver day-to-day — products,
+              process detail and quotes.
+            </p>
+          </div>
+
           {marketGroups.map(({ market, certs: groupCerts }) => {
             const countrySlug = countryHubSlugForMarket(market.id);
             return (
               <section key={market.id} id={market.id} aria-labelledby={`market-${market.id}`}>
                 <div className="mb-5 max-w-2xl">
-                  <h2
+                  <h3
                     id={`market-${market.id}`}
                     className="font-display text-2xl font-semibold text-ink-950"
                   >
@@ -106,7 +129,7 @@ export default function CertificationsPage() {
                     ) : (
                       market.heading
                     )}
-                  </h2>
+                  </h3>
                   <p className="mt-1.5 text-sm text-ink-600 leading-relaxed">{market.blurb}</p>
                   {countrySlug ? (
                     <Link
@@ -131,9 +154,9 @@ export default function CertificationsPage() {
                           <IconChip name={c.icon} size={26} chip="xl" />
                           <MarketBadge slug={c.slug} region={c.region} />
                         </div>
-                        <h3 className="font-display text-xl font-bold text-ink-950 group-hover:text-butter-700 transition">
+                        <h4 className="font-display text-xl font-bold text-ink-950 group-hover:text-butter-700 transition">
                           {c.name}
-                        </h3>
+                        </h4>
                         <p className="text-xs font-semibold text-ink-500">{c.full_name}</p>
                         <p className="text-sm text-ink-600 leading-relaxed line-clamp-3">
                           {c.summary}
@@ -166,7 +189,11 @@ export default function CertificationsPage() {
         </div>
 
         {otherRegions.length > 0 ? (
-          <section id="more-markets" className="mt-16 scroll-mt-24" aria-labelledby="more-markets-heading">
+          <section
+            id="more-markets"
+            className="mt-16 scroll-mt-24"
+            aria-labelledby="more-markets-heading"
+          >
             <div className="max-w-3xl">
               <h2
                 id="more-markets-heading"

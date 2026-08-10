@@ -123,11 +123,6 @@ function minimalXml(): string {
       changeFrequency: "monthly",
       priority: 0.75,
     },
-    {
-      url: `${SITEMAP_BASE}/certifications/global-market-access`,
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
     { url: `${SITEMAP_BASE}/testing`, changeFrequency: "weekly", priority: 0.85 },
     { url: `${SITEMAP_BASE}/contact`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITEMAP_BASE}/sitemap`, changeFrequency: "weekly", priority: 0.4 },
@@ -156,11 +151,6 @@ export async function buildSitemapEntries(): Promise<SitemapEntry[]> {
       url: `${SITEMAP_BASE}/certifications/countries`,
       changeFrequency: "monthly",
       priority: 0.75,
-    },
-    {
-      url: `${SITEMAP_BASE}/certifications/global-market-access`,
-      changeFrequency: "monthly",
-      priority: 0.7,
     },
     { url: `${SITEMAP_BASE}/testing`, changeFrequency: "weekly", priority: 0.85 },
     { url: `${SITEMAP_BASE}/blog`, changeFrequency: "weekly", priority: 0.7 },

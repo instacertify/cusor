@@ -192,7 +192,7 @@ function buildIndex(): IndexRow[] {
         type: "country",
         name: "Global Market Access",
         detail: "GMA framework · pillars, horizontal regimes, browse by country",
-        href: "/certifications/global-market-access",
+        href: "/certifications#global-market-access",
       },
       [
         "global market access",

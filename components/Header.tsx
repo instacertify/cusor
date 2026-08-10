@@ -33,9 +33,9 @@ export default async function Header() {
       section: "Browse",
     },
     {
-      href: "/certifications/global-market-access",
+      href: "/certifications#global-market-access",
       label: "GMA framework",
-      detail: "Pillars, horizontal regimes, shortcuts",
+      detail: "On Certifications — pillars, regimes, shortcuts",
       icon: "globe",
       section: "Browse",
     },
@@ -139,7 +139,7 @@ export default async function Header() {
                     label: "By country",
                   },
                   {
-                    href: "/certifications/global-market-access",
+                    href: "/certifications#global-market-access",
                     label: "GMA framework",
                   },
                   { href: "/certifications", label: "All certifications" },
