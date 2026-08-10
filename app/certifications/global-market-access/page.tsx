@@ -3,6 +3,7 @@ import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import {
+  GMA_SCOPING_STEPS,
   GMA_SHORTCUTS,
   HORIZONTAL_REGIMES,
   PILLAR_LABELS,
@@ -13,7 +14,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Global Market Access Framework | Certko",
   description:
-    "GMA in four steps — regulatory determination, testing, local representation and filing — plus the compliance pillars and horizontal regimes that cut across markets.",
+    "GMA in four steps — regulatory determination, testing, local representation and filing — plus the compliance pillars, horizontal regimes and multi-market shortcuts that cut across destinations.",
   alternates: { canonical: "https://certko.com/certifications/global-market-access" },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
@@ -30,7 +31,6 @@ export default function GlobalMarketAccessPage() {
           ]}
         />
 
-        {/* Single reading column so title, steps, pillars and CTAs share one right edge */}
         <div className="max-w-4xl">
           <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">
             Global Market Access
@@ -99,7 +99,8 @@ export default function GlobalMarketAccessPage() {
               Horizontal regimes
             </h2>
             <p className="mt-2 text-sm text-ink-600">
-              These cut across markets and often travel with the same product file.
+              These apply irrespective of product-specific approval — and are usually what
+              gets missed in a scoping call.
             </p>
             <ul className="mt-6 space-y-4">
               {HORIZONTAL_REGIMES.map((r) => (
@@ -110,6 +111,12 @@ export default function GlobalMarketAccessPage() {
                   <p className="font-display text-lg font-semibold text-ink-950">{r.name}</p>
                   <p className="mt-1 text-xs font-semibold text-ink-500">{r.where}</p>
                   <p className="mt-2 text-sm text-ink-600 leading-relaxed">{r.demands}</p>
+                  {"evidence" in r && r.evidence ? (
+                    <p className="mt-2 text-sm text-ink-700 leading-relaxed">
+                      <span className="font-semibold text-ink-900">Typical evidence: </span>
+                      {r.evidence}
+                    </p>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -117,16 +124,36 @@ export default function GlobalMarketAccessPage() {
 
           <section className="mt-14">
             <h2 className="font-display text-2xl font-semibold text-ink-950">
-              Shortcuts that reduce cost
+              Multi-market shortcuts
             </h2>
+            <p className="mt-2 text-sm text-ink-600 leading-relaxed">
+              Routes that let one test campaign serve several markets — the difference between
+              selling a certificate and selling market access.
+            </p>
             <ul className="mt-6 space-y-4">
               {GMA_SHORTCUTS.map((s) => (
                 <li key={s.name} className="border-l-2 border-butter-500 pl-4">
                   <p className="font-semibold text-ink-950">{s.name}</p>
+                  {"markets" in s && s.markets ? (
+                    <p className="mt-1 text-xs font-semibold text-ink-500">{s.markets}</p>
+                  ) : null}
                   <p className="mt-1 text-sm text-ink-600 leading-relaxed">{s.text}</p>
                 </li>
               ))}
             </ul>
+          </section>
+
+          <section className="mt-14">
+            <h2 className="font-display text-2xl font-semibold text-ink-950">
+              How to use this in a scoping call
+            </h2>
+            <ol className="mt-6 space-y-3 list-decimal list-inside text-ink-700">
+              {GMA_SCOPING_STEPS.map((step) => (
+                <li key={step} className="leading-relaxed pl-1">
+                  {step}
+                </li>
+              ))}
+            </ol>
           </section>
 
           <p className="mt-10 text-sm text-ink-500 leading-relaxed">
@@ -135,12 +162,18 @@ export default function GlobalMarketAccessPage() {
             can pull safety + wireless + energy in the same market.
           </p>
 
-          <div className="mt-8">
+          <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/certifications/countries"
               className="inline-flex min-h-11 items-center rounded-xl bg-ink-950 px-6 text-sm font-semibold text-cream-50 hover:bg-ink-800 transition"
             >
               Browse countries →
+            </Link>
+            <Link
+              href="/certifications"
+              className="inline-flex min-h-11 items-center rounded-xl border border-cream-300 px-6 text-sm font-semibold text-ink-800 hover:border-butter-500 transition"
+            >
+              All certifications
             </Link>
           </div>
         </div>
