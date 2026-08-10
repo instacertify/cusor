@@ -7,7 +7,7 @@ import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import BlogCoverImage from "@/components/BlogCoverImage";
 import { getAuthorBySlug, getPublishedPostsByAuthor } from "@/lib/queries";
-import { buildMetadata } from "@/lib/seo";
+import { BASE_URL, absoluteUrl, buildJsonLd, buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     author.bio ||
     `Articles by ${author.name}${author.title ? `, ${author.title}` : ""} on Certko.`;
   return buildMetadata(`author:${author.id}`, {
-    title: `${author.name} | Certko Authors`,
+    title: `${author.name} — Certko Authors`,
     description: description.slice(0, 160),
     path: `/authors/${author.slug}`,
     image: author.image || undefined,
@@ -45,8 +45,39 @@ export default async function AuthorProfilePage({ params }: Props) {
   if (!author) notFound();
   const posts = getPublishedPostsByAuthor(author.id);
 
+  const jsonLd = buildJsonLd(["BreadcrumbList"], {
+    name: author.name,
+    description: author.bio || "",
+    url: `${BASE_URL}/authors/${author.slug}`,
+    breadcrumbs: [
+      { name: "Home", url: "/" },
+      { name: "Blog", url: "/blog" },
+      { name: author.name },
+    ],
+  });
+  const personJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: author.name,
+    url: `${BASE_URL}/authors/${author.slug}`,
+    ...(author.title ? { jobTitle: author.title } : {}),
+    ...(author.bio ? { description: author.bio } : {}),
+    ...(author.image ? { image: absoluteUrl(author.image) } : {}),
+    worksFor: { "@type": "Organization", name: "Certko", url: BASE_URL },
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+      />
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       <Breadcrumbs
         crumbs={[
           { label: "Blog", href: "/blog" },

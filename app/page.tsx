@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import SearchBox from "@/components/SearchBox";
@@ -18,14 +19,29 @@ import {
   getCertifications,
   getFeaturedProducts,
   getFaqs,
+  getPage,
   getTestingCategories,
   getUpcomingQcos,
 } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
 import { countryHubPath, getFeaturedCountryHubs } from "@/lib/country-certifications";
-import { BASE_URL, buildJsonLd } from "@/lib/seo";
+import { BASE_URL, buildJsonLd, buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  await ensureDbReady();
+  const home = getPage("home");
+  const settings = getSettings();
+  return buildMetadata("page:home", {
+    title: home?.meta_title || "Certko | BIS Certification Intelligence",
+    description:
+      home?.meta_description ||
+      settings.tagline ||
+      "Find the right certification and testing for your product.",
+    path: "/",
+  });
+}
 
 const HOW_IT_WORKS = [
   {
