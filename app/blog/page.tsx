@@ -7,7 +7,13 @@ import AuthorByline from "@/components/AuthorByline";
 import BlogPagination, { BLOG_PAGE_SIZE } from "@/components/BlogPagination";
 import BlogCoverImage from "@/components/BlogCoverImage";
 import { countPublishedPosts, getPublishedPosts } from "@/lib/queries";
-import { BASE_URL, toIsoDate } from "@/lib/seo";
+import {
+  BASE_URL,
+  INDEX_FOLLOW_ROBOTS,
+  NOINDEX_FOLLOW_ROBOTS,
+  finalizeDocumentTitle,
+  toIsoDate,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -34,15 +40,20 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const isFirst = safePage <= 1;
 
   return {
-    title: isFirst
-      ? "Compliance Blog | BIS, QCO & Export Certification Insights"
-      : `Compliance Blog — Page ${safePage} | Certko`,
+      title: {
+      absolute: finalizeDocumentTitle(
+        isFirst
+          ? "Compliance Blog — BIS, QCO & Export Insights"
+          : `Compliance Blog — Page ${safePage}`
+      ),
+    },
     description:
       "Practical articles on BIS certification costs, QCO deadlines, marketplace compliance and export certifications — written by the Certko team.",
     alternates: {
       canonical: isFirst ? "https://certko.com/blog" : `https://certko.com/blog?page=${safePage}`,
     },
-    robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+    // Paginated listings stay crawlable for discovery but avoid competing with page 1.
+    robots: isFirst ? INDEX_FOLLOW_ROBOTS : NOINDEX_FOLLOW_ROBOTS,
   };
 }
 

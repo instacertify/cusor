@@ -41,15 +41,17 @@ import {
 import { gmaRegionLabel } from "@/lib/gma-regions";
 import { formatNumber, formatPriceRange, formatINR } from "@/lib/format";
 import { ensureDbReady } from "@/lib/db";
+import { NOINDEX_FOLLOW_ROBOTS } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
+// Internal search UI — keep crawlable for link discovery, but do not index query URLs.
 export const metadata: Metadata = {
-  title: "Search Certifications, Product Testing & Labs",
+  title: { absolute: "Search Certifications, Product Testing & Labs | Certko" },
   description:
     "Search Certko for certifications, product testing services, BIS schemes, standards and testing labs.",
   alternates: { canonical: "https://certko.com/search" },
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  robots: NOINDEX_FOLLOW_ROBOTS,
 };
 
 const PAGE_SIZE = 24;
