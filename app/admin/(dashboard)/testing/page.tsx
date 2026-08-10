@@ -27,18 +27,19 @@ export default async function AdminTesting({ searchParams }: Props) {
         <BulkImportLink entities={["testing_categories", "testing_services"]} />
       </div>
       <p className="text-ink-600 text-sm mb-6">
-        Create testing categories, then add complete test pages under each category.{" "}
-        {categories.length} categor{categories.length === 1 ? "y" : "ies"} · {totalTests} test page
-        {totalTests === 1 ? "" : "s"}.
+        Create a <strong>master testing category</strong> (shown in the header Testing menu), then add
+        product/test pages mapped to that category. Use bulk import for many testing solutions with
+        tentative prices. {categories.length} categor{categories.length === 1 ? "y" : "ies"} ·{" "}
+        {totalTests} testing solution{totalTests === 1 ? "" : "s"}.
       </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
 
       <div className="grid lg:grid-cols-2 gap-6 mb-10">
         <div className="bg-cream-100 rounded-2xl border border-cream-300 p-5">
-          <h2 className="font-display font-bold text-ink-950 mb-1">Create a new category</h2>
+          <h2 className="font-display font-bold text-ink-950 mb-1">Create master testing category</h2>
           <p className="text-xs text-ink-600 mb-4">
-            Categories group related test pages (e.g. Electrical Safety, Chemical). Public URL:{" "}
-            <span className="font-mono">/testing/…</span>
+            Master categories appear in the site menu under <strong>Testing</strong> and own all
+            mapped product test pages. Public URL: <span className="font-mono">/testing/…</span>
           </p>
           <form action={createTestingCategory} className="space-y-3">
             <div className="grid sm:grid-cols-2 gap-3">
@@ -64,10 +65,10 @@ export default async function AdminTesting({ searchParams }: Props) {
         </div>
 
         <div className="bg-cream-100 rounded-2xl border border-cream-300 p-5">
-          <h2 className="font-display font-bold text-ink-950 mb-1">Add a test page</h2>
+          <h2 className="font-display font-bold text-ink-950 mb-1">Add a testing product page</h2>
           <p className="text-xs text-ink-600 mb-4">
-            Pick the category this test belongs to. The page will appear under that category on the
-            site and in admin.
+            Map this page to a master testing category. It appears under that category in the menu,
+            listing pages, and search. Add tentative prices for public display.
           </p>
           {categories.length === 0 ? (
             <p className="text-sm text-ink-700 bg-white border border-cream-300 rounded-xl px-4 py-3">
@@ -122,12 +123,21 @@ export default async function AdminTesting({ searchParams }: Props) {
                   placeholder="e.g. 5 production units"
                 />
               </div>
+              <div className="grid sm:grid-cols-3 gap-3">
+                <Field label="Min price (₹)" name="min_price" type="number" placeholder="e.g. 15000" />
+                <Field label="Max price (₹)" name="max_price" type="number" placeholder="e.g. 45000" />
+                <Field
+                  label="Price note"
+                  name="price_note"
+                  placeholder="Indicative; confirm on quote"
+                />
+              </div>
               <TextArea label="Summary" name="summary" rows={2} />
               <TextArea label="Content writeup (Markdown)" name="content" rows={4} />
               <Field label="Meta title" name="meta_title" />
               <TextArea label="Meta description" name="meta_description" rows={2} />
               <ImageUpload current="" label="Test image" allowClear={false} />
-              <SubmitButton label="Create test page" />
+              <SubmitButton label="Create testing product page" />
             </form>
           )}
         </div>

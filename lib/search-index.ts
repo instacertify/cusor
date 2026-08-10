@@ -7,6 +7,7 @@ export type QuickSearchResult = {
     | "lab"
     | "certification"
     | "cert-product"
+    | "country"
     | "testing-category"
     | "testing-service";
   name: string;
@@ -74,7 +75,7 @@ const SCOPE_TYPES: Record<QuickSearchScope, QuickSearchResult["type"][] | null> 
   all: null,
   standard: ["product", "cert-product", "testing-service", "category"],
   lab: ["lab"],
-  certification: ["certification", "cert-product"],
+  certification: ["certification", "cert-product", "country"],
   testing: ["testing-category", "testing-service"],
 };
 
@@ -116,12 +117,108 @@ function buildIndex(): IndexRow[] {
       {
         type: "certification",
         name: `${c.name} Certification`,
-        detail: `${c.region} · ${c.full_name}`,
+        detail: `Required in ${c.region} · ${c.full_name}`,
         href: `/certifications/${c.slug}`,
       },
       [c.name, c.full_name, c.slug, c.region, c.summary],
       0
     );
+  }
+
+  // Country-wise GMA hubs + scheme names (SONCAP, ANATEL, CCC, …)
+  try {
+    const hubs = db
+      .prepare(
+        `SELECT id, slug, name, short_name, region, intro, overview, market_id
+         FROM country_hubs WHERE active = 1 ORDER BY sort, id`
+      )
+      .all() as Array<{
+      id: number;
+      slug: string;
+      name: string;
+      short_name: string;
+      region: string;
+      intro: string;
+      overview: string;
+      market_id: string;
+    }>;
+    const schemeStmt = db.prepare(
+      `SELECT name, cert_slug, role, summary FROM country_schemes
+       WHERE country_id = ? ORDER BY sort, id`
+    );
+    for (const h of hubs) {
+      const schemes = schemeStmt.all(h.id) as Array<{
+        name: string;
+        cert_slug: string;
+        role: string;
+        summary: string;
+      }>;
+      const schemeNames = schemes.map((s) => s.name).filter(Boolean);
+      const schemeText = schemes
+        .flatMap((s) => [s.name, s.cert_slug, s.role, s.summary])
+        .filter(Boolean);
+      // Prefer scheme names / country name early so codes like SONCAP, ANATEL, CCC rank the right market.
+      push(
+        rows,
+        {
+          type: "country",
+          name: `${h.short_name || h.name} certifications`,
+          detail:
+            schemeNames.length > 0
+              ? `By market · ${schemeNames.slice(0, 4).join(" · ")}`
+              : "Country-wise certification guide",
+          href: `/certifications/countries/${h.slug}`,
+        },
+        [
+          ...schemeNames,
+          h.name,
+          h.short_name,
+          h.slug,
+          h.market_id,
+          ...schemeText,
+          h.region,
+          h.intro,
+          h.overview,
+          "country",
+          "market",
+          "gma",
+        ],
+        0
+      );
+    }
+    push(
+      rows,
+      {
+        type: "country",
+        name: "Global Market Access",
+        detail: "GMA framework · pillars, horizontal regimes, browse by country",
+        href: "/certifications#global-market-access",
+      },
+      [
+        "global market access",
+        "gma",
+        "country wise",
+        "by market",
+        "horizontal regimes",
+        "rohs",
+        "reach",
+        "cb scheme",
+      ],
+      1
+    );
+    push(
+      rows,
+      {
+        type: "country",
+        name: "Certifications by country",
+        detail: "Search all destination markets",
+        href: "/certifications/countries",
+      },
+      ["countries", "by country", "by market", "country wise", "markets"],
+      2
+    );
+  } catch {
+    /* country_hubs may be missing on very old DBs before ensure runs */
   }
 
   const certProducts = db
@@ -334,8 +431,11 @@ function scoreExact(row: IndexRow, terms: string[]): number | null {
     if (idx < 0) return null;
     score += idx === 0 || row.haystack.startsWith(term) ? 0 : Math.min(40, idx);
     const name = row.name.toLowerCase();
+    const detail = row.detail.toLowerCase();
     if (name.includes(term)) score -= 8;
     if (name.startsWith(term)) score -= 16;
+    // Country scheme codes live in detail ("By market · SONCAP · …") — prefer those over casual mentions in body copy.
+    if (row.type === "country" && detail.includes(term)) score -= 22;
   }
   return score + row.boost * 10;
 }
@@ -369,6 +469,8 @@ export function quickSearch(
     }
     if (scope === "lab" && row.type === "lab") score -= 10;
     if (scope === "certification" && row.type === "certification") score -= 12;
+    if (scope === "certification" && row.type === "country") score -= 10;
+    if (scope === "all" && row.type === "country") score -= 4;
     scored.push({ row, score });
   }
 

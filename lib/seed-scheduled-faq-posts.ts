@@ -1,4 +1,5 @@
 import type { SqliteDatabase } from "./sqlite";
+import { seedStatusForPublishAt } from "./blog-schedule-time";
 
 type Faq = { q: string; a: string };
 
@@ -1377,13 +1378,25 @@ export function ensureScheduledFaqPosts(db: SqliteDatabase) {
   const insert = db.prepare(
     `INSERT INTO posts
       (slug, title, excerpt, content, image, author, author_id, status, published_at, meta_title, meta_description)
-     VALUES (?, ?, ?, ?, '', ?, ?, 'scheduled', ?, ?, ?)`
+     VALUES (?, ?, ?, ?, '', ?, ?, ?, ?, ?, ?)`
+  );
+  // Keep FAQ slots on the blog scheduler: future → scheduled, due → published.
+  // Do not overwrite content/images; only align status + publish stamp for FAQ seeds.
+  const syncSchedule = db.prepare(
+    `UPDATE posts
+     SET status = ?, published_at = ?
+     WHERE slug = ?
+       AND status IN ('scheduled', 'published')`
   );
 
   const tx = db.transaction(() => {
     FAQ_POST_DEFS.forEach((def, index) => {
-      if (exists.get(def.slug)) return;
       const publishedAt = scheduledAtForIndex(index);
+      const status = seedStatusForPublishAt(publishedAt);
+      if (exists.get(def.slug)) {
+        syncSchedule.run(status, publishedAt, def.slug);
+        return;
+      }
       const content = buildContent(def);
       insert.run(
         def.slug,
@@ -1392,6 +1405,7 @@ export function ensureScheduledFaqPosts(db: SqliteDatabase) {
         content,
         author.name,
         author.id,
+        status,
         publishedAt,
         `${def.title.replace(/\s+/g, " ").slice(0, 45)} | Certko`,
         def.excerpt.slice(0, 160)

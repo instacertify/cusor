@@ -4,10 +4,22 @@ import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import SiteIntegrations, { SiteIntegrationsBody } from "@/components/SiteIntegrations";
+import TalkToCertificationExpertBar from "@/components/TalkToCertificationExpert";
+import TimedContactPopup from "@/components/TimedContactPopup";
+import AnalyticsGate from "@/components/AnalyticsGate";
+import CookieConsent from "@/components/CookieConsent";
 import { ensureDbReady, getSettings } from "@/lib/db";
+import { getGdprPublicSettings } from "@/lib/gdpr";
+import { resolveExpertCta } from "@/lib/expert-cta";
+import { resolveContactPopup } from "@/lib/contact-popup";
 import { getPage } from "@/lib/queries";
-import { buildJsonLd } from "@/lib/seo";
+import {
+  BASE_URL,
+  DEFAULT_OG_IMAGE,
+  DEFAULT_OG_IMAGE_HEIGHT,
+  DEFAULT_OG_IMAGE_WIDTH,
+  buildJsonLd,
+} from "@/lib/seo";
 import { resolveColorScheme } from "@/lib/color-schemes";
 import { resolveIconScale, resolveIconStyle } from "@/lib/icon-style";
 
@@ -86,6 +98,22 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       siteName: settings.site_name || "Certko",
       type: "website",
+      locale: "en_IN",
+      url: BASE_URL,
+      images: [
+        {
+          url: DEFAULT_OG_IMAGE,
+          width: DEFAULT_OG_IMAGE_WIDTH,
+          height: DEFAULT_OG_IMAGE_HEIGHT,
+          alt: settings.site_name || "Certko",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: home?.meta_title || "Certko | BIS Certification Intelligence",
+      description: home?.meta_description || settings.tagline,
+      images: [DEFAULT_OG_IMAGE],
     },
   };
 }
@@ -95,17 +123,21 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   await ensureDbReady();
   const settings = getSettings();
+  const gdprSettings = getGdprPublicSettings();
   const scheme = resolveColorScheme(settings.color_scheme);
   const iconStyle = resolveIconStyle(settings.icon_style);
   const iconScale = resolveIconScale(settings.icon_scale);
+  const expertCta = resolveExpertCta(settings);
+  const contactPopup = resolveContactPopup(settings);
   const pathname = (await headers()).get("x-pathname") || "";
   const isAdminShell = pathname.startsWith("/admin");
+  // Sitewide Organization + WebSite (site name, favicon attribution, sitelinks search box).
   const orgJsonLd = isAdminShell
     ? null
-    : buildJsonLd(["Organization"], {
-        name: "Certko",
-        description: "",
-        url: "https://certko.com",
+    : buildJsonLd(["Organization", "WebSite"], {
+        name: settings.site_name || "Certko",
+        description: settings.tagline || "",
+        url: BASE_URL,
       });
   return (
     <html
@@ -116,10 +148,13 @@ export default async function RootLayout({
     >
       <body className={`${body.variable} ${display.variable} min-h-screen flex flex-col`}>
         {!isAdminShell && (
-          <>
-            <SiteIntegrationsBody />
-            <SiteIntegrations />
-          </>
+          <AnalyticsGate
+            ga4MeasurementId={settings.ga4_measurement_id || ""}
+            gtmContainerId={settings.gtm_container_id || ""}
+            customHeadHtml={settings.custom_head_html || ""}
+            customBodyHtml={settings.custom_body_html || ""}
+            settings={gdprSettings}
+          />
         )}
         {orgJsonLd && (
           <script
@@ -130,6 +165,14 @@ export default async function RootLayout({
         {!isAdminShell && <Header />}
         <main className="flex-1">{children}</main>
         {!isAdminShell && <Footer />}
+        {!isAdminShell && <TalkToCertificationExpertBar cta={expertCta} />}
+        {!isAdminShell && contactPopup.enabled && (
+          <TimedContactPopup
+            config={contactPopup}
+            cookieBannerEnabled={gdprSettings.bannerEnabled}
+          />
+        )}
+        {!isAdminShell && <CookieConsent settings={gdprSettings} />}
       </body>
     </html>
   );

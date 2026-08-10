@@ -19,12 +19,26 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
+    const intent = String(formData.get("intent") ?? "").trim();
+    // GDPR / DPDP — require explicit privacy consent for lead capture.
+    const privacyConsent = String(formData.get("privacy_consent") ?? "").trim();
+    if (privacyConsent !== "1" && privacyConsent.toLowerCase() !== "on") {
+      if (json) {
+        return NextResponse.json(
+          { ok: false, error: "privacy_consent_required" },
+          { status: 400 }
+        );
+      }
+      return redirectTo(req, "/contact?error=1");
+    }
+
     const result = await createInquiry({
       name: String(formData.get("name") ?? ""),
       email: String(formData.get("email") ?? ""),
       phone: String(formData.get("phone") ?? ""),
       product: String(formData.get("product") ?? ""),
       message: String(formData.get("message") ?? ""),
+      intent,
     });
 
     if (!result.ok) {
@@ -43,7 +57,9 @@ export async function POST(req: NextRequest) {
     if (json) {
       return NextResponse.json({ ok: true });
     }
-    return redirectTo(req, "/contact?sent=1");
+    const params = new URLSearchParams({ sent: "1" });
+    if (intent) params.set("intent", intent);
+    return redirectTo(req, `/contact?${params.toString()}`);
   } catch (err) {
     console.error("[api/contact] unexpected error:", err);
     if (json) {

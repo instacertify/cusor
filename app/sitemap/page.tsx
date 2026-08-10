@@ -11,6 +11,7 @@ import {
   getAuthors,
 } from "@/lib/queries";
 import { pagePublicPath } from "@/lib/pages-nav";
+import { countryHubPath, getCountryHubs } from "@/lib/country-certifications";
 import { ensureDbReady } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -74,6 +75,7 @@ function LinkList({
 export default async function HtmlSitemapPage() {
   await ensureDbReady();
   const certifications = getCertifications();
+  const countryHubs = getCountryHubs();
   const categories = getCategories();
   const testingCategories = getTestingCategories();
   const posts = getPublishedPosts(40);
@@ -86,7 +88,9 @@ export default async function HtmlSitemapPage() {
     { href: "/", label: "Home" },
     { href: "/products", label: "BIS products by category" },
     { href: "/products/all", label: "Product search table" },
-    { href: "/certifications", label: "All certifications" },
+    { href: "/certifications", label: "Certifications & Global Market Access" },
+    { href: "/certifications#global-market-access", label: "GMA framework (on Certifications)" },
+    { href: "/certifications/countries", label: "Certifications by country" },
     { href: "/testing", label: "Product testing" },
     { href: "/labs", label: "Testing labs directory" },
     { href: "/qco", label: "Upcoming QCOs" },
@@ -117,11 +121,28 @@ export default async function HtmlSitemapPage() {
 
         <Section title="Certifications">
           <LinkList
-            items={certifications.map((c) => ({
-              href: `/certifications/${c.slug}`,
-              label: c.name,
-              detail: c.region,
-            }))}
+            items={[
+              {
+                href: "/certifications#global-market-access",
+                label: "Global Market Access",
+                detail: "GMA pillars, horizontal regimes, shortcuts",
+              },
+              {
+                href: "/certifications/countries",
+                label: "Browse by country",
+                detail: "Country-wise certification guides",
+              },
+              ...countryHubs.map((h) => ({
+                href: countryHubPath(h.slug),
+                label: h.name,
+                detail: h.schemes.map((s) => s.name).join(", "),
+              })),
+              ...certifications.map((c) => ({
+                href: `/certifications/${c.slug}`,
+                label: c.name,
+                detail: c.region,
+              })),
+            ]}
           />
         </Section>
 
@@ -153,6 +174,9 @@ export default async function HtmlSitemapPage() {
                 label: p.nav_label || p.title,
               })),
               { href: "/privacy", label: "Privacy Policy" },
+              { href: "/privacy/cookies", label: "Cookie options" },
+              { href: "/privacy/gdpr-and-dpdp", label: "GDPR & DPDP" },
+              { href: "/privacy/data-request", label: "Privacy data request" },
               { href: "/terms", label: "Terms of Service" },
             ]}
           />

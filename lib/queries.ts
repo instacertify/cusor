@@ -14,9 +14,10 @@ import type {
   TestingCategory,
   TestingService,
   HeroSlide,
+  TrustedBrand,
 } from "./db";
 import { relatedSearch } from "./search-index";
-import { publishDueBlogPosts } from "./blog-scheduler";
+import { isBlogPubliclyVisible, publishDueBlogPosts } from "./blog-scheduler";
 
 // ---------- categories ----------
 export function getCategories(): Category[] {
@@ -365,44 +366,50 @@ function flushDueBlogPosts() {
   }
 }
 
-/** Live posts are status=published. Scheduled posts stay hidden until the scheduler flips them. */
+/**
+ * Live posts are status=published.
+ * `flushDueBlogPosts()` demotes future-dated published rows to scheduled first,
+ * so this filter stays accurate for lists / counts / sitemaps.
+ */
 const LIVE_POST_SQL = `p.status = 'published'`;
 
 export function getPublishedPostsByAuthor(authorId: number, limit = 50): Post[] {
   flushDueBlogPosts();
-  return getDb()
+  const rows = getDb()
     .prepare(
       `SELECT ${POST_AUTHOR_SELECT}
        FROM posts p
        LEFT JOIN authors a ON a.id = p.author_id
        WHERE ${LIVE_POST_SQL} AND p.author_id = ?
-       ORDER BY p.published_at DESC, p.id DESC
-       LIMIT ?`
+       ORDER BY p.published_at DESC, p.id DESC`
     )
-    .all(authorId, limit) as Post[];
+    .all(authorId) as Post[];
+  return rows.filter((p) => isBlogPubliclyVisible(p)).slice(0, limit);
 }
 
 export function countPublishedPosts(): number {
   flushDueBlogPosts();
-  return (
-    getDb()
-      .prepare(`SELECT COUNT(*) AS n FROM posts p WHERE ${LIVE_POST_SQL}`)
-      .get() as { n: number }
-  ).n;
+  const rows = getDb()
+    .prepare(
+      `SELECT p.status, p.published_at FROM posts p WHERE ${LIVE_POST_SQL}`
+    )
+    .all() as Array<{ status: string; published_at: string | null }>;
+  return rows.filter((p) => isBlogPubliclyVisible(p)).length;
 }
 
 export function getPublishedPosts(limit = 50, offset = 0): Post[] {
   flushDueBlogPosts();
-  return getDb()
+  // Filter in JS so a future-dated row can never appear, even before demote lands.
+  const rows = getDb()
     .prepare(
       `SELECT ${POST_AUTHOR_SELECT}
        FROM posts p
        LEFT JOIN authors a ON a.id = p.author_id
        WHERE ${LIVE_POST_SQL}
-       ORDER BY p.published_at DESC, p.id DESC
-       LIMIT ? OFFSET ?`
+       ORDER BY p.published_at DESC, p.id DESC`
     )
-    .all(limit, offset) as Post[];
+    .all() as Post[];
+  return rows.filter((p) => isBlogPubliclyVisible(p)).slice(offset, offset + limit);
 }
 
 export function getPostBySlug(slug: string): Post | undefined {
@@ -499,6 +506,23 @@ export function getRandomFeaturedTestimonials(limit = 2): Testimonial[] {
        LIMIT ?`
     )
     .all(n) as Testimonial[];
+}
+
+export function getTrustedBrands(): TrustedBrand[] {
+  return getDb()
+    .prepare("SELECT * FROM trusted_brands ORDER BY sort, id")
+    .all() as TrustedBrand[];
+}
+
+/** Active logos for the sitewide “Trusted by Global Brands” marquee. */
+export function getActiveTrustedBrands(): TrustedBrand[] {
+  return getDb()
+    .prepare(
+      `SELECT * FROM trusted_brands
+       WHERE active = 1 AND logo != ''
+       ORDER BY sort, id`
+    )
+    .all() as TrustedBrand[];
 }
 
 // ---------- hero slider ----------
@@ -787,7 +811,14 @@ export function countTestingServices(categoryId?: number): number {
 
 /** Browse / related suggestions when search has no exact matches. */
 export type SearchBrowseSuggestion = {
-  type: "product" | "certification" | "testing" | "lab" | "category" | "related";
+  type:
+    | "product"
+    | "certification"
+    | "country"
+    | "testing"
+    | "lab"
+    | "category"
+    | "related";
   name: string;
   detail: string;
   href: string;
@@ -812,7 +843,7 @@ export function getRelatedSearchSuggestions(
 
 export function getSearchBrowseSuggestions(limit = 12): SearchBrowseSuggestion[] {
   const n = Math.max(4, Math.min(24, Math.floor(limit) || 12));
-  const per = Math.max(2, Math.ceil(n / 4));
+  const per = Math.max(2, Math.ceil(n / 5));
   const out: SearchBrowseSuggestion[] = [];
 
   const products = getDb()
@@ -839,6 +870,25 @@ export function getSearchBrowseSuggestions(limit = 12): SearchBrowseSuggestion[]
       detail: c.region || "Certification",
       href: `/certifications/${c.slug}`,
     });
+  }
+
+  try {
+    const countries = getDb()
+      .prepare(
+        `SELECT slug, name, short_name FROM country_hubs
+         WHERE active = 1 ORDER BY RANDOM() LIMIT ?`
+      )
+      .all(per) as Array<{ slug: string; name: string; short_name: string }>;
+    for (const c of countries) {
+      out.push({
+        type: "country",
+        name: `${c.short_name || c.name} certifications`,
+        detail: "By market · country guide",
+        href: `/certifications/countries/${c.slug}`,
+      });
+    }
+  } catch {
+    /* country_hubs may not exist yet */
   }
 
   const tests = getDb()

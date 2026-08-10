@@ -13,6 +13,8 @@ import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/compo
 import ColorSchemePicker from "@/components/ColorSchemePicker";
 import IconStylePicker from "@/components/IconStylePicker";
 import IconScalePicker from "@/components/IconScalePicker";
+import SocialIconGlyph from "@/components/SocialIconGlyph";
+import { SOCIAL_NETWORKS } from "@/lib/social-links";
 
 export const dynamic = "force-dynamic";
 
@@ -126,8 +128,8 @@ export default async function SettingsPage({ searchParams }: Props) {
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Homepage Hero</h2>
           <p className="text-sm text-ink-600">
-            Edit the main headline and stats here. Manage category GIF/video slides and{" "}
-            <strong>Explore more</strong> buttons on{" "}
+            Edit the main headline here. Manage the dark stats strip in the section below, and
+            category GIF/video slides plus <strong>Explore more</strong> buttons on{" "}
             <Link href="/admin/hero" className="font-semibold text-butter-700 hover:underline">
               Hero Banner
             </Link>
@@ -135,13 +137,63 @@ export default async function SettingsPage({ searchParams }: Props) {
           </p>
           <Field label="Hero Heading" name="hero_heading" defaultValue={s.hero_heading} />
           <TextArea label="Hero Subheading" name="hero_subheading" defaultValue={s.hero_subheading} rows={3} />
-          <div className="grid sm:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="space-y-2">
-                <Field label={`Stat ${i} Value`} name={`stat_${i}_value`} defaultValue={s[`stat_${i}_value`]} />
-                <Field label={`Stat ${i} Label`} name={`stat_${i}_label`} defaultValue={s[`stat_${i}_label`]} />
-              </div>
-            ))}
+        </section>
+
+        <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-5">
+          <div>
+            <h2 className="font-display font-bold text-ink-950">Homepage stats strip</h2>
+            <p className="text-sm text-ink-600 mt-1">
+              Edit the dark proof strip under the hero. Change the large number/text, the label under it,
+              and optionally upload a logo or icon for each slot. Clear both value and label to hide a slot.
+            </p>
+          </div>
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {[1, 2, 3, 4, 5].map((i) => {
+              const valueKey = `stat_${i}_value`;
+              const labelKey = `stat_${i}_label`;
+              const iconKey = `stat_${i}_icon`;
+              const icon = (s[iconKey] || "").trim();
+              return (
+                <div
+                  key={i}
+                  className="rounded-2xl border border-cream-300 bg-cream-50/60 p-4 space-y-3"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-display font-bold text-ink-950">Stat {i}</p>
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-ink-950 text-cream-50 overflow-hidden">
+                      {icon ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={icon} alt="" className="h-7 w-7 object-contain" />
+                      ) : (
+                        <span className="text-[10px] font-semibold text-cream-100/70">No logo</span>
+                      )}
+                    </span>
+                  </div>
+                  <Field
+                    label="Value (large text)"
+                    name={valueKey}
+                    defaultValue={s[valueKey]}
+                    placeholder="e.g. 2,500+"
+                  />
+                  <Field
+                    label="Label (under value)"
+                    name={labelKey}
+                    defaultValue={s[labelKey]}
+                    placeholder="e.g. Product Categories Covered"
+                  />
+                  <ImageUpload
+                    current={icon || undefined}
+                    name={`${iconKey}_file`}
+                    label="Logo / icon (optional)"
+                    clearName={`clear_${iconKey}`}
+                    clearLabel="Remove logo from this slot"
+                    previewFit="contain"
+                    previewAspect="aspect-square max-w-[7rem]"
+                    hint="PNG or SVG on transparent background works best on the dark strip."
+                  />
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -149,6 +201,103 @@ export default async function SettingsPage({ searchParams }: Props) {
           <h2 className="font-display font-bold text-ink-950">Call-to-Action Banner</h2>
           <Field label="CTA Heading" name="cta_heading" defaultValue={s.cta_heading} />
           <TextArea label="CTA Text" name="cta_text" defaultValue={s.cta_text} rows={2} />
+        </section>
+
+        <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
+          <h2 className="font-display font-bold text-ink-950">Talk to a certification expert</h2>
+          <p className="text-sm text-ink-600">
+            Controls the header button, footer button and floating button on public pages. Keep the
+            wording plain — short sentences work best for search and readers.
+          </p>
+          <Field
+            label="Full label"
+            name="expert_cta_label"
+            defaultValue={s.expert_cta_label || "Talk to a certification expert"}
+          />
+          <Field
+            label="Short label (header)"
+            name="expert_cta_label_short"
+            defaultValue={s.expert_cta_label_short || "Talk to expert"}
+          />
+          <Field
+            label="Link"
+            name="expert_cta_href"
+            defaultValue={s.expert_cta_href || "/contact?intent=expert"}
+            placeholder="/contact?intent=expert"
+          />
+          <p className="text-xs text-ink-500">Must start with / — usually /contact?intent=expert</p>
+        </section>
+
+        <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
+          <h2 className="font-display font-bold text-ink-950">Timed contact popup</h2>
+          <p className="text-sm text-ink-600">
+            Google Form–style popup after a delay (default 59 seconds). Collects a lead with an
+            explicit GDPR / DPDP privacy checkbox. Side image is editable below.
+          </p>
+          <label className="flex items-center gap-2 text-sm text-ink-800">
+            <input type="hidden" name="contact_popup_enabled" value="0" />
+            <input
+              type="checkbox"
+              name="contact_popup_enabled"
+              value="1"
+              defaultChecked={(s.contact_popup_enabled ?? "1") === "1"}
+            />
+            Enable timed contact popup
+          </label>
+          <label className="flex items-center gap-2 text-sm text-ink-800">
+            <input type="hidden" name="contact_popup_wait_for_cookie_choice" value="0" />
+            <input
+              type="checkbox"
+              name="contact_popup_wait_for_cookie_choice"
+              value="1"
+              defaultChecked={(s.contact_popup_wait_for_cookie_choice ?? "1") === "1"}
+            />
+            Wait until the visitor answers the cookie banner (recommended)
+          </label>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field
+              label="Delay (seconds)"
+              name="contact_popup_delay_seconds"
+              type="number"
+              defaultValue={s.contact_popup_delay_seconds || "59"}
+            />
+            <Field
+              label="Don’t show again for (days)"
+              name="contact_popup_dismiss_days"
+              type="number"
+              defaultValue={s.contact_popup_dismiss_days || "7"}
+            />
+          </div>
+          <Field
+            label="Title"
+            name="contact_popup_title"
+            defaultValue={
+              s.contact_popup_title || "Need help with certification or testing?"
+            }
+          />
+          <TextArea
+            label="Supporting text"
+            name="contact_popup_subtitle"
+            rows={2}
+            defaultValue={
+              s.contact_popup_subtitle ||
+              "Share a few details and a Certko specialist will reply within 24 working hours. No spam."
+            }
+          />
+          <Field
+            label="Submit button label"
+            name="contact_popup_submit_label"
+            defaultValue={s.contact_popup_submit_label || "Send my request"}
+          />
+          <ImageUpload
+            label="Side image"
+            name="contact_popup_image_file"
+            current={s.contact_popup_image || "/brand/certko-logo-full.png"}
+            clearName="clear_contact_popup_image"
+            previewFit="contain"
+            previewAspect="aspect-[4/3]"
+            hint="Shown beside the form on desktop (and above the form on mobile). PNG/JPG/WebP."
+          />
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
@@ -170,6 +319,60 @@ export default async function SettingsPage({ searchParams }: Props) {
             </Link>{" "}
             (requires current password and double confirmation).
           </p>
+        </section>
+
+        <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-5">
+          <div>
+            <h2 className="font-display font-bold text-ink-950">Social media</h2>
+            <p className="text-sm text-ink-600 mt-1">
+              Add profile URLs for the footer. Leave a URL blank to hide that network.
+              Optionally upload a custom icon (PNG/SVG) to replace the default brand glyph.
+            </p>
+          </div>
+          <div className="grid gap-5 lg:grid-cols-3">
+            {SOCIAL_NETWORKS.map((network) => {
+              const url = s[network.urlKey] || "";
+              const icon = s[network.iconKey] || "";
+              return (
+                <div
+                  key={network.id}
+                  className="rounded-2xl border border-cream-300 bg-cream-50/60 p-4 space-y-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-ink-950 text-cream-50">
+                      {icon ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={icon} alt="" className="h-4 w-4 object-contain" />
+                      ) : (
+                        <SocialIconGlyph id={network.id} className="h-4 w-4" />
+                      )}
+                    </span>
+                    <div>
+                      <p className="font-display font-bold text-ink-950">{network.label}</p>
+                      <p className="text-[11px] text-ink-500">Footer social link</p>
+                    </div>
+                  </div>
+                  <Field
+                    label={`${network.label} URL`}
+                    name={network.urlKey}
+                    defaultValue={url}
+                    type="url"
+                    placeholder={network.placeholder}
+                  />
+                  <ImageUpload
+                    current={icon || undefined}
+                    name={network.fileKey}
+                    label={`${network.label} icon (optional)`}
+                    clearName={network.clearKey}
+                    clearLabel="Use default brand icon"
+                    previewFit="contain"
+                    previewAspect="aspect-square max-w-[7rem]"
+                    hint="Square PNG or SVG works best. Leave empty to keep the built-in icon."
+                  />
+                </div>
+              );
+            })}
+          </div>
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-3">

@@ -1,4 +1,5 @@
 import type { SqliteDatabase } from "./sqlite";
+import { seedStatusForPublishAt } from "./blog-schedule-time";
 
 type MigrationPostSeed = {
   slug: string;
@@ -448,7 +449,7 @@ export function ensureMigrationPosts(db: SqliteDatabase) {
   const insert = db.prepare(
     `INSERT INTO posts
       (slug, title, excerpt, content, image, author, author_id, status, published_at, meta_title, meta_description)
-     VALUES (?, ?, ?, ?, '', ?, ?, 'published', ?, ?, ?)`
+     VALUES (?, ?, ?, ?, '', ?, ?, ?, ?, ?, ?)`
   );
 
   const tx = db.transaction(() => {
@@ -461,6 +462,7 @@ export function ensureMigrationPosts(db: SqliteDatabase) {
         p.content,
         author.name,
         author.id,
+        seedStatusForPublishAt(p.published_at),
         p.published_at,
         p.meta_title,
         p.meta_description

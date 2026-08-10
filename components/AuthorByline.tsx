@@ -4,11 +4,15 @@ export default function AuthorByline({
   name,
   slug,
   date,
+  dateTime,
   className = "",
 }: {
   name: string;
   slug?: string | null;
+  /** Visible byline date */
   date?: string;
+  /** Machine-readable publish/update date for Google byline dates */
+  dateTime?: string;
   className?: string;
 }) {
   const authorLabel = slug ? (
@@ -24,7 +28,12 @@ export default function AuthorByline({
 
   return (
     <p className={`text-xs font-semibold text-ink-500 ${className}`}>
-      {date ? <>{date} · </> : null}
+      {date ? (
+        <>
+          {dateTime ? <time dateTime={dateTime}>{date}</time> : date}
+          {" · "}
+        </>
+      ) : null}
       {authorLabel}
     </p>
   );
