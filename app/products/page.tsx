@@ -9,6 +9,7 @@ import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import { getCategories, getFaqs } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
+import { BASE_URL, buildJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -24,9 +25,26 @@ export default function ProductsPage() {
   const categories = getCategories();
   const total = categories.reduce((s, c) => s + (c.product_count ?? 0), 0);
   const faqs = getFaqs("page:products");
+  const faqJsonLd = buildJsonLd(["FAQPage", "BreadcrumbList"], {
+    name: "Certification Solutions — Products by Category",
+    description:
+      "Match BIS, BEE, Mandatory QCO and global schemes to your product across Certko’s product database.",
+    url: `${BASE_URL}/products`,
+    faqs: faqs.map(({ question, answer }) => ({ question, answer })),
+    breadcrumbs: [
+      { name: "Home", url: "/" },
+      { name: "Products" },
+    ],
+  });
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
       <Breadcrumbs crumbs={[{ label: "Products" }]} />
       <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">
         Certification solutions — products by category

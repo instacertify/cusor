@@ -23,6 +23,7 @@ import {
 } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
 import { countryHubPath, getFeaturedCountryHubs } from "@/lib/country-certifications";
+import { BASE_URL, buildJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -64,8 +65,22 @@ export default async function HomePage() {
     }))
     .filter((s) => s.value && s.label);
 
+  // FAQ rich results for homepage accordion (Organization/WebSite are sitewide in layout).
+  const faqJsonLd = buildJsonLd(["FAQPage"], {
+    name: settings.site_name || "Certko",
+    description: settings.tagline || "",
+    url: BASE_URL,
+    faqs: faqs.map(({ question, answer }) => ({ question, answer })),
+  });
+
   return (
     <div className="relative">
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
       {/* Hero — refined tilted revolving line-art globe on the right */}
       <section className="relative overflow-hidden min-h-[min(74vh,680px)] flex flex-col justify-center">
         <GlobeWatermark />

@@ -9,6 +9,7 @@ import ContactThankYou from "@/components/ContactThankYou";
 import { resolveExpertCta } from "@/lib/expert-cta";
 import { getPage, getFaqs } from "@/lib/queries";
 import { ensureDbReady, getSettings } from "@/lib/db";
+import { BASE_URL, buildJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -48,8 +49,25 @@ export default async function ContactPage({ searchParams }: Props) {
         ? "Please fill in your name and email."
         : null;
 
+  const faqJsonLd = buildJsonLd(["FAQPage", "BreadcrumbList"], {
+    name: page?.hero_heading || "Get Expert Help",
+    description: page?.meta_description || page?.hero_subheading || "",
+    url: `${BASE_URL}/contact`,
+    faqs: faqs.map(({ question, answer }) => ({ question, answer })),
+    breadcrumbs: [
+      { name: "Home", url: "/" },
+      { name: "Get Expert Help" },
+    ],
+  });
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-10">
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
       <Breadcrumbs crumbs={[{ label: "Get Expert Help" }]} />
       <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
         <div>

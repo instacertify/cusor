@@ -10,6 +10,7 @@ import SearchBox from "@/components/SearchBox";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { TestingStandardFamiliesPanel } from "@/components/MarketApplicability";
 import { getFaqs, getTestingCategories } from "@/lib/queries";
+import { BASE_URL, buildJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -24,9 +25,26 @@ export const metadata: Metadata = {
 export default function TestingIndexPage() {
   const categories = getTestingCategories();
   const faqs = getFaqs("page:testing");
+  const faqJsonLd = buildJsonLd(["FAQPage", "BreadcrumbList"], {
+    name: "Explore the Right Quality Assurance Solutions",
+    description:
+      "Chemical, electrical, EMC, physical, microbiology and mechanical product testing pathways with Certko.",
+    url: `${BASE_URL}/testing`,
+    faqs: faqs.map(({ question, answer }) => ({ question, answer })),
+    breadcrumbs: [
+      { name: "Home", url: "/" },
+      { name: "Product Testing" },
+    ],
+  });
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
       <Breadcrumbs crumbs={[{ label: "Product Testing" }]} />
       <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">
         Explore the Right Quality Assurance Solutions

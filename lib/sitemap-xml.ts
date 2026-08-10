@@ -28,6 +28,8 @@ type SitemapEntry = {
     | "yearly"
     | "never";
   priority?: number;
+  /** W3C datetime / ISO date for <lastmod> */
+  lastModified?: string;
 };
 
 type CacheGlobal = typeof globalThis & {
@@ -93,10 +95,21 @@ function escapeXml(value: string): string {
     .replace(/'/g, "&apos;");
 }
 
+function toLastmod(value?: string): string | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+  const d = new Date(trimmed);
+  if (Number.isNaN(d.getTime())) return undefined;
+  return d.toISOString();
+}
+
 function toXml(entries: SitemapEntry[]): string {
   const body = entries
     .map((e) => {
       const parts = [`<loc>${escapeXml(e.url)}</loc>`];
+      const lastmod = toLastmod(e.lastModified);
+      if (lastmod) parts.push(`<lastmod>${escapeXml(lastmod)}</lastmod>`);
       if (e.changeFrequency) parts.push(`<changefreq>${e.changeFrequency}</changefreq>`);
       if (typeof e.priority === "number") {
         parts.push(`<priority>${e.priority.toFixed(1)}</priority>`);
@@ -231,6 +244,7 @@ export async function buildSitemapEntries(): Promise<SitemapEntry[]> {
       url: `${SITEMAP_BASE}/blog/${p.slug}`,
       changeFrequency: "monthly" as const,
       priority: 0.6,
+      lastModified: p.published_at || p.created_at || undefined,
     }));
 
   const authors = getAuthors().map((a) => ({

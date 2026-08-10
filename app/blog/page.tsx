@@ -7,6 +7,7 @@ import AuthorByline from "@/components/AuthorByline";
 import BlogPagination, { BLOG_PAGE_SIZE } from "@/components/BlogPagination";
 import BlogCoverImage from "@/components/BlogCoverImage";
 import { countPublishedPosts, getPublishedPosts } from "@/lib/queries";
+import { BASE_URL, toIsoDate } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -59,8 +60,28 @@ export default async function BlogIndexPage({ searchParams }: Props) {
   const page = Math.min(requested, totalPages);
   const posts = getPublishedPosts(BLOG_PAGE_SIZE, (page - 1) * BLOG_PAGE_SIZE);
 
+  const itemListJsonLd =
+    posts.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          itemListElement: posts.map((p, i) => ({
+            "@type": "ListItem",
+            position: (page - 1) * BLOG_PAGE_SIZE + i + 1,
+            url: `${BASE_URL}/blog/${p.slug}`,
+            name: p.title,
+          })),
+        }
+      : null;
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+      {itemListJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+        />
+      )}
       <Breadcrumbs crumbs={[{ label: "Blog" }]} />
       <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">
         Compliance Blog
@@ -94,6 +115,7 @@ export default async function BlogIndexPage({ searchParams }: Props) {
                   name={authorName}
                   slug={p.author_slug}
                   date={formatDate(p.published_at)}
+                  dateTime={toIsoDate(p.published_at) || undefined}
                 />
                 <Link href={`/blog/${p.slug}`} className="group flex flex-col gap-2 flex-1">
                   <h2 className="font-display text-lg font-bold text-ink-950 leading-snug group-hover:text-butter-700 transition">
