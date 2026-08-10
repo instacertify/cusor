@@ -99,7 +99,8 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: settings.site_name || "Certko",
       type: "website",
       locale: "en_IN",
-      url: BASE_URL,
+      // Do not set a sitewide openGraph.url — Next merges metadata shallowly and
+      // child pages would inherit the homepage URL. Each page sets its own via buildMetadata.
       images: [
         {
           url: DEFAULT_OG_IMAGE,

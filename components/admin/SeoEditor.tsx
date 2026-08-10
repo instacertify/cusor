@@ -37,6 +37,7 @@ export interface SeoEditorData {
 }
 
 const SCHEMA_OPTIONS = [
+  "WebPage",
   "Article",
   "FAQPage",
   "Product",
@@ -44,6 +45,7 @@ const SCHEMA_OPTIONS = [
   "BreadcrumbList",
   "HowTo",
   "Organization",
+  "WebSite",
 ];
 
 function slugify(text: string): string {

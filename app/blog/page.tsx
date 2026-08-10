@@ -9,9 +9,7 @@ import BlogCoverImage from "@/components/BlogCoverImage";
 import { countPublishedPosts, getPublishedPosts } from "@/lib/queries";
 import {
   BASE_URL,
-  INDEX_FOLLOW_ROBOTS,
-  NOINDEX_FOLLOW_ROBOTS,
-  finalizeDocumentTitle,
+  buildMetadata,
   toIsoDate,
 } from "@/lib/seo";
 
@@ -39,22 +37,17 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const safePage = Math.min(page, totalPages);
   const isFirst = safePage <= 1;
 
-  return {
-      title: {
-      absolute: finalizeDocumentTitle(
-        isFirst
-          ? "Compliance Blog — BIS, QCO & Export Insights"
-          : `Compliance Blog — Page ${safePage}`
-      ),
-    },
+  return buildMetadata("page:blog", {
+    title: isFirst
+      ? "Compliance Blog — BIS, QCO & Export Insights"
+      : `Compliance Blog — Page ${safePage}`,
     description:
       "Practical articles on BIS certification costs, QCO deadlines, marketplace compliance and export certifications — written by the Certko team.",
-    alternates: {
-      canonical: isFirst ? "https://certko.com/blog" : `https://certko.com/blog?page=${safePage}`,
-    },
     // Paginated listings stay crawlable for discovery but avoid competing with page 1.
-    robots: isFirst ? INDEX_FOLLOW_ROBOTS : NOINDEX_FOLLOW_ROBOTS,
-  };
+    path: isFirst ? "/blog" : `/blog?page=${safePage}`,
+    index: isFirst,
+    follow: true,
+  });
 }
 
 function formatDate(d: string | null): string {

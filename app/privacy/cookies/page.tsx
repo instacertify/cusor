@@ -3,15 +3,18 @@ import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CookieOptionsClient from "@/components/CookieOptionsClient";
 import { getGdprPublicSettings } from "@/lib/gdpr";
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: { absolute: "Cookie options | Certko" },
-  description:
-    "Manage Certko cookie preferences — necessary, analytics and marketing cookies under GDPR and India’s DPDP Act.",
-  alternates: { canonical: "https://certko.com/privacy/cookies" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata("page:privacy-cookies", {
+    title: "Cookie options",
+    description:
+      "Manage Certko cookie preferences — necessary, analytics and marketing cookies under GDPR and India’s DPDP Act.",
+    path: "/privacy/cookies",
+  });
+}
 
 export default function CookieOptionsPage() {
   const settings = getGdprPublicSettings();

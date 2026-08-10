@@ -5,17 +5,18 @@ import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import { getUpcomingQcos, getFaqs } from "@/lib/queries";
-import { INDEX_FOLLOW_ROBOTS } from "@/lib/seo";
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Upcoming QCOs — Products Becoming BIS Mandatory | Enforcement Dates",
-  description:
-    "Track upcoming Quality Control Orders (QCOs): products that will soon require mandatory BIS certification in India, with IS standards, HSN codes and enforcement dates.",
-  alternates: { canonical: "https://certko.com/qco" },
-  robots: INDEX_FOLLOW_ROBOTS,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata("page:qco", {
+    title: "Upcoming QCOs — Products Becoming BIS Mandatory | Enforcement Dates",
+    description:
+      "Track upcoming Quality Control Orders (QCOs): products that will soon require mandatory BIS certification in India, with IS standards, HSN codes and enforcement dates.",
+    path: "/qco",
+  });
+}
 
 function parseDate(d: string): Date | null {
   const m = d.match(/^(\d{2})-(\d{2})-(\d{4})$/);

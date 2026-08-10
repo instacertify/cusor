@@ -9,17 +9,18 @@ import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import { getCategories, getFaqs } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
-import { BASE_URL, INDEX_FOLLOW_ROBOTS, buildJsonLd } from "@/lib/seo";
+import { BASE_URL, buildJsonLd, buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Certification Solutions — Products by Category",
-  description:
-    "Match BIS, BEE, Mandatory QCO and global schemes to your product, then browse 1,400+ products by category with IS standards, testing costs and approved labs.",
-  alternates: { canonical: "https://certko.com/products" },
-  robots: INDEX_FOLLOW_ROBOTS,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata("page:products", {
+    title: "Certification Solutions — Products by Category",
+    description:
+      "Match BIS, BEE, Mandatory QCO and global schemes to your product, then browse 1,400+ products by category with IS standards, testing costs and approved labs.",
+    path: "/products",
+  });
+}
 
 export default function ProductsPage() {
   const categories = getCategories();

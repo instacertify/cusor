@@ -57,6 +57,8 @@ export default async function LabDetailPage({ params }: Props) {
   const place = [lab.city, lab.state].filter(Boolean).join(", ") || "India";
   const priceRange = formatPriceRange(lab.min_price, lab.max_price);
 
+  // FAQ accordion stays visible for UX; FAQPage JSON-LD is reserved for /labs
+  // so identical directory FAQs are not repeated on ~400 lab URLs.
   const jsonLd = buildJsonLd(enabledSchemaTypes(`lab:${lab.id}`, "lab"), {
     name: `${lab.name} — BIS recognised testing laboratory`,
     description: `${lab.name} is a BIS-recognised testing laboratory in ${place} covering ${lab.scope_count} scopes${
@@ -64,7 +66,6 @@ export default async function LabDetailPage({ params }: Props) {
     }.`,
     url: `${BASE_URL}/labs/${lab.slug}`,
     areaServed: place,
-    faqs: faqs.map(({ question, answer }) => ({ question, answer })),
     breadcrumbs: [
       { name: "Home", url: "/" },
       { name: "Testing Labs", url: "/labs" },

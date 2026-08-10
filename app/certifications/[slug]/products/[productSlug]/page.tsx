@@ -8,7 +8,12 @@ import TestimonialStrip from "@/components/TestimonialStrip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { getCertificationBySlug, getCertProductBySlug } from "@/lib/queries";
 import { formatPriceRange } from "@/lib/format";
-import { buildMetadata } from "@/lib/seo";
+import {
+  BASE_URL,
+  buildJsonLd,
+  buildMetadata,
+  enabledSchemaTypes,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -42,8 +47,34 @@ export default async function CertProductPage({ params }: Props) {
     extras = {};
   }
 
+  const path = `/certifications/${slug}/products/${productSlug}`;
+  const jsonLd = buildJsonLd(enabledSchemaTypes(`certprod:${product.id}`, "certprod"), {
+    name: `${product.name} — ${cert.name} certification`,
+    description:
+      product.summary ||
+      `${product.name} under ${cert.name} — standards, testing and compliance guidance.`,
+    url: `${BASE_URL}${path}`,
+    image: product.image || cert.image || undefined,
+    areaServed: cert.region || "IN",
+    breadcrumbs: [
+      { name: "Home", url: "/" },
+      { name: "Certifications", url: "/certifications" },
+      { name: cert.name, url: `/certifications/${cert.slug}` },
+      { name: product.name },
+    ],
+    offers: product.min_price
+      ? { low: product.min_price, high: product.max_price ?? product.min_price }
+      : null,
+  });
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-10">
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       <Breadcrumbs
         crumbs={[
           { label: "Certifications", href: "/certifications" },

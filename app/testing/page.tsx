@@ -10,19 +10,18 @@ import SearchBox from "@/components/SearchBox";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { TestingStandardFamiliesPanel } from "@/components/MarketApplicability";
 import { getFaqs, getTestingCategories } from "@/lib/queries";
-import { BASE_URL, INDEX_FOLLOW_ROBOTS, buildJsonLd, finalizeDocumentTitle } from "@/lib/seo";
+import { BASE_URL, buildJsonLd, buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: {
-    absolute: finalizeDocumentTitle("Product Testing & Quality Assurance Solutions"),
-  },
-  description:
-    "Explore the right quality assurance solutions — chemical, electrical, EMC, physical, microbiology and mechanical product testing. Find standards, scopes and accredited lab pathways with Certko.",
-  alternates: { canonical: "https://certko.com/testing" },
-  robots: INDEX_FOLLOW_ROBOTS,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata("page:testing", {
+    title: "Product Testing & Quality Assurance Solutions",
+    description:
+      "Explore the right quality assurance solutions — chemical, electrical, EMC, physical, microbiology and mechanical product testing. Find standards, scopes and accredited lab pathways with Certko.",
+    path: "/testing",
+  });
+}
 
 export default function TestingIndexPage() {
   const categories = getTestingCategories();

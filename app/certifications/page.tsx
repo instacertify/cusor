@@ -16,18 +16,19 @@ import {
 } from "@/lib/country-certifications";
 import { getCertifications, getCertificationCoveredProducts } from "@/lib/queries";
 import { CERT_MARKETS, groupCertificationsByMarket } from "@/lib/market-applicability";
-import { INDEX_FOLLOW_ROBOTS } from "@/lib/seo";
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title:
-    "Certifications & Global Market Access | BIS, CE, FCC, GMARK, SABER & Country Guides",
-  description:
-    "Global Market Access framework plus Certko certification programmes for India, the EU, the US, GCC and Saudi Arabia — and country guides for 40+ destination markets.",
-  alternates: { canonical: "https://certko.com/certifications" },
-  robots: INDEX_FOLLOW_ROBOTS,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata("page:certifications", {
+    title:
+      "Certifications & Global Market Access | BIS, CE, FCC, GMARK, SABER & Country Guides",
+    description:
+      "Global Market Access framework plus Certko certification programmes for India, the EU, the US, GCC and Saudi Arabia — and country guides for 40+ destination markets.",
+    path: "/certifications",
+  });
+}
 
 export default function CertificationsPage() {
   const certs = getCertifications().map((c) => {
