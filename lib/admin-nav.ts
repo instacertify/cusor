@@ -83,6 +83,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         icon: "help",
         description: "Scoped FAQs for pages and products",
       },
+      {
+        href: "/admin/gdpr",
+        label: "GDPR & DPDP",
+        icon: "users",
+        description: "Cookie management, consent log, data requests",
+      },
     ],
   },
   {

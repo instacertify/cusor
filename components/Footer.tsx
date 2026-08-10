@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import Logo from "./Logo";
 import FooterSocialLinks from "./FooterSocialLinks";
+import CookieSettingsButton from "./CookieSettingsButton";
 import { TalkToCertificationExpertLink } from "./TalkToCertificationExpert";
 import { ensureDbReady, getSettings } from "@/lib/db";
 import {
@@ -205,6 +206,25 @@ export default async function Footer() {
             <Link href="/privacy" className="inline-flex min-h-8 items-center hover:text-butter-400">
               Privacy Policy
             </Link>
+            <Link
+              href="/privacy/gdpr-and-dpdp"
+              className="inline-flex min-h-8 items-center hover:text-butter-400"
+            >
+              GDPR &amp; DPDP
+            </Link>
+            <Link
+              href="/privacy/cookies"
+              className="inline-flex min-h-8 items-center hover:text-butter-400"
+            >
+              Cookie options
+            </Link>
+            <Link
+              href="/privacy/data-request"
+              className="inline-flex min-h-8 items-center hover:text-butter-400"
+            >
+              Data request
+            </Link>
+            <CookieSettingsButton />
             <Link href="/terms" className="inline-flex min-h-8 items-center hover:text-butter-400">
               Terms of Service
             </Link>

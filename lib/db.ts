@@ -21,6 +21,7 @@ import { ensureHeroSlidesCatalog } from "./hero-slides";
 import { ensureTestimonialsLibrary } from "./seed-testimonials";
 import { ensureTrustedBrandsLibrary } from "./seed-trusted-brands";
 import { ensureCountryHubsLibrary } from "./seed-country-hubs";
+import { ensureGdprLibrary } from "./seed-gdpr";
 
 /** Prefer ./data; fall back to /tmp when the app dir is not writable (some Node hosts). */
 export function getWritableDataDir(): string {
@@ -385,6 +386,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureHomeStatLabels(db);
   ensureExpertCtaSettings(db);
   scrubLabPublicContactDetails(db);
+  ensureGdprLibrary(db);
 }
 
 function runEnsures(db: SqliteDatabase) {
@@ -412,6 +414,7 @@ function runEnsures(db: SqliteDatabase) {
   ensureHomeStatLabels(db);
   ensureExpertCtaSettings(db);
   scrubLabPublicContactDetails(db);
+  ensureGdprLibrary(db);
 }
 
 /** Replace AI-ish default homepage stat labels on existing installs. */
