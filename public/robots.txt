@@ -6,6 +6,7 @@ Allow: /
 Allow: /sitemap
 Allow: /sitemap.xml
 Allow: /llms.txt
+Allow: /6e537741d33144718d58d511b1838b83.txt
 Allow: /products
 Allow: /products/all
 Allow: /certifications

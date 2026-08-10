@@ -9,11 +9,24 @@ import {
   searchProducts,
 } from "@/lib/queries";
 import type { PageRecord } from "@/lib/db";
+import {
+  INDEXNOW_KEY,
+  INDEXNOW_KEY_URL,
+  INDEXNOW_KEY_PATH,
+} from "@/lib/indexnow";
+import { submitIndexNow } from "../../actions";
+import { TextArea, SubmitButton } from "@/components/admin/Field";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    indexnow?: string;
+    indexnow_error?: string;
+    msg?: string;
+    n?: string;
+  }>;
 }
 
 export default async function AdminSeoIndex({ searchParams }: Props) {
@@ -39,6 +52,68 @@ export default async function AdminSeoIndex({ searchParams }: Props) {
         Titles, descriptions, slugs, keywords, social previews, canonical URLs, robots,
         schema markup, sitemap control and an SEO score — per page. {seoCount} page{seoCount === 1 ? " has" : "s have"} custom SEO settings so far.
       </p>
+
+      {sp.indexnow && (
+        <p className="mb-5 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl px-4 py-3" role="status">
+          ✓ IndexNow: {sp.msg || `Submitted ${sp.n || "0"} URL(s) to Bing and other engines.`}
+        </p>
+      )}
+      {sp.indexnow_error && (
+        <p className="mb-5 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3" role="alert">
+          IndexNow failed: {sp.msg || "Could not submit URLs."}
+        </p>
+      )}
+
+      <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 mb-6">
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+          <div>
+            <h2 className="font-display font-bold text-ink-950">IndexNow</h2>
+            <p className="text-sm text-ink-600 mt-1">
+              Instantly notify Bing, Yandex, Seznam, Naver and Yep when pages change.
+              The ownership key is hosted at the site root.
+            </p>
+          </div>
+          <a
+            href={INDEXNOW_KEY_PATH}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs font-bold text-butter-700 hover:underline shrink-0"
+          >
+            Open key file ↗
+          </a>
+        </div>
+
+        <dl className="grid sm:grid-cols-2 gap-3 text-sm mb-5">
+          <div className="rounded-xl bg-cream-50 border border-cream-200 px-4 py-3">
+            <dt className="text-[11px] font-bold uppercase tracking-wide text-ink-500">API key</dt>
+            <dd className="font-mono text-ink-950 break-all mt-1">{INDEXNOW_KEY}</dd>
+          </div>
+          <div className="rounded-xl bg-cream-50 border border-cream-200 px-4 py-3">
+            <dt className="text-[11px] font-bold uppercase tracking-wide text-ink-500">Key URL</dt>
+            <dd className="font-mono text-ink-950 break-all mt-1 text-xs">{INDEXNOW_KEY_URL}</dd>
+          </div>
+        </dl>
+
+        <form action={submitIndexNow} className="space-y-4">
+          <TextArea
+            label="URLs to submit (one per line)"
+            name="urls"
+            rows={4}
+            hint="Absolute https://certko.com/… URLs or paths like /product/… Publishing a blog post also notifies IndexNow automatically."
+          />
+          <div className="flex flex-wrap gap-4 text-sm text-ink-700">
+            <label className="inline-flex items-center gap-2">
+              <input type="checkbox" name="include_home" value="1" defaultChecked className="rounded border-cream-300" />
+              Include home + products + certifications
+            </label>
+            <label className="inline-flex items-center gap-2">
+              <input type="checkbox" name="include_recent_posts" value="1" defaultChecked className="rounded border-cream-300" />
+              Include 20 latest published posts
+            </label>
+          </div>
+          <SubmitButton label="Submit to IndexNow" />
+        </form>
+      </section>
 
       <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 mb-6">
         <h2 className="font-display font-bold text-ink-950 mb-3">Products</h2>
