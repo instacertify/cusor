@@ -20,6 +20,18 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const intent = String(formData.get("intent") ?? "").trim();
+    // GDPR / DPDP — require explicit privacy consent for lead capture.
+    const privacyConsent = String(formData.get("privacy_consent") ?? "").trim();
+    if (privacyConsent !== "1" && privacyConsent.toLowerCase() !== "on") {
+      if (json) {
+        return NextResponse.json(
+          { ok: false, error: "privacy_consent_required" },
+          { status: 400 }
+        );
+      }
+      return redirectTo(req, "/contact?error=1");
+    }
+
     const result = await createInquiry({
       name: String(formData.get("name") ?? ""),
       email: String(formData.get("email") ?? ""),
