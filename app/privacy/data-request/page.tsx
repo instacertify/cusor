@@ -7,11 +7,10 @@ import { getGdprPublicSettings } from "@/lib/gdpr";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Privacy Data Request | Certko",
+  title: { absolute: "Privacy Data Request | Certko" },
   description:
     "Exercise your GDPR or DPDP rights — access, correction, deletion, portability, objection or withdraw consent.",
   alternates: { canonical: "https://certko.com/privacy/data-request" },
-  robots: { index: true, follow: true },
 };
 
 export default function DataRequestPage() {

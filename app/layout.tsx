@@ -141,7 +141,7 @@ export default async function RootLayout({
       });
   return (
     <html
-      lang="en"
+      lang="en-IN"
       data-color-scheme={scheme.id}
       data-icon-style={iconStyle}
       data-icon-scale={iconScale}

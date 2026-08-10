@@ -14,6 +14,7 @@ import {
   getFaqs,
 } from "@/lib/queries";
 import { formatPriceRange, formatINR, formatNumber } from "@/lib/format";
+import { INDEX_FOLLOW_ROBOTS } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
   description:
     "Search all BIS notified products in one table: IS standard, HSN code, QCO status, marking fees, lab testing cost range and approved labs. Filter by category, status and scheme.",
   alternates: { canonical: "https://certko.com/products/all" },
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  robots: INDEX_FOLLOW_ROBOTS,
 };
 
 const PAGE_SIZE = 25;
