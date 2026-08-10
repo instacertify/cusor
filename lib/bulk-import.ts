@@ -1,6 +1,7 @@
 import * as XLSX from "xlsx";
 import { getDb } from "./db";
 import { slugify } from "./format";
+import { resolveBlogScheduleState } from "./blog-scheduler";
 
 export type BulkEntity =
   | "testimonials"
@@ -119,8 +120,9 @@ export const BULK_ENTITIES: BulkEntityDef[] = [
   },
   {
     id: "testing_categories",
-    label: "Testing categories",
-    description: "Product Testing parent categories",
+    label: "Master testing categories",
+    description:
+      "Master categories shown in the Testing menu; product test pages map to these via category_slug.",
     adminHref: "/admin/testing",
     group: "Catalogue",
     columns: [
@@ -134,8 +136,9 @@ export const BULK_ENTITIES: BulkEntityDef[] = [
   },
   {
     id: "testing_services",
-    label: "Testing pages (tests)",
-    description: "Individual test pages under a testing category (category_slug required)",
+    label: "Testing solutions (bulk)",
+    description:
+      "Bulk-upload test pages under a master testing category (category_slug required). Include optional min_price / max_price for tentative public pricing.",
     adminHref: "/admin/testing",
     group: "Catalogue",
     columns: [
@@ -148,6 +151,9 @@ export const BULK_ENTITIES: BulkEntityDef[] = [
       { key: "accreditation", header: "accreditation", example: "ISO/IEC 17025 / NABL" },
       { key: "timeline", header: "timeline", example: "7-12 working days" },
       { key: "sample_size", header: "sample_size", example: "5 production units" },
+      { key: "min_price", header: "min_price", example: 15000 },
+      { key: "max_price", header: "max_price", example: 45000 },
+      { key: "price_note", header: "price_note", example: "Indicative lab charges; confirm on quote" },
       { key: "summary", header: "summary", example: "Safety testing for LED lamps." },
       { key: "content", header: "content", example: "## Method\n\nDescribe the test." },
       { key: "meta_title", header: "meta_title", example: "LED Lamp Safety Testing | Certko" },
@@ -453,6 +459,9 @@ export function importBulkRows(entityId: BulkEntity, rows: Record<string, unknow
           const accreditation = cell(row, "accreditation") || "ISO/IEC 17025 / NABL";
           const timeline = cell(row, "timeline") || "7–15 working days";
           const sample_size = cell(row, "sample_size") || "As advised by the testing laboratory";
+          const min_price = num(row, "min_price");
+          const max_price = num(row, "max_price");
+          const price_note = cell(row, "price_note");
           const summary = cell(row, "summary");
           const content = cell(row, "content") || `## ${name}\n\n${summary}`;
           const meta_title = cell(row, "meta_title") || `${name} Testing | Certko`;
@@ -461,7 +470,7 @@ export function importBulkRows(entityId: BulkEntity, rows: Record<string, unknow
           if (existing) {
             db.prepare(
               `UPDATE testing_services SET name=?, product_category=?, standards=?, test_type=?, accreditation=?,
-               timeline=?, sample_size=?, summary=?, content=?, meta_title=?, meta_description=?, sort=? WHERE id=?`
+               timeline=?, sample_size=?, min_price=?, max_price=?, price_note=?, summary=?, content=?, meta_title=?, meta_description=?, sort=? WHERE id=?`
             ).run(
               name,
               product_category,
@@ -470,6 +479,9 @@ export function importBulkRows(entityId: BulkEntity, rows: Record<string, unknow
               accreditation,
               timeline,
               sample_size,
+              min_price,
+              max_price,
+              price_note,
               summary,
               content,
               meta_title,
@@ -491,8 +503,8 @@ export function importBulkRows(entityId: BulkEntity, rows: Record<string, unknow
             const res = db
               .prepare(
                 `INSERT INTO testing_services
-                (category_id, slug, name, product_category, standards, test_type, accreditation, timeline, sample_size, summary, content, image, meta_title, meta_description, sort)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?)`
+                (category_id, slug, name, product_category, standards, test_type, accreditation, timeline, sample_size, min_price, max_price, price_note, summary, content, image, meta_title, meta_description, sort)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?)`
               )
               .run(
                 cat.id,
@@ -504,6 +516,9 @@ export function importBulkRows(entityId: BulkEntity, rows: Record<string, unknow
                 accreditation,
                 timeline,
                 sample_size,
+                min_price,
+                max_price,
+                price_note,
                 summary,
                 content,
                 meta_title,
@@ -844,9 +859,21 @@ export function importBulkRows(entityId: BulkEntity, rows: Record<string, unknow
           const content =
             cell(row, "content") ||
             "Write your post here using **Markdown**.";
-          const status = cell(row, "status") === "published" ? "published" : "draft";
-          const published_at =
-            status === "published" ? cell(row, "published_at") || new Date().toISOString().slice(0, 10) : null;
+          const requestedStatus = cell(row, "status").toLowerCase();
+          const publishAtRaw = cell(row, "published_at");
+          let status: "draft" | "scheduled" | "published" = "draft";
+          let published_at: string | null = publishAtRaw || null;
+          if (requestedStatus === "scheduled" || requestedStatus === "published") {
+            const schedule = resolveBlogScheduleState({
+              requestedStatus: requestedStatus === "scheduled" ? "scheduled" : "published",
+              publishAtRaw:
+                publishAtRaw ||
+                (requestedStatus === "published" ? new Date().toISOString() : ""),
+              existingPublishedAt: null,
+            });
+            status = schedule.status;
+            published_at = schedule.publishedAt;
+          }
           const existing = db.prepare("SELECT id FROM posts WHERE slug = ?").get(slug) as
             | { id: number }
             | undefined;

@@ -49,15 +49,15 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       },
       {
         href: "/admin/pages",
-        label: "Pages",
+        label: "Pages & Landings",
         icon: "file",
-        description: "Create pages; place in menu, submenu or footer",
+        description: "CMS pages + advertising landing pages",
       },
       {
         href: "/admin/hero",
-        label: "Hero Slider",
+        label: "Hero Banner",
         icon: "image",
-        description: "Homepage banner slides — image, GIF, video",
+        description: "Homepage hero videos/GIFs + Explore more buttons",
       },
       {
         href: "/admin/media",
@@ -72,10 +72,22 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         description: "Homepage trust quotes",
       },
       {
+        href: "/admin/trusted-brands",
+        label: "Trusted Brands",
+        icon: "award",
+        description: "Logos for the Trusted by Global Brands scroll",
+      },
+      {
         href: "/admin/faqs",
         label: "FAQs",
         icon: "help",
         description: "Scoped FAQs for pages and products",
+      },
+      {
+        href: "/admin/gdpr",
+        label: "GDPR & DPDP",
+        icon: "users",
+        description: "Cookie management, consent log, data requests",
       },
     ],
   },
@@ -88,6 +100,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         label: "Certifications",
         icon: "award",
         description: "BIS, BEE, GMARK and more",
+      },
+      {
+        href: "/admin/countries",
+        label: "Countries",
+        icon: "globe",
+        description: "Country-wise certification guides",
       },
       {
         href: "/admin/testing",

@@ -4,17 +4,19 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
+import CertificationSolutionRow from "@/components/CertificationSolutionRow";
 import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import { getCategories, getFaqs } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
+import { BASE_URL, buildJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "All BIS Mandatory Products by Category",
+  title: "Certification Solutions — Products by Category",
   description:
-    "Browse 1,400+ products requiring BIS certification in India, organised by category with IS standards, testing costs and approved labs.",
+    "Match BIS, BEE, Mandatory QCO and global schemes to your product, then browse 1,400+ products by category with IS standards, testing costs and approved labs.",
   alternates: { canonical: "https://certko.com/products" },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
@@ -23,27 +25,63 @@ export default function ProductsPage() {
   const categories = getCategories();
   const total = categories.reduce((s, c) => s + (c.product_count ?? 0), 0);
   const faqs = getFaqs("page:products");
+  const faqJsonLd = buildJsonLd(["FAQPage", "BreadcrumbList"], {
+    name: "Certification Solutions — Products by Category",
+    description:
+      "Match BIS, BEE, Mandatory QCO and global schemes to your product across Certko’s product database.",
+    url: `${BASE_URL}/products`,
+    faqs: faqs.map(({ question, answer }) => ({ question, answer })),
+    breadcrumbs: [
+      { name: "Home", url: "/" },
+      { name: "Products" },
+    ],
+  });
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
       <Breadcrumbs crumbs={[{ label: "Products" }]} />
       <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">
-        BIS Mandatory Products Database
+        Certification solutions — products by category
       </h1>
       <p className="mt-3 text-ink-600 max-w-2xl">
-        {formatNumber(total)} products requiring BIS certification across{" "}
-        {categories.length} categories — each mapped to its IS standard, HSN code,
-        QCO status, marking fees, real lab testing costs and approved laboratories.
+        Match the right certification to your product, then browse{" "}
+        {formatNumber(total)} products across {categories.length} categories — each mapped to
+        IS standard, HSN code, QCO status, fees, lab costs and approved laboratories.
       </p>
       <Link
         href="/products/all"
         className="mt-5 inline-flex items-center gap-2 bg-ink-900 hover:bg-ink-800 text-white text-sm font-bold rounded-xl px-5 py-3 transition"
       >
         <Icon name="table" size={18} />
-        Open the full product search table
+        Search product for certification
       </Link>
 
-      <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <CertificationSolutionRow className="mt-8" />
+
+      <div
+        id="product-categories"
+        className="mt-8 mb-3 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 scroll-mt-24"
+      >
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-butter-700">
+            Product categories
+          </p>
+          <h2 className="font-display text-xl sm:text-2xl font-semibold text-ink-950 mt-1">
+            Browse by product category
+          </h2>
+        </div>
+        <p className="text-xs text-ink-500 max-w-sm">
+          Open a category, then confirm which certification applies to your product.
+        </p>
+      </div>
+
+      <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {categories.map((c) => (
           <Link
             key={c.id}

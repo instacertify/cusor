@@ -1,4 +1,5 @@
 import type { SqliteDatabase } from "./sqlite";
+import { seedStatusForPublishAt } from "./blog-schedule-time";
 
 export type BlogPostSeed = {
   slug: string;
@@ -37,7 +38,7 @@ export function insertBlogPostsIfMissing(
   const insert = db.prepare(
     `INSERT INTO posts
       (slug, title, excerpt, content, image, author, author_id, status, published_at, meta_title, meta_description)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 'published', ?, ?, ?)`
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
 
   const tx = db.transaction(() => {
@@ -51,6 +52,7 @@ export function insertBlogPostsIfMissing(
         p.image ?? "",
         author.name,
         author.id,
+        seedStatusForPublishAt(p.published_at),
         p.published_at,
         p.meta_title,
         p.meta_description
@@ -66,6 +68,8 @@ export function insertBlogPostsIfMissing(
  * **Never updates `image`.** Cover images remain owned by admins in `/admin/blog`.
  * Use this when intentionally revising seeded article text; prefer
  * `insertBlogPostsIfMissing` when older copy must stay frozen.
+ *
+ * Status follows `seedStatusForPublishAt` so future `published_at` stays scheduled.
  */
 export function upsertBlogPostCopyPreservingImage(
   db: SqliteDatabase,
@@ -80,20 +84,21 @@ export function upsertBlogPostCopyPreservingImage(
   const insert = db.prepare(
     `INSERT INTO posts
       (slug, title, excerpt, content, image, author, author_id, status, published_at, meta_title, meta_description)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 'published', ?, ?, ?)`
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
   const updateCopy = db.prepare(
     `UPDATE posts SET
       title = ?, excerpt = ?, content = ?,
       meta_title = ?, meta_description = ?,
       author = ?, author_id = ?,
-      status = 'published',
+      status = ?,
       published_at = COALESCE(published_at, ?)
      WHERE slug = ?`
   );
 
   const tx = db.transaction(() => {
     for (const p of posts) {
+      const status = seedStatusForPublishAt(p.published_at);
       if (existing.get(p.slug)) {
         updateCopy.run(
           p.title,
@@ -103,6 +108,7 @@ export function upsertBlogPostCopyPreservingImage(
           p.meta_description,
           author.name,
           author.id,
+          status,
           p.published_at,
           p.slug
         );
@@ -116,6 +122,7 @@ export function upsertBlogPostCopyPreservingImage(
         p.image ?? "",
         author.name,
         author.id,
+        status,
         p.published_at,
         p.meta_title,
         p.meta_description

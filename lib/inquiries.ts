@@ -7,6 +7,8 @@ export type InquiryInput = {
   phone?: string;
   product?: string;
   message?: string;
+  /** Contact form intent — e.g. test, book, consulting, certification */
+  intent?: string;
 };
 
 export type InquiryResult =
@@ -15,11 +17,16 @@ export type InquiryResult =
 
 /** Persist a contact/lead inquiry and best-effort email the team. */
 export async function createInquiry(input: InquiryInput): Promise<InquiryResult> {
-  const name = (input.name || "").trim();
   const email = (input.email || "").trim();
   const phone = (input.phone || "").trim();
   const product = (input.product || "").trim();
   const message = (input.message || "").trim();
+  const intent = (input.intent || "").trim();
+  // Newsletter signups may send email only — derive a display name.
+  let name = (input.name || "").trim();
+  if (!name && email && /^newsletter$/i.test(product)) {
+    name = email.split("@")[0] || "Subscriber";
+  }
 
   if (!name || !email) {
     return { ok: false, error: "missing_fields" };
@@ -29,9 +36,9 @@ export async function createInquiry(input: InquiryInput): Promise<InquiryResult>
     await ensureDbReady();
     getDb()
       .prepare(
-        "INSERT INTO inquiries (name, email, phone, product, message) VALUES (?, ?, ?, ?, ?)"
+        "INSERT INTO inquiries (name, email, phone, product, message, intent) VALUES (?, ?, ?, ?, ?, ?)"
       )
-      .run(name, email, phone, product, message);
+      .run(name, email, phone, product, message, intent);
   } catch (err) {
     console.error("[inquiry] save failed:", err);
     return {
@@ -41,7 +48,14 @@ export async function createInquiry(input: InquiryInput): Promise<InquiryResult>
     };
   }
 
-  const mail = await sendLeadNotification({ name, email, phone, product, message });
+  const mail = await sendLeadNotification({
+    name,
+    email,
+    phone,
+    product,
+    message,
+    intent,
+  });
   if (!mail.ok) {
     console.error("[inquiry] lead saved but email notify failed:", mail.error);
   }

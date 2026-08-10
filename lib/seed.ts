@@ -4,6 +4,7 @@ import path from "path";
 import { slugify, formatPriceRange } from "./format";
 import { CERTIFICATIONS } from "./seed-certifications";
 import { POSTS } from "./seed-posts";
+import { seedStatusForPublishAt } from "./blog-schedule-time";
 import { PRIVACY_CONTENT, TERMS_CONTENT } from "./legal-content";
 
 interface RawProduct {
@@ -478,17 +479,17 @@ const PAGE_FAQS: Record<string, { question: string; answer: string }[]> = {
     {
       question: "What happens after I submit this form?",
       answer:
-        "A BIS specialist reviews your product details, maps the applicable IS standard and scheme, and replies within 24 hours with an itemised cost estimate covering lab testing, BIS fees and consulting.",
+        "Someone on our certification desk reads your product notes and target markets, checks which schemes usually apply — BIS, BEE, GMARK, CE, FCC, SABER or WPC — and comes back within 24 hours with a line-by-line estimate for lab work, scheme fees and consulting.",
     },
     {
       question: "Is the quote really free?",
       answer:
-        "Yes. The standard mapping and cost estimate are free with no obligation. You only pay if you engage us to manage the certification.",
+        "Yes. Figuring out the scheme and the cost range costs you nothing. You only pay if you ask us to run the certification, testing or consulting work.",
     },
     {
       question: "Do you help foreign manufacturers?",
       answer:
-        "Yes. We support overseas factories under the Foreign Manufacturers Certification Scheme (FMCS) and CRS, including acting as or arranging an Authorised Indian Representative (AIR).",
+        "Yes. We work with overseas factories and exporters selling into India and other markets — BIS FMCS/CRS (with an Authorised Indian Representative when you need one), plus BEE, GMARK, CE, FCC, SABER and WPC, including lab bookings.",
     },
   ],
   guide: [
@@ -753,13 +754,13 @@ export function seedDatabase(db: SqliteDatabase) {
     const defaults: Record<string, string> = {
       site_name: "Certko",
       tagline: "Your trusted global compliance partner.",
-      hero_heading: "Which Certification Does Your Product Need?",
+      hero_heading: "Find the right certification and testing for your product",
       hero_subheading:
-        "Search by product name, standard or HSN to map BIS, BEE, GMARK, CE, FCC, SABER, WPC and more — with testing costs, labs and expert help in one place.",
+        "Type a product name or HSN. We’ll show the schemes that usually apply — BIS, BEE, GMARK, CE, FCC, SABER, WPC — plus the tests, labs and ballpark costs so you know what to book next.",
       contact_email: "info@certko.com",
       contact_phone: "+91-9999118039",
       contact_address:
-        "A-34, 4th Floor, Sector 63A, Noida, Gautam Buddha Nagar, Uttar Pradesh – 201301",
+        "A-34, 4th Floor, Sector 63A, Noida, Gautam Buddha Nagar, Uttar Pradesh – 201301, India",
       lead_notify_email: "contact@instacertify.com",
       smtp_enabled: "1",
       smtp_host: "smtp.gmail.com",
@@ -769,15 +770,38 @@ export function seedDatabase(db: SqliteDatabase) {
       smtp_from: "contact@instacertify.com",
       smtp_secure: "0",
       footer_text:
-        "Certko is an independent compliance intelligence and product-testing guidance platform operated by Instacertify Labs Private Limited. We are not a government authority. Prices and schedules are indicative — always verify with the relevant regulator and laboratory.",
+        "Certko is run by Instacertify Labs Private Limited. We publish product, lab and scheme guidance — we are not a government body. Fees and timelines are indicative; confirm with the regulator and lab before you commit.",
       announcement: "",
-      cta_heading: "Need certification or testing help?",
+      cta_heading: "Need a hand with certification or testing?",
       cta_text:
-        "Connect with verified compliance consultants who handle certification, lab testing, inspection and registration end-to-end across India and export markets. Free quote in 24 hours.",
-      stat_1_value: "1,400+", stat_1_label: "BIS Products",
-      stat_2_value: "35", stat_2_label: "BEE Schemes",
-      stat_3_value: "7+", stat_3_label: "Certifications",
-      stat_4_value: "Free", stat_4_label: "Product Checker",
+        "Our consultants handle filings, lab coordination and inspections for India and export markets. Ask for a free quote — we reply within 24 hours.",
+      expert_cta_label: "Talk to a certification expert",
+      expert_cta_label_short: "Talk to expert",
+      expert_cta_href: "/contact?intent=expert",
+      contact_popup_enabled: "1",
+      contact_popup_delay_seconds: "59",
+      contact_popup_image: "/brand/certko-logo-full.png",
+      contact_popup_title: "Need help with certification or testing?",
+      contact_popup_subtitle:
+        "Share a few details and a Certko specialist will reply within 24 working hours. No spam.",
+      contact_popup_dismiss_days: "7",
+      contact_popup_wait_for_cookie_choice: "1",
+      contact_popup_submit_label: "Send my request",
+      stat_1_value: "2,500+",
+      stat_1_label: "Products",
+      stat_1_icon: "",
+      stat_2_value: "2,000+",
+      stat_2_label: "Testing Solutions",
+      stat_2_icon: "",
+      stat_3_value: "Free",
+      stat_3_label: "Free product data",
+      stat_3_icon: "",
+      stat_4_value: "10+",
+      stat_4_label: "Years of Legacy",
+      stat_4_icon: "",
+      stat_5_value: "",
+      stat_5_label: "",
+      stat_5_icon: "",
       admin_username: "admin",
       // Placeholder — first successful login (or account change) stores a bcrypt hash
       admin_password: "certko-admin",
@@ -792,6 +816,12 @@ export function seedDatabase(db: SqliteDatabase) {
       facebook_domain_verification: "",
       custom_head_html: "",
       custom_body_html: "",
+      social_twitter_url: "",
+      social_linkedin_url: "",
+      social_youtube_url: "",
+      social_twitter_icon: "",
+      social_linkedin_icon: "",
+      social_youtube_icon: "",
     };
     const insSetting = db.prepare(
       "INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)"
@@ -833,9 +863,9 @@ export function seedDatabase(db: SqliteDatabase) {
       meta_title: "Get BIS Certification Help | Free Quote in 24 Hours | Certko",
       meta_description:
         "Connect with verified BIS consultants. Application, testing, factory inspection and licence grant handled end-to-end. Free quote in 24 hours.",
-      hero_heading: "Talk to a BIS expert",
+      hero_heading: "Talk to a certification expert",
       hero_subheading:
-        "Tell us about your product and we will map the standard, estimate the full cost and send a free quote within 24 hours.",
+        "Tell us what you make and where you sell. We’ll point to the standard, sketch the full cost, and send a free quote within 24 hours.",
       content: "",
       image: "/images/pages/contact.png",
     });
@@ -1124,7 +1154,7 @@ export function seedDatabase(db: SqliteDatabase) {
       // Initial empty-DB seed only. Do not UPDATE existing posts/images later —
       // covers on live blogs are managed in /admin/blog after login.
       `INSERT INTO posts (slug, title, excerpt, content, image, author, status, published_at, meta_title, meta_description)
-       VALUES (@slug, @title, @excerpt, @content, @image, @author, 'published', @published_at, @meta_title, @meta_description)`
+       VALUES (@slug, @title, @excerpt, @content, @image, @author, @status, @published_at, @meta_title, @meta_description)`
     );
     for (const p of POSTS) {
       insPost.run({
@@ -1134,6 +1164,7 @@ export function seedDatabase(db: SqliteDatabase) {
         content: p.content,
         image: p.image,
         author: p.author,
+        status: seedStatusForPublishAt(p.published_at),
         published_at: p.published_at,
         meta_title: `${p.title} | Certko Blog`,
         meta_description: p.excerpt,

@@ -6,6 +6,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
+import LandingPageView from "@/components/LandingPageView";
 import { getPage, getFaqs } from "@/lib/queries";
 import { isRoutableContentPage } from "@/lib/pages-nav";
 import {
@@ -63,6 +64,20 @@ export default async function ContentPage({ params }: Props) {
     breadcrumbs: [{ name: "Home", url: "/" }, { name: page.title }],
     howToSteps: analysis.headings.slice(0, 8),
   });
+
+  if (page.page_type === "landing") {
+    return (
+      <>
+        {jsonLd ? (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          />
+        ) : null}
+        <LandingPageView page={page} faqs={faqs} />
+      </>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">

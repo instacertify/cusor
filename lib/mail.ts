@@ -7,6 +7,7 @@ export interface LeadPayload {
   phone?: string;
   product?: string;
   message?: string;
+  intent?: string;
 }
 
 function envOrSetting(envKey: string, settingKey: string, fallback = ""): string {
@@ -81,6 +82,7 @@ export async function sendLeadNotification(lead: LeadPayload): Promise<{ ok: boo
     `Name: ${lead.name}`,
     `Email: ${lead.email}`,
     `Phone: ${lead.phone || "—"}`,
+    `Intent: ${lead.intent || "—"}`,
     `Product / test / certification: ${lead.product || "—"}`,
     "",
     "Message:",
@@ -97,6 +99,7 @@ export async function sendLeadNotification(lead: LeadPayload): Promise<{ ok: boo
         <tr><td style="padding:6px 0;font-weight:bold">Name</td><td style="padding:6px 0">${escapeHtml(lead.name)}</td></tr>
         <tr><td style="padding:6px 0;font-weight:bold">Email</td><td style="padding:6px 0"><a href="mailto:${escapeHtml(lead.email)}">${escapeHtml(lead.email)}</a></td></tr>
         <tr><td style="padding:6px 0;font-weight:bold">Phone</td><td style="padding:6px 0">${escapeHtml(lead.phone || "—")}</td></tr>
+        <tr><td style="padding:6px 0;font-weight:bold">Intent</td><td style="padding:6px 0">${escapeHtml(lead.intent || "—")}</td></tr>
         <tr><td style="padding:6px 0;font-weight:bold">Request</td><td style="padding:6px 0">${escapeHtml(lead.product || "—")}</td></tr>
       </table>
       <p style="margin:16px 0 6px;font-weight:bold">Message</p>

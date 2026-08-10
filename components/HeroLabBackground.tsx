@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 
 export type TestingVideoSlide = {
   id: string;
   label: string;
   href: string;
+  ctaLabel?: string;
   videoSrc: string;
   gifSrc?: string;
   posterSrc: string;
@@ -17,6 +17,7 @@ const DEFAULT_SLIDES: TestingVideoSlide[] = [
     id: "electrical",
     label: "Electronic Testing",
     href: "/testing/electrical-testing",
+    ctaLabel: "Explore more",
     videoSrc: "/images/testing/electrical-testing.mp4",
     gifSrc: "/images/testing/electrical-testing.gif",
     posterSrc: "/images/testing/electrical-poster.jpg",
@@ -25,38 +26,62 @@ const DEFAULT_SLIDES: TestingVideoSlide[] = [
     id: "mechanical",
     label: "Mechanical Testing",
     href: "/testing/mechanical-testing",
+    ctaLabel: "Explore more",
     videoSrc: "/images/testing/mechanical-testing.mp4",
     gifSrc: "/images/testing/mechanical-testing.gif",
     posterSrc: "/images/testing/mechanical-poster.jpg",
   },
   {
-    id: "lab",
-    label: "Lab Testing",
-    href: "/testing",
-    videoSrc: "/images/hero-lab.mp4",
-    gifSrc: "/images/hero-lab.gif",
-    posterSrc: "/images/hero-lab-poster.jpg",
+    id: "emc",
+    label: "EMC Testing",
+    href: "/testing/emc-testing",
+    ctaLabel: "Explore more",
+    videoSrc: "/images/testing/emc-testing.mp4",
+    gifSrc: "/images/testing/emc-testing.gif",
+    posterSrc: "/images/testing/emc-poster.jpg",
+  },
+  {
+    id: "chemical",
+    label: "Chemical & Quality Testing",
+    href: "/testing/chemical-testing",
+    ctaLabel: "Explore more",
+    videoSrc: "/images/testing/chemical-testing.mp4",
+    gifSrc: "/images/testing/chemical-testing.gif",
+    posterSrc: "/images/testing/chemical-poster.jpg",
+  },
+  {
+    id: "certification",
+    label: "Certification Quality",
+    href: "/certifications",
+    ctaLabel: "Explore more",
+    videoSrc: "/images/testing/certification-quality.mp4",
+    gifSrc: "/images/testing/certification-quality.gif",
+    posterSrc: "/images/testing/certification-poster.jpg",
   },
 ];
 
-const HOLD_MS = 7000;
+const HOLD_MS = 8000;
 
 /**
- * Full-bleed homepage background that scrolls between electronic testing,
- * mechanical testing, and general lab footage.
+ * Soft full-bleed hero watermark — media sits behind the hero wall,
+ * never as a highlighted card or floating CTA.
  */
 export default function HeroLabBackground({
   slides = DEFAULT_SLIDES,
+  watermark = false,
 }: {
   slides?: TestingVideoSlide[];
+  /** Extra-soft understated wash behind hero content */
+  watermark?: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [index, setIndex] = useState(0);
   const [mode, setMode] = useState<"video" | "gif" | "still">("video");
   const [reduced, setReduced] = useState(false);
 
-  const slide = slides[index] ?? slides[0];
-  const count = slides.length;
+  const list = slides.length > 0 ? slides : DEFAULT_SLIDES;
+  const slide = list[index] ?? list[0];
+  const count = list.length;
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -85,7 +110,6 @@ export default function HeroLabBackground({
     return () => el.removeEventListener("error", onError);
   }, [mode, slide, reduced]);
 
-  // Auto-scroll to the next testing video
   useEffect(() => {
     if (reduced || count <= 1) return;
     const t = window.setTimeout(() => {
@@ -96,14 +120,18 @@ export default function HeroLabBackground({
 
   if (!slide) return null;
 
+  const mediaTone = watermark
+    ? "opacity-35 saturate-[0.55] contrast-[0.95] blur-[0.5px]"
+    : "opacity-70";
+
   return (
-    <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-      <div className="absolute inset-0" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
+      <div className="absolute inset-0">
         {mode === "video" ? (
           <video
             key={slide.videoSrc}
             ref={videoRef}
-            className="absolute inset-0 h-full w-full scale-105 object-cover animate-lab-drift transition-opacity duration-700"
+            className={`absolute inset-0 h-full w-full scale-110 object-cover animate-lab-drift transition-opacity duration-1000 ${mediaTone}`}
             autoPlay
             muted
             loop
@@ -121,7 +149,7 @@ export default function HeroLabBackground({
             key={slide.gifSrc}
             src={slide.gifSrc}
             alt=""
-            className="absolute inset-0 h-full w-full scale-105 object-cover animate-lab-drift"
+            className={`absolute inset-0 h-full w-full scale-110 object-cover animate-lab-drift ${mediaTone}`}
           />
         ) : null}
 
@@ -131,44 +159,17 @@ export default function HeroLabBackground({
             key={slide.posterSrc}
             src={slide.posterSrc}
             alt=""
-            className="absolute inset-0 h-full w-full scale-105 object-cover"
+            className={`absolute inset-0 h-full w-full scale-110 object-cover ${mediaTone}`}
           />
         ) : null}
 
-        {/* Brand cream wash — keeps Certko navy text readable */}
-        <div className="absolute inset-0 bg-gradient-to-r from-cream-50 from-10% via-cream-50/90 via-45% to-cream-50/55" />
-        <div className="absolute inset-0 bg-gradient-to-t from-cream-50 via-cream-50/20 to-cream-50/50" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_40%,transparent_0%,rgb(250_246_238_/0.35)_70%)]" />
+        {/* Hero wall wash — keeps copy readable; media reads as watermark */}
+        <div className="absolute inset-0 bg-cream-50/78" />
+        <div className="absolute inset-0 bg-gradient-to-r from-cream-50 via-cream-50/88 to-cream-50/55" />
+        <div className="absolute inset-0 bg-gradient-to-t from-cream-50 via-transparent to-cream-50/70" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_75%_45%,transparent_0%,rgb(250_246_238_/0.55)_68%)]" />
       </div>
-
-      {/* Scroll indicators + labels */}
-      <div className="pointer-events-auto absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-[1] flex flex-col items-end gap-2">
-        <p className="sr-only" aria-live="polite">
-          Showing {slide.label}
-        </p>
-        <Link
-          href={slide.href}
-          className="rounded-xl bg-ink-950/70 hover:bg-ink-950/85 backdrop-blur px-3.5 py-2 text-xs sm:text-sm font-semibold text-cream-50 transition"
-        >
-          {slide.label} →
-        </Link>
-        {count > 1 ? (
-          <div className="flex gap-1.5" role="tablist" aria-label="Testing video slides">
-            {slides.map((s, i) => (
-              <button
-                key={s.id}
-                type="button"
-                aria-label={s.label}
-                aria-current={i === index ? "true" : undefined}
-                onClick={() => setIndex(i)}
-                className={`h-2 rounded-full transition-all ${
-                  i === index ? "w-6 bg-butter-500" : "w-2 bg-ink-950/35 hover:bg-ink-950/55"
-                }`}
-              />
-            ))}
-          </div>
-        ) : null}
-      </div>
+      <p className="sr-only">Background: {slide.label}</p>
     </div>
   );
 }

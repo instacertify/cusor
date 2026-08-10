@@ -10,7 +10,8 @@ import AuthorByline from "@/components/AuthorByline";
 import BlogCoverImage from "@/components/BlogCoverImage";
 import Icon from "@/components/Icon";
 import { getPostBySlug, getPublishedPosts } from "@/lib/queries";
-import { buildMetadata, buildJsonLd, BASE_URL } from "@/lib/seo";
+import { isBlogPubliclyVisible } from "@/lib/blog-scheduler";
+import { buildMetadata, buildJsonLd, BASE_URL, toIsoDate } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ function formatDate(d: string | null): string {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = getPostBySlug(slug);
-  if (!post || post.status !== "published") return {};
+  if (!post || !isBlogPubliclyVisible(post)) return {};
   return buildMetadata(`post:${post.id}`, {
     title: post.meta_title || post.title,
     description: post.meta_description || post.excerpt,
@@ -42,15 +43,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
-  if (!post || post.status !== "published") notFound();
+  if (!post || !isBlogPubliclyVisible(post)) notFound();
   const more = getPublishedPosts(4).filter((p) => p.id !== post.id).slice(0, 3);
   const authorName = post.author_name || post.author;
+  const publishedIso = toIsoDate(post.published_at || post.created_at);
 
   const jsonLd = buildJsonLd(["Article", "BreadcrumbList"], {
     name: post.title,
     description: post.excerpt,
     url: `${BASE_URL}/blog/${post.slug}`,
     image: post.image,
+    datePublished: post.published_at || post.created_at,
+    dateModified: post.published_at || post.created_at,
+    authorName,
+    authorUrl: post.author_slug ? `/authors/${post.author_slug}` : undefined,
     breadcrumbs: [
       { name: "Home", url: "/" },
       { name: "Blog", url: "/blog" },
@@ -73,6 +79,7 @@ export default async function BlogPostPage({ params }: Props) {
           name={authorName}
           slug={post.author_slug}
           date={formatDate(post.published_at)}
+          dateTime={publishedIso}
         />
         <h1 className="mt-2 font-display text-3xl sm:text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
           {post.title}

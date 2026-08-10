@@ -29,6 +29,8 @@ const PUBLIC_CACHE_PATHS = [
   "/products",
   "/products/all",
   "/certifications",
+  "/certifications/countries",
+  "/certifications/global-market-access",
   "/testing",
   "/labs",
   "/blog",
@@ -39,6 +41,10 @@ const PUBLIC_CACHE_PATHS = [
   "/sitemap.xml",
   "/guide",
   "/about",
+  "/privacy",
+  "/privacy/cookies",
+  "/privacy/gdpr-and-dpdp",
+  "/privacy/data-request",
 ] as const;
 
 /** Manual “Clear cache” from admin — force public pages to rebuild. */
@@ -118,6 +124,22 @@ const LOGO_DEFAULTS = {
   logo_on_dark: "/brand/certko-logo-light.png",
 } as const;
 
+const SOCIAL_ICON_KEYS = [
+  "social_twitter_icon",
+  "social_linkedin_icon",
+  "social_youtube_icon",
+] as const;
+
+const STAT_ICON_KEYS = [
+  "stat_1_icon",
+  "stat_2_icon",
+  "stat_3_icon",
+  "stat_4_icon",
+  "stat_5_icon",
+] as const;
+
+const CONTACT_POPUP_IMAGE_KEY = "contact_popup_image" as const;
+
 const SECRET_SETTINGS = new Set(["smtp_pass", "admin_password", "admin_username"]);
 
 // ---------- admin credentials ----------
@@ -177,6 +199,9 @@ export async function saveSettings(formData: FormData) {
       !key.startsWith("clear_") &&
       !key.endsWith("_file") &&
       key !== "smtp_enabled" &&
+      key !== "contact_popup_enabled" &&
+      key !== "contact_popup_wait_for_cookie_choice" &&
+      key !== "contact_popup_image" &&
       key !== "admin_password" &&
       key !== "admin_username" &&
       key !== "current_password" &&
@@ -197,6 +222,46 @@ export async function saveSettings(formData: FormData) {
       setSetting(key, uploaded);
     } else if (formData.get(`clear_${key}`) === "1") {
       setSetting(key, LOGO_DEFAULTS[key]);
+    }
+  }
+
+  for (const key of SOCIAL_ICON_KEYS) {
+    const uploaded = await saveUploadedImage(formData.get(`${key}_file`) as File | null);
+    if (uploaded) {
+      setSetting(key, uploaded);
+    } else if (formData.get(`clear_${key}`) === "1") {
+      setSetting(key, "");
+    }
+  }
+
+  for (const key of STAT_ICON_KEYS) {
+    const uploaded = await saveUploadedImage(formData.get(`${key}_file`) as File | null);
+    if (uploaded) {
+      setSetting(key, uploaded);
+    } else if (formData.get(`clear_${key}`) === "1") {
+      setSetting(key, "");
+    }
+  }
+
+  // Timed contact popup — enable flag + side image
+  setSetting(
+    "contact_popup_enabled",
+    formData.getAll("contact_popup_enabled").map(String).includes("1") ? "1" : "0"
+  );
+  setSetting(
+    "contact_popup_wait_for_cookie_choice",
+    formData.getAll("contact_popup_wait_for_cookie_choice").map(String).includes("1")
+      ? "1"
+      : "0"
+  );
+  {
+    const uploaded = await saveUploadedImage(
+      formData.get(`${CONTACT_POPUP_IMAGE_KEY}_file`) as File | null
+    );
+    if (uploaded) {
+      setSetting(CONTACT_POPUP_IMAGE_KEY, uploaded);
+    } else if (formData.get(`clear_${CONTACT_POPUP_IMAGE_KEY}`) === "1") {
+      setSetting(CONTACT_POPUP_IMAGE_KEY, "/brand/certko-logo-full.png");
     }
   }
 
@@ -287,24 +352,45 @@ export async function createPage(formData: FormData) {
     candidate = `${slug}-${n++}`;
   }
   slug = candidate;
+  const pageType =
+    String(formData.get("page_type") ?? "content") === "landing" ? "landing" : "content";
   const nav = pageNavFlags(formData);
+  // Advertising landings default to not in site nav (campaign URLs only).
+  const navMenu = pageType === "landing" ? 0 : nav.nav_menu;
+  const navSubmenu = pageType === "landing" ? 0 : nav.nav_submenu;
+  const navFooter = pageType === "landing" ? 0 : nav.nav_footer;
+  const ctaLabel =
+    String(formData.get("cta_label") ?? "").trim() ||
+    (pageType === "landing" ? "Get Expert Help" : "");
+  const ctaHref =
+    String(formData.get("cta_href") ?? "").trim() ||
+    (pageType === "landing" ? "/contact" : "");
+  const stub =
+    pageType === "landing"
+      ? `## Why this offer matters\n\nWrite the advertising pitch here using **Markdown**.\n\n## What clients receive\n\n- Benefit one\n- Benefit two\n\n## How it works\n\n1. Step one\n2. Step two\n\n[Get Expert Help](/contact)`
+      : "Write your page content here using **Markdown**.";
 
   db.prepare(
     `INSERT INTO pages (
       slug, title, meta_title, meta_description, hero_heading, hero_subheading, content, image,
-      nav_menu, nav_submenu, nav_footer, nav_label, nav_detail, nav_sort
-    ) VALUES (?, ?, ?, '', ?, '', 'Write your page content here using **Markdown**.', '', ?, ?, ?, ?, ?, ?)`
+      nav_menu, nav_submenu, nav_footer, nav_label, nav_detail, nav_sort,
+      page_type, cta_label, cta_href
+    ) VALUES (?, ?, ?, '', ?, '', ?, '', ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     slug,
     title,
     `${title} | Certko`,
     title,
-    nav.nav_menu,
-    nav.nav_submenu,
-    nav.nav_footer,
+    stub,
+    navMenu,
+    navSubmenu,
+    navFooter,
     nav.nav_label || title,
     nav.nav_detail,
-    nav.nav_sort
+    nav.nav_sort,
+    pageType,
+    ctaLabel,
+    ctaHref
   );
 
   revalidatePath("/", "layout");
@@ -317,9 +403,14 @@ export async function savePage(formData: FormData) {
   const image = await saveUploadedImage(formData.get("image_file") as File | null);
   const db = getDb();
   const nav = pageNavFlags(formData);
+  const pageType =
+    String(formData.get("page_type") ?? "content") === "landing" ? "landing" : "content";
+  const ctaLabel = String(formData.get("cta_label") ?? "").trim();
+  const ctaHref = String(formData.get("cta_href") ?? "").trim();
   db.prepare(
     `UPDATE pages SET title=?, meta_title=?, meta_description=?, hero_heading=?, hero_subheading=?, content=?,
-     nav_menu=?, nav_submenu=?, nav_footer=?, nav_label=?, nav_detail=?, nav_sort=?
+     nav_menu=?, nav_submenu=?, nav_footer=?, nav_label=?, nav_detail=?, nav_sort=?,
+     page_type=?, cta_label=?, cta_href=?
      ${image ? ", image=?" : ""} WHERE slug=?`
   ).run(
     ...[
@@ -335,6 +426,9 @@ export async function savePage(formData: FormData) {
       nav.nav_label,
       nav.nav_detail,
       nav.nav_sort,
+      pageType,
+      ctaLabel,
+      ctaHref,
       ...(image ? [image] : []),
       slug,
     ]
@@ -616,6 +710,11 @@ export async function saveFaq(formData: FormData) {
     );
   }
   revalidatePath("/", "layout");
+  if (scope.startsWith("country:")) {
+    const countrySlug = scope.slice("country:".length);
+    revalidateSoon(`/certifications/countries/${countrySlug}`);
+    revalidateSoon("/certifications/countries");
+  }
   redirect(withParam(back, "saved=1"));
 }
 
@@ -623,8 +722,17 @@ export async function deleteFaq(formData: FormData) {
   await requireAdmin();
   const id = Number(formData.get("id"));
   const back = String(formData.get("back") ?? "/admin/faqs");
-  getDb().prepare("DELETE FROM faqs WHERE id=?").run(id);
+  const db = getDb();
+  const existing = db
+    .prepare("SELECT scope FROM faqs WHERE id = ?")
+    .get(id) as { scope: string } | undefined;
+  db.prepare("DELETE FROM faqs WHERE id=?").run(id);
   revalidatePath("/", "layout");
+  if (existing?.scope?.startsWith("country:")) {
+    const countrySlug = existing.scope.slice("country:".length);
+    revalidateSoon(`/certifications/countries/${countrySlug}`);
+    revalidateSoon("/certifications/countries");
+  }
   redirect(withParam(back, "saved=1"));
 }
 
@@ -657,6 +765,290 @@ export async function deleteTestimonial(formData: FormData) {
   getDb().prepare("DELETE FROM testimonials WHERE id=?").run(Number(formData.get("id")));
   revalidatePath("/", "layout");
   redirect("/admin/testimonials?saved=1");
+}
+
+// ---------- trusted brands (logo marquee library) ----------
+export async function saveTrustedBrand(formData: FormData) {
+  await requireAdmin();
+  const id = formData.get("id") ? Number(formData.get("id")) : null;
+  const name = String(formData.get("name") ?? "").trim();
+  const href = String(formData.get("href") ?? "").trim();
+  const sort = Number(formData.get("sort") ?? 0) || 0;
+  const active = formData.getAll("active").map(String).includes("1") ? 1 : 0;
+  if (!name) redirect("/admin/trusted-brands?error=1");
+
+  const db = getDb();
+  const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
+  const clearImage = formData.get("clear_image") === "1";
+  let logo = String(formData.get("logo") ?? "").trim();
+
+  if (id) {
+    const existing = db
+      .prepare("SELECT logo FROM trusted_brands WHERE id = ?")
+      .get(id) as { logo: string } | undefined;
+    logo = uploaded ?? (clearImage ? "" : existing?.logo || logo);
+    if (!logo) redirect("/admin/trusted-brands?error=logo");
+    db.prepare(
+      "UPDATE trusted_brands SET name=?, logo=?, href=?, sort=?, active=? WHERE id=?"
+    ).run(name, logo, href, sort, active, id);
+  } else {
+    logo = uploaded || logo;
+    if (!logo) redirect("/admin/trusted-brands?error=logo");
+    db.prepare(
+      "INSERT INTO trusted_brands (name, logo, href, sort, active) VALUES (?, ?, ?, ?, ?)"
+    ).run(name, logo, href, sort, active);
+  }
+
+  revalidateSoon("/", "layout");
+  redirect("/admin/trusted-brands?saved=1");
+}
+
+export async function deleteTrustedBrand(formData: FormData) {
+  await requireAdmin();
+  getDb().prepare("DELETE FROM trusted_brands WHERE id=?").run(Number(formData.get("id")));
+  revalidateSoon("/", "layout");
+  redirect("/admin/trusted-brands?saved=1");
+}
+
+// ---------- country hubs (country-wise certifications) ----------
+function revalidateCountryPages(slug?: string, previousSlug?: string) {
+  revalidateSoon("/", "layout");
+  revalidateSoon("/certifications");
+  revalidateSoon("/certifications/countries");
+  revalidateSoon("/certifications/global-market-access");
+  revalidateSoon("/sitemap");
+  revalidateSoon("/sitemap.xml");
+  if (slug) revalidateSoon(`/certifications/countries/${slug}`);
+  if (previousSlug && previousSlug !== slug) {
+    revalidateSoon(`/certifications/countries/${previousSlug}`);
+  }
+}
+
+export async function createCountryHub(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) redirect("/admin/countries?error=1");
+  const db = getDb();
+  let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
+  let n = 2;
+  while (db.prepare("SELECT 1 FROM country_hubs WHERE slug = ?").get(slug)) {
+    slug = `${slugify(name)}-${n++}`;
+  }
+  const maxSort = (
+    db.prepare("SELECT COALESCE(MAX(sort), 0) AS m FROM country_hubs").get() as { m: number }
+  ).m;
+  const sortRaw = String(formData.get("sort") ?? "").trim();
+  const sort = sortRaw ? Number(sortRaw) || maxSort + 10 : maxSort + 10;
+  const shortName = String(formData.get("short_name") ?? "").trim() || name;
+  const marketId = String(formData.get("market_id") ?? "").trim() || slug;
+  const region = String(formData.get("region") ?? "").trim();
+  const intro =
+    String(formData.get("intro") ?? "").trim() ||
+    `Certification pathways for selling into ${name}.`;
+  const metaTitle =
+    String(formData.get("meta_title") ?? "").trim() ||
+    `${name} Certifications | Certko`;
+  const metaDescription =
+    String(formData.get("meta_description") ?? "").trim() ||
+    `Country-wise certification guide for ${name} — schemes, who needs them, and what to check first.`;
+  const res = db
+    .prepare(
+      `INSERT INTO country_hubs (
+        slug, market_id, region, name, short_name, meta_title, meta_description,
+        intro, overview, authority, filing_tip, first_checks, pillars, sort, active, featured
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, '', '', '', '[]', '{}', ?, 1, 0)`
+    )
+    .run(
+      slug,
+      marketId,
+      region,
+      name,
+      shortName,
+      metaTitle,
+      metaDescription,
+      intro,
+      sort
+    );
+  const newId = Number(res.lastInsertRowid);
+  const insFaq = db.prepare(
+    "INSERT INTO faqs (scope, question, answer, sort) VALUES (?, ?, ?, ?)"
+  );
+  insFaq.run(
+    `country:${slug}`,
+    `Which certifications apply in ${name}?`,
+    `Open this country guide for the schemes Certko lists for ${name}, then confirm against your product or HSN with an expert.`,
+    10
+  );
+  revalidateCountryPages(slug);
+  redirect(`/admin/countries/${newId}?saved=1`);
+}
+
+export async function saveCountryHub(formData: FormData) {
+  await requireAdmin();
+  const { slugify } = await import("@/lib/format");
+  const { encodeChecksOrExamples, linesFromTextarea } = await import(
+    "@/lib/country-certifications"
+  );
+  const id = Number(formData.get("id"));
+  const db = getDb();
+  const existing = db
+    .prepare("SELECT slug FROM country_hubs WHERE id = ?")
+    .get(id) as { slug: string } | undefined;
+  if (!existing) redirect("/admin/countries?error=1");
+
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) redirect(`/admin/countries/${id}?error=1`);
+
+  let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
+  const clash = db
+    .prepare("SELECT id FROM country_hubs WHERE slug = ? AND id != ?")
+    .get(slug, id) as { id: number } | undefined;
+  if (clash) {
+    slug = `${slug}-${id}`;
+  }
+
+  const shortName = String(formData.get("short_name") ?? "").trim() || name;
+  const marketId = String(formData.get("market_id") ?? "").trim() || slug;
+  const region = String(formData.get("region") ?? "").trim();
+  const sort = Number(formData.get("sort") ?? 0) || 0;
+  const active = formData.getAll("active").map(String).includes("1") ? 1 : 0;
+  const featured = formData.getAll("featured").map(String).includes("1") ? 1 : 0;
+  const firstChecks = encodeChecksOrExamples(
+    linesFromTextarea(String(formData.get("first_checks") ?? ""))
+  );
+  const pillars = JSON.stringify({
+    safety: String(formData.get("pillar_safety") ?? "").trim(),
+    emcWireless: String(formData.get("pillar_emc") ?? "").trim(),
+    telecom: String(formData.get("pillar_telecom") ?? "").trim(),
+    energyEnv: String(formData.get("pillar_energy") ?? "").trim(),
+    localRep: String(formData.get("pillar_local_rep") ?? "").trim(),
+  });
+
+  db.prepare(
+    `UPDATE country_hubs SET
+      slug=?, market_id=?, region=?, name=?, short_name=?, meta_title=?, meta_description=?,
+      intro=?, overview=?, authority=?, filing_tip=?, first_checks=?, pillars=?, sort=?, active=?, featured=?
+     WHERE id=?`
+  ).run(
+    slug,
+    marketId,
+    region,
+    name,
+    shortName,
+    String(formData.get("meta_title") ?? "").trim(),
+    String(formData.get("meta_description") ?? "").trim(),
+    String(formData.get("intro") ?? "").trim(),
+    String(formData.get("overview") ?? "").trim(),
+    String(formData.get("authority") ?? "").trim(),
+    String(formData.get("filing_tip") ?? "").trim(),
+    firstChecks,
+    pillars,
+    sort,
+    active,
+    featured,
+    id
+  );
+
+  if (existing.slug !== slug) {
+    db.prepare("UPDATE faqs SET scope = ? WHERE scope = ?").run(
+      `country:${slug}`,
+      `country:${existing.slug}`
+    );
+  }
+
+  revalidateCountryPages(slug, existing.slug);
+  redirect(`/admin/countries/${id}?saved=1`);
+}
+
+export async function deleteCountryHub(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  const db = getDb();
+  const hub = db.prepare("SELECT slug FROM country_hubs WHERE id = ?").get(id) as
+    | { slug: string }
+    | undefined;
+  if (hub) {
+    db.prepare("DELETE FROM faqs WHERE scope = ?").run(`country:${hub.slug}`);
+    db.prepare("DELETE FROM country_schemes WHERE country_id = ?").run(id);
+    db.prepare("DELETE FROM country_hubs WHERE id = ?").run(id);
+  }
+  revalidateCountryPages(hub?.slug);
+  redirect("/admin/countries?saved=1");
+}
+
+export async function saveCountryScheme(formData: FormData) {
+  await requireAdmin();
+  const { encodeChecksOrExamples, linesFromTextarea } = await import(
+    "@/lib/country-certifications"
+  );
+  const id = formData.get("id") ? Number(formData.get("id")) : null;
+  const countryId = Number(formData.get("country_id"));
+  const name = String(formData.get("name") ?? "").trim();
+  const back = `/admin/countries/${countryId}`;
+  if (!countryId || !name) redirect(withParam(back, "error=1"));
+
+  const db = getDb();
+  const certSlug = String(formData.get("cert_slug") ?? "").trim();
+  const role = String(formData.get("role") ?? "").trim();
+  const summary = String(formData.get("summary") ?? "").trim();
+  const whoNeedsIt = String(formData.get("who_needs_it") ?? "").trim();
+  const examples = encodeChecksOrExamples(
+    linesFromTextarea(String(formData.get("examples") ?? ""))
+  );
+  const sort = Number(formData.get("sort") ?? 0) || 0;
+
+  if (id) {
+    db.prepare(
+      `UPDATE country_schemes SET
+        cert_slug=?, name=?, role=?, summary=?, who_needs_it=?, examples=?, sort=?
+       WHERE id=? AND country_id=?`
+    ).run(certSlug, name, role, summary, whoNeedsIt, examples, sort, id, countryId);
+  } else {
+    const maxSort = (
+      db
+        .prepare(
+          "SELECT COALESCE(MAX(sort), 0) AS m FROM country_schemes WHERE country_id = ?"
+        )
+        .get(countryId) as { m: number }
+    ).m;
+    db.prepare(
+      `INSERT INTO country_schemes (
+        country_id, cert_slug, name, role, summary, who_needs_it, examples, sort
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(
+      countryId,
+      certSlug,
+      name,
+      role,
+      summary,
+      whoNeedsIt,
+      examples,
+      sort || maxSort + 10
+    );
+  }
+
+  const hub = db
+    .prepare("SELECT slug FROM country_hubs WHERE id = ?")
+    .get(countryId) as { slug: string } | undefined;
+  revalidateCountryPages(hub?.slug);
+  redirect(withParam(back, "saved=1"));
+}
+
+export async function deleteCountryScheme(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  const countryId = Number(formData.get("country_id"));
+  const db = getDb();
+  const hub = db
+    .prepare("SELECT slug FROM country_hubs WHERE id = ?")
+    .get(countryId) as { slug: string } | undefined;
+  db.prepare("DELETE FROM country_schemes WHERE id = ? AND country_id = ?").run(
+    id,
+    countryId
+  );
+  revalidateCountryPages(hub?.slug);
+  redirect(`/admin/countries/${countryId}?saved=1`);
 }
 
 // ---------- certifications ----------
@@ -1193,11 +1585,17 @@ export async function savePost(formData: FormData) {
     }
     slug = candidate;
   }
-  const status = String(formData.get("status") ?? "draft") === "published" ? "published" : "draft";
-  const publishedAt =
-    status === "published"
-      ? existing.published_at ?? new Date().toISOString().slice(0, 10)
-      : existing.published_at;
+  const { resolveBlogScheduleState } = await import("@/lib/blog-scheduler");
+  const schedule = resolveBlogScheduleState({
+    requestedStatus: String(formData.get("status") ?? "draft"),
+    publishAtRaw: String(formData.get("publish_at") ?? ""),
+    existingPublishedAt: existing.published_at,
+  });
+  if (schedule.error === "schedule_required") {
+    redirect(`/admin/blog/${id}?error=schedule_required`);
+  }
+  const status = schedule.status;
+  const publishedAt = schedule.publishedAt;
   const author = resolveAuthorFromForm(formData);
 
   let nextImage = existing.image ?? "";
@@ -1431,6 +1829,10 @@ export async function saveTestingService(formData: FormData) {
   let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
   const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
   const clearImage = formData.get("clear_image") === "1";
+  const minPriceRaw = String(formData.get("min_price") ?? "").trim();
+  const maxPriceRaw = String(formData.get("max_price") ?? "").trim();
+  const minPrice = minPriceRaw ? Number(minPriceRaw) : null;
+  const maxPrice = maxPriceRaw ? Number(maxPriceRaw) : null;
   const values = {
     category_id: categoryId,
     name,
@@ -1441,6 +1843,9 @@ export async function saveTestingService(formData: FormData) {
       String(formData.get("accreditation") ?? "").trim() || "ISO/IEC 17025 / NABL",
     timeline: String(formData.get("timeline") ?? "").trim(),
     sample_size: String(formData.get("sample_size") ?? "").trim(),
+    min_price: Number.isFinite(minPrice as number) ? minPrice : null,
+    max_price: Number.isFinite(maxPrice as number) ? maxPrice : null,
+    price_note: String(formData.get("price_note") ?? "").trim(),
     summary: String(formData.get("summary") ?? "").trim(),
     content: String(formData.get("content") ?? "").trim(),
     meta_title: String(formData.get("meta_title") ?? "").trim(),
@@ -1461,7 +1866,7 @@ export async function saveTestingService(formData: FormData) {
     if (clash) slug = `${slug}-${id}`;
     db.prepare(
       `UPDATE testing_services SET category_id=?, slug=?, name=?, product_category=?, standards=?, test_type=?, accreditation=?,
-        timeline=?, sample_size=?, summary=?, content=?, image=?, meta_title=?, meta_description=?, sort=? WHERE id=?`
+        timeline=?, sample_size=?, min_price=?, max_price=?, price_note=?, summary=?, content=?, image=?, meta_title=?, meta_description=?, sort=? WHERE id=?`
     ).run(
       categoryId,
       slug,
@@ -1472,6 +1877,9 @@ export async function saveTestingService(formData: FormData) {
       values.accreditation,
       values.timeline,
       values.sample_size,
+      values.min_price,
+      values.max_price,
+      values.price_note,
       values.summary,
       values.content,
       image,
@@ -1489,8 +1897,8 @@ export async function saveTestingService(formData: FormData) {
     const res = db
       .prepare(
         `INSERT INTO testing_services
-        (category_id, slug, name, product_category, standards, test_type, accreditation, timeline, sample_size, summary, content, image, meta_title, meta_description, sort)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        (category_id, slug, name, product_category, standards, test_type, accreditation, timeline, sample_size, min_price, max_price, price_note, summary, content, image, meta_title, meta_description, sort)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         categoryId,
@@ -1502,6 +1910,9 @@ export async function saveTestingService(formData: FormData) {
         values.accreditation,
         values.timeline || "7–15 working days",
         values.sample_size || "As advised by the testing laboratory",
+        values.min_price,
+        values.max_price,
+        values.price_note,
         values.summary,
         values.content ||
           `## ${values.name}\n\nDescribe the test method, sample requirements, turnaround and how Certko helps.`,

@@ -49,7 +49,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-3xl border border-cream-300 shadow-card-hover bg-ink-950 aspect-[4/3] sm:aspect-[5/4] lg:aspect-auto lg:h-[480px]"
+      className="relative w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-cream-300/80 shadow-card bg-ink-950 aspect-[4/3] sm:aspect-[5/4] lg:aspect-auto lg:h-[420px]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -107,7 +107,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                     href={s.link_href}
                     className="mt-3 inline-flex items-center rounded-xl bg-butter-500 hover:bg-butter-400 text-ink-950 text-sm font-semibold px-4 py-2 transition"
                   >
-                    {s.link_label || "Learn more"}
+                    {s.link_label || "Explore more"}
                   </Link>
                 ) : null}
               </div>

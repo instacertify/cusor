@@ -6,5 +6,8 @@ export async function register() {
     // it with Content-Length (avoids GSC "General HTTP error").
     const { refreshSitemapFiles } = await import("@/lib/sitemap-xml");
     void refreshSitemapFiles();
+    // Auto-publish blog posts whose scheduled time has arrived.
+    const { startBlogScheduler } = await import("@/lib/blog-scheduler");
+    startBlogScheduler();
   }
 }

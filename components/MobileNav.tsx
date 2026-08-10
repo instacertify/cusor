@@ -19,14 +19,6 @@ interface Group {
 /** Always-available links if CMS/DB groups fail to serialize on the client. */
 const FALLBACK_GROUPS: Group[] = [
   {
-    label: "Products",
-    items: [
-      { href: "/products", label: "Browse by Category" },
-      { href: "/products/all", label: "Product Search Table" },
-      { href: "/qco", label: "Upcoming QCOs" },
-    ],
-  },
-  {
     label: "Certifications",
     items: [
       { href: "/certifications", label: "All certifications" },
@@ -35,17 +27,23 @@ const FALLBACK_GROUPS: Group[] = [
       { href: "/certifications/g-mark", label: "GMARK" },
       { href: "/certifications/ce", label: "CE" },
       { href: "/certifications/fcc", label: "FCC" },
-      { href: "/certifications/saber", label: "SABER" },
-      { href: "/certifications/wpc", label: "WPC" },
     ],
   },
   {
-    label: "More",
+    label: "Testing",
     items: [
-      { href: "/testing", label: "Product Testing" },
+      { href: "/testing", label: "All product testing" },
       { href: "/labs", label: "Testing Labs" },
+    ],
+  },
+  {
+    label: "Resources",
+    items: [
+      { href: "/products", label: "Browse products" },
+      { href: "/products/all", label: "Search by HSN" },
+      { href: "/qco", label: "Upcoming QCOs" },
       { href: "/blog", label: "Blog" },
-      { href: "/contact", label: "Get Expert Help" },
+      { href: "/contact", label: "Contact" },
     ],
   },
 ];

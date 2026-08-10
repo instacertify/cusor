@@ -10,6 +10,8 @@ export interface DropItem {
   label: string;
   detail?: string;
   icon?: string;
+  /** Optional market / group heading shown once before consecutive items. */
+  section?: string;
 }
 
 export default function NavDropdown({
@@ -60,24 +62,34 @@ export default function NavDropdown({
         <div className="absolute left-0 top-full pt-2 z-50">
           <div className="w-72 bg-white rounded-2xl border border-cream-300 shadow-card-hover overflow-hidden">
             <div className="max-h-[60vh] overflow-y-auto py-2">
-              {items.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-cream-100 transition"
-                >
-                  {item.icon ? (
-                    <IconChip name={item.icon} size={17} chip="sm" tone="neutral" />
-                  ) : null}
-                  <span className="min-w-0">
-                    <span className="block text-sm font-semibold text-ink-950">{item.label}</span>
-                    {item.detail && (
-                      <span className="block text-[11px] text-ink-500 truncate">{item.detail}</span>
-                    )}
-                  </span>
-                </Link>
-              ))}
+              {items.map((item, index) => {
+                const prevSection = index > 0 ? items[index - 1]?.section : undefined;
+                const showSection = Boolean(item.section && item.section !== prevSection);
+                return (
+                  <div key={item.href}>
+                    {showSection ? (
+                      <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                        {item.section}
+                      </p>
+                    ) : null}
+                    <Link
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-cream-100 transition"
+                    >
+                      {item.icon ? (
+                        <IconChip name={item.icon} size={17} chip="sm" tone="neutral" />
+                      ) : null}
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold text-ink-950">{item.label}</span>
+                        {item.detail && (
+                          <span className="block text-[11px] text-ink-500 truncate">{item.detail}</span>
+                        )}
+                      </span>
+                    </Link>
+                  </div>
+                );
+              })}
             </div>
             {footerItem && (
               <Link

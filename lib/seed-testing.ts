@@ -14,24 +14,59 @@ interface SeedService {
   sort?: number;
 }
 
-function defaultsForTestType(testType = ""): { timeline: string; sample_size: string } {
+function defaultsForTestType(testType = ""): {
+  timeline: string;
+  sample_size: string;
+  min_price: number;
+  max_price: number;
+} {
   const t = testType.toLowerCase();
   if (t.includes("emc")) {
-    return { timeline: "12–18 working days", sample_size: "2–3 production units + accessories" };
+    return {
+      timeline: "12–18 working days",
+      sample_size: "2–3 production units + accessories",
+      min_price: 45000,
+      max_price: 120000,
+    };
   }
   if (t.includes("safety") || t.includes("electrical")) {
-    return { timeline: "10–15 working days", sample_size: "5–10 production units (lab-confirmed)" };
+    return {
+      timeline: "10–15 working days",
+      sample_size: "5–10 production units (lab-confirmed)",
+      min_price: 25000,
+      max_price: 75000,
+    };
   }
   if (t.includes("micro")) {
-    return { timeline: "5–10 working days", sample_size: "As per FSSAI / lab sampling plan" };
+    return {
+      timeline: "5–10 working days",
+      sample_size: "As per FSSAI / lab sampling plan",
+      min_price: 8000,
+      max_price: 35000,
+    };
   }
   if (t.includes("physical") || t.includes("mechanical")) {
-    return { timeline: "7–14 working days", sample_size: "Specimen set as per standard (lab-confirmed)" };
+    return {
+      timeline: "7–14 working days",
+      sample_size: "Specimen set as per standard (lab-confirmed)",
+      min_price: 12000,
+      max_price: 55000,
+    };
   }
   if (t.includes("heavy") || t.includes("composition") || t.includes("chemical")) {
-    return { timeline: "7–12 working days", sample_size: "100–500 g representative sample (or as per IS)" };
+    return {
+      timeline: "7–12 working days",
+      sample_size: "100–500 g representative sample (or as per IS)",
+      min_price: 10000,
+      max_price: 45000,
+    };
   }
-  return { timeline: "7–15 working days", sample_size: "As advised by the testing laboratory" };
+  return {
+    timeline: "7–15 working days",
+    sample_size: "As advised by the testing laboratory",
+    min_price: 15000,
+    max_price: 60000,
+  };
 }
 
 interface SeedCategory {
@@ -257,15 +292,38 @@ function defaultFaqs(categoryName: string): { question: string; answer: string }
 
 function backfillTimelineAndSampleSize(db: SqliteDatabase) {
   const rows = db
-    .prepare("SELECT id, test_type, timeline, sample_size FROM testing_services")
-    .all() as { id: number; test_type: string; timeline: string; sample_size: string }[];
-  const upd = db.prepare(
+    .prepare(
+      "SELECT id, test_type, timeline, sample_size, min_price, max_price, price_note FROM testing_services"
+    )
+    .all() as {
+    id: number;
+    test_type: string;
+    timeline: string;
+    sample_size: string;
+    min_price: number | null;
+    max_price: number | null;
+    price_note: string;
+  }[];
+  const updMeta = db.prepare(
     "UPDATE testing_services SET timeline = ?, sample_size = ? WHERE id = ?"
   );
+  const updPrice = db.prepare(
+    "UPDATE testing_services SET min_price = ?, max_price = ?, price_note = ? WHERE id = ?"
+  );
   for (const row of rows) {
-    if (row.timeline && row.sample_size) continue;
     const d = defaultsForTestType(row.test_type);
-    upd.run(row.timeline || d.timeline, row.sample_size || d.sample_size, row.id);
+    if (!row.timeline || !row.sample_size) {
+      updMeta.run(row.timeline || d.timeline, row.sample_size || d.sample_size, row.id);
+    }
+    // One-time tentative price seed when both bounds are empty (admin can override anytime).
+    if (row.min_price == null && row.max_price == null) {
+      updPrice.run(
+        d.min_price,
+        d.max_price,
+        row.price_note || "Indicative lab charges; confirm on quote",
+        row.id
+      );
+    }
   }
 }
 
@@ -335,6 +393,9 @@ export function ensureTestingCatalog(db: SqliteDatabase) {
       accreditation TEXT NOT NULL DEFAULT 'ISO/IEC 17025 / NABL',
       timeline TEXT NOT NULL DEFAULT '',
       sample_size TEXT NOT NULL DEFAULT '',
+      min_price REAL,
+      max_price REAL,
+      price_note TEXT NOT NULL DEFAULT '',
       summary TEXT NOT NULL DEFAULT '',
       content TEXT NOT NULL DEFAULT '',
       image TEXT NOT NULL DEFAULT '',
@@ -347,7 +408,7 @@ export function ensureTestingCatalog(db: SqliteDatabase) {
     CREATE INDEX IF NOT EXISTS idx_testing_services_name ON testing_services(name);
   `);
 
-  // Migrate existing DBs that predate timeline / sample_size columns
+  // Migrate existing DBs that predate newer columns
   const cols = db.prepare("PRAGMA table_info(testing_services)").all() as { name: string }[];
   const colNames = new Set(cols.map((c) => c.name));
   if (!colNames.has("timeline")) {
@@ -355,6 +416,21 @@ export function ensureTestingCatalog(db: SqliteDatabase) {
   }
   if (!colNames.has("sample_size")) {
     db.exec("ALTER TABLE testing_services ADD COLUMN sample_size TEXT NOT NULL DEFAULT ''");
+  }
+  if (!colNames.has("min_price")) {
+    db.exec("ALTER TABLE testing_services ADD COLUMN min_price REAL");
+  }
+  if (!colNames.has("max_price")) {
+    db.exec("ALTER TABLE testing_services ADD COLUMN max_price REAL");
+  }
+  if (!colNames.has("price_note")) {
+    db.exec("ALTER TABLE testing_services ADD COLUMN price_note TEXT NOT NULL DEFAULT ''");
+  }
+
+  // inquiries.intent for testing / consulting lead routing
+  const inquiryCols = db.prepare("PRAGMA table_info(inquiries)").all() as { name: string }[];
+  if (!inquiryCols.some((c) => c.name === "intent")) {
+    db.exec("ALTER TABLE inquiries ADD COLUMN intent TEXT NOT NULL DEFAULT ''");
   }
 
   backfillTimelineAndSampleSize(db);
@@ -373,9 +449,9 @@ export function ensureTestingCatalog(db: SqliteDatabase) {
   );
   const insSvc = db.prepare(
     `INSERT INTO testing_services
-      (category_id, slug, name, product_category, standards, test_type, accreditation, timeline, sample_size, summary, content, image, meta_title, meta_description, sort)
+      (category_id, slug, name, product_category, standards, test_type, accreditation, timeline, sample_size, min_price, max_price, price_note, summary, content, image, meta_title, meta_description, sort)
      VALUES
-      (@category_id, @slug, @name, @product_category, @standards, @test_type, @accreditation, @timeline, @sample_size, @summary, @content, '', @meta_title, @meta_description, @sort)`
+      (@category_id, @slug, @name, @product_category, @standards, @test_type, @accreditation, @timeline, @sample_size, @min_price, @max_price, @price_note, @summary, @content, '', @meta_title, @meta_description, @sort)`
   );
   const insFaq = db.prepare(
     `INSERT INTO faqs (scope, question, answer, sort) VALUES (?, ?, ?, ?)`
@@ -412,6 +488,9 @@ export function ensureTestingCatalog(db: SqliteDatabase) {
           accreditation: svc.accreditation || "ISO/IEC 17025 / NABL",
           timeline: svc.timeline || defaults.timeline,
           sample_size: svc.sample_size || defaults.sample_size,
+          min_price: defaults.min_price,
+          max_price: defaults.max_price,
+          price_note: "Indicative lab charges; confirm on quote",
           summary,
           content:
             svc.content ||
@@ -439,10 +518,11 @@ export function ensureTestingCatalog(db: SqliteDatabase) {
       },
       {
         q: "Can Certko arrange the laboratory testing?",
-        a: "Yes. Share your product and target market via Contact / Get Expert Help and our team maps accredited labs and indicative costs.",
+        a: "Yes. Use Book testing or Book consulting on any test page. Your request is saved as a lead and our team updates you within 24 working hours with lab mapping and indicative costs.",
       },
     ].forEach((f, i) => insFaq.run("page:testing", f.q, f.a, i));
   });
   tx();
+  backfillTimelineAndSampleSize(db);
   seedServiceFaqsIfEmpty(db);
 }
