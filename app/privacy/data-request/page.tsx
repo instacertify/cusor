@@ -3,15 +3,18 @@ import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import DataRequestForm from "@/components/DataRequestForm";
 import { getGdprPublicSettings } from "@/lib/gdpr";
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: { absolute: "Privacy Data Request | Certko" },
-  description:
-    "Exercise your GDPR or DPDP rights — access, correction, deletion, portability, objection or withdraw consent.",
-  alternates: { canonical: "https://certko.com/privacy/data-request" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata("page:privacy-data-request", {
+    title: "Privacy Data Request",
+    description:
+      "Exercise your GDPR or DPDP rights — access, correction, deletion, portability, objection or withdraw consent.",
+    path: "/privacy/data-request",
+  });
+}
 
 export default function DataRequestPage() {
   const gdpr = getGdprPublicSettings();

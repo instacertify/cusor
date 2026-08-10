@@ -13,17 +13,18 @@ import {
 import { pagePublicPath } from "@/lib/pages-nav";
 import { countryHubPath, getCountryHubs } from "@/lib/country-certifications";
 import { ensureDbReady } from "@/lib/db";
-import { INDEX_FOLLOW_ROBOTS } from "@/lib/seo";
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Sitemap",
-  description:
-    "Browse every main Certko page — products, certifications, testing, labs, blog and resources — in one sitemap.",
-  alternates: { canonical: "https://certko.com/sitemap" },
-  robots: INDEX_FOLLOW_ROBOTS,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata("page:sitemap", {
+    title: "Sitemap",
+    description:
+      "Browse every main Certko page — products, certifications, testing, labs, blog and resources — in one sitemap.",
+    path: "/sitemap",
+  });
+}
 
 function Section({
   title,

@@ -8,21 +8,18 @@ import {
   getCountryHubs,
 } from "@/lib/country-certifications";
 import { GMA_REGIONS, gmaRegionLabel } from "@/lib/gma-regions";
-import { INDEX_FOLLOW_ROBOTS, finalizeDocumentTitle } from "@/lib/seo";
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: {
-    absolute: finalizeDocumentTitle(
-      "Global Market Access — Certifications by Country"
-    ),
-  },
-  description:
-    "Country-wise certification and compliance matrix across Asia-Pacific, Europe & Eurasia, the Americas, and Middle East & Africa — search schemes by market.",
-  alternates: { canonical: "https://certko.com/certifications/countries" },
-  robots: INDEX_FOLLOW_ROBOTS,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata("page:certifications-countries", {
+    title: "Global Market Access — Certifications by Country",
+    description:
+      "Country-wise certification and compliance matrix across Asia-Pacific, Europe & Eurasia, the Americas, and Middle East & Africa — search schemes by market.",
+    path: "/certifications/countries",
+  });
+}
 
 export default function CertificationsByCountryPage() {
   const hubs = getCountryHubs();

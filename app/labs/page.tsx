@@ -8,7 +8,7 @@ import Icon from "@/components/Icon";
 import { ensureDbReady } from "@/lib/db";
 import { getLabs, getLabStates, getCategories, countLabs, getFaqs } from "@/lib/queries";
 import { formatPriceRange, formatNumber } from "@/lib/format";
-import { INDEX_FOLLOW_ROBOTS } from "@/lib/seo";
+import { BASE_URL, buildJsonLd, buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -22,18 +22,25 @@ function parseLabCategories(raw: string | null | undefined): string[] {
   }
 }
 
-export const metadata: Metadata = {
-  title: "BIS Testing Labs Directory | 400+ Recognised Labs Across India",
-  description:
-    "Searchable directory of BIS-recognised testing laboratories across India. Filter by state and product category, compare scopes and indicative test prices.",
-  alternates: { canonical: "https://certko.com/labs" },
-  robots: INDEX_FOLLOW_ROBOTS,
-};
-
 const PAGE_SIZE = 24;
 
 interface Props {
   searchParams: Promise<{ state?: string; category?: string; q?: string; page?: string }>;
+}
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const sp = await searchParams;
+  const page = Math.max(1, Number(sp.page) || 1);
+  const filtered = Boolean(sp.state || sp.category || sp.q || page > 1);
+  return buildMetadata("page:labs", {
+    title: "BIS Testing Labs Directory | 400+ Recognised Labs Across India",
+    description:
+      "Searchable directory of BIS-recognised testing laboratories across India. Filter by state and product category, compare scopes and indicative test prices.",
+    // Faceted / paginated views canonicalise to the clean hub and stay noindex.
+    path: "/labs",
+    index: !filtered,
+    follow: true,
+  });
 }
 
 export default async function LabsPage({ searchParams }: Props) {
@@ -61,8 +68,29 @@ export default async function LabsPage({ searchParams }: Props) {
     return s ? `/labs?${s}` : "/labs";
   };
 
+  const faqJsonLd =
+    page <= 1 && !sp.state && !sp.category && !sp.q
+      ? buildJsonLd(["FAQPage", "BreadcrumbList"], {
+          name: "BIS Testing Labs Directory",
+          description:
+            "Searchable directory of BIS-recognised testing laboratories across India.",
+          url: `${BASE_URL}/labs`,
+          faqs: faqs.map(({ question, answer }) => ({ question, answer })),
+          breadcrumbs: [
+            { name: "Home", url: "/" },
+            { name: "Testing Labs" },
+          ],
+        })
+      : null;
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
       <Breadcrumbs crumbs={[{ label: "Testing Labs" }]} />
       <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">
         BIS Testing Labs Directory

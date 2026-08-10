@@ -2,15 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { getGdprPublicSettings } from "@/lib/gdpr";
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: { absolute: "What is GDPR and DPDP? | Certko Privacy" },
-  description:
-    "Plain-language guide to the EU GDPR and India’s Digital Personal Data Protection (DPDP) Act — and how Certko handles personal data under both.",
-  alternates: { canonical: "https://certko.com/privacy/gdpr-and-dpdp" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata("page:privacy-gdpr-dpdp", {
+    title: "What is GDPR and DPDP?",
+    description:
+      "Plain-language guide to the EU GDPR and India’s Digital Personal Data Protection (DPDP) Act — and how Certko handles personal data under both.",
+    path: "/privacy/gdpr-and-dpdp",
+  });
+}
 
 export default function GdprAndDpdpPage() {
   const gdpr = getGdprPublicSettings();

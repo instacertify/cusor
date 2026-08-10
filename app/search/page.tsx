@@ -41,18 +41,21 @@ import {
 import { gmaRegionLabel } from "@/lib/gma-regions";
 import { formatNumber, formatPriceRange, formatINR } from "@/lib/format";
 import { ensureDbReady } from "@/lib/db";
-import { NOINDEX_FOLLOW_ROBOTS } from "@/lib/seo";
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 // Internal search UI — keep crawlable for link discovery, but do not index query URLs.
-export const metadata: Metadata = {
-  title: { absolute: "Search Certifications, Product Testing & Labs | Certko" },
-  description:
-    "Search Certko for certifications, product testing services, BIS schemes, standards and testing labs.",
-  alternates: { canonical: "https://certko.com/search" },
-  robots: NOINDEX_FOLLOW_ROBOTS,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata("page:search", {
+    title: "Search Certifications, Product Testing & Labs",
+    description:
+      "Search Certko for certifications, product testing services, BIS schemes, standards and testing labs.",
+    path: "/search",
+    index: false,
+    follow: true,
+  });
+}
 
 const PAGE_SIZE = 24;
 

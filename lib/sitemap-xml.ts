@@ -246,6 +246,24 @@ export async function buildSitemapEntries(): Promise<SitemapEntry[]> {
       priority: 0.7,
     }));
 
+  const excludedCertProducts = getSeoExclusions("certprod");
+  const certProducts = (
+    getDb()
+      .prepare(
+        `SELECT cp.id, cp.slug AS product_slug, c.slug AS cert_slug
+         FROM cert_products cp
+         JOIN certifications c ON c.id = cp.certification_id
+         ORDER BY c.slug, cp.sort, cp.slug`
+      )
+      .all() as { id: number; product_slug: string; cert_slug: string }[]
+  )
+    .filter((p) => !excludedCertProducts.has(String(p.id)))
+    .map((p) => ({
+      url: `${SITEMAP_BASE}/certifications/${p.cert_slug}/products/${p.product_slug}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.65,
+    }));
+
   const { labs } = getLabs({ limit: 10000 });
   const labPages = labs.map((l) => ({
     url: `${SITEMAP_BASE}/labs/${l.slug}`,
@@ -280,6 +298,7 @@ export async function buildSitemapEntries(): Promise<SitemapEntry[]> {
     ...posts,
     ...authors,
     ...products,
+    ...certProducts,
     ...labPages,
   ]) {
     if (seen.has(entry.url)) continue;

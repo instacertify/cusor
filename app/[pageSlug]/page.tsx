@@ -54,15 +54,19 @@ export default async function ContentPage({ params }: Props) {
   if (!page) notFound();
   const faqs = getFaqs(`page:${pageSlug}`);
 
-  const analysis = analyzeMarkdown(page.content);
-  const jsonLd = buildJsonLd(enabledSchemaTypes(`page:${pageSlug}`, "page"), {
+  const schemaTypes = enabledSchemaTypes(`page:${pageSlug}`, "page");
+  // Only emit HowTo when explicitly enabled in SEO admin — markdown headings are not steps.
+  const howToSteps = schemaTypes.includes("HowTo")
+    ? analyzeMarkdown(page.content).headings.slice(0, 8)
+    : undefined;
+  const jsonLd = buildJsonLd(schemaTypes, {
     name: page.hero_heading || page.title,
     description: page.meta_description,
     url: `${BASE_URL}/${pageSlug}`,
     image: page.image,
     faqs,
     breadcrumbs: [{ name: "Home", url: "/" }, { name: page.title }],
-    howToSteps: analysis.headings.slice(0, 8),
+    ...(howToSteps?.length ? { howToSteps } : {}),
   });
 
   if (page.page_type === "landing") {

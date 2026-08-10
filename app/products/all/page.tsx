@@ -14,17 +14,9 @@ import {
   getFaqs,
 } from "@/lib/queries";
 import { formatPriceRange, formatINR, formatNumber } from "@/lib/format";
-import { INDEX_FOLLOW_ROBOTS } from "@/lib/seo";
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
-
-export const metadata: Metadata = {
-  title: "BIS Product Search Table | Standards, HSN, QCO Status, Fees & Labs",
-  description:
-    "Search all BIS notified products in one table: IS standard, HSN code, QCO status, marking fees, lab testing cost range and approved labs. Filter by category, status and scheme.",
-  alternates: { canonical: "https://certko.com/products/all" },
-  robots: INDEX_FOLLOW_ROBOTS,
-};
 
 const PAGE_SIZE = 25;
 
@@ -48,6 +40,27 @@ interface Props {
     sort?: Param;
     page?: Param;
   }>;
+}
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const raw = await searchParams;
+  const page = Math.max(1, Number(param(raw.page)) || 1);
+  const filtered = Boolean(
+    param(raw.q) ||
+      param(raw.category) ||
+      param(raw.status) ||
+      param(raw.scheme) ||
+      param(raw.sort) ||
+      page > 1
+  );
+  return buildMetadata("page:products-all", {
+    title: "BIS Product Search Table | Standards, HSN, QCO Status, Fees & Labs",
+    description:
+      "Search all BIS notified products in one table: IS standard, HSN code, QCO status, marking fees, lab testing cost range and approved labs. Filter by category, status and scheme.",
+    path: "/products/all",
+    index: !filtered,
+    follow: true,
+  });
 }
 
 function qcoBadgeClass(status: string) {

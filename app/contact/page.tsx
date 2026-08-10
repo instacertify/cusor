@@ -9,25 +9,29 @@ import ContactThankYou from "@/components/ContactThankYou";
 import { resolveExpertCta } from "@/lib/expert-cta";
 import { getPage, getFaqs } from "@/lib/queries";
 import { ensureDbReady, getSettings } from "@/lib/db";
-import { BASE_URL, INDEX_FOLLOW_ROBOTS, buildJsonLd, finalizeDocumentTitle } from "@/lib/seo";
+import { BASE_URL, buildJsonLd, buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(): Promise<Metadata> {
-  await ensureDbReady();
-  const page = getPage("contact");
-  return {
-    title: {
-      absolute: finalizeDocumentTitle(page?.meta_title || "Get Expert Help"),
-    },
-    description: page?.meta_description,
-    alternates: { canonical: "https://certko.com/contact" },
-    robots: INDEX_FOLLOW_ROBOTS,
-  };
-}
-
 interface Props {
   searchParams: Promise<{ sent?: string; error?: string; product?: string; intent?: string }>;
+}
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  await ensureDbReady();
+  const page = getPage("contact");
+  const sp = await searchParams;
+  const thankYouOrError = Boolean(sp.sent || sp.error);
+  return buildMetadata("page:contact", {
+    title: page?.meta_title || "Get Expert Help",
+    description:
+      page?.meta_description ||
+      "Talk to a Certko certification expert — scheme mapping, lab coordination and free quotes within 24 hours.",
+    path: "/contact",
+    // Thank-you / error query variants stay crawlable for form UX but are not indexed.
+    index: !thankYouOrError,
+    follow: true,
+  });
 }
 
 const PROMISES = [

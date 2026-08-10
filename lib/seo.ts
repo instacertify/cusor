@@ -31,6 +31,7 @@ export interface SeoMeta {
 }
 
 export const SCHEMA_TYPE_OPTIONS = [
+  "WebPage",
   "Article",
   "FAQPage",
   "Product",
@@ -41,13 +42,20 @@ export const SCHEMA_TYPE_OPTIONS = [
   "WebSite",
 ] as const;
 
+/**
+ * Defaults aligned with Google Search structured-data policies:
+ * - Prefer Service (not Product) for certification / lab guidance pages.
+ * - Avoid sitewide FAQPage on thousands of templated product/lab URLs.
+ * - Use WebPage for CMS content; keep Article for blog posts only.
+ */
 export const DEFAULT_SCHEMA_TYPES: Record<string, string[]> = {
-  product: ["Service", "Product", "FAQPage", "BreadcrumbList"],
+  product: ["Service", "BreadcrumbList"],
   category: ["BreadcrumbList", "FAQPage"],
   cert: ["Service", "FAQPage", "BreadcrumbList"],
-  page: ["Article", "FAQPage", "BreadcrumbList"],
+  certprod: ["Service", "BreadcrumbList"],
+  page: ["WebPage", "FAQPage", "BreadcrumbList"],
   country: ["Service", "FAQPage", "BreadcrumbList"],
-  lab: ["Service", "FAQPage", "BreadcrumbList"],
+  lab: ["Service", "BreadcrumbList"],
   testcat: ["Service", "FAQPage", "BreadcrumbList"],
   test: ["Service", "FAQPage", "BreadcrumbList"],
 };
@@ -441,6 +449,18 @@ export function buildJsonLd(types: string[], ctx: SchemaContext): object | null 
         graph.push(websiteNode(settings));
         break;
       }
+      case "WebPage":
+        graph.push({
+          "@type": "WebPage",
+          name: ctx.name,
+          description: ctx.description,
+          url: ctx.url,
+          isPartOf: { "@id": WEBSITE_ID },
+          ...(ctx.image ? { primaryImageOfPage: absoluteUrl(ctx.image) } : {}),
+          publisher: { "@id": ORGANIZATION_ID },
+          inLanguage: "en-IN",
+        });
+        break;
       case "Service":
         graph.push({
           "@type": "Service",
@@ -461,17 +481,24 @@ export function buildJsonLd(types: string[], ctx: SchemaContext): object | null 
                   priceCurrency: "INR",
                   lowPrice: ctx.offers.low,
                   highPrice: ctx.offers.high,
+                  url: ctx.url,
                 },
               }
             : {}),
         });
         break;
       case "Product":
+        // Prefer Service for certification pages. Product is only emitted when
+        // explicitly enabled in seo_meta — include brand for merchant validity.
         graph.push({
           "@type": "Product",
           name: ctx.name,
           description: ctx.description,
           url: ctx.url,
+          brand: {
+            "@type": "Brand",
+            name: orgName,
+          },
           ...(ctx.image ? { image: absoluteUrl(ctx.image) } : {}),
           ...(ctx.offers
             ? {
@@ -481,6 +508,8 @@ export function buildJsonLd(types: string[], ctx: SchemaContext): object | null 
                   lowPrice: ctx.offers.low,
                   highPrice: ctx.offers.high,
                   offerCount: 1,
+                  url: ctx.url,
+                  availability: "https://schema.org/InStock",
                 },
               }
             : {}),
