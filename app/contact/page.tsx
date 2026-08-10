@@ -9,7 +9,7 @@ import ContactThankYou from "@/components/ContactThankYou";
 import { resolveExpertCta } from "@/lib/expert-cta";
 import { getPage, getFaqs } from "@/lib/queries";
 import { ensureDbReady, getSettings } from "@/lib/db";
-import { BASE_URL, buildJsonLd } from "@/lib/seo";
+import { BASE_URL, INDEX_FOLLOW_ROBOTS, buildJsonLd, finalizeDocumentTitle } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -17,10 +17,12 @@ export async function generateMetadata(): Promise<Metadata> {
   await ensureDbReady();
   const page = getPage("contact");
   return {
-    title: page?.meta_title || "Get Expert Help",
+    title: {
+      absolute: finalizeDocumentTitle(page?.meta_title || "Get Expert Help"),
+    },
     description: page?.meta_description,
     alternates: { canonical: "https://certko.com/contact" },
-    robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+    robots: INDEX_FOLLOW_ROBOTS,
   };
 }
 

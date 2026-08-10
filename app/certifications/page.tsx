@@ -16,6 +16,7 @@ import {
 } from "@/lib/country-certifications";
 import { getCertifications, getCertificationCoveredProducts } from "@/lib/queries";
 import { CERT_MARKETS, groupCertificationsByMarket } from "@/lib/market-applicability";
+import { INDEX_FOLLOW_ROBOTS } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
   description:
     "Global Market Access framework plus Certko certification programmes for India, the EU, the US, GCC and Saudi Arabia — and country guides for 40+ destination markets.",
   alternates: { canonical: "https://certko.com/certifications" },
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  robots: INDEX_FOLLOW_ROBOTS,
 };
 
 export default function CertificationsPage() {
