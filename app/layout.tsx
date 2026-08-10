@@ -141,7 +141,7 @@ export default async function RootLayout({
         url: BASE_URL,
       });
   return (
-    <html lang="en" data-color-scheme={scheme.id} data-icon-style={iconStyle}>
+    <html lang="en-IN" data-color-scheme={scheme.id} data-icon-style={iconStyle}>
       <body className={`${body.variable} ${display.variable} min-h-screen flex flex-col`}>
         {!isAdminShell && (
           <AnalyticsGate

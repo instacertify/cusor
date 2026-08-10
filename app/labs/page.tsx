@@ -8,6 +8,7 @@ import Icon from "@/components/Icon";
 import { ensureDbReady } from "@/lib/db";
 import { getLabs, getLabStates, getCategories, countLabs, getFaqs } from "@/lib/queries";
 import { formatPriceRange, formatNumber } from "@/lib/format";
+import { INDEX_FOLLOW_ROBOTS } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
   description:
     "Searchable directory of BIS-recognised testing laboratories across India. Filter by state and product category, compare scopes and indicative test prices.",
   alternates: { canonical: "https://certko.com/labs" },
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  robots: INDEX_FOLLOW_ROBOTS,
 };
 
 const PAGE_SIZE = 24;
