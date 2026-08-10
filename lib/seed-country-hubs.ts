@@ -2,6 +2,10 @@ import type { SqliteDatabase } from "./sqlite";
 import { GMA_COUNTRY_SEEDS } from "./gma-country-data";
 import { GMA_REGIONS } from "./gma-regions";
 import { invalidateSearchIndex } from "./search-index";
+import {
+  hasCompetitorExampleMention,
+  neutralizeCompetitorExamples,
+} from "./competitor-mentions";
 
 function ensureColumn(
   db: SqliteDatabase,
@@ -148,5 +152,86 @@ export function ensureCountryHubsLibrary(db: SqliteDatabase) {
     });
   });
   tx();
+
+  // Scrub competitor brand name-drops from existing hub narrative fields.
+  const hubRows = db
+    .prepare(
+      "SELECT id, intro, overview, authority, filing_tip, pillars, first_checks FROM country_hubs"
+    )
+    .all() as {
+    id: number;
+    intro: string;
+    overview: string;
+    authority: string;
+    filing_tip: string;
+    pillars: string;
+    first_checks: string;
+  }[];
+  const updateHubCopy = db.prepare(
+    `UPDATE country_hubs SET
+      intro = ?, overview = ?, authority = ?, filing_tip = ?, pillars = ?, first_checks = ?
+     WHERE id = ?`
+  );
+  for (const row of hubRows) {
+    const next = {
+      intro: neutralizeCompetitorExamples(row.intro || ""),
+      overview: neutralizeCompetitorExamples(row.overview || ""),
+      authority: neutralizeCompetitorExamples(row.authority || ""),
+      filing_tip: neutralizeCompetitorExamples(row.filing_tip || ""),
+      pillars: neutralizeCompetitorExamples(row.pillars || ""),
+      first_checks: neutralizeCompetitorExamples(row.first_checks || ""),
+    };
+    const dirty =
+      next.intro !== row.intro ||
+      next.overview !== row.overview ||
+      next.authority !== row.authority ||
+      next.filing_tip !== row.filing_tip ||
+      next.pillars !== row.pillars ||
+      next.first_checks !== row.first_checks;
+    if (!dirty) continue;
+    updateHubCopy.run(
+      next.intro,
+      next.overview,
+      next.authority,
+      next.filing_tip,
+      next.pillars,
+      next.first_checks,
+      row.id
+    );
+    changed = true;
+  }
+
+  const schemeRows = db
+    .prepare("SELECT id, summary, who_needs_it, examples, role, name FROM country_schemes")
+    .all() as {
+    id: number;
+    summary: string;
+    who_needs_it: string;
+    examples: string;
+    role: string;
+    name: string;
+  }[];
+  const updateScheme = db.prepare(
+    `UPDATE country_schemes SET summary = ?, who_needs_it = ?, examples = ?, role = ?, name = ? WHERE id = ?`
+  );
+  for (const row of schemeRows) {
+    if (
+      !hasCompetitorExampleMention(
+        `${row.summary}\n${row.who_needs_it}\n${row.examples}\n${row.role}\n${row.name}`
+      )
+    ) {
+      continue;
+    }
+    updateScheme.run(
+      neutralizeCompetitorExamples(row.summary || ""),
+      neutralizeCompetitorExamples(row.who_needs_it || ""),
+      neutralizeCompetitorExamples(row.examples || ""),
+      neutralizeCompetitorExamples(row.role || ""),
+      neutralizeCompetitorExamples(row.name || ""),
+      row.id
+    );
+    changed = true;
+  }
+
   if (changed) invalidateSearchIndex();
 }

@@ -1,5 +1,5 @@
 /** Region grouping for Global Market Access country hubs.
- *  Framework aligned to the Instacertify / TÜV SÜD–style country matrix
+ *  Framework aligned to the Instacertify Global Market Access country matrix
  *  (four pillars + local rep, horizontal regimes, multi-market shortcuts).
  */
 

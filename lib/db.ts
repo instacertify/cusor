@@ -22,6 +22,10 @@ import { ensureTestimonialsLibrary } from "./seed-testimonials";
 import { ensureTrustedBrandsLibrary } from "./seed-trusted-brands";
 import { ensureCountryHubsLibrary } from "./seed-country-hubs";
 import { ensureGdprLibrary } from "./seed-gdpr";
+import {
+  hasCompetitorExampleMention,
+  neutralizeCompetitorExamples,
+} from "./competitor-mentions";
 import { CONTACT_POPUP_DEFAULTS } from "./contact-popup";
 
 /** Prefer ./data; fall back to /tmp when the app dir is not writable (some Node hosts). */
@@ -388,6 +392,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureExpertCtaSettings(db);
   ensureContactPopupSettings(db);
   scrubLabPublicContactDetails(db);
+  scrubCompetitorExampleMentionsInContent(db);
   ensureGdprLibrary(db);
 }
 
@@ -417,6 +422,7 @@ function runEnsures(db: SqliteDatabase) {
   ensureExpertCtaSettings(db);
   ensureContactPopupSettings(db);
   scrubLabPublicContactDetails(db);
+  scrubCompetitorExampleMentionsInContent(db);
   ensureGdprLibrary(db);
 }
 
@@ -649,6 +655,65 @@ function clearLegacyHomeAnnouncement(db: SqliteDatabase) {
     db.prepare(
       "INSERT INTO settings (key, value) VALUES ('announcement', '') ON CONFLICT(key) DO UPDATE SET value = excluded.value"
     ).run();
+  }
+}
+
+/**
+ * Remove Intertek / TÜV brand name-drops used as examples in articles and page copy.
+ * Does not alter the BIS labs directory (those are real laboratory names).
+ */
+function scrubCompetitorExampleMentionsInContent(db: SqliteDatabase) {
+  const scrubTable = (
+    table: string,
+    columns: string[],
+    whereExtra = ""
+  ) => {
+    const selectCols = ["id", ...columns].join(", ");
+    const like = columns
+      .map((c) => `${c} LIKE '%Intertek%' OR ${c} LIKE '%TUV%' OR ${c} LIKE '%TÜV%'`)
+      .join(" OR ");
+    const rows = db
+      .prepare(`SELECT ${selectCols} FROM ${table} WHERE (${like})${whereExtra}`)
+      .all() as Record<string, string | number>[];
+    if (!rows.length) return;
+    const setters = columns.map((c) => `${c} = ?`).join(", ");
+    const upd = db.prepare(`UPDATE ${table} SET ${setters} WHERE id = ?`);
+    for (const row of rows) {
+      const joined = columns.map((c) => String(row[c] ?? "")).join("\n");
+      if (!hasCompetitorExampleMention(joined)) continue;
+      const values = columns.map((c) =>
+        neutralizeCompetitorExamples(String(row[c] ?? ""))
+      );
+      upd.run(...values, row.id);
+    }
+  };
+
+  try {
+    scrubTable("posts", ["title", "excerpt", "content", "meta_title", "meta_description"]);
+  } catch {
+    /* posts table may be mid-migrate */
+  }
+  try {
+    scrubTable("pages", [
+      "title",
+      "content",
+      "hero_heading",
+      "hero_subheading",
+      "meta_title",
+      "meta_description",
+    ]);
+  } catch {
+    /* optional */
+  }
+  try {
+    scrubTable("faqs", ["question", "answer"]);
+  } catch {
+    /* optional */
+  }
+  try {
+    scrubTable("cert_products", ["summary", "content", "labs", "fee_note"]);
+  } catch {
+    /* optional */
   }
 }
 
