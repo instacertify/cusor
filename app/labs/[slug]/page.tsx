@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -7,9 +6,11 @@ import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import LabContactPanel from "@/components/LabContactPanel";
+import NotFoundView from "@/components/NotFoundView";
 import { ensureDbReady } from "@/lib/db";
 import { getLabBySlug, getProductsForLab, getFaqs } from "@/lib/queries";
 import { formatPriceRange } from "@/lib/format";
+import { MISSING_PAGE_METADATA } from "@/lib/missing-page";
 import {
   BASE_URL,
   buildJsonLd,
@@ -37,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   await ensureDbReady();
   const { slug } = await params;
   const lab = getLabBySlug(slug);
-  if (!lab) return {};
+  if (!lab) return MISSING_PAGE_METADATA;
   const place = [lab.city, lab.state].filter(Boolean).join(", ") || "India";
   return buildMetadata(`lab:${lab.id}`, {
     title: `${lab.name} — BIS Recognised Testing Lab`,
@@ -50,7 +51,7 @@ export default async function LabDetailPage({ params }: Props) {
   await ensureDbReady();
   const { slug } = await params;
   const lab = getLabBySlug(slug);
-  if (!lab) notFound();
+  if (!lab) return <NotFoundView />;
   const products = getProductsForLab(lab.id, 24);
   const cats = parseLabCategories(lab.categories);
   const faqs = getFaqs("page:labs");

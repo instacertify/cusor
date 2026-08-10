@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
@@ -9,6 +8,7 @@ import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import IconChip from "@/components/IconChip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
+import NotFoundView from "@/components/NotFoundView";
 import { StandardApplicabilityChips } from "@/components/MarketApplicability";
 import {
   countProductsForTestingService,
@@ -19,6 +19,7 @@ import {
 } from "@/lib/queries";
 import { formatPriceRange, formatNumber } from "@/lib/format";
 import { standardFamiliesFromText } from "@/lib/market-applicability";
+import { MISSING_PAGE_METADATA } from "@/lib/missing-page";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +31,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, testSlug } = await params;
   const svc = getTestingServiceBySlug(slug, testSlug);
-  if (!svc) return {};
+  if (!svc) return MISSING_PAGE_METADATA;
   return buildMetadata(`test:${svc.id}`, {
     title: svc.meta_title || `${svc.name} Testing | Certko`,
     description: svc.meta_description || svc.summary,
@@ -42,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function TestingServicePage({ params }: Props) {
   const { slug, testSlug } = await params;
   const svc = getTestingServiceBySlug(slug, testSlug);
-  if (!svc || !svc.category_slug) notFound();
+  if (!svc || !svc.category_slug) return <NotFoundView />;
   // Each test page uses only its own FAQ set (editable in admin per test)
   const faqs = getFaqs(`test:${svc.id}`);
   const siblings = getTestingServices(svc.category_id).filter((s) => s.id !== svc.id).slice(0, 6);

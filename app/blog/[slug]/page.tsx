@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
@@ -9,8 +8,10 @@ import TestimonialStrip from "@/components/TestimonialStrip";
 import AuthorByline from "@/components/AuthorByline";
 import BlogCoverImage from "@/components/BlogCoverImage";
 import Icon from "@/components/Icon";
+import NotFoundView from "@/components/NotFoundView";
 import { getPostBySlug, getPublishedPosts } from "@/lib/queries";
 import { isBlogPubliclyVisible } from "@/lib/blog-scheduler";
+import { MISSING_PAGE_METADATA } from "@/lib/missing-page";
 import { buildMetadata, buildJsonLd, BASE_URL, toIsoDate } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -31,7 +32,7 @@ function formatDate(d: string | null): string {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = getPostBySlug(slug);
-  if (!post || !isBlogPubliclyVisible(post)) return {};
+  if (!post || !isBlogPubliclyVisible(post)) return MISSING_PAGE_METADATA;
   return buildMetadata(`post:${post.id}`, {
     title: post.meta_title || post.title,
     description: post.meta_description || post.excerpt,
@@ -46,7 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
-  if (!post || !isBlogPubliclyVisible(post)) notFound();
+  if (!post || !isBlogPubliclyVisible(post)) return <NotFoundView />;
   const more = getPublishedPosts(4).filter((p) => p.id !== post.id).slice(0, 3);
   const authorName = post.author_name || post.author;
   const publishedIso = toIsoDate(post.published_at || post.created_at);

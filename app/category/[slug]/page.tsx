@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import Image from "next/image";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -7,11 +6,13 @@ import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import IconChip from "@/components/IconChip";
+import NotFoundView from "@/components/NotFoundView";
 import {
   getCategoryBySlug,
   getProductsByCategory,
   getFaqs,
 } from "@/lib/queries";
+import { MISSING_PAGE_METADATA } from "@/lib/missing-page";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const category = getCategoryBySlug(slug);
-  if (!category) return {};
+  if (!category) return MISSING_PAGE_METADATA;
   return buildMetadata(`category:${category.id}`, {
     title: `${category.name} — BIS Certification Requirements, Costs & Labs`,
     description: category.description,
@@ -35,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
   const category = getCategoryBySlug(slug);
-  if (!category) notFound();
+  if (!category) return <NotFoundView />;
   const products = getProductsByCategory(category.id);
   const faqs = getFaqs(`category:${category.id}`);
 

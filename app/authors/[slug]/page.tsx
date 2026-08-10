@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
@@ -6,7 +5,9 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import BlogCoverImage from "@/components/BlogCoverImage";
+import NotFoundView from "@/components/NotFoundView";
 import { getAuthorBySlug, getPublishedPostsByAuthor } from "@/lib/queries";
+import { MISSING_PAGE_METADATA } from "@/lib/missing-page";
 import { BASE_URL, absoluteUrl, buildJsonLd, buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +28,7 @@ function formatDate(d: string | null): string {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const author = getAuthorBySlug(slug);
-  if (!author) return {};
+  if (!author) return MISSING_PAGE_METADATA;
   const description =
     author.bio ||
     `Articles by ${author.name}${author.title ? `, ${author.title}` : ""} on Certko.`;
@@ -42,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function AuthorProfilePage({ params }: Props) {
   const { slug } = await params;
   const author = getAuthorBySlug(slug);
-  if (!author) notFound();
+  if (!author) return <NotFoundView />;
   const posts = getPublishedPostsByAuthor(author.id);
 
   const jsonLd = buildJsonLd(["BreadcrumbList"], {
