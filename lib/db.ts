@@ -26,6 +26,7 @@ import {
   hasCompetitorExampleMention,
   neutralizeCompetitorExamples,
 } from "./competitor-mentions";
+import { CONTACT_POPUP_DEFAULTS } from "./contact-popup";
 
 /** Prefer ./data; fall back to /tmp when the app dir is not writable (some Node hosts). */
 export function getWritableDataDir(): string {
@@ -389,6 +390,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureCanonicalCertMarketRegions(db);
   ensureHomeStatLabels(db);
   ensureExpertCtaSettings(db);
+  ensureContactPopupSettings(db);
   scrubLabPublicContactDetails(db);
   scrubCompetitorExampleMentionsInContent(db);
   ensureGdprLibrary(db);
@@ -418,6 +420,7 @@ function runEnsures(db: SqliteDatabase) {
   ensureCanonicalCertMarketRegions(db);
   ensureHomeStatLabels(db);
   ensureExpertCtaSettings(db);
+  ensureContactPopupSettings(db);
   scrubLabPublicContactDetails(db);
   scrubCompetitorExampleMentionsInContent(db);
   ensureGdprLibrary(db);
@@ -447,6 +450,16 @@ function ensureExpertCtaSettings(db: SqliteDatabase) {
     "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO NOTHING"
   );
   for (const [key, value] of Object.entries(defaults)) {
+    upsert.run(key, value);
+  }
+}
+
+/** Seed timed GDPR contact popup defaults if missing. */
+function ensureContactPopupSettings(db: SqliteDatabase) {
+  const upsert = db.prepare(
+    "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO NOTHING"
+  );
+  for (const [key, value] of Object.entries(CONTACT_POPUP_DEFAULTS)) {
     upsert.run(key, value);
   }
 }
