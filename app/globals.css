@@ -615,6 +615,7 @@ video {
 }
 
 /* ---------- Trusted by Global Brands marquee (Admin → Trusted Brands library) ---------- */
+/* Two equal groups in the track; -50% loops with no gap. Never pauses. */
 @keyframes trusted-marquee {
   from {
     transform: translate3d(0, 0, 0);
@@ -625,7 +626,21 @@ video {
 }
 
 .trusted-marquee {
-  --trusted-marquee-duration: 42s;
+  --trusted-marquee-duration: 36s;
+  --trusted-brand-slot-w: 9.5rem;
+  --trusted-brand-slot-h: 4.25rem;
+  --trusted-brand-gap: 0.75rem;
+  overflow: hidden;
+  /* Prevent hover/focus from interrupting the continuous scroll */
+  pointer-events: none;
+}
+
+@media (min-width: 640px) {
+  .trusted-marquee {
+    --trusted-brand-slot-w: 11rem;
+    --trusted-brand-slot-h: 4.75rem;
+    --trusted-brand-gap: 1rem;
+  }
 }
 
 .trusted-marquee-track {
@@ -634,21 +649,66 @@ video {
   align-items: center;
   animation: trusted-marquee var(--trusted-marquee-duration) linear infinite;
   will-change: transform;
+  /* Keep scrolling continuously on every page — never pause */
+  animation-play-state: running !important;
 }
 
-.trusted-marquee:hover .trusted-marquee-track {
-  animation-play-state: paused;
+.trusted-marquee:hover .trusted-marquee-track,
+.trusted-marquee:focus-within .trusted-marquee-track,
+.trusted-marquee-track:hover {
+  animation-play-state: running !important;
 }
 
+.trusted-marquee-group {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--trusted-brand-gap);
+  padding-inline: calc(var(--trusted-brand-gap) / 2);
+}
+
+/* Same outer dimensions for every logo, any upload size */
+.trusted-brand-slot {
+  box-sizing: border-box;
+  flex: 0 0 var(--trusted-brand-slot-w);
+  width: var(--trusted-brand-slot-w);
+  height: var(--trusted-brand-slot-h);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.trusted-brand-slot--light {
+  border: 1px solid var(--color-cream-300);
+  background: #fff;
+  box-shadow: var(--shadow-card);
+}
+
+.trusted-brand-slot--dark {
+  border: 1px solid var(--color-ink-800);
+  background: rgb(28 48 76 / 0.72);
+}
+
+.trusted-brand-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  opacity: 0.9;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Still continuous under reduced-motion, but slower */
 @media (prefers-reduced-motion: reduce) {
   .trusted-marquee-track {
-    animation: none;
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 100%;
-    max-width: 80rem;
-    margin-inline: auto;
-    row-gap: 0.75rem;
+    animation-duration: calc(var(--trusted-marquee-duration) * 2.2);
   }
 }
 

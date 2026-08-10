@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import Logo from "./Logo";
 import FooterSocialLinks from "./FooterSocialLinks";
+import CookieSettingsButton from "./CookieSettingsButton";
+import { TalkToCertificationExpertLink } from "./TalkToCertificationExpert";
 import { ensureDbReady, getSettings } from "@/lib/db";
 import {
   getCertifications,
@@ -10,6 +12,7 @@ import {
 } from "@/lib/queries";
 import { pagePublicPath } from "@/lib/pages-nav";
 import { getSocialLinks } from "@/lib/social-links";
+import { resolveExpertCta } from "@/lib/expert-cta";
 
 function FooterHeading({ children }: { children: ReactNode }) {
   return (
@@ -48,6 +51,7 @@ function FooterColumn({
 export default async function Footer() {
   await ensureDbReady();
   const settings = getSettings();
+  const expertCta = resolveExpertCta(settings);
   const certifications = getCertifications().slice(0, 5);
   const testingCategories = getTestingCategories().slice(0, 4);
   const footerPages = getPagesForNav("footer").filter(
@@ -58,7 +62,7 @@ export default async function Footer() {
   const siteName = settings.site_name || "Certko";
 
   return (
-    <footer className="mt-12 sm:mt-20 bg-ink-950 text-ink-300 pb-[env(safe-area-inset-bottom)]">
+    <footer className="mt-12 sm:mt-20 bg-ink-950 text-ink-300 pb-[max(5.5rem,env(safe-area-inset-bottom))] sm:pb-[max(4.5rem,env(safe-area-inset-bottom))]">
       {/* Brand band */}
       <div className="border-b border-ink-800/90">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -72,12 +76,7 @@ export default async function Footer() {
           </div>
           <div className="flex flex-col gap-4 sm:items-end">
             <FooterSocialLinks links={socialLinks} className="sm:text-right" />
-            <Link
-              href="/contact"
-              className="inline-flex min-h-10 items-center justify-center rounded-full bg-butter-400 px-5 text-sm font-semibold text-ink-950 transition hover:bg-butter-300"
-            >
-              Talk to an expert
-            </Link>
+            <TalkToCertificationExpertLink variant="footer" cta={expertCta} />
           </div>
         </div>
       </div>
@@ -108,6 +107,14 @@ export default async function Footer() {
           </FooterColumn>
 
           <FooterColumn title="Certifications">
+            <li>
+              <FooterLink href="/certifications/countries">By country</FooterLink>
+            </li>
+            <li>
+              <FooterLink href="/certifications#global-market-access">
+                GMA framework
+              </FooterLink>
+            </li>
             {certifications.map((c) => (
               <li key={c.id}>
                 <FooterLink href={`/certifications/${c.slug}`}>{c.name}</FooterLink>
@@ -199,6 +206,25 @@ export default async function Footer() {
             <Link href="/privacy" className="inline-flex min-h-8 items-center hover:text-butter-400">
               Privacy Policy
             </Link>
+            <Link
+              href="/privacy/gdpr-and-dpdp"
+              className="inline-flex min-h-8 items-center hover:text-butter-400"
+            >
+              GDPR &amp; DPDP
+            </Link>
+            <Link
+              href="/privacy/cookies"
+              className="inline-flex min-h-8 items-center hover:text-butter-400"
+            >
+              Cookie options
+            </Link>
+            <Link
+              href="/privacy/data-request"
+              className="inline-flex min-h-8 items-center hover:text-butter-400"
+            >
+              Data request
+            </Link>
+            <CookieSettingsButton />
             <Link href="/terms" className="inline-flex min-h-8 items-center hover:text-butter-400">
               Terms of Service
             </Link>

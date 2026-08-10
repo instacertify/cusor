@@ -2,31 +2,34 @@ import { ensureDbReady } from "@/lib/db";
 import { getActiveTrustedBrands } from "@/lib/queries";
 import type { TrustedBrand } from "@/lib/db";
 
+/** Fixed display slot — every uploaded logo is scaled into the same box. */
 function BrandMark({ brand, tone }: { brand: TrustedBrand; tone: "light" | "dark" }) {
+  const slotClass =
+    tone === "dark"
+      ? "trusted-brand-slot trusted-brand-slot--dark group"
+      : "trusted-brand-slot trusted-brand-slot--light group";
+
   const img = (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={brand.logo}
       alt={brand.name}
-      className="h-9 sm:h-11 w-auto max-w-[140px] sm:max-w-[160px] object-contain opacity-80 group-hover:opacity-100 transition"
-      loading="lazy"
+      className="trusted-brand-logo"
+      loading="eager"
       decoding="async"
+      draggable={false}
     />
   );
-
-  const shellClass =
-    tone === "dark"
-      ? "group inline-flex h-16 sm:h-[4.5rem] min-w-[140px] sm:min-w-[160px] items-center justify-center rounded-xl border border-ink-800 bg-ink-900/70 px-5"
-      : "group inline-flex h-16 sm:h-[4.5rem] min-w-[140px] sm:min-w-[160px] items-center justify-center rounded-xl border border-cream-300 bg-white px-5 shadow-card";
 
   if (brand.href) {
     return (
       <a
         href={brand.href}
-        className={shellClass}
+        className={slotClass}
         target={brand.href.startsWith("http") ? "_blank" : undefined}
         rel={brand.href.startsWith("http") ? "noopener noreferrer" : undefined}
         title={brand.name}
+        tabIndex={-1}
       >
         {img}
         <span className="sr-only">{brand.name}</span>
@@ -35,16 +38,46 @@ function BrandMark({ brand, tone }: { brand: TrustedBrand; tone: "light" | "dark
   }
 
   return (
-    <div className={shellClass} title={brand.name}>
+    <div className={slotClass} title={brand.name}>
       {img}
       <span className="sr-only">{brand.name}</span>
     </div>
   );
 }
 
+/** Repeat logos so one marquee group is always wider than typical viewports. */
+function expandBrands(brands: TrustedBrand[], minItems = 10): TrustedBrand[] {
+  if (brands.length === 0) return [];
+  const out: TrustedBrand[] = [];
+  while (out.length < minItems) {
+    out.push(...brands);
+  }
+  return out;
+}
+
+function BrandGroup({
+  brands,
+  tone,
+  groupKey,
+  ariaHidden,
+}: {
+  brands: TrustedBrand[];
+  tone: "light" | "dark";
+  groupKey: string;
+  ariaHidden?: boolean;
+}) {
+  return (
+    <div className="trusted-marquee-group" aria-hidden={ariaHidden || undefined}>
+      {brands.map((brand, i) => (
+        <BrandMark key={`${groupKey}-${brand.id}-${i}`} brand={brand} tone={tone} />
+      ))}
+    </div>
+  );
+}
+
 /**
- * Scrolling “Trusted by Global Brands” strip — logos from Admin → Trusted Brands library.
- * Mounted with TestimonialStrip on every page that showcases trust.
+ * Continuous scrolling “Trusted by Global Brands” strip.
+ * Logos from Admin → Trusted Brands. Seamless loop on homepage and every trust page.
  */
 export default async function TrustedBrandsStrip({
   tone = "light",
@@ -57,26 +90,22 @@ export default async function TrustedBrandsStrip({
   const brands = getActiveTrustedBrands();
   if (brands.length === 0) return null;
 
-  // Duplicate the set so the CSS marquee can loop seamlessly.
-  const loop = [...brands, ...brands];
+  // Enough logos per group for a seamless -50% loop on wide screens.
+  const group = expandBrands(brands, Math.max(10, brands.length * 2));
+  // Duration scales with group size so speed stays roughly constant.
+  const durationSec = Math.max(28, Math.round(group.length * 3.2));
 
   return (
     <section
       className={`${
         tone === "dark" ? "bg-ink-950 text-white" : "bg-cream-50"
       } overflow-hidden ${className}`}
-      aria-label="Trusted by global brands"
+      aria-label="Trusted by Global Brands"
+      style={{ ["--trusted-marquee-duration" as string]: `${durationSec}s` }}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-10 sm:pt-12 pb-3">
-        <p
-          className={`text-center text-[11px] font-bold uppercase tracking-[0.16em] ${
-            tone === "dark" ? "text-butter-400" : "text-butter-700"
-          }`}
-        >
-          Social proof
-        </p>
         <h2
-          className={`mt-2 text-center font-display text-xl sm:text-2xl font-semibold ${
+          className={`text-center font-display text-xl sm:text-2xl font-semibold ${
             tone === "dark" ? "text-cream-50" : "text-ink-950"
           }`}
         >
@@ -86,7 +115,7 @@ export default async function TrustedBrandsStrip({
 
       <div className="trusted-marquee relative pb-10 sm:pb-12">
         <div
-          className={`pointer-events-none absolute inset-y-0 left-0 z-10 w-10 sm:w-20 ${
+          className={`pointer-events-none absolute inset-y-0 left-0 z-10 w-10 sm:w-16 ${
             tone === "dark"
               ? "bg-gradient-to-r from-ink-950 to-transparent"
               : "bg-gradient-to-r from-cream-50 to-transparent"
@@ -94,17 +123,17 @@ export default async function TrustedBrandsStrip({
           aria-hidden
         />
         <div
-          className={`pointer-events-none absolute inset-y-0 right-0 z-10 w-10 sm:w-20 ${
+          className={`pointer-events-none absolute inset-y-0 right-0 z-10 w-10 sm:w-16 ${
             tone === "dark"
               ? "bg-gradient-to-l from-ink-950 to-transparent"
               : "bg-gradient-to-l from-cream-50 to-transparent"
           }`}
           aria-hidden
         />
-        <div className="trusted-marquee-track gap-3 sm:gap-4 px-4">
-          {loop.map((brand, i) => (
-            <BrandMark key={`${brand.id}-${i}`} brand={brand} tone={tone} />
-          ))}
+        {/* Two identical groups → animate -50% for a gapless continuous loop */}
+        <div className="trusted-marquee-track">
+          <BrandGroup brands={group} tone={tone} groupKey="a" />
+          <BrandGroup brands={group} tone={tone} groupKey="b" ariaHidden />
         </div>
       </div>
     </section>

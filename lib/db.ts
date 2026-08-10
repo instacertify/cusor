@@ -20,6 +20,9 @@ import { ensureLandingPages } from "./seed-landing-pages";
 import { ensureHeroSlidesCatalog } from "./hero-slides";
 import { ensureTestimonialsLibrary } from "./seed-testimonials";
 import { ensureTrustedBrandsLibrary } from "./seed-trusted-brands";
+import { ensureCountryHubsLibrary } from "./seed-country-hubs";
+import { ensureGdprLibrary } from "./seed-gdpr";
+import { CONTACT_POPUP_DEFAULTS } from "./contact-popup";
 
 /** Prefer ./data; fall back to /tmp when the app dir is not writable (some Node hosts). */
 export function getWritableDataDir(): string {
@@ -374,9 +377,18 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
   ensureTrustedBrandsLibrary(db);
+  ensureCountryHubsLibrary(db);
   clearLegacyHomeAnnouncement(db);
-  ensureContactAddressIncludesIndia(db);
+  ensureContactExpertCopy(db);
+  ensureCanonicalContactAddress(db);
+  ensureContactPageFaqsGlobalCopy(db);
+  ensureHomeHeroTestingSolutionCopy(db);
+  ensureCanonicalCertMarketRegions(db);
+  ensureHomeStatLabels(db);
+  ensureExpertCtaSettings(db);
+  ensureContactPopupSettings(db);
   scrubLabPublicContactDetails(db);
+  ensureGdprLibrary(db);
 }
 
 function runEnsures(db: SqliteDatabase) {
@@ -394,9 +406,233 @@ function runEnsures(db: SqliteDatabase) {
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
   ensureTrustedBrandsLibrary(db);
+  ensureCountryHubsLibrary(db);
   clearLegacyHomeAnnouncement(db);
-  ensureContactAddressIncludesIndia(db);
+  ensureContactExpertCopy(db);
+  ensureCanonicalContactAddress(db);
+  ensureContactPageFaqsGlobalCopy(db);
+  ensureHomeHeroTestingSolutionCopy(db);
+  ensureCanonicalCertMarketRegions(db);
+  ensureHomeStatLabels(db);
+  ensureExpertCtaSettings(db);
+  ensureContactPopupSettings(db);
   scrubLabPublicContactDetails(db);
+  ensureGdprLibrary(db);
+}
+
+/** Replace AI-ish default homepage stat labels on existing installs. */
+function ensureHomeStatLabels(db: SqliteDatabase) {
+  const row = db
+    .prepare("SELECT value FROM settings WHERE key = 'stat_3_label'")
+    .get() as { value: string } | undefined;
+  const value = (row?.value || "").trim();
+  if (!value || value === "Information Library") {
+    db.prepare(
+      "INSERT INTO settings (key, value) VALUES ('stat_3_label', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+    ).run("Free product data");
+  }
+}
+
+/** Seed editable expert-CTA labels (header / floating button) if missing. */
+function ensureExpertCtaSettings(db: SqliteDatabase) {
+  const defaults: Record<string, string> = {
+    expert_cta_label: "Talk to a certification expert",
+    expert_cta_label_short: "Talk to expert",
+    expert_cta_href: "/contact?intent=expert",
+  };
+  const upsert = db.prepare(
+    "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO NOTHING"
+  );
+  for (const [key, value] of Object.entries(defaults)) {
+    upsert.run(key, value);
+  }
+}
+
+/** Seed timed GDPR contact popup defaults if missing. */
+function ensureContactPopupSettings(db: SqliteDatabase) {
+  const upsert = db.prepare(
+    "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO NOTHING"
+  );
+  for (const [key, value] of Object.entries(CONTACT_POPUP_DEFAULTS)) {
+    upsert.run(key, value);
+  }
+}
+
+/** Keep certification region labels aligned with market organisation. */
+function ensureCanonicalCertMarketRegions(db: SqliteDatabase) {
+  const updates: [string, string][] = [
+    ["bis", "India"],
+    ["bee", "India"],
+    ["wpc-eta", "India"],
+    ["ce", "European Union"],
+    ["fcc", "United States"],
+    ["g-mark", "GCC countries"],
+    ["saber", "Saudi Arabia"],
+  ];
+  const stmt = db.prepare("UPDATE certifications SET region = ? WHERE slug = ? AND IFNULL(region, '') != ?");
+  for (const [slug, region] of updates) {
+    stmt.run(region, slug, region);
+  }
+}
+
+/** Contact “Before You Ask” FAQs — global certification & testing framing. */
+const CONTACT_PAGE_FAQS_GLOBAL: {
+  question: string;
+  answer: string;
+  legacyAnswers: string[];
+}[] = [
+  {
+    question: "What happens after I submit this form?",
+    answer:
+      "Someone on our certification desk reads your product notes and target markets, checks which schemes usually apply — BIS, BEE, GMARK, CE, FCC, SABER or WPC — and comes back within 24 hours with a line-by-line estimate for lab work, scheme fees and consulting.",
+    legacyAnswers: [
+      "A BIS specialist reviews your product details, maps the applicable IS standard and scheme, and replies within 24 hours with an itemised cost estimate covering lab testing, BIS fees and consulting.",
+      "A certification and testing specialist reviews your product details and target markets, maps the schemes that typically apply — such as BIS, BEE, GMARK, CE, FCC, SABER or WPC — and replies within 24 hours with an itemised estimate covering laboratory testing, scheme fees and consulting.",
+    ],
+  },
+  {
+    question: "Is the quote really free?",
+    answer:
+      "Yes. Figuring out the scheme and the cost range costs you nothing. You only pay if you ask us to run the certification, testing or consulting work.",
+    legacyAnswers: [
+      "Yes. The standard mapping and cost estimate are free with no obligation. You only pay if you engage us to manage the certification.",
+      "Yes. Scheme mapping and the cost estimate are free with no obligation. You only pay if you engage us to manage certification, testing coordination or consulting.",
+    ],
+  },
+  {
+    question: "Do you help foreign manufacturers?",
+    answer:
+      "Yes. We work with overseas factories and exporters selling into India and other markets — BIS FMCS/CRS (with an Authorised Indian Representative when you need one), plus BEE, GMARK, CE, FCC, SABER and WPC, including lab bookings.",
+    legacyAnswers: [
+      "Yes. We support overseas factories under the Foreign Manufacturers Certification Scheme (FMCS) and CRS, including acting as or arranging an Authorised Indian Representative (AIR).",
+      "Yes. We support overseas manufacturers and exporters for India and global market access — including BIS FMCS/CRS with Authorised Indian Representative (AIR) support where needed, plus pathways such as BEE, GMARK, CE, FCC, SABER and WPC, with lab coordination end to end.",
+    ],
+  },
+];
+
+/** Upgrade legacy BIS-only contact FAQs to global certification & testing copy. */
+function ensureContactPageFaqsGlobalCopy(db: SqliteDatabase) {
+  const select = db.prepare(
+    "SELECT id, answer FROM faqs WHERE scope = 'page:contact' AND question = ?"
+  );
+  const update = db.prepare("UPDATE faqs SET answer = ? WHERE id = ?");
+  const insert = db.prepare(
+    "INSERT INTO faqs (scope, question, answer, sort) VALUES ('page:contact', ?, ?, ?)"
+  );
+
+  CONTACT_PAGE_FAQS_GLOBAL.forEach((faq, sort) => {
+    const row = select.get(faq.question) as { id: number; answer: string } | undefined;
+    if (!row) {
+      insert.run(faq.question, faq.answer, sort);
+      return;
+    }
+    const current = (row.answer || "").trim();
+    if (current === faq.answer) return;
+    if (faq.legacyAnswers.some((legacy) => legacy.trim() === current)) {
+      update.run(faq.answer, row.id);
+    }
+  });
+}
+
+/** Canonical HQ address shown on Contact Us and in the footer. */
+const CANONICAL_CONTACT_ADDRESS =
+  "A-34, 4th Floor, Sector 63A, Noida, Gautam Buddha Nagar, Uttar Pradesh – 201301, India";
+
+/**
+ * Normalize known Noida HQ address variants (India placement / punctuation)
+ * so Contact Us + footer always show the canonical line.
+ */
+function ensureCanonicalContactAddress(db: SqliteDatabase) {
+  const upsert = db.prepare(
+    "INSERT INTO settings (key, value) VALUES ('contact_address', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+  );
+  const row = db
+    .prepare("SELECT value FROM settings WHERE key = 'contact_address'")
+    .get() as { value: string } | undefined;
+  const value = (row?.value || "").trim();
+  if (!value) {
+    upsert.run(CANONICAL_CONTACT_ADDRESS);
+    return;
+  }
+  if (value === CANONICAL_CONTACT_ADDRESS) return;
+
+  const isNoidaHq =
+    /A-34/i.test(value) &&
+    /Sector\s*63A/i.test(value) &&
+    /Noida/i.test(value) &&
+    /Uttar Pradesh/i.test(value) &&
+    /201301/.test(value);
+  if (!isNoidaHq) return;
+
+  upsert.run(CANONICAL_CONTACT_ADDRESS);
+}
+
+/** Upgrade legacy contact-page hero to “Talk to a certification expert”. */
+function ensureContactExpertCopy(db: SqliteDatabase) {
+  const row = db
+    .prepare("SELECT hero_heading, hero_subheading FROM pages WHERE slug = 'contact'")
+    .get() as { hero_heading: string; hero_subheading: string } | undefined;
+  if (!row) return;
+
+  const heading = (row.hero_heading || "").trim();
+  const subheading = (row.hero_subheading || "").trim();
+  const nextHeading =
+    !heading || heading === "Talk to a BIS expert" || heading === "Talk to an expert"
+      ? "Talk to a certification expert"
+      : heading;
+  const nextSubheading =
+    !subheading ||
+    subheading ===
+      "Tell us about your product and we will map the standard, estimate the full cost and send a free quote within 24 hours." ||
+    subheading ===
+      "Tell us about your product and a certification expert will map the standard, estimate the full cost and send a free quote within 24 hours."
+      ? "Tell us what you make and where you sell. We’ll point to the standard, sketch the full cost, and send a free quote within 24 hours."
+      : subheading;
+
+  if (nextHeading === heading && nextSubheading === subheading) return;
+  db.prepare(
+    "UPDATE pages SET hero_heading = ?, hero_subheading = ? WHERE slug = 'contact'"
+  ).run(nextHeading, nextSubheading);
+}
+
+const HOME_HERO_HEADING = "Find the right certification and testing for your product";
+const HOME_HERO_SUBHEADING =
+  "Type a product name or HSN. We’ll show the schemes that usually apply — BIS, BEE, GMARK, CE, FCC, SABER, WPC — plus the tests, labs and ballpark costs so you know what to book next.";
+
+/** Upgrade the default homepage hero on existing installs (seed is INSERT OR IGNORE). */
+function ensureHomeHeroTestingSolutionCopy(db: SqliteDatabase) {
+  const upsert = db.prepare(
+    "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+  );
+
+  const heading = (
+    db.prepare("SELECT value FROM settings WHERE key = 'hero_heading'").get() as
+      | { value: string }
+      | undefined
+  )?.value?.trim();
+  const subheading = (
+    db
+      .prepare("SELECT value FROM settings WHERE key = 'hero_subheading'")
+      .get() as { value: string } | undefined
+  )?.value?.trim();
+
+  const legacyHeadings = new Set([
+    "",
+    "Find the right certification and testing",
+    "Find the right certification and testing solution",
+  ]);
+  const legacySubheadings = new Set([
+    "",
+    "Search by product name or HSN code. Match BIS, BEE, GMARK, CE, FCC, SABER, WPC and the tests behind them — with labs, costs and expert help in one place.",
+    "Search by product name or HSN code to see which schemes apply — BIS, BEE, GMARK, CE, FCC, SABER, WPC — and the tests that unlock them. Compare recognised labs, indicative costs and expert support in one place.",
+  ]);
+
+  if (!heading || legacyHeadings.has(heading)) {
+    upsert.run("hero_heading", HOME_HERO_HEADING);
+  }
+  if (!subheading || legacySubheadings.has(subheading)) {
+    upsert.run("hero_subheading", HOME_HERO_SUBHEADING);
+  }
 }
 
 /** Remove the old default homepage announcement chip from existing installs. */
@@ -416,36 +652,6 @@ function clearLegacyHomeAnnouncement(db: SqliteDatabase) {
   }
 }
 
-/** Canonical Noida HQ address for footer + contact (India after PIN). */
-const CANONICAL_CONTACT_ADDRESS =
-  "A-34, 4th Floor, Sector 63A, Noida, Gautam Buddha Nagar, Uttar Pradesh – 201301 India";
-
-/** Normalize legacy HQ address variants to the canonical public address. */
-function ensureContactAddressIncludesIndia(db: SqliteDatabase) {
-  const row = db
-    .prepare("SELECT value FROM settings WHERE key = 'contact_address'")
-    .get() as { value: string } | undefined;
-  const value = (row?.value || "").trim();
-  if (!value) {
-    db.prepare(
-      "INSERT INTO settings (key, value) VALUES ('contact_address', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
-    ).run(CANONICAL_CONTACT_ADDRESS);
-    return;
-  }
-  if (value === CANONICAL_CONTACT_ADDRESS) return;
-
-  // Rewrite known Noida HQ variants (with/without India, comma placement).
-  const isNoidaHq =
-    /A-34/i.test(value) &&
-    /Sector\s*63A/i.test(value) &&
-    /Noida/i.test(value) &&
-    /Uttar Pradesh/i.test(value);
-  if (!isNoidaHq) return;
-
-  db.prepare(
-    "INSERT INTO settings (key, value) VALUES ('contact_address', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
-  ).run(CANONICAL_CONTACT_ADDRESS);
-}
 
 /**
  * Never show lab contact-person name / phone / email on the public site.
@@ -672,6 +878,38 @@ export interface TrustedBrand {
   href: string;
   sort: number;
   active: number;
+}
+
+export interface CountryHubRecord {
+  id: number;
+  slug: string;
+  market_id: string;
+  region: string;
+  name: string;
+  short_name: string;
+  meta_title: string;
+  meta_description: string;
+  intro: string;
+  overview: string;
+  authority: string;
+  filing_tip: string;
+  first_checks: string;
+  pillars: string;
+  sort: number;
+  active: number;
+  featured: number;
+}
+
+export interface CountrySchemeRecord {
+  id: number;
+  country_id: number;
+  cert_slug: string;
+  name: string;
+  role: string;
+  summary: string;
+  who_needs_it: string;
+  examples: string;
+  sort: number;
 }
 
 export interface Author {

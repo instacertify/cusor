@@ -8,7 +8,9 @@ import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import SearchBox from "@/components/SearchBox";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
+import { TestingStandardFamiliesPanel } from "@/components/MarketApplicability";
 import { getFaqs, getTestingCategories } from "@/lib/queries";
+import { BASE_URL, buildJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -23,17 +25,34 @@ export const metadata: Metadata = {
 export default function TestingIndexPage() {
   const categories = getTestingCategories();
   const faqs = getFaqs("page:testing");
+  const faqJsonLd = buildJsonLd(["FAQPage", "BreadcrumbList"], {
+    name: "Explore the Right Quality Assurance Solutions",
+    description:
+      "Chemical, electrical, EMC, physical, microbiology and mechanical product testing pathways with Certko.",
+    url: `${BASE_URL}/testing`,
+    faqs: faqs.map(({ question, answer }) => ({ question, answer })),
+    breadcrumbs: [
+      { name: "Home", url: "/" },
+      { name: "Product Testing" },
+    ],
+  });
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
       <Breadcrumbs crumbs={[{ label: "Product Testing" }]} />
       <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">
         Explore the Right Quality Assurance Solutions
       </h1>
       <p className="mt-3 text-ink-600 max-w-2xl">
-        Browse master testing categories (also in the header menu), open product test pages with
-        tentative prices, book testing, or book certification consulting. Leads are answered within
-        24 working hours.
+        Browse testing by discipline, then check whether the method is an Indian Standard (IS) for
+        India or an IEC / international method for global market access. Book testing or consulting
+        — we reply within 24 working hours.
       </p>
 
       <div className="mt-6 flex flex-col sm:flex-row flex-wrap gap-3">
@@ -54,6 +73,8 @@ export default function TestingIndexPage() {
           Tip: search results also appear under the <Link href="/search?type=testing" className="font-semibold text-butter-700 hover:underline">Product Testing</Link> tab.
         </p>
       </div>
+
+      <TestingStandardFamiliesPanel />
 
       <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {categories.map((c) => (

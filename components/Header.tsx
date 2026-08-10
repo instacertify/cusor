@@ -2,26 +2,53 @@ import Logo from "./Logo";
 import SearchBox from "./SearchBox";
 import MobileNav from "./MobileNav";
 import NavDropdown from "./NavDropdown";
-import { ensureDbReady } from "@/lib/db";
+import { TalkToCertificationExpertLink } from "./TalkToCertificationExpert";
+import { resolveExpertCta } from "@/lib/expert-cta";
+import { ensureDbReady, getSettings } from "@/lib/db";
 import { getCertifications, getTestingCategories, getPagesForNav } from "@/lib/queries";
 import { pagePublicPath } from "@/lib/pages-nav";
+import {
+  certMarketLabel,
+  groupCertificationsByMarket,
+} from "@/lib/market-applicability";
 
 /** Top-level CMS pages already covered elsewhere in the header. */
 const MENU_SKIP = new Set(["contact", "blog", "sitemap", "home"]);
 
 export default async function Header() {
   await ensureDbReady();
+  const settings = getSettings();
+  const expertCta = resolveExpertCta(settings);
   const certs = getCertifications();
   const testingCats = getTestingCategories();
   const menuPages = getPagesForNav("menu").filter((p) => !MENU_SKIP.has(p.slug));
   const submenuPages = getPagesForNav("submenu");
 
-  const certItems = certs.map((c) => ({
-    href: `/certifications/${c.slug}`,
-    label: c.name,
-    detail: c.region,
-    icon: c.icon,
-  }));
+  const certItems = [
+    {
+      href: "/certifications/countries",
+      label: "By country",
+      detail: "Search certifications by market",
+      icon: "globe",
+      section: "Browse",
+    },
+    {
+      href: "/certifications#global-market-access",
+      label: "GMA framework",
+      detail: "On Certifications — pillars, regimes, shortcuts",
+      icon: "globe",
+      section: "Browse",
+    },
+    ...groupCertificationsByMarket(certs).flatMap(({ market, certs: group }) =>
+      group.map((c) => ({
+        href: `/certifications/${c.slug}`,
+        label: c.name,
+        detail: `Required in ${certMarketLabel(c.slug, c.region)}`,
+        icon: c.icon,
+        section: market.heading,
+      }))
+    ),
+  ];
 
   const testingItems = [
     {
@@ -39,8 +66,8 @@ export default async function Header() {
   ];
 
   const resourceItems = [
-    { href: "/products", label: "Browse products", detail: "By notified category", icon: "folder" },
-    { href: "/products/all", label: "Search by HSN", detail: "HSN, QCO, fees & labs", icon: "table" },
+    { href: "/products", label: "Browse products", detail: "Products by category", icon: "folder" },
+    { href: "/products/all", label: "Search by HSN", detail: "Check the right certification", icon: "table" },
     { href: "/qco", label: "Upcoming QCOs", detail: "New mandatory deadlines", icon: "bell" },
     ...menuPages.map((p) => ({
       href: pagePublicPath(p.slug),
@@ -90,42 +117,50 @@ export default async function Header() {
           <NavDropdown label="Resources" items={uniqueResources} />
         </nav>
 
-        <div className="hidden lg:flex items-center gap-2.5 ml-auto shrink-0 w-full max-w-xs xl:max-w-sm">
+        <div className="hidden lg:flex items-center gap-2.5 ml-auto shrink-0 w-full max-w-md xl:max-w-lg">
           <div className="flex-1 min-w-0">
             <SearchBox compact placeholder="Product, HSN, or standard…" />
           </div>
-          <a
-            href="/contact"
-            className="shrink-0 bg-butter-500 hover:bg-butter-400 text-ink-950 text-sm font-semibold rounded-xl px-4 py-2.5 transition"
-          >
-            Get help
-          </a>
+          <TalkToCertificationExpertLink variant="header" short cta={expertCta} />
         </div>
 
-        <div className="lg:hidden ml-auto flex items-center gap-2 min-w-0 flex-1 justify-end max-w-[14rem] sm:max-w-xs">
-          <div className="flex-1 min-w-0 hidden min-[420px]:block">
+        <div className="lg:hidden ml-auto flex items-center gap-2 min-w-0 flex-1 justify-end max-w-[16rem] sm:max-w-xs">
+          <div className="flex-1 min-w-0 hidden min-[480px]:block">
             <SearchBox compact placeholder="Search…" />
           </div>
-          <a
-            href="/contact"
-            className="inline-flex items-center justify-center min-h-11 rounded-xl bg-butter-500 hover:bg-butter-400 px-3 text-xs font-bold text-ink-950 transition shrink-0"
-          >
-            Help
-          </a>
+          <TalkToCertificationExpertLink variant="header-mobile" short cta={expertCta} />
           <MobileNav
             groups={[
               {
                 label: "Certifications",
                 items: [
+                  {
+                    href: "/certifications/countries",
+                    label: "By country",
+                  },
+                  {
+                    href: "/certifications#global-market-access",
+                    label: "GMA framework",
+                  },
                   { href: "/certifications", label: "All certifications" },
-                  ...certItems.map(({ href, label }) => ({ href, label })),
                 ],
               },
+              ...groupCertificationsByMarket(certs).map(({ market, certs: group }) => ({
+                label: market.heading,
+                items: group.map((c) => ({
+                  href: `/certifications/${c.slug}`,
+                  label: `${c.name} · ${certMarketLabel(c.slug, c.region)}`,
+                })),
+              })),
               {
                 label: "Testing",
                 items: [
                   { href: "/testing", label: "All product testing" },
-                  ...testingItems.map(({ href, label }) => ({ href, label })),
+                  { href: "/labs", label: "Testing Labs" },
+                  ...testingCats.map((c) => ({
+                    href: `/testing/${c.slug}`,
+                    label: c.name,
+                  })),
                 ],
               },
               {

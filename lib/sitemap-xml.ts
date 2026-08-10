@@ -11,6 +11,7 @@ import {
   getRoutableContentPages,
 } from "@/lib/queries";
 import { pagePublicPath } from "@/lib/pages-nav";
+import { countryHubPath, getCountryHubs } from "@/lib/country-certifications";
 import { ensureDbReady, getDb, getWritableDataDir } from "@/lib/db";
 import { getSeoExclusions } from "@/lib/seo";
 
@@ -27,6 +28,8 @@ type SitemapEntry = {
     | "yearly"
     | "never";
   priority?: number;
+  /** W3C datetime / ISO date for <lastmod> */
+  lastModified?: string;
 };
 
 type CacheGlobal = typeof globalThis & {
@@ -92,10 +95,21 @@ function escapeXml(value: string): string {
     .replace(/'/g, "&apos;");
 }
 
+function toLastmod(value?: string): string | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+  const d = new Date(trimmed);
+  if (Number.isNaN(d.getTime())) return undefined;
+  return d.toISOString();
+}
+
 function toXml(entries: SitemapEntry[]): string {
   const body = entries
     .map((e) => {
       const parts = [`<loc>${escapeXml(e.url)}</loc>`];
+      const lastmod = toLastmod(e.lastModified);
+      if (lastmod) parts.push(`<lastmod>${escapeXml(lastmod)}</lastmod>`);
       if (e.changeFrequency) parts.push(`<changefreq>${e.changeFrequency}</changefreq>`);
       if (typeof e.priority === "number") {
         parts.push(`<priority>${e.priority.toFixed(1)}</priority>`);
@@ -117,6 +131,11 @@ function minimalXml(): string {
     { url: SITEMAP_BASE, changeFrequency: "weekly", priority: 1 },
     { url: `${SITEMAP_BASE}/products`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITEMAP_BASE}/certifications`, changeFrequency: "monthly", priority: 0.8 },
+    {
+      url: `${SITEMAP_BASE}/certifications/countries`,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
     { url: `${SITEMAP_BASE}/testing`, changeFrequency: "weekly", priority: 0.85 },
     { url: `${SITEMAP_BASE}/contact`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITEMAP_BASE}/sitemap`, changeFrequency: "weekly", priority: 0.4 },
@@ -141,6 +160,11 @@ export async function buildSitemapEntries(): Promise<SitemapEntry[]> {
     { url: `${SITEMAP_BASE}/products`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITEMAP_BASE}/products/all`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITEMAP_BASE}/certifications`, changeFrequency: "monthly", priority: 0.8 },
+    {
+      url: `${SITEMAP_BASE}/certifications/countries`,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
     { url: `${SITEMAP_BASE}/testing`, changeFrequency: "weekly", priority: 0.85 },
     { url: `${SITEMAP_BASE}/blog`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITEMAP_BASE}/labs`, changeFrequency: "weekly", priority: 0.8 },
@@ -174,6 +198,12 @@ export async function buildSitemapEntries(): Promise<SitemapEntry[]> {
       changeFrequency: "monthly" as const,
       priority: 0.8,
     }));
+
+  const countryHubs = getCountryHubs().map((h) => ({
+    url: `${SITEMAP_BASE}${countryHubPath(h.slug)}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.75,
+  }));
 
   const testingCategories = getTestingCategories()
     .filter((c) => !excludedTestCats.has(String(c.id)))
@@ -214,6 +244,7 @@ export async function buildSitemapEntries(): Promise<SitemapEntry[]> {
       url: `${SITEMAP_BASE}/blog/${p.slug}`,
       changeFrequency: "monthly" as const,
       priority: 0.6,
+      lastModified: p.published_at || p.created_at || undefined,
     }));
 
   const authors = getAuthors().map((a) => ({
@@ -228,6 +259,7 @@ export async function buildSitemapEntries(): Promise<SitemapEntry[]> {
     ...staticPages,
     ...categories,
     ...certifications,
+    ...countryHubs,
     ...testingCategories,
     ...testingServices,
     ...posts,

@@ -9,8 +9,10 @@ import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import IconChip from "@/components/IconChip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
+import { StandardApplicabilityChips } from "@/components/MarketApplicability";
 import { getFaqs, getTestingServiceBySlug, getTestingServices } from "@/lib/queries";
 import { formatPriceRange } from "@/lib/format";
+import { standardFamiliesFromText } from "@/lib/market-applicability";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +41,7 @@ export default async function TestingServicePage({ params }: Props) {
   const faqs = getFaqs(`test:${svc.id}`);
   const siblings = getTestingServices(svc.category_id).filter((s) => s.id !== svc.id).slice(0, 6);
   const html = marked.parse(svc.content || "") as string;
+  const standardFamilies = standardFamiliesFromText(svc.standards || "");
 
   const jsonLd = buildJsonLd(enabledSchemaTypes(`test:${svc.id}`, "test"), {
     name: `${svc.name} Testing`,
@@ -79,6 +82,18 @@ export default async function TestingServicePage({ params }: Props) {
             {svc.name}
           </h1>
           <p className="mt-4 text-lg text-ink-600 leading-relaxed">{svc.summary}</p>
+          {svc.standards ? (
+            <div className="mt-4">
+              <StandardApplicabilityChips standards={svc.standards} />
+              {standardFamilies.length > 0 ? (
+                <p className="mt-2 text-sm text-ink-600 leading-relaxed max-w-xl">
+                  {standardFamilies
+                    .map((f) => `${f.label} — typically accepted in ${f.where}. ${f.blurb}`)
+                    .join(" ")}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
 
           <dl className="mt-6 grid sm:grid-cols-2 gap-3 text-sm">
             {svc.product_category && (

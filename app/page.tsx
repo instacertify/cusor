@@ -8,6 +8,10 @@ import CtaBanner from "@/components/CtaBanner";
 import GlobeWatermark from "@/components/GlobeWatermark";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import TestimonialStrip from "@/components/TestimonialStrip";
+import TrustedBrandsStrip from "@/components/TrustedBrandsStrip";
+import CertificationSolutionRow from "@/components/CertificationSolutionRow";
+import MarketCard from "@/components/MarketCard";
+import { TalkToCertificationExpertLink } from "@/components/TalkToCertificationExpert";
 import { ensureDbReady, getSettings } from "@/lib/db";
 import {
   getCategories,
@@ -18,6 +22,8 @@ import {
   getUpcomingQcos,
 } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
+import { countryHubPath, getFeaturedCountryHubs } from "@/lib/country-certifications";
+import { BASE_URL, buildJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -43,11 +49,8 @@ export default async function HomePage() {
   await ensureDbReady();
   const settings = getSettings();
   const categories = getCategories();
-  const allCertifications = getCertifications();
-  const certifications = allCertifications.slice(0, 7);
-  const indiaMandatory = allCertifications.filter((c) =>
-    /india/i.test(c.region || "")
-  );
+  const certifications = getCertifications().slice(0, 7);
+  const countryHubs = getFeaturedCountryHubs();
   const testingCategories = getTestingCategories().slice(0, 6);
   const featured = getFeaturedProducts(8);
   const faqs = getFaqs("global");
@@ -62,8 +65,22 @@ export default async function HomePage() {
     }))
     .filter((s) => s.value && s.label);
 
+  // FAQ rich results for homepage accordion (Organization/WebSite are sitewide in layout).
+  const faqJsonLd = buildJsonLd(["FAQPage"], {
+    name: settings.site_name || "Certko",
+    description: settings.tagline || "",
+    url: BASE_URL,
+    faqs: faqs.map(({ question, answer }) => ({ question, answer })),
+  });
+
   return (
     <div className="relative">
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
       {/* Hero — refined tilted revolving line-art globe on the right */}
       <section className="relative overflow-hidden min-h-[min(74vh,680px)] flex flex-col justify-center">
         <GlobeWatermark />
@@ -94,9 +111,7 @@ export default async function HomePage() {
               <Link href="/products/all" className="font-semibold text-ink-800 hover:text-butter-700">
                 Search by HSN
               </Link>
-              <Link href="/contact" className="font-semibold text-butter-700 hover:text-butter-600">
-                Talk to an expert
-              </Link>
+              <TalkToCertificationExpertLink variant="link" />
             </p>
           </div>
         </div>
@@ -130,6 +145,9 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* Trusted by — homepage placement (also sitewide via TestimonialStrip) */}
+      <TrustedBrandsStrip tone="light" />
 
       {/* Dual path — certification vs testing */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
@@ -201,38 +219,35 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Mandatory certification for India */}
+      {/* Markets — destination picker only; scheme detail lives on country / cert pages */}
       <section className="bg-cream-100 border-y border-cream-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
-          <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 text-center">
-            Mandatory certification for India
+          <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950 text-center leading-snug">
+            Where are you selling?
           </h2>
-          <p className="text-center text-ink-600 mt-2 mb-8 sm:mb-10 text-sm sm:text-base px-2 max-w-2xl mx-auto">
-            Core India regimes most manufacturers and importers must clear before sale — start here, then check your HSN.
+          <p className="text-center text-ink-600 mt-2 mb-8 sm:mb-10 text-sm sm:text-base max-w-xl mx-auto">
+            Pick a market to open its certification path — then confirm against your product or HSN.
           </p>
-          <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
-            {indiaMandatory.map((c) => (
-              <Link
-                key={c.id}
-                href={`/certifications/${c.slug}`}
-                className="group relative bg-white rounded-2xl sm:rounded-3xl border border-cream-300 shadow-card p-5 sm:p-7 hover:border-butter-500 transition block"
-              >
-                <IconChip name={c.icon || "award"} size={26} chip="xl" className="sm:w-14 sm:h-14 sm:rounded-2xl" />
-                <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-butter-700">
-                  India · Mandatory
-                </p>
-                <h3 className="font-display text-lg font-semibold text-ink-950 mt-1 group-hover:text-butter-700 transition">
-                  {c.name}
-                </h3>
-                <p className="mt-2 text-sm text-ink-600 leading-relaxed line-clamp-3">
-                  {c.summary}
-                </p>
-                <span className="mt-4 inline-flex text-sm font-bold text-butter-700">
-                  View requirements →
-                </span>
-              </Link>
-            ))}
+
+          <div className="-mx-4 sm:mx-0">
+            <ul className="flex gap-4 overflow-x-auto px-4 sm:px-0 pb-2 sm:pb-0 sm:grid sm:grid-cols-5 sm:gap-4 snap-x snap-mandatory sm:overflow-visible">
+              {countryHubs.slice(0, 5).map((hub) => (
+                <li
+                  key={hub.slug}
+                  className="min-w-[11.5rem] max-w-[14rem] shrink-0 snap-start sm:min-w-0 sm:max-w-none h-auto sm:h-full"
+                >
+                  <MarketCard
+                    href={countryHubPath(hub.slug)}
+                    title={hub.shortName}
+                    schemesLine={hub.schemes.map((s) => s.name).join(" · ")}
+                    cta="Open"
+                    compact
+                  />
+                </li>
+              ))}
+            </ul>
           </div>
+
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5">
             <Link
               href="/products/all"
@@ -241,10 +256,10 @@ export default async function HomePage() {
               Check your product / HSN
             </Link>
             <Link
-              href="/qco"
+              href="/certifications/countries"
               className="inline-flex min-h-11 items-center justify-center text-sm font-semibold text-butter-700 hover:text-butter-600"
             >
-              Upcoming QCO deadlines →
+              Search all countries →
             </Link>
           </div>
         </div>
@@ -315,14 +330,17 @@ export default async function HomePage() {
       {/* Categories */}
       <section className="bg-cream-100 border-y border-cream-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16">
-        <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950">Browse product categories</h2>
+        <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink-950">
+          Certification solutions &amp; product categories
+        </h2>
         <p className="text-ink-600 mt-2 mb-6 sm:mb-8 text-sm sm:text-base">
-          Find the right certification path by category — or{" "}
+          Check for the right certification against your product, then browse by category — or{" "}
           <Link href="/certifications" className="font-semibold text-butter-700">
-            browse all certifications
+            open all certification programmes
           </Link>
           .
         </p>
+        <CertificationSolutionRow className="mb-8" />
         <div className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {categories.slice(0, 12).map((c) => (
             <Link
@@ -410,15 +428,10 @@ export default async function HomePage() {
               Can’t find the right solution?
             </h2>
             <p className="mt-3 text-sm text-ink-600 leading-relaxed max-w-md">
-              If your product, HSN or market path isn’t clear, talk to a Certko expert. We’ll map the certification and testing route — free quote in 24 hours.
+              If your product, HSN or market path isn’t clear, talk to a certification expert. We’ll map the certification and testing route — free quote in 24 hours.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/contact?intent=expert"
-                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-butter-500 px-6 py-3 text-sm font-semibold text-ink-950 hover:bg-butter-400 transition"
-              >
-                Talk to an expert
-              </Link>
+              <TalkToCertificationExpertLink />
               <Link
                 href="/products/all"
                 className="inline-flex min-h-11 items-center justify-center rounded-xl border border-cream-300 px-6 py-3 text-sm font-semibold text-ink-800 hover:border-butter-500 transition"
@@ -430,7 +443,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <TestimonialStrip variant="full" count={3} />
+      <TestimonialStrip variant="full" count={3} includeBrands={false} />
 
       {/* FAQ */}
       <section className="mx-auto max-w-3xl px-4 sm:px-6 py-16">

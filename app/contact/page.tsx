@@ -6,8 +6,10 @@ import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import ContactForm from "@/components/ContactForm";
 import ContactThankYou from "@/components/ContactThankYou";
+import { resolveExpertCta } from "@/lib/expert-cta";
 import { getPage, getFaqs } from "@/lib/queries";
 import { ensureDbReady, getSettings } from "@/lib/db";
+import { BASE_URL, buildJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +39,7 @@ export default async function ContactPage({ searchParams }: Props) {
   const sp = await searchParams;
   const page = getPage("contact");
   const settings = getSettings();
+  const expertCta = resolveExpertCta(settings);
   const faqs = getFaqs("page:contact");
   const initiallySent = sp.sent === "1" || sp.sent === "true";
   const errorMessage =
@@ -46,8 +49,25 @@ export default async function ContactPage({ searchParams }: Props) {
         ? "Please fill in your name and email."
         : null;
 
+  const faqJsonLd = buildJsonLd(["FAQPage", "BreadcrumbList"], {
+    name: page?.hero_heading || "Get Expert Help",
+    description: page?.meta_description || page?.hero_subheading || "",
+    url: `${BASE_URL}/contact`,
+    faqs: faqs.map(({ question, answer }) => ({ question, answer })),
+    breadcrumbs: [
+      { name: "Home", url: "/" },
+      { name: "Get Expert Help" },
+    ],
+  });
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-10">
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
       <Breadcrumbs crumbs={[{ label: "Get Expert Help" }]} />
       <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
         <div>
@@ -57,18 +77,18 @@ export default async function ContactPage({ searchParams }: Props) {
               : sp.intent === "book" || sp.intent === "test"
                 ? "Book product testing"
                 : sp.intent === "expert"
-                  ? "Talk to an expert"
-                  : page?.hero_heading || "Talk to a BIS expert"}
+                  ? expertCta.label
+                  : page?.hero_heading || expertCta.label}
           </h1>
           <p className="mt-4 text-base sm:text-lg text-ink-600 leading-relaxed">
             {sp.intent === "consulting"
-              ? "Share your testing or certification goal. We save your request as a lead and someone from our team will update you within 24 working hours."
+              ? "Tell us what you need help with. We log the request and someone from the team gets back within 24 working hours."
               : sp.intent === "book" || sp.intent === "test"
-                ? "Tell us about the product or lab test you need. Your request becomes a lead — our team will update you within 24 working hours."
+                ? "Describe the product or lab test. We save it as a lead and update you within 24 working hours."
                 : sp.intent === "expert"
-                  ? "Couldn’t find the right certification or testing path? Share your product or HSN and we’ll map the solution — free quote in 24 hours."
+                  ? "Stuck on which mark or test to book? Share the product or HSN and we’ll sketch the path — free quote in 24 hours."
                   : page?.hero_subheading ||
-                    "Tell us about your product and we will map the standard, estimate the full cost and send a free quote within 24 hours."}
+                    "Tell us what you make and where you sell. We’ll point to the standard, sketch the full cost, and send a free quote within 24 hours."}
           </p>
           <div className="mt-8 space-y-5">
             {PROMISES.map((p) => (
@@ -106,11 +126,29 @@ export default async function ContactPage({ searchParams }: Props) {
           {initiallySent ? (
             <ContactThankYou intent={sp.intent} />
           ) : (
-            <ContactForm
-              product={sp.product ?? ""}
-              intent={sp.intent}
-              errorMessage={errorMessage}
-            />
+            <>
+              {sp.intent === "expert" || !sp.intent ? (
+                <a
+                  href={`tel:${expertCta.phoneTel}`}
+                  className="mb-5 flex items-center gap-3 rounded-2xl border border-butter-400 bg-butter-300/35 px-4 py-3.5 transition hover:bg-butter-300/60"
+                >
+                  <IconChip name="phone" size={22} chip="lg" />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-bold text-ink-950">
+                      Prefer to talk now?
+                    </span>
+                    <span className="block text-sm font-semibold text-ink-800">
+                      Dial {expertCta.phoneDisplay}
+                    </span>
+                  </span>
+                </a>
+              ) : null}
+              <ContactForm
+                product={sp.product ?? ""}
+                intent={sp.intent}
+                errorMessage={errorMessage}
+              />
+            </>
           )}
         </div>
       </div>

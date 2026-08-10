@@ -45,8 +45,15 @@ export default async function AdminFaqs({ searchParams }: Props) {
        ORDER BY c.sort, s.sort, s.name`
     )
     .all() as { id: number; name: string; category_name: string }[];
+  const countryHubs = getDb()
+    .prepare("SELECT slug, name FROM country_hubs ORDER BY sort, name")
+    .all() as { slug: string; name: string }[];
   const scopeOptions = [
     ...PAGE_SCOPES,
+    ...countryHubs.map((c) => ({
+      value: `country:${c.slug}`,
+      label: `Country: ${c.name}`,
+    })),
     ...testingCategories.map((c) => ({
       value: `testcat:${c.slug}`,
       label: `Testing category: ${c.name}`,

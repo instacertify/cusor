@@ -27,9 +27,9 @@ export default async function AdminTrustedBrands({ searchParams }: Props) {
       </h1>
       <p className="text-ink-600 text-sm mb-6 max-w-3xl">
         Upload logos for the scrolling <strong>Trusted by Global Brands</strong> strip. Active logos
-        come from this library and appear on every page that shows the sitewide trust section
-        (homepage, certifications, testing, products, blog, contact and more).{" "}
-        {activeCount} active of {brands.length} total.
+        appear on the homepage and every page with the sitewide trust section (certifications,
+        testing, products, blog, contact and more). Any upload size is shown in the same fixed logo
+        slot on the public scroll. {activeCount} active of {brands.length} total.
       </p>
       <SavedBanner saved={sp.saved} />
       {errorMessage ? (
@@ -58,7 +58,7 @@ export default async function AdminTrustedBrands({ searchParams }: Props) {
                 label="Brand logo"
                 previewFit="contain"
                 previewAspect="aspect-[3/1]"
-                hint="Transparent PNG or SVG works best for the marquee."
+                hint="Any size is fine — the public scroll shows every logo in the same fixed dimensions (object-fit contain)."
               />
               <label className="flex items-center gap-2 text-sm text-ink-800">
                 <input type="hidden" name="active" value="0" />
@@ -90,7 +90,7 @@ export default async function AdminTrustedBrands({ searchParams }: Props) {
       <div className="bg-cream-100 rounded-2xl border border-cream-300 p-5">
         <h2 className="font-display font-bold text-ink-950 mb-1">Add brand logo</h2>
         <p className="text-xs text-ink-600 mb-4">
-          New logos join the backend library and scroll on public trust sections once marked Active.
+          New logos appear in the Trusted by scroll on public pages once marked Active.
         </p>
         <form action={saveTrustedBrand} className="space-y-3">
           <div className="grid sm:grid-cols-[1fr_1fr_100px] gap-3">
@@ -104,7 +104,7 @@ export default async function AdminTrustedBrands({ searchParams }: Props) {
             allowClear={false}
             previewFit="contain"
             previewAspect="aspect-[3/1]"
-            hint="Upload PNG/JPG/WebP/SVG logo (required)."
+            hint="Upload PNG/JPG/WebP/SVG (required). Displayed in a uniform logo slot on the site."
           />
           <label className="flex items-center gap-2 text-sm text-ink-800">
             <input type="hidden" name="active" value="0" />

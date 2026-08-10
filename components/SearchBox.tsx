@@ -13,6 +13,7 @@ interface Suggestion {
     | "lab"
     | "certification"
     | "cert-product"
+    | "country"
     | "testing-category"
     | "testing-service"
     | "testing"
@@ -46,6 +47,12 @@ const SCOPE_META: Record<
         name: "Certifications",
         detail: "BIS, BEE, GMARK and more",
         href: "/certifications",
+      },
+      {
+        type: "browse",
+        name: "Certifications by country",
+        detail: "India, EU, USA, GCC, Saudi Arabia",
+        href: "/certifications/countries",
       },
       {
         type: "browse",
@@ -116,6 +123,12 @@ const SCOPE_META: Record<
     placeholder: "Search BIS, BEE, GMARK, CE, FCC, SABER…",
     pageType: "certs",
     browse: [
+      {
+        type: "browse",
+        name: "By country",
+        detail: "Search certifications country wise",
+        href: "/certifications/countries",
+      },
       {
         type: "browse",
         name: "All certifications",
@@ -445,6 +458,8 @@ export default function SearchBox({
                     ? "bg-ink-300/30 text-ink-700"
                     : r.type === "certification"
                     ? "bg-green-100 text-green-700"
+                    : r.type === "country"
+                    ? "bg-sky-100 text-sky-800"
                     : r.type === "browse"
                     ? "bg-cream-200 text-ink-700"
                     : "bg-cream-200 text-ink-600"
@@ -454,6 +469,8 @@ export default function SearchBox({
                   ? "cert"
                   : r.type === "cert-product"
                   ? "scheme"
+                  : r.type === "country"
+                  ? "market"
                   : r.type === "testing-category"
                   ? "testing"
                   : r.type === "testing-service" || r.type === "testing"

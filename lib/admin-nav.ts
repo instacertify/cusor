@@ -75,13 +75,19 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         href: "/admin/trusted-brands",
         label: "Trusted Brands",
         icon: "award",
-        description: "Logo library for the Trusted by Global Brands scroll",
+        description: "Logos for the Trusted by Global Brands scroll",
       },
       {
         href: "/admin/faqs",
         label: "FAQs",
         icon: "help",
         description: "Scoped FAQs for pages and products",
+      },
+      {
+        href: "/admin/gdpr",
+        label: "GDPR & DPDP",
+        icon: "users",
+        description: "Cookie management, consent log, data requests",
       },
     ],
   },
@@ -94,6 +100,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         label: "Certifications",
         icon: "award",
         description: "BIS, BEE, GMARK and more",
+      },
+      {
+        href: "/admin/countries",
+        label: "Countries",
+        icon: "globe",
+        description: "Country-wise certification guides",
       },
       {
         href: "/admin/testing",
