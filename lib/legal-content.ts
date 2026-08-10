@@ -5,7 +5,7 @@ export const PRIVACY_CONTENT = `**Effective Date:** 26 July 2026
 
 ## 1. About CERTKO
 
-CERTKO is a global regulatory intelligence, product compliance and certification information platform owned and operated by **Instacertify Labs Private Limited** ("Instacertify"). CERTKO provides information, guidance, search tools and digital resources relating to product standards, testing, certification and regulatory compliance.
+CERTKO is a certification and compliance solution platform owned and operated by **Instacertify Labs Private Limited** ("Instacertify"). CERTKO helps manufacturers and importers with information, guidance, search tools and digital resources relating to product standards, testing, certification and regulatory compliance.
 
 CERTKO is not a certification body, testing laboratory or government authority unless expressly stated.
 
@@ -124,7 +124,7 @@ By accessing or using CERTKO (the "Platform"), you agree to these Terms of Servi
 
 ## Platform
 
-CERTKO is an information platform owned and operated by **Instacertify Labs Private Limited** ("Instacertify", "we", "us"). It provides regulatory intelligence, product compliance information, search tools and related digital resources.
+CERTKO is a certification and compliance solution platform owned and operated by **Instacertify Labs Private Limited** ("Instacertify", "we", "us"). It provides regulatory guidance, product compliance information, search tools and related digital resources.
 
 ## No Certification or Legal Advice
 

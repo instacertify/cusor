@@ -22,6 +22,7 @@ import { ensureTestimonialsLibrary } from "./seed-testimonials";
 import { ensureTrustedBrandsLibrary } from "./seed-trusted-brands";
 import { ensureCountryHubsLibrary } from "./seed-country-hubs";
 import { ensureGdprLibrary } from "./seed-gdpr";
+import { PRIVACY_CONTENT, TERMS_CONTENT } from "./legal-content";
 import { CONTACT_POPUP_DEFAULTS } from "./contact-popup";
 
 /** Prefer ./data; fall back to /tmp when the app dir is not writable (some Node hosts). */
@@ -386,6 +387,7 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureCanonicalCertMarketRegions(db);
   ensureHomeStatLabels(db);
   ensureExpertCtaSettings(db);
+  ensureSolutionPartnerIdentity(db);
   ensureContactPopupSettings(db);
   scrubLabPublicContactDetails(db);
   ensureGdprLibrary(db);
@@ -415,6 +417,7 @@ function runEnsures(db: SqliteDatabase) {
   ensureCanonicalCertMarketRegions(db);
   ensureHomeStatLabels(db);
   ensureExpertCtaSettings(db);
+  ensureSolutionPartnerIdentity(db);
   ensureContactPopupSettings(db);
   scrubLabPublicContactDetails(db);
   ensureGdprLibrary(db);
@@ -445,6 +448,187 @@ function ensureExpertCtaSettings(db: SqliteDatabase) {
   );
   for (const [key, value] of Object.entries(defaults)) {
     upsert.run(key, value);
+  }
+}
+
+const SOLUTION_PARTNER_TAGLINE =
+  "Your solution partner for certification and compliance.";
+
+/**
+ * Migrate public brand identity to “solution partner for certification and compliance”
+ * on existing installs (seed uses INSERT OR IGNORE).
+ */
+function ensureSolutionPartnerIdentity(db: SqliteDatabase) {
+  const getSetting = (key: string) =>
+    (
+      db.prepare("SELECT value FROM settings WHERE key = ?").get(key) as
+        | { value: string }
+        | undefined
+    )?.value?.trim() ?? "";
+
+  const setSetting = db.prepare(
+    "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+  );
+
+  const settingMigrations: { key: string; from: string[]; to: string }[] = [
+    {
+      key: "tagline",
+      from: [
+        "Your trusted global compliance partner.",
+        "Your trusted global compliance partner",
+      ],
+      to: SOLUTION_PARTNER_TAGLINE,
+    },
+    {
+      key: "cta_heading",
+      from: ["Need a hand with certification or testing?"],
+      to: "Looking for a certification and compliance partner?",
+    },
+    {
+      key: "cta_text",
+      from: [
+        "Our consultants handle filings, lab coordination and inspections for India and export markets. Ask for a free quote — we reply within 24 hours.",
+      ],
+      to: "Certko helps with scheme mapping, lab coordination and filings for India and export markets. Ask for a free quote — we reply within 24 hours.",
+    },
+    {
+      key: "footer_text",
+      from: [
+        "Certko is run by Instacertify Labs Private Limited. We publish product, lab and scheme guidance — we are not a government body. Fees and timelines are indicative; confirm with the regulator and lab before you commit.",
+      ],
+      to: "Certko — by Instacertify Labs Private Limited — is your solution partner for certification and compliance. We publish product, lab and scheme guidance and are not a government body. Fees and timelines are indicative; confirm with the regulator and lab before you commit.",
+    },
+  ];
+
+  for (const m of settingMigrations) {
+    const current = getSetting(m.key);
+    if (!current || m.from.includes(current)) {
+      setSetting.run(m.key, m.to);
+    }
+  }
+
+  const about = db
+    .prepare(
+      "SELECT meta_title, meta_description, hero_heading, hero_subheading, content, nav_detail FROM pages WHERE slug = 'about'"
+    )
+    .get() as
+    | {
+        meta_title: string;
+        meta_description: string;
+        hero_heading: string;
+        hero_subheading: string;
+        content: string;
+        nav_detail: string;
+      }
+    | undefined;
+
+  if (about) {
+    const nextMetaTitle =
+      !about.meta_title ||
+      about.meta_title === "About Certko | BIS Certification Intelligence"
+        ? "About Certko | Certification & Compliance Solution Partner"
+        : about.meta_title;
+    const nextMetaDesc =
+      !about.meta_description ||
+      about.meta_description ===
+        "Certko makes Indian product compliance transparent with a free BIS product database, lab directory and expert network."
+        ? "Certko is your solution partner for certification and compliance — product and scheme guidance, testing pathways and expert support for India and export markets."
+        : about.meta_description;
+    const nextHero =
+      !about.hero_heading || about.hero_heading === "Compliance, made transparent"
+        ? "Your solution partner for certification and compliance"
+        : about.hero_heading;
+    const nextSub =
+      !about.hero_subheading ||
+      about.hero_subheading ===
+        "Certko turns official BIS laboratory data into a free, searchable intelligence platform for manufacturers and importers."
+        ? "From scheme mapping to lab pathways and filings, Certko helps manufacturers and importers get compliance done — with clear data and practical support."
+        : about.hero_subheading;
+    const nextNav =
+      !about.nav_detail || about.nav_detail === "Our data and mission"
+        ? "Certification & compliance solution partner"
+        : about.nav_detail;
+    const nextContent =
+      /independent information platform|make Indian product compliance transparent/i.test(
+        about.content || ""
+      )
+        ? `## Our mission
+
+Certko is your **solution partner for certification and compliance**. We help manufacturers and importers map the right schemes, choose testing pathways, and move from research to filings — for India and export markets.
+
+BIS and other marks are mandatory for hundreds of product categories, yet teams still struggle to answer three basics: **which standard applies, what testing really costs, and which lab can do it**.
+
+## What we offer
+
+- **Product & scheme intelligence** — notified products mapped to IS standards, schemes, indicative costs and approved labs.
+- **Testing pathways** — searchable directories of recognised laboratories with scopes and ballpark pricing.
+- **Hands-on support** — consultants who coordinate applications, lab booking and inspection readiness end-to-end.
+
+## How we work
+
+We combine free compliance data with practical execution support. Start with the product checker, then ask Certko to quote the next step when you are ready. Lab scope and pricing data is compiled from official recognition records; prices are indicative, exclude GST, and should be confirmed with the laboratory. Certko is not affiliated with the Bureau of Indian Standards and is not a government body.`
+        : about.content;
+
+    db.prepare(
+      `UPDATE pages SET meta_title = ?, meta_description = ?, hero_heading = ?, hero_subheading = ?, content = ?, nav_detail = ?
+       WHERE slug = 'about'`
+    ).run(nextMetaTitle, nextMetaDesc, nextHero, nextSub, nextContent, nextNav);
+  }
+
+  const home = db
+    .prepare("SELECT meta_title, meta_description FROM pages WHERE slug = 'home'")
+    .get() as { meta_title: string; meta_description: string } | undefined;
+  if (home) {
+    const nextTitle =
+      !home.meta_title ||
+      home.meta_title === "BIS Certification Checker | Standards, Costs & Labs | Certko"
+        ? "Certko | Certification & Compliance Solution Partner"
+        : home.meta_title;
+    const nextDesc =
+      !home.meta_description ||
+      home.meta_description.startsWith("Free BIS certification checker.")
+        ? "Your solution partner for certification and compliance. Search products and schemes, compare testing pathways and get expert help for India and export markets."
+        : home.meta_description;
+    if (nextTitle !== home.meta_title || nextDesc !== home.meta_description) {
+      db.prepare(
+        "UPDATE pages SET meta_title = ?, meta_description = ? WHERE slug = 'home'"
+      ).run(nextTitle, nextDesc);
+    }
+  }
+
+  // Guide FAQ that framed Certko only as an “intelligence platform”
+  const faqs = db
+    .prepare(
+      "SELECT id, answer FROM faqs WHERE answer LIKE '%compliance-intelligence platform%'"
+    )
+    .all() as { id: number; answer: string }[];
+  for (const faq of faqs) {
+    const next = faq.answer.replace(
+      /independent compliance-intelligence platform/gi,
+      "solution partner for certification and compliance"
+    );
+    if (next !== faq.answer) {
+      db.prepare("UPDATE faqs SET answer = ? WHERE id = ?").run(next, faq.id);
+    }
+  }
+
+  // Legal intros on existing installs
+  for (const [slug, next] of [
+    ["privacy", PRIVACY_CONTENT],
+    ["terms", TERMS_CONTENT],
+  ] as const) {
+    const row = db
+      .prepare("SELECT content FROM pages WHERE slug = ?")
+      .get(slug) as { content: string } | undefined;
+    if (!row?.content) continue;
+    if (
+      /global regulatory intelligence, product compliance and certification information platform/i.test(
+        row.content
+      ) ||
+      /CERTKO is an information platform owned and operated/i.test(row.content)
+    ) {
+      db.prepare("UPDATE pages SET content = ? WHERE slug = ?").run(next, slug);
+    }
   }
 }
 

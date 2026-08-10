@@ -518,7 +518,7 @@ const PAGE_FAQS: Record<string, { question: string; answer: string }[]> = {
     {
       question: "Is Certko affiliated with the Bureau of Indian Standards?",
       answer:
-        "No. Certko is an independent compliance-intelligence platform. Licences are always issued by BIS itself; we provide data and consulting support around the process.",
+        "No. Certko is a solution partner for certification and compliance — we provide data, testing pathways and consulting support. Licences are always issued by BIS itself.",
     },
   ],
   search: [
@@ -686,19 +686,19 @@ Certko combines a free product-to-standard database, a directory of 400+ BIS-rec
 
 const ABOUT_CONTENT = `## Our mission
 
-Certko exists to make Indian product compliance transparent. BIS certification is mandatory for hundreds of product categories, yet manufacturers and importers struggle to find three basic facts: **which standard applies, what testing really costs, and which lab can do it**.
+Certko is your **solution partner for certification and compliance**. We help manufacturers and importers map the right schemes, choose testing pathways, and move from research to filings — for India and export markets.
 
-We aggregate official BIS laboratory scope data, clean it, and publish it free — 1,400+ notified products, 400+ recognised labs, and real reported test prices.
+BIS and other marks are mandatory for hundreds of product categories, yet teams still struggle to answer three basics: **which standard applies, what testing really costs, and which lab can do it**.
 
 ## What we offer
 
-- **Product database** — every notified product mapped to its IS standard, scheme, price range and approved labs.
-- **Lab directory** — searchable directory of BIS-recognised laboratories with locations and scopes.
-- **Expert help** — vetted BIS consultants who handle applications, testing coordination and factory inspections end-to-end.
+- **Product & scheme intelligence** — notified products mapped to IS standards, schemes, indicative costs and approved labs.
+- **Testing pathways** — searchable directories of recognised laboratories with scopes and ballpark pricing.
+- **Hands-on support** — consultants who coordinate applications, lab booking and inspection readiness end-to-end.
 
-## Data sources
+## How we work
 
-Lab scope and pricing data is compiled from official BIS laboratory recognition records. Prices are indicative, exclude GST, and should be confirmed directly with the laboratory. Certko is an independent information platform and is not affiliated with the Bureau of Indian Standards.`;
+We combine free compliance data with practical execution support. Start with the product checker, then ask Certko to quote the next step when you are ready. Lab scope and pricing data is compiled from official recognition records; prices are indicative, exclude GST, and should be confirmed with the laboratory. Certko is not affiliated with the Bureau of Indian Standards and is not a government body.`;
 
 export function seedDatabase(db: SqliteDatabase) {
   const dataPath = path.join(process.cwd(), "data", "bis_dataset.json");
@@ -753,7 +753,7 @@ export function seedDatabase(db: SqliteDatabase) {
     // ---- settings ----
     const defaults: Record<string, string> = {
       site_name: "Certko",
-      tagline: "Your trusted global compliance partner.",
+      tagline: "Your solution partner for certification and compliance.",
       hero_heading: "Find the right certification and testing for your product",
       hero_subheading:
         "Type a product name or HSN. We’ll show the schemes that usually apply — BIS, BEE, GMARK, CE, FCC, SABER, WPC — plus the tests, labs and ballpark costs so you know what to book next.",
@@ -770,11 +770,11 @@ export function seedDatabase(db: SqliteDatabase) {
       smtp_from: "contact@instacertify.com",
       smtp_secure: "0",
       footer_text:
-        "Certko is run by Instacertify Labs Private Limited. We publish product, lab and scheme guidance — we are not a government body. Fees and timelines are indicative; confirm with the regulator and lab before you commit.",
+        "Certko — by Instacertify Labs Private Limited — is your solution partner for certification and compliance. We publish product, lab and scheme guidance and are not a government body. Fees and timelines are indicative; confirm with the regulator and lab before you commit.",
       announcement: "",
-      cta_heading: "Need a hand with certification or testing?",
+      cta_heading: "Looking for a certification and compliance partner?",
       cta_text:
-        "Our consultants handle filings, lab coordination and inspections for India and export markets. Ask for a free quote — we reply within 24 hours.",
+        "Certko helps with scheme mapping, lab coordination and filings for India and export markets. Ask for a free quote — we reply within 24 hours.",
       expert_cta_label: "Talk to a certification expert",
       expert_cta_label_short: "Talk to expert",
       expert_cta_href: "/contact?intent=expert",
@@ -848,12 +848,12 @@ export function seedDatabase(db: SqliteDatabase) {
     insPage.run({
       slug: "about",
       title: "About Certko",
-      meta_title: "About Certko | BIS Certification Intelligence",
+      meta_title: "About Certko | Certification & Compliance Solution Partner",
       meta_description:
-        "Certko makes Indian product compliance transparent with a free BIS product database, lab directory and expert network.",
-      hero_heading: "Compliance, made transparent",
+        "Certko is your solution partner for certification and compliance — product and scheme guidance, testing pathways and expert support for India and export markets.",
+      hero_heading: "Your solution partner for certification and compliance",
       hero_subheading:
-        "Certko turns official BIS laboratory data into a free, searchable intelligence platform for manufacturers and importers.",
+        "From scheme mapping to lab pathways and filings, Certko helps manufacturers and importers get compliance done — with clear data and practical support.",
       content: ABOUT_CONTENT,
       image: "/images/pages/about.png",
     });
@@ -896,9 +896,9 @@ export function seedDatabase(db: SqliteDatabase) {
     insPage.run({
       slug: "home",
       title: "Home",
-      meta_title: "BIS Certification Checker | Standards, Costs & Labs | Certko",
+      meta_title: "Certko | Certification & Compliance Solution Partner",
       meta_description:
-        "Free BIS certification checker. Search 1,400+ notified products for IS standards, real lab test costs, timelines and 400+ BIS-recognised labs across India.",
+        "Your solution partner for certification and compliance. Search products and schemes, compare testing pathways and get expert help for India and export markets.",
       hero_heading: "",
       hero_subheading: "",
       content: "",

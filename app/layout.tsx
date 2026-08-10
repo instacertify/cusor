@@ -65,7 +65,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: {
-      default: home?.meta_title || "Certko | BIS Certification Intelligence",
+      default:
+        home?.meta_title || "Certko | Certification & Compliance Solution Partner",
       template: `%s | ${settings.site_name || "Certko"}`,
     },
     description: home?.meta_description || settings.tagline,
@@ -111,7 +112,8 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: home?.meta_title || "Certko | BIS Certification Intelligence",
+      title:
+        home?.meta_title || "Certko | Certification & Compliance Solution Partner",
       description: home?.meta_description || settings.tagline,
       images: [DEFAULT_OG_IMAGE],
     },
