@@ -1,20 +1,20 @@
 # CERTKO Brand Guidelines
 
-Version 1.0 – Premium Global Compliance Brand
+Version 1.1 – Certification & Compliance Solution Partner
 
 ## Brand Vision
 
-CERTKO is a modern global compliance platform that simplifies certification through **Knowledge + Operations**.
+CERTKO is a modern solution partner that simplifies certification and compliance through **Knowledge + Operations**.
 
-The brand combines technical expertise, regulatory intelligence, testing, certification, and execution into one trusted ecosystem.
+The brand combines technical expertise, regulatory guidance, testing pathways, certification support, and execution into one trusted ecosystem.
 
 ## Brand Position
 
-Your trusted global compliance partner.
+Your solution partner for certification and compliance.
 
 ## Brand Mission
 
-To help manufacturers access global markets through reliable compliance intelligence, certification, testing and regulatory solutions.
+To help manufacturers and importers access markets through reliable certification and compliance solutions — from scheme mapping and testing pathways to practical execution support.
 
 ## Brand Values
 
@@ -78,6 +78,3 @@ Stripe / Notion / Linear–inspired: whitespace, rounded corners, large type, fl
 ## Blog cover images
 
 - **Size / ratio:** 1200×630 px (16:9 landscape) — matches `/blog` cards, article hero and social/OG previews
-- **Formats:** PNG, JPG/JPEG, WebP, GIF, AVIF, BMP, SVG (upload sniffing normalizes aliases like `.jpeg` / `.jp` to the correct file type)
-- **Look:** flat, high-contrast product/context photography or simple graphics; cream / navy / amber palette when branded
-- **Avoid:** heavy multi-layer shadows, glow effects, purple gradients, emoji stickers, floating badges over the image

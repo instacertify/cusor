@@ -65,7 +65,13 @@ export function ensurePagesNavColumns(db: SqliteDatabase) {
   // One-time defaults for seeded CMS pages if they still have all-zero placement
   const seeded: Record<string, { menu?: number; submenu?: number; footer?: number; label?: string; detail?: string; sort?: number }> = {
     guide: { submenu: 1, footer: 1, label: "Certification Guide", detail: "Process, documents, costs", sort: 10 },
-    about: { submenu: 1, footer: 1, label: "About Certko", detail: "Our data and mission", sort: 50 },
+    about: {
+      submenu: 1,
+      footer: 1,
+      label: "About Certko",
+      detail: "Certification & compliance solution partner",
+      sort: 50,
+    },
     tenders: { submenu: 1, label: "Certification for Tenders", detail: "Pre-qualify before the bid closes", sort: 20 },
     marketplaces: { submenu: 1, label: "Sell on Marketplaces", detail: "Amazon, Flipkart compliance", sort: 30 },
     privacy: { footer: 1, label: "Privacy Policy", sort: 90 },
