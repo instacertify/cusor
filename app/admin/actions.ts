@@ -138,6 +138,8 @@ const STAT_ICON_KEYS = [
   "stat_5_icon",
 ] as const;
 
+const CONTACT_POPUP_IMAGE_KEY = "contact_popup_image" as const;
+
 const SECRET_SETTINGS = new Set(["smtp_pass", "admin_password", "admin_username"]);
 
 // ---------- admin credentials ----------
@@ -197,6 +199,9 @@ export async function saveSettings(formData: FormData) {
       !key.startsWith("clear_") &&
       !key.endsWith("_file") &&
       key !== "smtp_enabled" &&
+      key !== "contact_popup_enabled" &&
+      key !== "contact_popup_wait_for_cookie_choice" &&
+      key !== "contact_popup_image" &&
       key !== "admin_password" &&
       key !== "admin_username" &&
       key !== "current_password" &&
@@ -235,6 +240,28 @@ export async function saveSettings(formData: FormData) {
       setSetting(key, uploaded);
     } else if (formData.get(`clear_${key}`) === "1") {
       setSetting(key, "");
+    }
+  }
+
+  // Timed contact popup — enable flag + side image
+  setSetting(
+    "contact_popup_enabled",
+    formData.getAll("contact_popup_enabled").map(String).includes("1") ? "1" : "0"
+  );
+  setSetting(
+    "contact_popup_wait_for_cookie_choice",
+    formData.getAll("contact_popup_wait_for_cookie_choice").map(String).includes("1")
+      ? "1"
+      : "0"
+  );
+  {
+    const uploaded = await saveUploadedImage(
+      formData.get(`${CONTACT_POPUP_IMAGE_KEY}_file`) as File | null
+    );
+    if (uploaded) {
+      setSetting(CONTACT_POPUP_IMAGE_KEY, uploaded);
+    } else if (formData.get(`clear_${CONTACT_POPUP_IMAGE_KEY}`) === "1") {
+      setSetting(CONTACT_POPUP_IMAGE_KEY, "/brand/certko-logo-full.png");
     }
   }
 
