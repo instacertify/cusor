@@ -9,7 +9,7 @@
     "star_table": "Revised table effective 1 Jan 2026",
     "min_price": 150000,
     "max_price": 250000,
-    "labs": "Intertek (Sohna), TUV Rheinland (Bengaluru), UL India (Manesar), SGS, ITC India",
+    "labs": "UL India (Manesar), SGS, ITC India",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 1
   },
@@ -23,7 +23,7 @@
     "star_table": "Revised table effective 1 Jan 2026",
     "min_price": 175000,
     "max_price": 300000,
-    "labs": "Intertek, TUV Rheinland, UL India, SGS, ITC India",
+    "labs": "UL India, SGS, ITC India",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 2
   },
@@ -37,7 +37,7 @@
     "star_table": "Revised table effective 1 Jan 2026",
     "min_price": 90000,
     "max_price": 150000,
-    "labs": "Intertek, TUV SUD, TUV Rheinland, SGS, URS Labs",
+    "labs": "SGS, URS Labs",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 3
   },
@@ -51,7 +51,7 @@
     "star_table": "Revised table effective 1 Jan 2026",
     "min_price": 75000,
     "max_price": 120000,
-    "labs": "Intertek, TUV SUD, TUV Rheinland, SGS, URS Labs",
+    "labs": "SGS, URS Labs",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 4
   },
@@ -65,7 +65,7 @@
     "star_table": "1 Jan 2026 - 31 Dec 2028 (BEE advisory)",
     "min_price": 80000,
     "max_price": 120000,
-    "labs": "Intertek, TUV SUD, SGS, ITC India",
+    "labs": "SGS, ITC India",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 5
   },
@@ -79,7 +79,7 @@
     "star_table": "Revised table implemented (verify validity)",
     "min_price": 30000,
     "max_price": 60000,
-    "labs": "ERTL(N) Delhi, Spectro, ITC India, Intertek",
+    "labs": "ERTL(N) Delhi, Spectro, ITC India",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 6
   },
@@ -93,7 +93,7 @@
     "star_table": "Revised table effective 1 Jan 2026 (TV ratings shifted up 1 star)",
     "min_price": 50000,
     "max_price": 90000,
-    "labs": "Intertek, UL India, TUV Rheinland, Spectro",
+    "labs": "UL India, Spectro",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 7
   },
@@ -107,7 +107,7 @@
     "star_table": "Current table in force",
     "min_price": 45000,
     "max_price": 75000,
-    "labs": "Intertek, ITC India, Spectro, TUV Rheinland",
+    "labs": "ITC India, Spectro",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 8
   },
@@ -121,7 +121,7 @@
     "star_table": "Current table in force",
     "min_price": 70000,
     "max_price": 110000,
-    "labs": "Intertek, TUV Rheinland, UL India, SGS",
+    "labs": "UL India, SGS",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 9
   },
@@ -191,7 +191,7 @@
     "star_table": "First mandatory table effective 1 Jan 2026",
     "min_price": 300000,
     "max_price": 600000,
-    "labs": "AHRI-certified labs; witnessed factory testing per schedule; Intertek",
+    "labs": "AHRI-certified labs; witnessed factory testing per schedule;",
     "fee_note": "Rs 3 per kW per label (Chiller Labels Regulations 2023)",
     "sort": 14
   },
@@ -219,7 +219,7 @@
     "star_table": "First mandatory table effective 1 Jan 2026",
     "min_price": 100000,
     "max_price": 200000,
-    "labs": "UL India, TUV Rheinland, Intertek, NISE (Gurugram)",
+    "labs": "UL India, NISE (Gurugram)",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 16
   },
@@ -289,7 +289,7 @@
     "star_table": "Current table in force",
     "min_price": 30000,
     "max_price": 60000,
-    "labs": "Intertek, UL India, TUV Rheinland",
+    "labs": "UL India",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 21
   },
@@ -303,7 +303,7 @@
     "star_table": "Current table in force",
     "min_price": 35000,
     "max_price": 60000,
-    "labs": "Intertek, UL India, TUV Rheinland",
+    "labs": "UL India",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 22
   },
@@ -317,7 +317,7 @@
     "star_table": "Current table in force",
     "min_price": 30000,
     "max_price": 50000,
-    "labs": "ERTL, Spectro, ITC India, Intertek",
+    "labs": "ERTL, Spectro, ITC India",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 23
   },
@@ -345,7 +345,7 @@
     "star_table": "Validity extended per BEE advisory",
     "min_price": 30000,
     "max_price": 50000,
-    "labs": "Intertek, TUV Rheinland, ITC India",
+    "labs": "ITC India",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 25
   },
@@ -359,7 +359,7 @@
     "star_table": "Validity extended per BEE advisory",
     "min_price": 50000,
     "max_price": 90000,
-    "labs": "NISE Gurugram, TUV Rheinland, Intertek",
+    "labs": "NISE Gurugram",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 26
   },
@@ -373,7 +373,7 @@
     "star_table": "Current table (Schedule 24)",
     "min_price": 200000,
     "max_price": 350000,
-    "labs": "Intertek, TUV Rheinland, UL India",
+    "labs": "UL India",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 27
   },
@@ -387,7 +387,7 @@
     "star_table": "Validity extended per BEE advisory",
     "min_price": 100000,
     "max_price": 175000,
-    "labs": "CPRI, Intertek, NABL mechanical labs",
+    "labs": "CPRI, NABL mechanical labs",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 28
   },
@@ -401,7 +401,7 @@
     "star_table": "Current table in force",
     "min_price": 100000,
     "max_price": 200000,
-    "labs": "UL India, TUV Rheinland, Intertek, ARAI",
+    "labs": "UL India, ARAI",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 29
   },
@@ -429,7 +429,7 @@
     "star_table": "Validity extended per BEE advisory",
     "min_price": 25000,
     "max_price": 45000,
-    "labs": "ERTL, Spectro, ITC India, Intertek",
+    "labs": "ERTL, Spectro, ITC India",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 31
   },
@@ -443,7 +443,7 @@
     "star_table": "Current table in force",
     "min_price": 25000,
     "max_price": 45000,
-    "labs": "Intertek, ITC India, Spectro",
+    "labs": "ITC India, Spectro",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 32
   },
@@ -457,7 +457,7 @@
     "star_table": "First voluntary table in force",
     "min_price": 30000,
     "max_price": 55000,
-    "labs": "Intertek, ITC India, NABL air-flow labs",
+    "labs": "ITC India, NABL air-flow labs",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 33
   },
@@ -471,7 +471,7 @@
     "star_table": "First table under 2026 Regulations (verify)",
     "min_price": 80000,
     "max_price": 150000,
-    "labs": "ARAI, ICAT, UL India, TUV Rheinland",
+    "labs": "ARAI, ICAT, UL India",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 34
   },
@@ -485,7 +485,7 @@
     "star_table": "First table under 2026 Regulations (verify)",
     "min_price": 150000,
     "max_price": 250000,
-    "labs": "NISE, UL India, TUV Rheinland, Intertek",
+    "labs": "NISE, UL India",
     "fee_note": "Per-label fee as per product schedule; payable quarterly with CA-certified sales data",
     "sort": 35
   }

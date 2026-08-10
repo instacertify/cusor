@@ -1,6 +1,6 @@
 /**
  * Global Market Access country matrix — seed content for country hubs.
- * Structured on the TÜV SÜD GMA pillar grid; verify live regulator lists before quoting.
+ * Structured on the Certko / Instacertify GMA pillar grid; verify live regulator lists before quoting.
  */
 
 import type { CountryPillars, GmaRegionId } from "@/lib/gma-regions";
@@ -1348,7 +1348,7 @@ export const GMA_COUNTRY_SEEDS: GmaCountrySeed[] = [
       "EnergyGuide / Prop 65 / state EPR?",
     ],
     pillars: {
-      safety: "NRTL listing (UL, Intertek, TÜV, etc.); CPSC/CPSIA for children’s products",
+      safety: "NRTL listing from an OSHA-recognised laboratory; CPSC/CPSIA for children’s products",
       emcWireless: "FCC Part 15 — SDoC or Certification via TCB",
       telecom: "FCC Part 68 where applicable",
       energyEnv: "DOE standards + FTC EnergyGuide; California Prop 65; state EPR",
