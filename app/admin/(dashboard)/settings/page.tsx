@@ -212,6 +212,78 @@ export default async function SettingsPage({ searchParams }: Props) {
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
+          <h2 className="font-display font-bold text-ink-950">Timed contact popup</h2>
+          <p className="text-sm text-ink-600">
+            Google Form–style popup after a delay (default 59 seconds). Collects a lead with an
+            explicit GDPR / DPDP privacy checkbox. Side image is editable below.
+          </p>
+          <label className="flex items-center gap-2 text-sm text-ink-800">
+            <input type="hidden" name="contact_popup_enabled" value="0" />
+            <input
+              type="checkbox"
+              name="contact_popup_enabled"
+              value="1"
+              defaultChecked={(s.contact_popup_enabled ?? "1") === "1"}
+            />
+            Enable timed contact popup
+          </label>
+          <label className="flex items-center gap-2 text-sm text-ink-800">
+            <input type="hidden" name="contact_popup_wait_for_cookie_choice" value="0" />
+            <input
+              type="checkbox"
+              name="contact_popup_wait_for_cookie_choice"
+              value="1"
+              defaultChecked={(s.contact_popup_wait_for_cookie_choice ?? "1") === "1"}
+            />
+            Wait until the visitor answers the cookie banner (recommended)
+          </label>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field
+              label="Delay (seconds)"
+              name="contact_popup_delay_seconds"
+              type="number"
+              defaultValue={s.contact_popup_delay_seconds || "59"}
+            />
+            <Field
+              label="Don’t show again for (days)"
+              name="contact_popup_dismiss_days"
+              type="number"
+              defaultValue={s.contact_popup_dismiss_days || "7"}
+            />
+          </div>
+          <Field
+            label="Title"
+            name="contact_popup_title"
+            defaultValue={
+              s.contact_popup_title || "Need help with certification or testing?"
+            }
+          />
+          <TextArea
+            label="Supporting text"
+            name="contact_popup_subtitle"
+            rows={2}
+            defaultValue={
+              s.contact_popup_subtitle ||
+              "Share a few details and a Certko specialist will reply within 24 working hours. No spam."
+            }
+          />
+          <Field
+            label="Submit button label"
+            name="contact_popup_submit_label"
+            defaultValue={s.contact_popup_submit_label || "Send my request"}
+          />
+          <ImageUpload
+            label="Side image"
+            name="contact_popup_image_file"
+            current={s.contact_popup_image || "/brand/certko-logo-full.png"}
+            clearName="clear_contact_popup_image"
+            previewFit="contain"
+            previewAspect="aspect-[4/3]"
+            hint="Shown beside the form on desktop (and above the form on mobile). PNG/JPG/WebP."
+          />
+        </section>
+
+        <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Contact & Access</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <Field label="Contact Email" name="contact_email" defaultValue={s.contact_email} />
