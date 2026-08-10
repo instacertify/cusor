@@ -102,9 +102,9 @@ export const GMA_COUNTRY_SEEDS: GmaCountrySeed[] = [
       scheme(
         "WPC ETA",
         "Equipment Type Approval for licence-exempt wireless",
-        "WPC ETA clears licence-exempt radio (Bluetooth, Wi-Fi and similar) before import or sale — separate from BIS.",
+        "WPC ETA clears licence-exempt radio (Bluetooth, Wi-Fi and similar) before import or sale — separate from BIS. Wi-Fi CPE and IP routers have also faced security-testing expectations since July 2023.",
         "Brands shipping short-range radio or IoT products into India.",
-        ["Earbuds and speakers", "Wi-Fi routers", "Smart appliances with radio modules"],
+        ["Earbuds and speakers", "Wi-Fi routers / CPE", "Smart appliances with radio modules"],
         "wpc-eta"
       ),
       scheme(
