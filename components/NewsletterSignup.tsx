@@ -93,6 +93,11 @@ export default function NewsletterSignup({
       {error ? <p className="text-sm text-red-300">{error}</p> : null}
       <p className="text-xs text-ink-400 leading-relaxed">
         Free updates on mandatory India certifications, QCO deadlines and testing guidance.
+        By signing up you agree we may email you under our{" "}
+        <a href="/privacy" className="text-butter-400 hover:underline">
+          Privacy Policy
+        </a>
+        .
       </p>
     </form>
   );

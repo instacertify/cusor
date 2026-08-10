@@ -41,6 +41,9 @@ const PUBLIC_CACHE_PATHS = [
   "/sitemap.xml",
   "/guide",
   "/about",
+  "/privacy",
+  "/privacy/gdpr-and-dpdp",
+  "/privacy/data-request",
 ] as const;
 
 /** Manual “Clear cache” from admin — force public pages to rebuild. */

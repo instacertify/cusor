@@ -183,6 +183,22 @@ export default function ContactForm({
           className="w-full rounded-xl border border-cream-300 px-4 py-3 text-base sm:text-sm outline-none focus:border-butter-500 focus:ring-4 focus:ring-butter-300/30"
         />
       </div>
+      <label className="flex items-start gap-3 text-sm text-ink-700">
+        <input
+          type="checkbox"
+          name="privacy_consent"
+          required
+          className="mt-1"
+        />
+        <span>
+          I agree that Certko / Instacertify may process my details to respond to this
+          enquiry, as described in the{" "}
+          <a href="/privacy" className="font-semibold text-butter-700 hover:underline">
+            Privacy Policy
+          </a>{" "}
+          (GDPR / DPDP).
+        </span>
+      </label>
       <button
         type="submit"
         disabled={pending}

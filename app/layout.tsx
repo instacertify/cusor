@@ -5,8 +5,10 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import TalkToCertificationExpertBar from "@/components/TalkToCertificationExpert";
-import SiteIntegrations, { SiteIntegrationsBody } from "@/components/SiteIntegrations";
+import AnalyticsGate from "@/components/AnalyticsGate";
+import CookieConsent from "@/components/CookieConsent";
 import { ensureDbReady, getSettings } from "@/lib/db";
+import { getGdprPublicSettings } from "@/lib/gdpr";
 import { resolveExpertCta } from "@/lib/expert-cta";
 import { getPage } from "@/lib/queries";
 import { buildJsonLd } from "@/lib/seo";
@@ -97,6 +99,7 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   await ensureDbReady();
   const settings = getSettings();
+  const gdprSettings = getGdprPublicSettings();
   const scheme = resolveColorScheme(settings.color_scheme);
   const iconStyle = resolveIconStyle(settings.icon_style);
   const expertCta = resolveExpertCta(settings);
@@ -113,10 +116,13 @@ export default async function RootLayout({
     <html lang="en" data-color-scheme={scheme.id} data-icon-style={iconStyle}>
       <body className={`${body.variable} ${display.variable} min-h-screen flex flex-col`}>
         {!isAdminShell && (
-          <>
-            <SiteIntegrationsBody />
-            <SiteIntegrations />
-          </>
+          <AnalyticsGate
+            ga4MeasurementId={settings.ga4_measurement_id || ""}
+            gtmContainerId={settings.gtm_container_id || ""}
+            customHeadHtml={settings.custom_head_html || ""}
+            customBodyHtml={settings.custom_body_html || ""}
+            settings={gdprSettings}
+          />
         )}
         {orgJsonLd && (
           <script
@@ -128,6 +134,7 @@ export default async function RootLayout({
         <main className="flex-1">{children}</main>
         {!isAdminShell && <Footer />}
         {!isAdminShell && <TalkToCertificationExpertBar cta={expertCta} />}
+        {!isAdminShell && <CookieConsent settings={gdprSettings} />}
       </body>
     </html>
   );

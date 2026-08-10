@@ -47,7 +47,13 @@ Where applicable law requires a legal basis, processing may be based on:
 
 ## 6. Cookies
 
-CERTKO uses cookies and similar technologies to improve functionality, analytics and security. You may manage cookies through your browser settings. Disabling certain cookies may affect Platform features.
+CERTKO uses cookies and similar technologies to improve functionality, analytics and security.
+
+- **Necessary cookies** — required for security, load balancing and basic site operation
+- **Analytics cookies** — help us understand traffic (e.g. GA / GTM); loaded only with your consent when our consent banner is enabled
+- **Marketing cookies** — optional; only if you opt in
+
+You can manage preferences via the on-site cookie banner (footer → Cookie settings) or your browser. Disabling certain cookies may affect Platform features. See also [What is GDPR and DPDP?](/privacy/gdpr-and-dpdp) and our [data request form](/privacy/data-request).
 
 ## 7. Data Sharing
 
@@ -96,6 +102,15 @@ A-34, 4th Floor, Sector 63A, Noida, Gautam Buddha Nagar, Uttar Pradesh – 20130
 
 Email: [info@certko.com](mailto:info@certko.com)
 Phone: +91-9999118039
+
+## 15. GDPR and India’s DPDP Act
+
+CERTKO is operated from India by Instacertify Labs Private Limited. Depending on where you are and how we process your data:
+
+- **GDPR (EU / EEA / UK)** — Where the EU General Data Protection Regulation (or UK GDPR) applies, we process personal data under a lawful basis such as consent, contract, legitimate interests or legal obligation. You may have rights of access, rectification, erasure, restriction, portability and objection. You may also lodge a complaint with your local supervisory authority.
+- **DPDP Act, 2023 (India)** — Under India’s Digital Personal Data Protection Act, we act as a Data Fiduciary for personal data we determine the purpose and means of processing. You have rights to access, correction, erasure and withdrawal of consent (subject to the Act and rules). Grievances can be raised with our Privacy Officer and, where applicable, the Data Protection Board of India.
+
+Cookie preferences can be managed via the site cookie banner. To exercise rights, use our [data request form](/privacy/data-request) or email the Privacy Officer. Learn more: [What is GDPR and DPDP?](/privacy/gdpr-and-dpdp).
 `;
 
 export const TERMS_CONTENT = `**Effective Date:** 26 July 2026
