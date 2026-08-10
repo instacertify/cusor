@@ -52,9 +52,9 @@ export default function TestingIndexPage() {
         Explore the Right Quality Assurance Solutions
       </h1>
       <p className="mt-3 text-ink-600 max-w-2xl">
-        Browse testing by discipline, then check whether the method is an Indian Standard (IS) for
-        India or an IEC / international method for global market access. Book testing or consulting
-        — we reply within 24 working hours.
+        Browse testing by discipline. Every BIS certification product standard is also a laboratory
+        testing standard — mapped here under chemical, electrical, EMC, physical, microbiology and
+        mechanical categories. Book testing or consulting — we reply within 24 working hours.
       </p>
 
       <div className="mt-6 flex flex-col sm:flex-row flex-wrap gap-3">

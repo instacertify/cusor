@@ -10,8 +10,14 @@ import FaqAccordion from "@/components/FaqAccordion";
 import IconChip from "@/components/IconChip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { StandardApplicabilityChips } from "@/components/MarketApplicability";
-import { getFaqs, getTestingServiceBySlug, getTestingServices } from "@/lib/queries";
-import { formatPriceRange } from "@/lib/format";
+import {
+  countProductsForTestingService,
+  getFaqs,
+  getProductsForTestingService,
+  getTestingServiceBySlug,
+  getTestingServices,
+} from "@/lib/queries";
+import { formatPriceRange, formatNumber } from "@/lib/format";
 import { standardFamiliesFromText } from "@/lib/market-applicability";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
@@ -40,6 +46,8 @@ export default async function TestingServicePage({ params }: Props) {
   // Each test page uses only its own FAQ set (editable in admin per test)
   const faqs = getFaqs(`test:${svc.id}`);
   const siblings = getTestingServices(svc.category_id).filter((s) => s.id !== svc.id).slice(0, 6);
+  const linkedProducts = getProductsForTestingService(svc.id, 36);
+  const linkedProductTotal = countProductsForTestingService(svc.id);
   const html = marked.parse(svc.content || "") as string;
   const standardFamilies = standardFamiliesFromText(svc.standards || "");
 
@@ -181,6 +189,46 @@ export default async function TestingServicePage({ params }: Props) {
           dangerouslySetInnerHTML={{ __html: html }}
         />
       ) : null}
+
+      {linkedProducts.length > 0 && (
+        <section className="mt-14">
+          <h2 className="font-display text-2xl font-semibold text-ink-950 mb-2">
+            BIS products tested to this standard
+          </h2>
+          <p className="text-sm text-ink-600 mb-6 max-w-2xl">
+            {formatNumber(linkedProductTotal)} BIS-notified product
+            {linkedProductTotal === 1 ? "" : "s"} map to {svc.standards || "this testing standard"} —
+            open a product for scheme, labs and indicative costs.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {linkedProducts.map((p) => (
+              <Link
+                key={p.id}
+                href={`/product/${p.slug}`}
+                className="rounded-2xl border border-cream-300 bg-white px-4 py-3 hover:border-butter-400 transition"
+              >
+                <div className="text-[11px] font-bold uppercase tracking-wide text-ink-500">
+                  {p.scheme === "CRS" ? "CRS" : "ISI Mark"} · {p.category_name}
+                </div>
+                <div className="mt-1 font-semibold text-ink-950 leading-snug">{p.name}</div>
+                {p.standard ? (
+                  <div className="mt-1 text-xs font-semibold text-butter-700">{p.standard}</div>
+                ) : null}
+              </Link>
+            ))}
+          </div>
+          {linkedProductTotal > linkedProducts.length ? (
+            <p className="mt-4 text-sm text-ink-500">
+              Showing {linkedProducts.length} of {formatNumber(linkedProductTotal)}. Search products by
+              standard on{" "}
+              <Link href="/products/all" className="font-semibold text-butter-700 hover:underline">
+                the product table
+              </Link>
+              .
+            </p>
+          ) : null}
+        </section>
+      )}
 
       {faqs.length > 0 && (
         <section className="mt-14" id="faqs">

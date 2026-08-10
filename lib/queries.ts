@@ -285,6 +285,32 @@ export function getTestingServicesForProduct(productId: number): TestingService[
     .all(productId) as TestingService[];
 }
 
+/** BIS products linked to a testing service (standard mapping). */
+export function getProductsForTestingService(
+  testingServiceId: number,
+  limit = 48
+): Product[] {
+  return getDb()
+    .prepare(
+      `${PRODUCT_SELECT}
+       JOIN product_testing_services pts ON pts.product_id = p.id
+       WHERE pts.testing_service_id = ?
+       ORDER BY pts.sort, p.name
+       LIMIT ?`
+    )
+    .all(testingServiceId, limit) as Product[];
+}
+
+export function countProductsForTestingService(testingServiceId: number): number {
+  return (
+    getDb()
+      .prepare(
+        "SELECT COUNT(*) AS n FROM product_testing_services WHERE testing_service_id = ?"
+      )
+      .get(testingServiceId) as { n: number }
+  ).n;
+}
+
 /** All testing services for admin product linking dropdowns. */
 export function getTestingServicesForAdminSelect(): {
   id: number;
@@ -742,6 +768,38 @@ export function getTestingServices(categoryId: number): TestingService[] {
        ORDER BY s.sort, s.name`
     )
     .all(categoryId) as TestingService[];
+}
+
+/** Category services with optional text filter (standard / name / product family). */
+export function getTestingServicesFiltered(
+  categoryId: number,
+  q?: string
+): TestingService[] {
+  const query = (q || "").trim();
+  if (!query) return getTestingServices(categoryId);
+  const like = `%${query.replace(/\s+/g, "%")}%`;
+  return getDb()
+    .prepare(
+      `SELECT s.*, c.slug AS category_slug, c.name AS category_name, c.icon AS category_icon
+       FROM testing_services s
+       JOIN testing_categories c ON c.id = s.category_id
+       WHERE s.category_id = ?
+         AND (s.name LIKE ? OR s.standards LIKE ? OR s.product_category LIKE ?
+              OR s.test_type LIKE ? OR s.summary LIKE ?)
+       ORDER BY
+         CASE WHEN s.standards LIKE ? THEN 0 WHEN s.name LIKE ? THEN 1 ELSE 2 END,
+         s.sort, s.name`
+    )
+    .all(
+      categoryId,
+      like,
+      like,
+      like,
+      like,
+      like,
+      `${query}%`,
+      `${query}%`
+    ) as TestingService[];
 }
 
 export function getTestingServiceBySlug(
