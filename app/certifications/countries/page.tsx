@@ -54,7 +54,7 @@ export default function CertificationsByCountryPage() {
           Determine which regulations apply in each destination market, then open that
           country’s guide for safety, EMC/wireless, telecom and energy pathways.{" "}
           <Link
-            href="/certifications/global-market-access"
+            href="/certifications#global-market-access"
             className="font-semibold text-butter-700 hover:underline"
           >
             How GMA works →
