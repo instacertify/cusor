@@ -54,7 +54,7 @@ export default async function CountryCertificationPage({ params }: Props) {
   const otherCountries = getCountryHubs().filter((h) => h.slug !== hub.slug);
   const faqs = getFaqs(`country:${hub.slug}`);
 
-  const jsonLd = buildJsonLd(enabledSchemaTypes(`country:${hub.slug}`, "page"), {
+  const jsonLd = buildJsonLd(enabledSchemaTypes(`country:${hub.slug}`, "country"), {
     name: `${hub.name} product certifications`,
     description: hub.metaDescription,
     url: `${BASE_URL}${countryHubPath(hub.slug)}`,

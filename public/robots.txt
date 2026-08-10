@@ -1,5 +1,6 @@
 # Certko — https://certko.com
-# All public pages may be crawled. Only admin and API routes are blocked.
+# Public pages may be crawled. Admin and API routes are blocked.
+# /search stays Allow so Google can read its noindex robots meta.
 
 User-agent: *
 Allow: /

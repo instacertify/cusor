@@ -6,7 +6,7 @@ import { getGdprPublicSettings } from "@/lib/gdpr";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "What is GDPR and DPDP? | Certko Privacy",
+  title: { absolute: "What is GDPR and DPDP? | Certko Privacy" },
   description:
     "Plain-language guide to the EU GDPR and India’s Digital Personal Data Protection (DPDP) Act — and how Certko handles personal data under both.",
   alternates: { canonical: "https://certko.com/privacy/gdpr-and-dpdp" },

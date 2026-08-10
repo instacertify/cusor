@@ -10,16 +10,18 @@ import SearchBox from "@/components/SearchBox";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { TestingStandardFamiliesPanel } from "@/components/MarketApplicability";
 import { getFaqs, getTestingCategories } from "@/lib/queries";
-import { BASE_URL, buildJsonLd } from "@/lib/seo";
+import { BASE_URL, INDEX_FOLLOW_ROBOTS, buildJsonLd, finalizeDocumentTitle } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Explore the Right Quality Assurance Solutions | Product Testing | Certko",
+  title: {
+    absolute: finalizeDocumentTitle("Product Testing & Quality Assurance Solutions"),
+  },
   description:
     "Explore the right quality assurance solutions — chemical, electrical, EMC, physical, microbiology and mechanical product testing. Find standards, scopes and accredited lab pathways with Certko.",
   alternates: { canonical: "https://certko.com/testing" },
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  robots: INDEX_FOLLOW_ROBOTS,
 };
 
 export default function TestingIndexPage() {
