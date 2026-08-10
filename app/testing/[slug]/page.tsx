@@ -15,15 +15,19 @@ import {
   getFaqs,
   getTestingCategories,
   getTestingCategoryBySlug,
-  getTestingServices,
+  getTestingServicesFiltered,
+  countTestingServices,
 } from "@/lib/queries";
-import { formatPriceRange } from "@/lib/format";
+import { formatPriceRange, formatNumber } from "@/lib/format";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
+const PAGE_SIZE = 36;
+
 interface Props {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ q?: string; page?: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -38,14 +42,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function TestingCategoryPage({ params }: Props) {
+export default async function TestingCategoryPage({ params, searchParams }: Props) {
   const { slug } = await params;
+  const sp = await searchParams;
   const cat = getTestingCategoryBySlug(slug);
   if (!cat) notFound();
-  const services = getTestingServices(cat.id);
+  const q = (sp.q || "").trim();
+  const totalInCategory = countTestingServices(cat.id);
+  const filtered = getTestingServicesFiltered(cat.id, q);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const page = Math.min(totalPages, Math.max(1, Number(sp.page) || 1));
+  const services = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const faqs = getFaqs(`testcat:${cat.slug}`);
   const others = getTestingCategories().filter((c) => c.slug !== cat.slug);
   const html = marked.parse(cat.content || "") as string;
+  const pageHref = (p: number) => {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (p > 1) params.set("page", String(p));
+    const qs = params.toString();
+    return qs ? `/testing/${cat.slug}?${qs}` : `/testing/${cat.slug}`;
+  };
 
   const jsonLd = buildJsonLd(enabledSchemaTypes(`testcat:${cat.id}`, "testcat"), {
     name: `${cat.name} Services`,
@@ -84,11 +101,19 @@ export default async function TestingCategoryPage({ params }: Props) {
                 {cat.name}
               </h1>
               <p className="text-sm font-semibold text-ink-500 mt-1">
-                {services.length} test service{services.length === 1 ? "" : "s"}
+                {formatNumber(totalInCategory)} testing standard
+                {totalInCategory === 1 ? "" : "s"}
+                {q
+                  ? ` · ${formatNumber(filtered.length)} match${filtered.length === 1 ? "" : "es"}`
+                  : ""}
               </p>
             </div>
           </div>
           <p className="mt-5 text-lg text-ink-600 leading-relaxed">{cat.summary}</p>
+          <p className="mt-3 text-sm text-ink-600 max-w-2xl">
+            Includes BIS certification testing standards mapped from notified products — every IS
+            standard is a laboratory testing standard under this discipline.
+          </p>
           <div className="mt-6 flex flex-col sm:flex-row flex-wrap gap-3">
             <RequestQuoteButton subject={cat.name} kind="test" />
             <RequestQuoteButton subject={`${cat.name} consulting`} kind="consulting" variant="secondary" />
@@ -114,12 +139,39 @@ export default async function TestingCategoryPage({ params }: Props) {
 
       <section className="mt-14">
         <h2 className="font-display text-2xl font-semibold text-ink-950 mb-2">
-          Tests & services in this category
+          Tests & standards in this category
         </h2>
-        <p className="text-sm text-ink-600 mb-6 max-w-2xl">
-          Open a testing solution for standards, market acceptance (IS · India / IEC · Global),
-          tentative prices and booking.
+        <p className="text-sm text-ink-600 mb-4 max-w-2xl">
+          Open a testing standard for BIS product coverage, market acceptance (IS · India / IEC ·
+          Global), tentative prices and booking.
         </p>
+        <form
+          action={`/testing/${cat.slug}`}
+          method="GET"
+          className="mb-6 flex flex-col sm:flex-row gap-3 max-w-xl"
+        >
+          <input
+            type="search"
+            name="q"
+            defaultValue={q}
+            placeholder="Filter by IS standard, product family or test name…"
+            className="flex-1 rounded-xl border border-cream-300 px-4 py-2.5 text-sm outline-none focus:border-butter-500"
+          />
+          <button
+            type="submit"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-butter-500 px-5 text-sm font-semibold text-ink-950 transition hover:bg-butter-400"
+          >
+            Filter
+          </button>
+          {q ? (
+            <Link
+              href={`/testing/${cat.slug}`}
+              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-cream-300 px-4 text-sm font-semibold text-ink-800"
+            >
+              Clear
+            </Link>
+          ) : null}
+        </form>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {services.map((s) => (
             <div
@@ -170,7 +222,32 @@ export default async function TestingCategoryPage({ params }: Props) {
           ))}
         </div>
         {services.length === 0 && (
-          <p className="text-sm text-ink-500">No tests published in this category yet.</p>
+          <p className="text-sm text-ink-500">
+            {q ? "No testing standards match that filter." : "No tests published in this category yet."}
+          </p>
+        )}
+        {totalPages > 1 && (
+          <nav className="mt-8 flex flex-wrap items-center gap-3 text-sm" aria-label="Pagination">
+            {page > 1 ? (
+              <Link
+                href={pageHref(page - 1)}
+                className="inline-flex min-h-10 items-center rounded-xl border border-cream-300 px-4 font-semibold text-ink-800"
+              >
+                Previous
+              </Link>
+            ) : null}
+            <span className="text-ink-600">
+              Page {page} of {totalPages}
+            </span>
+            {page < totalPages ? (
+              <Link
+                href={pageHref(page + 1)}
+                className="inline-flex min-h-10 items-center rounded-xl border border-cream-300 px-4 font-semibold text-ink-800"
+              >
+                Next
+              </Link>
+            ) : null}
+          </nav>
         )}
       </section>
 
