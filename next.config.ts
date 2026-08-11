@@ -3,6 +3,12 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // MDXEditor ships as ESM; ensure Next transpiles it for the App Router admin bundle.
   transpilePackages: ["@mdxeditor/editor"],
+  // Blog cover uploads (multipart) often exceed the 1MB Server Action default.
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "12mb",
+    },
+  },
   // Blog/admin uploads may include SVG covers; raster formats use the default optimizer.
   images: {
     dangerouslyAllowSVG: true,
@@ -19,6 +25,15 @@ const nextConfig: NextConfig = {
       "./node_modules/sql.js/dist/sql-wasm.js",
       "./node_modules/sql.js/dist/sql-wasm.wasm",
     ],
+  },
+  // When public/uploads is not writable, files live next to SQLite and are served here.
+  async rewrites() {
+    return [
+      {
+        source: "/uploads/:path*",
+        destination: "/api/uploads/:path*",
+      },
+    ];
   },
   async headers() {
     return [
