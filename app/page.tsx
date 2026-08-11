@@ -7,6 +7,7 @@ import ProductCard from "@/components/ProductCard";
 import FaqAccordion from "@/components/FaqAccordion";
 import CtaBanner from "@/components/CtaBanner";
 import GlobeWatermark from "@/components/GlobeWatermark";
+import HeroLabBackground from "@/components/HeroLabBackground";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import TrustedBrandsStrip from "@/components/TrustedBrandsStrip";
@@ -15,6 +16,7 @@ import MarketCard from "@/components/MarketCard";
 import { TalkToCertificationExpertLink } from "@/components/TalkToCertificationExpert";
 import { ensureDbReady, getSettings } from "@/lib/db";
 import {
+  getActiveHeroSlides,
   getCategories,
   getCertifications,
   getFeaturedProducts,
@@ -23,6 +25,7 @@ import {
   getTestingCategories,
   getUpcomingQcos,
 } from "@/lib/queries";
+import { heroSlidesToBackground } from "@/lib/hero-slides";
 import { formatNumber } from "@/lib/format";
 import { countryHubPath, getFeaturedCountryHubs } from "@/lib/country-certifications";
 import { BASE_URL, buildJsonLd, buildMetadata } from "@/lib/seo";
@@ -64,6 +67,7 @@ const HOW_IT_WORKS = [
 export default async function HomePage() {
   await ensureDbReady();
   const settings = getSettings();
+  const heroSlides = getActiveHeroSlides();
   const categories = getCategories();
   const certifications = getCertifications().slice(0, 7);
   const countryHubs = getFeaturedCountryHubs();
@@ -97,9 +101,13 @@ export default async function HomePage() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
         />
       )}
-      {/* Hero — refined tilted revolving line-art globe on the right */}
+      {/* Hero — admin-managed sliding banners (full-bleed), else globe watermark */}
       <section className="relative overflow-hidden min-h-[min(74vh,680px)] flex flex-col justify-center">
-        <GlobeWatermark />
+        {heroSlides.length > 0 ? (
+          <HeroLabBackground watermark slides={heroSlidesToBackground(heroSlides)} />
+        ) : (
+          <GlobeWatermark />
+        )}
         <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-10 sm:pt-14 pb-12 sm:pb-16">
           <div className="animate-rise min-w-0 max-w-xl sm:max-w-lg lg:max-w-xl">
             <p className="font-display text-sm font-semibold tracking-wide text-ink-800 mb-3 sm:mb-4">
