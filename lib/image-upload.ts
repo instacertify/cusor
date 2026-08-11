@@ -4,6 +4,8 @@
  * always serve with a correct Content-Type on the public site.
  */
 
+import { isUploadUrl } from "@/lib/upload-urls";
+
 export const BLOG_IMAGE_ACCEPT =
   "image/png,image/jpeg,image/jpg,image/webp,image/gif,image/avif,image/bmp,image/svg+xml,.png,.jpg,.jpeg,.jpe,.jfif,.webp,.gif,.avif,.bmp,.svg";
 
@@ -60,7 +62,7 @@ export function shouldSkipImageOptimization(src: string): boolean {
   // Admin uploads may live outside public/ (data/uploads fallback). next/image
   // only reads public/, so always use a native <img> for /uploads URLs — the
   // /uploads → /api/uploads rewrite serves the correct Content-Type.
-  if (src.startsWith("/uploads/") || src.startsWith("/api/uploads/")) return true;
+  if (isUploadUrl(src)) return true;
   const ext = extFromPath(src);
   if (!ext) return true;
   return !OPTIMIZABLE_EXTS.has(ext);
