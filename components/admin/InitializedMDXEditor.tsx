@@ -24,8 +24,10 @@ import {
   Separator,
   diffSourcePlugin,
   DiffSourceToggleWrapper,
+  HighlightToggle,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
+import TextColorToolbar from "./TextColorToolbar";
 
 type Props = Omit<MDXEditorProps, "markdown"> & {
   markdown: string;
@@ -56,6 +58,8 @@ export default function InitializedMDXEditor({ editorRef, ...props }: Props) {
               <UndoRedo />
               <Separator />
               <BoldItalicUnderlineToggles />
+              <HighlightToggle />
+              <TextColorToolbar />
               <Separator />
               <BlockTypeSelect />
               <Separator />

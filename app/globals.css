@@ -336,6 +336,14 @@ video {
   padding: 0.1rem 0.35rem;
   font-size: 0.875em;
 }
+/* Highlight marks from the admin editor */
+.mdxeditor-admin mark,
+.prose-certko mark {
+  background: #fde68a;
+  color: inherit;
+  padding: 0 0.15em;
+  border-radius: 2px;
+}
 
 /* subtle entrance animation */
 @keyframes rise {
