@@ -757,6 +757,7 @@ export function seedDatabase(db: SqliteDatabase) {
       hero_heading: "Find the right certification and testing for your product",
       hero_subheading:
         "Type a product name or HSN. We’ll show the schemes that usually apply — BIS, BEE, GMARK, CE, FCC, SABER, WPC — plus the tests, labs and ballpark costs so you know what to book next.",
+      hero_show_globe: "1",
       contact_email: "info@certko.com",
       contact_phone: "+91-9999118039",
       contact_address:

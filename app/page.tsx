@@ -68,6 +68,10 @@ export default async function HomePage() {
   await ensureDbReady();
   const settings = getSettings();
   const heroSlides = getActiveHeroSlides();
+  // Admin toggle (Site Settings): keep the Y-axis revolving globe even when banner slides are on.
+  // Always fall back to the globe when there are no active slides so the hero is never empty.
+  const showHeroGlobe =
+    (settings.hero_show_globe ?? "1") === "1" || heroSlides.length === 0;
   const categories = getCategories();
   const certifications = getCertifications().slice(0, 7);
   const countryHubs = getFeaturedCountryHubs();
@@ -101,13 +105,12 @@ export default async function HomePage() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
         />
       )}
-      {/* Hero — admin-managed sliding banners (full-bleed), else globe watermark */}
+      {/* Hero — optional sliding banners + optional revolving globe (admin-controlled) */}
       <section className="relative overflow-hidden min-h-[min(74vh,680px)] flex flex-col justify-center">
         {heroSlides.length > 0 ? (
           <HeroLabBackground watermark slides={heroSlidesToBackground(heroSlides)} />
-        ) : (
-          <GlobeWatermark />
-        )}
+        ) : null}
+        {showHeroGlobe ? <GlobeWatermark /> : null}
         <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 pt-10 sm:pt-14 pb-12 sm:pb-16">
           <div className="animate-rise min-w-0 max-w-xl sm:max-w-lg lg:max-w-xl">
             <p className="font-display text-sm font-semibold tracking-wide text-ink-800 mb-3 sm:mb-4">

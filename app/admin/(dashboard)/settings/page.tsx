@@ -120,6 +120,24 @@ export default async function SettingsPage({ searchParams }: Props) {
           </p>
           <Field label="Hero Heading" name="hero_heading" defaultValue={s.hero_heading} />
           <TextArea label="Hero Subheading" name="hero_subheading" defaultValue={s.hero_subheading} rows={3} />
+          <label className="flex items-start gap-2.5 text-sm text-ink-800 rounded-xl border border-cream-300 bg-cream-50/70 px-4 py-3">
+            <input type="hidden" name="hero_show_globe" value="0" />
+            <input
+              type="checkbox"
+              name="hero_show_globe"
+              value="1"
+              defaultChecked={(s.hero_show_globe ?? "1") === "1"}
+              className="mt-0.5 rounded border-cream-300"
+            />
+            <span>
+              <span className="font-semibold text-ink-950">Show revolving Y-axis globe</span>
+              <span className="block text-ink-600 mt-0.5 text-[13px] leading-relaxed">
+                Keeps the line-art globe watermark on the homepage hero (including when banner slides
+                are active). Turn off to use banner slides alone. If there are no active banners, the
+                globe still shows as the fallback background.
+              </span>
+            </span>
+          </label>
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-5">
