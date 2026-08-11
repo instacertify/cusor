@@ -11,9 +11,11 @@ export type HeroBackgroundSlide = {
   label: string;
   href: string;
   ctaLabel: string;
-  videoSrc: string;
+  videoSrc?: string;
   gifSrc?: string;
-  posterSrc: string;
+  imageSrc?: string;
+  posterSrc?: string;
+  durationMs?: number;
 };
 
 export function mediaTypeFromPath(filePath: string): "image" | "gif" | "video" {
@@ -77,26 +79,29 @@ export const DEFAULT_TESTING_HERO_SLIDES = [
   },
 ] as const;
 
-/** Map DB hero slides into the full-bleed background video carousel. */
+/** Map DB hero slides into the full-bleed background carousel (image / GIF / video). */
 export function heroSlidesToBackground(slides: HeroSlide[]): HeroBackgroundSlide[] {
   return slides
     .filter((s) => s.media)
     .map((s) => {
-      const ext = path.extname(s.media).toLowerCase();
+      const type = s.media_type || mediaTypeFromPath(s.media);
+      const isVideo = type === "video";
+      const isGif = type === "gif";
       const base = s.media.replace(/\.[^.]+$/, "");
-      const isVideo = HERO_VIDEO_EXTS.includes(ext);
-      const isGif = ext === ".gif";
-      const guessedPoster = `${base
-        .replace(/-testing$/, "")
-        .replace(/-quality$/, "")}-poster.jpg`;
+      const guessedPoster =
+        isVideo && s.media.startsWith("/images/testing/")
+          ? `${base.replace(/-testing$/, "").replace(/-quality$/, "")}-poster.jpg`
+          : "";
       return {
         id: String(s.id),
-        label: s.title || "Testing",
+        label: s.title || "Hero banner",
         href: s.link_href || "/testing",
         ctaLabel: (s.link_label || "Explore more").trim() || "Explore more",
-        videoSrc: isVideo ? s.media : `${base}.mp4`,
-        gifSrc: isGif ? s.media : `${base}.gif`,
-        posterSrc: s.poster || guessedPoster,
+        videoSrc: isVideo ? s.media : undefined,
+        gifSrc: isGif ? s.media : undefined,
+        imageSrc: !isVideo && !isGif ? s.media : undefined,
+        posterSrc: s.poster || (!isVideo ? s.media : guessedPoster) || undefined,
+        durationMs: Math.max(2000, s.duration_ms || 6000),
       };
     });
 }
@@ -173,15 +178,7 @@ export function ensureHeroSlidesCatalog(db: SqliteDatabase) {
     return;
   }
 
-  // Soft upgrade path C: ensure all category slides exist when missing by media path
-  const medias = new Set(
-    (
-      db.prepare("SELECT media FROM hero_slides").all() as { media: string }[]
-    ).map((r) => r.media)
-  );
-  for (const slide of DEFAULT_TESTING_HERO_SLIDES) {
-    if (!medias.has(slide.media)) insertSlide(db, slide);
-  }
+  // Do not re-insert deleted default slides — admins own the catalog after seed.
 
   // Soft upgrade path D: normalize Explore more labels on known default media rows.
   db.prepare(

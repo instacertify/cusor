@@ -111,12 +111,12 @@ export default async function SettingsPage({ searchParams }: Props) {
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Homepage Hero</h2>
           <p className="text-sm text-ink-600">
-            Edit the main headline here. Manage the dark stats strip in the section below, and
-            category GIF/video slides plus <strong>Explore more</strong> buttons on{" "}
+            Edit the main headline here. Upload and reorder multiple sliding hero banner images /
+            GIFs / videos on{" "}
             <Link href="/admin/hero" className="font-semibold text-butter-700 hover:underline">
-              Hero Banner
+              Hero Banners
             </Link>
-            .
+            . Manage the dark stats strip in the section below.
           </p>
           <Field label="Hero Heading" name="hero_heading" defaultValue={s.hero_heading} />
           <TextArea label="Hero Subheading" name="hero_subheading" defaultValue={s.hero_subheading} rows={3} />

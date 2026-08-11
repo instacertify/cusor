@@ -7,9 +7,12 @@ export type TestingVideoSlide = {
   label: string;
   href: string;
   ctaLabel?: string;
-  videoSrc: string;
+  videoSrc?: string;
   gifSrc?: string;
-  posterSrc: string;
+  /** Static image upload (jpg/png/webp/…) */
+  imageSrc?: string;
+  posterSrc?: string;
+  durationMs?: number;
 };
 
 const DEFAULT_SLIDES: TestingVideoSlide[] = [
@@ -21,6 +24,7 @@ const DEFAULT_SLIDES: TestingVideoSlide[] = [
     videoSrc: "/images/testing/electrical-testing.mp4",
     gifSrc: "/images/testing/electrical-testing.gif",
     posterSrc: "/images/testing/electrical-poster.jpg",
+    durationMs: 7000,
   },
   {
     id: "mechanical",
@@ -30,6 +34,7 @@ const DEFAULT_SLIDES: TestingVideoSlide[] = [
     videoSrc: "/images/testing/mechanical-testing.mp4",
     gifSrc: "/images/testing/mechanical-testing.gif",
     posterSrc: "/images/testing/mechanical-poster.jpg",
+    durationMs: 7000,
   },
   {
     id: "emc",
@@ -39,6 +44,7 @@ const DEFAULT_SLIDES: TestingVideoSlide[] = [
     videoSrc: "/images/testing/emc-testing.mp4",
     gifSrc: "/images/testing/emc-testing.gif",
     posterSrc: "/images/testing/emc-poster.jpg",
+    durationMs: 7000,
   },
   {
     id: "chemical",
@@ -48,6 +54,7 @@ const DEFAULT_SLIDES: TestingVideoSlide[] = [
     videoSrc: "/images/testing/chemical-testing.mp4",
     gifSrc: "/images/testing/chemical-testing.gif",
     posterSrc: "/images/testing/chemical-poster.jpg",
+    durationMs: 7000,
   },
   {
     id: "certification",
@@ -57,17 +64,23 @@ const DEFAULT_SLIDES: TestingVideoSlide[] = [
     videoSrc: "/images/testing/certification-quality.mp4",
     gifSrc: "/images/testing/certification-quality.gif",
     posterSrc: "/images/testing/certification-poster.jpg",
+    durationMs: 7000,
   },
 ];
 
 const HOLD_MS = 8000;
 
+function stillSrc(slide: TestingVideoSlide) {
+  return slide.posterSrc || slide.imageSrc || slide.gifSrc || "";
+}
+
 /**
  * Soft full-bleed hero watermark — media sits behind the hero wall,
  * never as a highlighted card or floating CTA.
+ * Pass `slides={[]}` for no media; omit `slides` to use built-in defaults.
  */
 export default function HeroLabBackground({
-  slides = DEFAULT_SLIDES,
+  slides,
   watermark = false,
 }: {
   slides?: TestingVideoSlide[];
@@ -79,7 +92,7 @@ export default function HeroLabBackground({
   const [mode, setMode] = useState<"video" | "gif" | "still">("video");
   const [reduced, setReduced] = useState(false);
 
-  const list = slides.length > 0 ? slides : DEFAULT_SLIDES;
+  const list = slides ?? DEFAULT_SLIDES;
   const slide = list[index] ?? list[0];
   const count = list.length;
 
@@ -92,42 +105,53 @@ export default function HeroLabBackground({
   }, []);
 
   useEffect(() => {
+    if (!slide) return;
     if (reduced) {
       setMode("still");
       return;
     }
-    setMode("video");
-  }, [reduced, index]);
+    if (slide.videoSrc) {
+      setMode("video");
+      return;
+    }
+    if (slide.gifSrc) {
+      setMode("gif");
+      return;
+    }
+    setMode("still");
+  }, [reduced, index, slide]);
 
   useEffect(() => {
-    if (reduced || mode !== "video") return;
+    if (reduced || mode !== "video" || !slide?.videoSrc) return;
     const el = videoRef.current;
     if (!el) return;
     el.currentTime = 0;
-    void el.play().catch(() => setMode("gif"));
-    const onError = () => setMode("gif");
+    void el.play().catch(() => setMode(slide.gifSrc ? "gif" : "still"));
+    const onError = () => setMode(slide.gifSrc ? "gif" : "still");
     el.addEventListener("error", onError);
     return () => el.removeEventListener("error", onError);
   }, [mode, slide, reduced]);
 
   useEffect(() => {
-    if (reduced || count <= 1) return;
+    if (reduced || count <= 1 || !slide) return;
+    const hold = Math.max(2000, slide.durationMs || HOLD_MS);
     const t = window.setTimeout(() => {
       setIndex((i) => (i + 1) % count);
-    }, HOLD_MS);
+    }, hold);
     return () => window.clearTimeout(t);
-  }, [index, count, reduced]);
+  }, [index, count, reduced, slide]);
 
-  if (!slide) return null;
+  if (!slide || count === 0) return null;
 
   const mediaTone = watermark
     ? "opacity-35 saturate-[0.55] contrast-[0.95] blur-[0.5px]"
     : "opacity-70";
+  const still = stillSrc(slide);
 
   return (
     <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
       <div className="absolute inset-0">
-        {mode === "video" ? (
+        {mode === "video" && slide.videoSrc ? (
           <video
             key={slide.videoSrc}
             ref={videoRef}
@@ -137,7 +161,7 @@ export default function HeroLabBackground({
             loop
             playsInline
             preload="metadata"
-            poster={slide.posterSrc}
+            poster={slide.posterSrc || undefined}
           >
             <source src={slide.videoSrc} type="video/mp4" />
           </video>
@@ -153,11 +177,11 @@ export default function HeroLabBackground({
           />
         ) : null}
 
-        {mode === "still" || (mode === "gif" && !slide.gifSrc) ? (
+        {mode === "still" && still ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            key={slide.posterSrc}
-            src={slide.posterSrc}
+            key={still}
+            src={still}
             alt=""
             className={`absolute inset-0 h-full w-full scale-110 object-cover ${mediaTone}`}
           />
