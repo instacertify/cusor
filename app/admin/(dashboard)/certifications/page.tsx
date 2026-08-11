@@ -7,7 +7,7 @@ import {
   createCertificationPreset,
   saveCertProduct,
 } from "../../actions";
-import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import { Field, TextArea, MarkdownEditor, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import BulkImportLink from "@/components/admin/BulkImportLink";
 
 export const dynamic = "force-dynamic";
@@ -85,7 +85,11 @@ export default async function AdminCertifications({ searchParams }: Props) {
               <Field label="Menu sort" name="sort" type="number" placeholder="auto" />
             </div>
             <Field label="Summary" name="summary" placeholder="One-line description for cards & search" />
-            <TextArea label="Content writeup (Markdown)" name="content" rows={4} />
+            <MarkdownEditor
+              label="Content writeup"
+              name="content"
+              minHeightClass="min-h-[12rem]"
+            />
             <Field label="Meta title" name="meta_title" placeholder="auto from name" />
             <TextArea label="Meta description" name="meta_description" rows={2} />
             <ImageUpload current="" label="Front image (optional)" allowClear={false} />
@@ -153,7 +157,11 @@ export default async function AdminCertifications({ searchParams }: Props) {
                 <Field label="Max testing price (INR)" name="max_price" type="number" />
               </div>
               <TextArea label="Summary" name="summary" rows={2} />
-              <TextArea label="Content (Markdown)" name="content" rows={3} />
+              <MarkdownEditor
+                label="Content"
+                name="content"
+                minHeightClass="min-h-[12rem]"
+              />
               <TextArea label="Labs (indicative)" name="labs" rows={2} />
               <TextArea label="Fee note" name="fee_note" rows={2} />
               <ImageUpload current="" label="Product image" allowClear={false} />

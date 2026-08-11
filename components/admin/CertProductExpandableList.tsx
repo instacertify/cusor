@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { CertProduct } from "@/lib/db";
 import { saveCertProduct, deleteCertProduct } from "@/app/admin/actions";
-import { Field, TextArea, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import { Field, TextArea, MarkdownEditor, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 
 export default function CertProductExpandableList({
@@ -109,7 +109,12 @@ export default function CertProductExpandableList({
                   )}
                   {hideLabs && <input type="hidden" name="labs" value="" />}
                   <TextArea label="Fee note" name="fee_note" defaultValue={p.fee_note} rows={2} />
-                  <TextArea label="Content (Markdown)" name="content" defaultValue={p.content} rows={6} />
+                  <MarkdownEditor
+                    label="Content"
+                    name="content"
+                    defaultValue={p.content}
+                    minHeightClass="min-h-[14rem]"
+                  />
                   <TextArea
                     label="Extras JSON"
                     name="extras"

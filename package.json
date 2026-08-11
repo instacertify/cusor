@@ -13,6 +13,7 @@
     "sitemap:generate": "node scripts/generate-sitemap.mjs"
   },
   "dependencies": {
+    "@mdxeditor/editor": "^4.2.0",
     "bcryptjs": "^3.0.3",
     "marked": "^18.0.7",
     "next": "16.2.12",

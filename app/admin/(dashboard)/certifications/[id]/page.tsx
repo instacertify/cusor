@@ -9,7 +9,7 @@ import {
   saveFaq,
   deleteFaq,
 } from "../../../actions";
-import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import { Field, TextArea, MarkdownEditor, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 
 export const dynamic = "force-dynamic";
@@ -154,7 +154,12 @@ export default async function AdminCertificationEdit({ params, searchParams }: P
         </section>
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Content writeup</h2>
-          <TextArea label="Content (Markdown)" name="content" defaultValue={cert.content} rows={16} />
+          <MarkdownEditor
+            label="Certification content"
+            name="content"
+            defaultValue={cert.content}
+            minHeightClass="min-h-[22rem]"
+          />
         </section>
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">SEO</h2>

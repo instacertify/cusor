@@ -922,3 +922,20 @@ html:not([data-icon-style]) .icon-chip--neutral {
   color: var(--color-ink-800);
   border: 1.5px solid var(--color-cream-300);
 }
+
+/* Admin Markdown editor (MDXEditor) */
+.mdxeditor-admin .mdxeditor {
+  --basePageBg: #ffffff;
+  --baseBg: #ffffff;
+  --baseBorder: #e8e0d4;
+  --baseTextContrast: #1a1a1a;
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+.mdxeditor-admin .mdxeditor-toolbar {
+  background: #faf6ee;
+  border-bottom: 1px solid #e8e0d4;
+  flex-wrap: wrap;
+}
+.mdxeditor-admin .mdxeditor-root-contenteditable {
+  min-height: inherit;
+}

@@ -10,7 +10,7 @@ import {
   deleteFaq,
   saveTestingService,
 } from "../../../actions";
-import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import { Field, TextArea, MarkdownEditor, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 
 export const dynamic = "force-dynamic";
@@ -161,7 +161,11 @@ export default async function AdminTestingEdit({ params, searchParams }: Props) 
             />
           </div>
           <TextArea label="Summary" name="summary" rows={2} />
-          <TextArea label="Content writeup (Markdown)" name="content" rows={5} />
+          <MarkdownEditor
+            label="Content writeup"
+            name="content"
+            minHeightClass="min-h-[12rem]"
+          />
           <Field label="Meta Title" name="meta_title" />
           <TextArea label="Meta Description" name="meta_description" rows={2} />
           <ImageUpload current="" label="Test image" allowClear={false} />
@@ -184,7 +188,12 @@ export default async function AdminTestingEdit({ params, searchParams }: Props) 
         </section>
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Category content writeup</h2>
-          <TextArea label="Content (Markdown)" name="content" defaultValue={cat.content} rows={14} />
+          <MarkdownEditor
+            label="Category content"
+            name="content"
+            defaultValue={cat.content}
+            minHeightClass="min-h-[20rem]"
+          />
         </section>
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Category SEO</h2>

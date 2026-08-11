@@ -18,7 +18,7 @@ import {
   addProductTesting,
   removeProductTesting,
 } from "../../../actions";
-import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import { Field, TextArea, MarkdownEditor, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 import { formatINR } from "@/lib/format";
 
@@ -99,12 +99,12 @@ export default async function AdminProductEdit({ params, searchParams }: Props) 
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Content Writeup</h2>
-          <TextArea
-            label="Description (Markdown)"
+          <MarkdownEditor
+            label="Product description"
             name="description"
             defaultValue={product.description}
-            rows={16}
-            hint="Shown on the product page. Supports ## headings, **bold** and lists."
+            minHeightClass="min-h-[22rem]"
+            hint="Shown on the product page. Use the toolbar or Source mode for Markdown."
           />
         </section>
 
