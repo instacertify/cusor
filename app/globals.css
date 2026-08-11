@@ -345,6 +345,62 @@ video {
   border-radius: 2px;
 }
 
+/* Sequenced PDF viewers inserted from the admin Markdown editor */
+.prose-certko .certko-pdf-sequence,
+.certko-pdf-sequence {
+  display: grid;
+  gap: 1.25rem;
+  margin: 1.5rem 0;
+}
+.certko-pdf-item {
+  margin: 0;
+  border: 1px solid var(--color-cream-300);
+  border-radius: 1rem;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgb(20 24 32 / 0.04);
+}
+.certko-pdf-item figcaption {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-ink-950);
+  border-bottom: 1px solid var(--color-cream-300);
+  background: var(--color-cream-50);
+}
+.certko-pdf-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 0.35rem;
+  border-radius: 0.45rem;
+  background: var(--color-ink-950);
+  color: var(--color-cream-50);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.certko-pdf-frame {
+  display: block;
+  width: 100%;
+  height: min(70vh, 720px);
+  border: 0;
+  background: var(--color-cream-100);
+}
+.certko-pdf-actions {
+  margin: 0 !important;
+  padding: 0.75rem 1rem 1rem;
+  font-size: 0.875rem;
+}
+.certko-pdf-actions a {
+  font-weight: 600;
+}
+
 /* subtle entrance animation */
 @keyframes rise {
   from {
