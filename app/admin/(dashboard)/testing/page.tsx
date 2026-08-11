@@ -2,7 +2,7 @@ import Link from "next/link";
 import IconChip from "@/components/IconChip";
 import { getTestingCategories, getTestingServices } from "@/lib/queries";
 import { createTestingCategory, saveTestingService } from "../../actions";
-import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import { Field, TextArea, MarkdownEditor, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import BulkImportLink from "@/components/admin/BulkImportLink";
 
 export const dynamic = "force-dynamic";
@@ -51,10 +51,10 @@ export default async function AdminTesting({ searchParams }: Props) {
               <Field label="Menu sort" name="sort" type="number" placeholder="auto" />
             </div>
             <Field label="Summary" name="summary" placeholder="One-line description for cards & search" />
-            <TextArea
-              label="Category content (Markdown)"
+            <MarkdownEditor
+              label="Category content"
               name="content"
-              rows={4}
+              minHeightClass="min-h-[12rem]"
               hint="Shown on the public category page. You can expand this after create."
             />
             <Field label="Meta title" name="meta_title" placeholder="auto from name" />
@@ -133,7 +133,11 @@ export default async function AdminTesting({ searchParams }: Props) {
                 />
               </div>
               <TextArea label="Summary" name="summary" rows={2} />
-              <TextArea label="Content writeup (Markdown)" name="content" rows={4} />
+              <MarkdownEditor
+                label="Content writeup"
+                name="content"
+                minHeightClass="min-h-[12rem]"
+              />
               <Field label="Meta title" name="meta_title" />
               <TextArea label="Meta description" name="meta_description" rows={2} />
               <ImageUpload current="" label="Test image" allowClear={false} />

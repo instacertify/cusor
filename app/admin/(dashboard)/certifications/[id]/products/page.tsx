@@ -4,7 +4,7 @@ import { ensureDbReady, getDb } from "@/lib/db";
 import type { Certification } from "@/lib/db";
 import { getCertProducts } from "@/lib/queries";
 import { saveCertProduct } from "../../../../actions";
-import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import { Field, TextArea, MarkdownEditor, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import CertProductExpandableList from "@/components/admin/CertProductExpandableList";
 
 export const dynamic = "force-dynamic";
@@ -145,7 +145,11 @@ export default async function AdminCertificationProductsList({ params, searchPar
           {cert.slug !== "bee" && <TextArea label="Labs (indicative)" name="labs" rows={2} />}
           {cert.slug === "bee" && <input type="hidden" name="labs" value="" />}
           <TextArea label="Fee note" name="fee_note" rows={2} />
-          <TextArea label="Content (Markdown)" name="content" rows={4} />
+          <MarkdownEditor
+            label="Content"
+            name="content"
+            minHeightClass="min-h-[12rem]"
+          />
           <TextArea
             label="Extras JSON"
             name="extras"

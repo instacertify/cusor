@@ -336,6 +336,14 @@ video {
   padding: 0.1rem 0.35rem;
   font-size: 0.875em;
 }
+/* Highlight marks from the admin editor */
+.mdxeditor-admin mark,
+.prose-certko mark {
+  background: #fde68a;
+  color: inherit;
+  padding: 0 0.15em;
+  border-radius: 2px;
+}
 
 /* subtle entrance animation */
 @keyframes rise {
@@ -921,4 +929,21 @@ html:not([data-icon-style]) .icon-chip--neutral {
   background: transparent;
   color: var(--color-ink-800);
   border: 1.5px solid var(--color-cream-300);
+}
+
+/* Admin Markdown editor (MDXEditor) */
+.mdxeditor-admin .mdxeditor {
+  --basePageBg: #ffffff;
+  --baseBg: #ffffff;
+  --baseBorder: #e8e0d4;
+  --baseTextContrast: #1a1a1a;
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+.mdxeditor-admin .mdxeditor-toolbar {
+  background: #faf6ee;
+  border-bottom: 1px solid #e8e0d4;
+  flex-wrap: wrap;
+}
+.mdxeditor-admin .mdxeditor-root-contenteditable {
+  min-height: inherit;
 }

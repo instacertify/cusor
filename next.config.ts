@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // MDXEditor ships as ESM; ensure Next transpiles it for the App Router admin bundle.
+  transpilePackages: ["@mdxeditor/editor"],
   // Blog/admin uploads may include SVG covers; raster formats use the default optimizer.
   images: {
     dangerouslyAllowSVG: true,

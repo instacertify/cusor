@@ -63,6 +63,7 @@ export function TextArea({
 
 export { default as SavedBanner } from "./SavedBanner";
 export { default as SubmitButton } from "./SubmitButton";
+export { default as MarkdownEditor } from "./MarkdownEditor";
 
 export function ImageUpload({
   current,

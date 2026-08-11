@@ -4,7 +4,7 @@ import { getPostById, getAuthors } from "@/lib/queries";
 import { savePost, deletePost } from "../../../actions";
 import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
 import BlogScheduleFields from "@/components/admin/BlogScheduleFields";
-import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import { Field, TextArea, MarkdownEditor, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import { BLOG_IMAGE_ACCEPT, BLOG_IMAGE_HINT } from "@/lib/image-upload";
 import { toDatetimeLocalValue } from "@/lib/blog-scheduler";
 
@@ -97,12 +97,12 @@ export default async function AdminPostEdit({ params, searchParams }: Props) {
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Article Content</h2>
-          <TextArea
-            label="Content (Markdown)"
+          <MarkdownEditor
+            label="Article body"
             name="content"
             defaultValue={post.content}
-            rows={24}
-            hint="Use ## for section headings, **bold**, - lists, [links](/products) and | tables |."
+            minHeightClass="min-h-[28rem]"
+            hint="Headings, bold, lists, links and tables. Switch to Source for raw Markdown."
           />
         </section>
 

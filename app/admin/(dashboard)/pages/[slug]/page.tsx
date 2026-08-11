@@ -4,7 +4,7 @@ import { getPage } from "@/lib/queries";
 import { pagePublicPath } from "@/lib/pages-nav";
 import { savePage, deletePage } from "../../../actions";
 import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
-import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
+import { Field, TextArea, MarkdownEditor, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import PageNavPlacement from "@/components/admin/PageNavPlacement";
 
 export const dynamic = "force-dynamic";
@@ -102,12 +102,12 @@ export default async function AdminPageEdit({ params, searchParams }: Props) {
         </section>
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Content Writeup</h2>
-          <TextArea
-            label="Content (Markdown)"
+          <MarkdownEditor
+            label="Page content"
             name="content"
             defaultValue={page.content}
-            rows={22}
-            hint="Use ## for section headings, **bold**, - lists, and | tables |. Add FAQs under Admin → FAQs with scope page:this-slug."
+            minHeightClass="min-h-[26rem]"
+            hint="Headings, bold, lists, links and tables. Add FAQs under Admin → FAQs with scope page:this-slug."
           />
         </section>
         <SubmitButton />
