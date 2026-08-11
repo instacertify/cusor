@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { marked } from "marked";
@@ -6,8 +5,10 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
+import NotFoundView from "@/components/NotFoundView";
 import { getCertificationBySlug, getCertProductBySlug } from "@/lib/queries";
 import { formatPriceRange } from "@/lib/format";
+import { MISSING_PAGE_METADATA } from "@/lib/missing-page";
 import {
   BASE_URL,
   buildJsonLd,
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, productSlug } = await params;
   const product = getCertProductBySlug(slug, productSlug);
   const cert = getCertificationBySlug(slug);
-  if (!product || !cert) return {};
+  if (!product || !cert) return MISSING_PAGE_METADATA;
   return buildMetadata(`certprod:${product.id}`, {
     title: `${product.name} | ${cert.name} Certification`,
     description: product.summary || `${product.name} under ${cert.name} — standards, testing and compliance guidance.`,
@@ -38,7 +39,7 @@ export default async function CertProductPage({ params }: Props) {
   const { slug, productSlug } = await params;
   const cert = getCertificationBySlug(slug);
   const product = getCertProductBySlug(slug, productSlug);
-  if (!cert || !product) notFound();
+  if (!cert || !product) return <NotFoundView />;
 
   let extras: Record<string, string> = {};
   try {

@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -7,6 +6,7 @@ import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
+import NotFoundView from "@/components/NotFoundView";
 import { MarketBadge } from "@/components/MarketApplicability";
 import {
   countryHubPath,
@@ -16,6 +16,7 @@ import {
 import { PILLAR_LABELS, gmaRegionLabel } from "@/lib/gma-regions";
 import { getCertificationBySlug, getFaqs } from "@/lib/queries";
 import { ensureDbReady } from "@/lib/db";
+import { MISSING_PAGE_METADATA } from "@/lib/missing-page";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -31,7 +32,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const hub = getCountryHubBySlug(slug);
-  if (!hub) return {};
+  if (!hub) return MISSING_PAGE_METADATA;
   return buildMetadata(`country:${hub.slug}`, {
     title: hub.metaTitle,
     description: hub.metaDescription,
@@ -42,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CountryCertificationPage({ params }: Props) {
   const { slug } = await params;
   const hub = getCountryHubBySlug(slug);
-  if (!hub) notFound();
+  if (!hub) return <NotFoundView />;
 
   await ensureDbReady();
 

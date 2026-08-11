@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
@@ -11,6 +10,7 @@ import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import CertProductCatalog from "@/components/CertProductCatalog";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
+import NotFoundView from "@/components/NotFoundView";
 import { CertMarketInsight, MarketBadge } from "@/components/MarketApplicability";
 import {
   getCertificationBySlug,
@@ -19,6 +19,7 @@ import {
   getCertificationCoveredProducts,
 } from "@/lib/queries";
 import { certMarketLabel } from "@/lib/market-applicability";
+import { MISSING_PAGE_METADATA } from "@/lib/missing-page";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -40,7 +41,7 @@ function catalogSubtitle(cert: { slug: string; name: string; full_name: string }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const cert = getCertificationBySlug(slug);
-  if (!cert) return {};
+  if (!cert) return MISSING_PAGE_METADATA;
   return buildMetadata(`cert:${cert.id}`, {
     title: cert.meta_title || `${cert.name} Certification`,
     description: cert.meta_description || cert.summary,
@@ -52,7 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CertificationPage({ params }: Props) {
   const { slug } = await params;
   const cert = getCertificationBySlug(slug);
-  if (!cert) notFound();
+  if (!cert) return <NotFoundView />;
   const faqs = getFaqs(`cert:${cert.slug}`);
   const others = getCertifications().filter((c) => c.slug !== cert.slug);
   const catalog = getCertificationCoveredProducts(cert);

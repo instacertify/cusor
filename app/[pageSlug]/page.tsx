@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { marked } from "marked";
@@ -7,8 +6,10 @@ import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import LandingPageView from "@/components/LandingPageView";
+import NotFoundView from "@/components/NotFoundView";
 import { getPage, getFaqs } from "@/lib/queries";
 import { isRoutableContentPage } from "@/lib/pages-nav";
+import { MISSING_PAGE_METADATA } from "@/lib/missing-page";
 import {
   buildMetadata,
   buildJsonLd,
@@ -36,9 +37,13 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { pageSlug } = await params;
-  if (!isRoutableContentPage(pageSlug)) return {};
+  if (!isRoutableContentPage(pageSlug)) {
+    return MISSING_PAGE_METADATA;
+  }
   const page = getPage(pageSlug);
-  if (!page) return {};
+  if (!page) {
+    return MISSING_PAGE_METADATA;
+  }
   return buildMetadata(`page:${pageSlug}`, {
     title: page.meta_title || page.title,
     description: page.meta_description,
@@ -49,9 +54,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ContentPage({ params }: Props) {
   const { pageSlug } = await params;
-  if (!isRoutableContentPage(pageSlug)) notFound();
+  // SSR the 404 UI into <main>. Calling notFound() from dynamic public routes
+  // leaves an empty body (NEXT_HTTP_ERROR_FALLBACK) in the HTML response;
+  // generateMetadata already emits title + noindex for missing pages.
+  if (!isRoutableContentPage(pageSlug)) return <NotFoundView />;
   const page = getPage(pageSlug);
-  if (!page) notFound();
+  if (!page) return <NotFoundView />;
   const faqs = getFaqs(`page:${pageSlug}`);
 
   const schemaTypes = enabledSchemaTypes(`page:${pageSlug}`, "page");

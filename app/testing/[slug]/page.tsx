@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
@@ -10,6 +9,7 @@ import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
+import NotFoundView from "@/components/NotFoundView";
 import { StandardApplicabilityChips } from "@/components/MarketApplicability";
 import {
   getFaqs,
@@ -19,6 +19,7 @@ import {
   countTestingServices,
 } from "@/lib/queries";
 import { formatPriceRange, formatNumber } from "@/lib/format";
+import { MISSING_PAGE_METADATA } from "@/lib/missing-page";
 import { buildMetadata, buildJsonLd, enabledSchemaTypes, BASE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +34,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const cat = getTestingCategoryBySlug(slug);
-  if (!cat) return {};
+  if (!cat) return MISSING_PAGE_METADATA;
   return buildMetadata(`testcat:${cat.id}`, {
     title: cat.meta_title || `${cat.name} | Product Testing`,
     description: cat.meta_description || cat.summary,
@@ -46,7 +47,7 @@ export default async function TestingCategoryPage({ params, searchParams }: Prop
   const { slug } = await params;
   const sp = await searchParams;
   const cat = getTestingCategoryBySlug(slug);
-  if (!cat) notFound();
+  if (!cat) return <NotFoundView />;
   const q = (sp.q || "").trim();
   const totalInCategory = countTestingServices(cat.id);
   const filtered = getTestingServicesFiltered(cat.id, q);

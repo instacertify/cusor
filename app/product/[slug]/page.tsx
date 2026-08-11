@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
@@ -9,6 +8,7 @@ import FaqAccordion from "@/components/FaqAccordion";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
+import NotFoundView from "@/components/NotFoundView";
 import {
   getProductBySlug,
   getLabsForProduct,
@@ -17,6 +17,7 @@ import {
   getRelatedProducts,
 } from "@/lib/queries";
 import { formatPriceRange, formatINR } from "@/lib/format";
+import { MISSING_PAGE_METADATA } from "@/lib/missing-page";
 import {
   buildMetadata,
   buildJsonLd,
@@ -35,7 +36,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = getProductBySlug(slug);
-  if (!product) return {};
+  if (!product) return MISSING_PAGE_METADATA;
   // Prefer concise SERP titles — stored product meta_titles are often 100–300 chars.
   const stored = stripTrailingBrand(product.meta_title || "");
   const title =
@@ -57,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
   const product = getProductBySlug(slug);
-  if (!product) notFound();
+  if (!product) return <NotFoundView />;
 
   const labs = getLabsForProduct(product.id);
   const tests = getTestingServicesForProduct(product.id);
