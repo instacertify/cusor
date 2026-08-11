@@ -53,7 +53,7 @@ export default async function AdminHeroPage({ searchParams }: Props) {
         </Link>
         <span className="text-ink-400">·</span>
         <Link href="/admin/settings" className="font-semibold text-butter-700 hover:underline">
-          Edit hero headline in Site Settings
+          Edit headline &amp; revolving globe in Site Settings
         </Link>
       </div>
       <SavedBanner saved={sp.saved} error={sp.error} />

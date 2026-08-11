@@ -191,6 +191,10 @@ export async function saveSettings(formData: FormData) {
     "smtp_enabled",
     formData.getAll("smtp_enabled").map(String).includes("1") ? "1" : "0"
   );
+  setSetting(
+    "hero_show_globe",
+    formData.getAll("hero_show_globe").map(String).includes("1") ? "1" : "0"
+  );
 
   for (const [key, value] of formData.entries()) {
     if (
@@ -199,6 +203,7 @@ export async function saveSettings(formData: FormData) {
       !key.startsWith("clear_") &&
       !key.endsWith("_file") &&
       key !== "smtp_enabled" &&
+      key !== "hero_show_globe" &&
       key !== "contact_popup_enabled" &&
       key !== "contact_popup_wait_for_cookie_choice" &&
       key !== "contact_popup_image" &&
