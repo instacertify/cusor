@@ -3,8 +3,11 @@ import { shouldSkipImageOptimization } from "@/lib/image-upload";
 
 /**
  * Renders a blog cover so every backend-uploaded format (JPG/JPEG/PNG/WebP/GIF/
- * AVIF/BMP/SVG) displays on /blog and article pages. Formats the optimizer
- * cannot safely process are served as a plain <img>.
+ * AVIF/BMP/SVG) displays on /blog and article pages.
+ *
+ * - /uploads/* always use a plain <img> (optimizer only reads public/; Hostinger
+ *   may store uploads next to SQLite and serve via /api/uploads).
+ * - Other non-optimizable formats (GIF/BMP/SVG…) also use <img>.
  */
 export default function BlogCoverImage({
   src,

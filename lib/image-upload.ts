@@ -57,6 +57,10 @@ export function extFromPath(src: string): string {
 /** True when we should render a plain <img> instead of the optimizer. */
 export function shouldSkipImageOptimization(src: string): boolean {
   if (!src) return true;
+  // Admin uploads may live outside public/ (data/uploads fallback). next/image
+  // only reads public/, so always use a native <img> for /uploads URLs — the
+  // /uploads → /api/uploads rewrite serves the correct Content-Type.
+  if (src.startsWith("/uploads/") || src.startsWith("/api/uploads/")) return true;
   const ext = extFromPath(src);
   if (!ext) return true;
   return !OPTIMIZABLE_EXTS.has(ext);
