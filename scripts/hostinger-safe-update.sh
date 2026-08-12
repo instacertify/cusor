@@ -57,9 +57,14 @@ fi
 
 # --- 2) Pull new code without deleting runtime dirs ---
 green "2/5 Pulling $REPO_BRANCH (never deletes data/ or uploads)"
+# Refuse destructive cleanup patterns — manual blogs live in SQLite.
+if [[ "${ALLOW_WIPE:-}" == "1" ]]; then
+  yellow "ALLOW_WIPE=1 set — still will not delete data/ or uploads in this script."
+fi
 # Keep local runtime paths even if git clean is used elsewhere
 git fetch origin "$REPO_BRANCH"
 git checkout "$REPO_BRANCH"
+# Never use git clean -fdx / reset --hard that would touch ignored uploads
 git pull --ff-only origin "$REPO_BRANCH"
 
 # Ensure runtime dirs exist and are not empty-wiped by deploy habits
@@ -70,6 +75,17 @@ touch "$APP_DIR/public/uploads/.gitkeep"
 if [[ ! -f "$APP_DIR/data/certko.db" && -f "$BACKUP_ROOT/$STAMP/certko.db" ]]; then
   yellow "Restoring certko.db from backup taken this run."
   cp -a "$BACKUP_ROOT/$STAMP/certko.db" "$APP_DIR/data/certko.db"
+fi
+# Restore uploads if the tree lost them (git should never track/delete these)
+if [[ ! -d "$APP_DIR/public/uploads" || -z "$(ls -A "$APP_DIR/public/uploads" 2>/dev/null | grep -v '^\.gitkeep$' || true)" ]]; then
+  if [[ -f "$BACKUP_ROOT/$STAMP/public-uploads.tar.gz" ]]; then
+    yellow "Restoring public/uploads from backup taken this run."
+    tar -xzf "$BACKUP_ROOT/$STAMP/public-uploads.tar.gz" -C "$APP_DIR/public"
+  fi
+fi
+if [[ -f "$BACKUP_ROOT/$STAMP/data-uploads.tar.gz" && ! -d "$APP_DIR/data/uploads" ]]; then
+  yellow "Restoring data/uploads from backup taken this run."
+  tar -xzf "$BACKUP_ROOT/$STAMP/data-uploads.tar.gz" -C "$APP_DIR/data"
 fi
 
 # --- 3) Never overwrite production secrets on update ---

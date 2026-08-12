@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { marked } from "marked";
+import { renderMarkdown } from "@/lib/markdown";
 import type { PageRecord, Faq } from "@/lib/db";
 import FaqAccordion from "@/components/FaqAccordion";
 import TestimonialStrip from "@/components/TestimonialStrip";
@@ -62,7 +62,7 @@ export default function LandingPageView({
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-14">
         <article
           className="prose-certko max-w-3xl"
-          dangerouslySetInnerHTML={{ __html: marked.parse(page.content || "") as string }}
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(page.content) }}
         />
 
         {faqs.length > 0 ? (

@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { marked } from "marked";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
@@ -11,6 +10,7 @@ import BlogCoverImage from "@/components/BlogCoverImage";
 import Icon from "@/components/Icon";
 import { getPostBySlug, getPublishedPosts } from "@/lib/queries";
 import { isBlogPubliclyVisible } from "@/lib/blog-scheduler";
+import { renderMarkdown } from "@/lib/markdown";
 import { buildMetadata, buildJsonLd, BASE_URL, toIsoDate } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -99,7 +99,7 @@ export default async function BlogPostPage({ params }: Props) {
         )}
         <div
           className="prose-certko mt-8"
-          dangerouslySetInnerHTML={{ __html: marked.parse(post.content) as string }}
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(post.content) }}
         />
 
         {(post.author_slug || authorName) && (

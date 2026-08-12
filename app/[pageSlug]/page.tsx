@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { marked } from "marked";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { renderMarkdown } from "@/lib/markdown";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
@@ -130,7 +130,7 @@ export default async function ContentPage({ params }: Props) {
 
       <article
         className="prose-certko mt-10 max-w-3xl"
-        dangerouslySetInnerHTML={{ __html: marked.parse(page.content) as string }}
+        dangerouslySetInnerHTML={{ __html: renderMarkdown(page.content) }}
       />
 
       {faqs.length > 0 && (

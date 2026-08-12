@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
+import { renderMarkdown } from "@/lib/markdown";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { marked } from "marked";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ProductCard from "@/components/ProductCard";
 import FaqAccordion from "@/components/FaqAccordion";
@@ -188,7 +188,7 @@ export default async function ProductPage({ params }: Props) {
 
           <article
             className="prose-certko mt-8"
-            dangerouslySetInnerHTML={{ __html: marked.parse(product.description) as string }}
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(product.description) }}
           />
         </div>
 

@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
+import { renderMarkdown } from "@/lib/markdown";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { marked } from "marked";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
@@ -55,7 +55,7 @@ export default async function TestingCategoryPage({ params, searchParams }: Prop
   const services = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const faqs = getFaqs(`testcat:${cat.slug}`);
   const others = getTestingCategories().filter((c) => c.slug !== cat.slug);
-  const html = marked.parse(cat.content || "") as string;
+  const html = renderMarkdown(cat.content);
   const pageHref = (p: number) => {
     const params = new URLSearchParams();
     if (q) params.set("q", q);
