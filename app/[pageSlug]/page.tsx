@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
+import CmsImage from "@/components/CmsImage";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { renderMarkdown } from "@/lib/markdown";
@@ -118,7 +118,7 @@ export default async function ContentPage({ params }: Props) {
           )}
         </div>
         {page.image ? (
-          <Image
+          <CmsImage
             src={page.image}
             alt={page.title}
             width={520}

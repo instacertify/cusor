@@ -1,4 +1,5 @@
 import { marked } from "marked";
+import { rewriteUploadUrlsInHtml } from "@/lib/upload-urls";
 
 /**
  * MDXEditor HighlightToggle serializes as ==highlighted text==
@@ -22,5 +23,7 @@ function applyHighlightMarks(markdown: string): string {
 export function renderMarkdown(markdown: string | null | undefined): string {
   const src = applyHighlightMarks(markdown ?? "");
   if (!src.trim()) return "";
-  return marked.parse(src, { async: false }) as string;
+  const html = marked.parse(src, { async: false }) as string;
+  // Inline ![…](/uploads/…) must hit /api/uploads on Hostinger.
+  return rewriteUploadUrlsInHtml(html);
 }

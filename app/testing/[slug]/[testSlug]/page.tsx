@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { renderMarkdown } from "@/lib/markdown";
 import Link from "next/link";
-import Image from "next/image";
+import CmsImage from "@/components/CmsImage";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
@@ -164,7 +164,7 @@ export default async function TestingServicePage({ params }: Props) {
           </div>
         </div>
         {svc.image ? (
-          <Image
+          <CmsImage
             src={svc.image}
             alt={svc.name}
             width={520}

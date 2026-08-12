@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { renderMarkdown } from "@/lib/markdown";
 import Link from "next/link";
-import Image from "next/image";
+import CmsImage from "@/components/CmsImage";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
@@ -115,7 +115,7 @@ export default async function CertificationPage({ params }: Props) {
           </div>
         </div>
         {cert.image ? (
-          <Image
+          <CmsImage
             src={cert.image}
             alt={`${cert.full_name}`}
             width={520}

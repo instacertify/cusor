@@ -115,6 +115,17 @@ pm2 restart certko
 
 Do **not** run `rm -rf /var/www/certko` or re-clone over the live folder — that wipes the database and images.
 
+### Uploaded images on the public site
+
+Admin uploads are served at **`/api/uploads/...`** (not as raw Nginx static files). Keep Nginx proxying all traffic to Node (as the one-click script does). Do **not** add a separate `location /uploads` that points only at disk — missing files will 404 before Next.js can serve the fallback.
+
+Image storage limits (enforced on upload):
+
+- Max upload: **8 MB**
+- Max stored after compression: **~1.5 MB**
+- Max dimension: **1920px** (longest edge)
+- Photos are stored as **WebP** (PNG kept when transparency is needed)
+
 ### Backup (important)
 
 ```bash

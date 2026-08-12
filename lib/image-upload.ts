@@ -10,7 +10,10 @@ export const BLOG_IMAGE_ACCEPT =
   "image/png,image/jpeg,image/jpg,image/webp,image/gif,image/avif,image/bmp,image/svg+xml,.png,.jpg,.jpeg,.jpe,.jfif,.webp,.gif,.avif,.bmp,.svg";
 
 export const BLOG_IMAGE_HINT =
-  "Recommended 1200×630 (16:9). Accepted: PNG, JPG/JPEG, WebP, GIF, AVIF, BMP, SVG. Flat, high-contrast imagery works best for blog cards and social previews.";
+  "Recommended 1200×630 (16:9). Max upload 8 MB — stored compressed (≤1.5 MB, max 1920px). Accepted: PNG, JPG/JPEG, WebP, GIF, AVIF, BMP, SVG.";
+
+export const CMS_IMAGE_HINT =
+  "Max upload 8 MB. Images are compressed for storage (≤1.5 MB, longest edge 1920px; photos saved as WebP). Accepted: PNG, JPG/JPEG, WebP, GIF, AVIF, BMP, SVG.";
 
 /** Extensions we accept for blog covers (aliases included). */
 export const BLOG_COVER_EXTS = [

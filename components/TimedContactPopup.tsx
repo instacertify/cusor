@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import ContactForm from "@/components/ContactForm";
 import { readConsentFromDocument } from "@/lib/gdpr-client";
 import type { ContactPopupConfig } from "@/lib/contact-popup";
+import { toServableUploadUrl } from "@/lib/upload-urls";
 
 const STORAGE_KEY = "certko_contact_popup_dismissed";
 
@@ -139,7 +140,7 @@ export default function TimedContactPopup({
         <div className="relative hidden sm:block sm:w-[42%] shrink-0 bg-ink-950">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={config.image}
+            src={toServableUploadUrl(config.image)}
             alt=""
             className="absolute inset-0 h-full w-full object-cover opacity-95"
           />
@@ -190,7 +191,7 @@ export default function TimedContactPopup({
             <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-cream-300 bg-ink-950">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={config.image}
+                src={toServableUploadUrl(config.image)}
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover"
               />

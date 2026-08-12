@@ -57,7 +57,7 @@ export default function SavedBanner({
         role="alert"
       >
         {imageError
-          ? "Image upload failed — use PNG, JPG, WebP, GIF, SVG, AVIF or BMP (max 12 MB), then try again."
+          ? "Image upload failed — use PNG, JPG, WebP, GIF, SVG, AVIF or BMP (max 8 MB upload; stored ≤1.5 MB). Try again."
           : "Something went wrong — please check required fields."}
       </p>
     );

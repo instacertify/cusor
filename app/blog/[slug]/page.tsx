@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import CmsImage from "@/components/CmsImage";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
@@ -106,7 +106,7 @@ export default async function BlogPostPage({ params }: Props) {
           <aside className="mt-12 rounded-2xl border border-cream-300 bg-cream-50 p-5 sm:p-6">
             <div className="flex gap-4 items-start">
               {post.author_image ? (
-                <Image
+                <CmsImage
                   src={post.author_image}
                   alt={authorName}
                   width={72}

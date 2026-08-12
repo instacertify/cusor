@@ -1,6 +1,7 @@
 import { ensureDbReady } from "@/lib/db";
 import { getActiveTrustedBrands } from "@/lib/queries";
 import type { TrustedBrand } from "@/lib/db";
+import { toServableUploadUrl } from "@/lib/upload-urls";
 
 /** Fixed display slot — every uploaded logo is scaled into the same box. */
 function BrandMark({ brand, tone }: { brand: TrustedBrand; tone: "light" | "dark" }) {
@@ -12,7 +13,7 @@ function BrandMark({ brand, tone }: { brand: TrustedBrand; tone: "light" | "dark
   const img = (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={brand.logo}
+      src={toServableUploadUrl(brand.logo)}
       alt={brand.name}
       className="trusted-brand-logo"
       loading="eager"

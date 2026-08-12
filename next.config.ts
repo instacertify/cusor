@@ -10,14 +10,15 @@ const nextConfig: NextConfig = {
     },
   },
   // Blog/admin uploads may include SVG covers; raster formats use the default optimizer.
+  // CMS uploads are rendered via /api/uploads (plain <img>), not the optimizer.
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     formats: ["image/avif", "image/webp"],
   },
-  // Keep captcha font / sql.js on disk (not bundled into server chunks)
-  serverExternalPackages: ["svg-captcha", "bcryptjs", "sql.js"],
+  // Keep captcha font / sql.js / sharp on disk (not bundled into server chunks)
+  serverExternalPackages: ["svg-captcha", "bcryptjs", "sql.js", "sharp"],
   // If a host uses file tracing / standalone, keep sql.js assets available
   outputFileTracingIncludes: {
     "/**": [

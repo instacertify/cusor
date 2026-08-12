@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { renderMarkdown } from "@/lib/markdown";
 import Link from "next/link";
-import Image from "next/image";
+import CmsImage from "@/components/CmsImage";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
@@ -120,7 +120,7 @@ export default async function TestingCategoryPage({ params, searchParams }: Prop
           </div>
         </div>
         {cat.image ? (
-          <Image
+          <CmsImage
             src={cat.image}
             alt={cat.name}
             width={520}

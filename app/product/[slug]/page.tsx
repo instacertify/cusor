@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { renderMarkdown } from "@/lib/markdown";
 import Link from "next/link";
-import Image from "next/image";
+import CmsImage from "@/components/CmsImage";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ProductCard from "@/components/ProductCard";
@@ -194,7 +194,7 @@ export default async function ProductPage({ params }: Props) {
 
         <aside className="space-y-6">
           {heroImage ? (
-            <Image
+            <CmsImage
               src={heroImage}
               alt={`${product.name} — BIS certified product`}
               width={520}

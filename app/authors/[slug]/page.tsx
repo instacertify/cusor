@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import CmsImage from "@/components/CmsImage";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
@@ -88,7 +88,7 @@ export default async function AuthorProfilePage({ params }: Props) {
       <section className="max-w-3xl">
         <div className="flex flex-col sm:flex-row gap-6 sm:items-start">
           {author.image ? (
-            <Image
+            <CmsImage
               src={author.image}
               alt={author.name}
               width={120}
