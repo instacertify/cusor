@@ -4,8 +4,12 @@ const PAGE_SIZE = 12;
 
 export { PAGE_SIZE as BLOG_PAGE_SIZE };
 
-function pageHref(page: number): string {
-  return page <= 1 ? "/blog" : `/blog?page=${page}`;
+function pageHref(page: number, q?: string): string {
+  const params = new URLSearchParams();
+  if (page > 1) params.set("page", String(page));
+  if (q?.trim()) params.set("q", q.trim());
+  const qs = params.toString();
+  return qs ? `/blog?${qs}` : "/blog";
 }
 
 /** Build a short window of page numbers around the current page (e.g. 1,2,3). */
@@ -33,10 +37,13 @@ export default function BlogPagination({
   page,
   totalPages,
   totalPosts,
+  q = "",
 }: {
   page: number;
   totalPages: number;
   totalPosts: number;
+  /** Preserve blog search query across pages */
+  q?: string;
 }) {
   if (totalPages <= 1) return null;
 
@@ -52,7 +59,7 @@ export default function BlogPagination({
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">
         {page > 1 ? (
-          <Link href={pageHref(1)} className={idleBtn} aria-label="First page">
+          <Link href={pageHref(1, q)} className={idleBtn} aria-label="First page">
             First
           </Link>
         ) : (
@@ -62,7 +69,7 @@ export default function BlogPagination({
         )}
 
         {page > 1 ? (
-          <Link href={pageHref(page - 1)} className={idleBtn} aria-label="Previous page">
+          <Link href={pageHref(page - 1, q)} className={idleBtn} aria-label="Previous page">
             ←
           </Link>
         ) : (
@@ -83,7 +90,7 @@ export default function BlogPagination({
               {n}
             </span>
           ) : (
-            <Link key={n} href={pageHref(n)} className={idleBtn} aria-label={`Page ${n}`}>
+            <Link key={n} href={pageHref(n, q)} className={idleBtn} aria-label={`Page ${n}`}>
               {n}
             </Link>
           )
@@ -96,7 +103,7 @@ export default function BlogPagination({
         ) : null}
 
         {page < totalPages ? (
-          <Link href={pageHref(page + 1)} className={idleBtn} aria-label="Next page">
+          <Link href={pageHref(page + 1, q)} className={idleBtn} aria-label="Next page">
             →
           </Link>
         ) : (
@@ -106,7 +113,7 @@ export default function BlogPagination({
         )}
 
         {page < totalPages ? (
-          <Link href={pageHref(totalPages)} className={idleBtn} aria-label="Last page">
+          <Link href={pageHref(totalPages, q)} className={idleBtn} aria-label="Last page">
             Last
           </Link>
         ) : (

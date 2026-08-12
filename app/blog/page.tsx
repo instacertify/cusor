@@ -6,7 +6,12 @@ import TestimonialStrip from "@/components/TestimonialStrip";
 import AuthorByline from "@/components/AuthorByline";
 import BlogPagination, { BLOG_PAGE_SIZE } from "@/components/BlogPagination";
 import BlogCoverImage from "@/components/BlogCoverImage";
-import { countPublishedPosts, getPublishedPosts } from "@/lib/queries";
+import {
+  countPublishedPosts,
+  countSearchPublishedPosts,
+  getPublishedPosts,
+  searchPublishedPosts,
+} from "@/lib/queries";
 import {
   BASE_URL,
   buildMetadata,
@@ -26,25 +31,31 @@ function param(v: Param): string | undefined {
 }
 
 interface Props {
-  searchParams: Promise<{ page?: Param }>;
+  searchParams: Promise<{ page?: Param; q?: Param }>;
 }
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const sp = await searchParams;
+  const q = (param(sp.q) ?? "").trim();
   const page = Math.max(1, Number(param(sp.page)) || 1);
-  const total = countPublishedPosts();
+  const total = q.length >= 2 ? countSearchPublishedPosts(q) : countPublishedPosts();
   const totalPages = Math.max(1, Math.ceil(total / BLOG_PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
-  const isFirst = safePage <= 1;
+  const isFirst = safePage <= 1 && !q;
 
   return buildMetadata("page:blog", {
-    title: isFirst
-      ? "Compliance Blog — BIS, QCO & Export Insights"
-      : `Compliance Blog — Page ${safePage}`,
+    title: q
+      ? `Blog search: ${q}`
+      : isFirst
+        ? "Compliance Blog — BIS, QCO & Export Insights"
+        : `Compliance Blog — Page ${safePage}`,
     description:
       "Practical articles on BIS certification costs, QCO deadlines, marketplace compliance and export certifications — written by the Certko team.",
-    // Paginated listings stay crawlable for discovery but avoid competing with page 1.
-    path: isFirst ? "/blog" : `/blog?page=${safePage}`,
+    path: q
+      ? `/blog?q=${encodeURIComponent(q)}${safePage > 1 ? `&page=${safePage}` : ""}`
+      : isFirst
+        ? "/blog"
+        : `/blog?page=${safePage}`,
     index: isFirst,
     follow: true,
   });
@@ -58,11 +69,15 @@ function formatDate(d: string | null): string {
 
 export default async function BlogIndexPage({ searchParams }: Props) {
   const sp = await searchParams;
+  const q = (param(sp.q) ?? "").trim();
+  const searching = q.length >= 2;
   const requested = Math.max(1, Number(param(sp.page)) || 1);
-  const total = countPublishedPosts();
+  const total = searching ? countSearchPublishedPosts(q) : countPublishedPosts();
   const totalPages = Math.max(1, Math.ceil(total / BLOG_PAGE_SIZE));
   const page = Math.min(requested, totalPages);
-  const posts = getPublishedPosts(BLOG_PAGE_SIZE, (page - 1) * BLOG_PAGE_SIZE);
+  const posts = searching
+    ? searchPublishedPosts(q, BLOG_PAGE_SIZE, (page - 1) * BLOG_PAGE_SIZE)
+    : getPublishedPosts(BLOG_PAGE_SIZE, (page - 1) * BLOG_PAGE_SIZE);
 
   const itemListJsonLd =
     posts.length > 0
@@ -94,6 +109,39 @@ export default async function BlogIndexPage({ searchParams }: Props) {
         Practical, data-backed articles on BIS certification, QCO deadlines, testing
         costs and selling compliant products in India and abroad.
       </p>
+
+      <form action="/blog" method="GET" className="mt-8 max-w-xl flex gap-2" role="search">
+        <label htmlFor="blog-search" className="sr-only">
+          Search blog articles
+        </label>
+        <input
+          id="blog-search"
+          type="search"
+          name="q"
+          defaultValue={q}
+          placeholder="Search articles (BIS, EMI, MSDS, export…)"
+          className="flex-1 min-w-0 rounded-xl border border-cream-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-butter-500"
+        />
+        <button
+          type="submit"
+          className="shrink-0 rounded-xl bg-ink-900 hover:bg-ink-800 text-white text-sm font-bold px-5 py-2.5 transition"
+        >
+          Search
+        </button>
+        {q ? (
+          <Link
+            href="/blog"
+            className="shrink-0 inline-flex items-center rounded-xl border border-cream-300 bg-white px-4 py-2.5 text-sm font-semibold text-ink-700 hover:border-butter-500"
+          >
+            Clear
+          </Link>
+        ) : null}
+      </form>
+      {searching ? (
+        <p className="mt-3 text-sm text-ink-600">
+          {total} article{total === 1 ? "" : "s"} matching “{q}”
+        </p>
+      ) : null}
 
       <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {posts.map((p) => {
@@ -133,11 +181,23 @@ export default async function BlogIndexPage({ searchParams }: Props) {
           );
         })}
         {posts.length === 0 && (
-          <p className="text-sm text-ink-500">No articles published yet — check back soon.</p>
+          <p className="text-sm text-ink-500">
+            {searching
+              ? `No articles matched “${q}”. Try a shorter keyword, or browse all posts.`
+              : "No articles published yet — check back soon."}
+            {searching ? (
+              <>
+                {" "}
+                <Link href="/blog" className="font-semibold text-butter-700 hover:underline">
+                  Clear search
+                </Link>
+              </>
+            ) : null}
+          </p>
         )}
       </div>
 
-      <BlogPagination page={page} totalPages={totalPages} totalPosts={total} />
+      <BlogPagination page={page} totalPages={totalPages} totalPosts={total} q={q} />
 
       <div className="mt-16">
         <TestimonialStrip />

@@ -86,7 +86,24 @@ pm2 logs certko
 pm2 restart certko
 ```
 
-### Update site after new code
+### Update site after new code (keeps blogs + uploads)
+
+A new build must **not** reset earlier admin uploads or manually written blogs.
+Those live outside git:
+
+| Path | What it holds |
+|------|----------------|
+| `/var/www/certko/data/certko.db` | All CMS content (blogs, pages, settings) |
+| `/var/www/certko/public/uploads/` | Cover images & media |
+| `/var/www/certko/data/uploads/` | Fallback uploads if `public/uploads` is not writable |
+
+**Preferred (backs up first, then pulls + builds):**
+
+```bash
+bash /var/www/certko/scripts/hostinger-safe-update.sh
+```
+
+**Manual (never delete `data/` or `uploads`):**
 
 ```bash
 cd /var/www/certko
@@ -96,11 +113,15 @@ npm run build
 pm2 restart certko
 ```
 
+Do **not** run `rm -rf /var/www/certko` or re-clone over the live folder — that wipes the database and images.
+
 ### Backup (important)
 
 ```bash
 cp /var/www/certko/data/certko.db /root/certko-backup-$(date +%F).db
 tar -czf /root/uploads-backup-$(date +%F).tar.gz -C /var/www/certko/public uploads
+# if the fallback root is in use:
+tar -czf /root/data-uploads-backup-$(date +%F).tar.gz -C /var/www/certko/data uploads
 ```
 
 ---

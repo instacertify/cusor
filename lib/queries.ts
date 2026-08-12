@@ -438,6 +438,71 @@ export function getPublishedPosts(limit = 50, offset = 0): Post[] {
   return rows.filter((p) => isBlogPubliclyVisible(p)).slice(offset, offset + limit);
 }
 
+/** Case-insensitive blog search over title / excerpt / body / meta / author. */
+export function searchPublishedPosts(q: string, limit = 24, offset = 0): Post[] {
+  flushDueBlogPosts();
+  const needle = q.trim().toLowerCase();
+  if (needle.length < 2) return [];
+  const rows = getDb()
+    .prepare(
+      `SELECT ${POST_AUTHOR_SELECT}
+       FROM posts p
+       LEFT JOIN authors a ON a.id = p.author_id
+       WHERE ${LIVE_POST_SQL}
+       ORDER BY p.published_at DESC, p.id DESC`
+    )
+    .all() as Post[];
+  const hits = rows.filter((p) => {
+    if (!isBlogPubliclyVisible(p)) return false;
+    const blob = [
+      p.title,
+      p.excerpt,
+      p.content,
+      p.meta_title,
+      p.meta_description,
+      p.author,
+      p.author_name,
+      p.slug,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return blob.includes(needle);
+  });
+  return hits.slice(offset, offset + limit);
+}
+
+export function countSearchPublishedPosts(q: string): number {
+  flushDueBlogPosts();
+  const needle = q.trim().toLowerCase();
+  if (needle.length < 2) return 0;
+  const rows = getDb()
+    .prepare(
+      `SELECT ${POST_AUTHOR_SELECT}
+       FROM posts p
+       LEFT JOIN authors a ON a.id = p.author_id
+       WHERE ${LIVE_POST_SQL}`
+    )
+    .all() as Post[];
+  return rows.filter((p) => {
+    if (!isBlogPubliclyVisible(p)) return false;
+    const blob = [
+      p.title,
+      p.excerpt,
+      p.content,
+      p.meta_title,
+      p.meta_description,
+      p.author,
+      p.author_name,
+      p.slug,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return blob.includes(needle);
+  }).length;
+}
+
 export function getPostBySlug(slug: string): Post | undefined {
   flushDueBlogPosts();
   return getDb()

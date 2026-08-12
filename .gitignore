@@ -17,8 +17,10 @@
 /data/certko.db
 /data/certko.db-*
 /data/sitemap-cache.xml
+# fallback upload root when public/uploads is not writable
+/data/uploads/
 
-# runtime uploads from the admin panel
+# runtime uploads from the admin panel — never wipe on deploy
 /public/uploads/*
 !/public/uploads/.gitkeep
 

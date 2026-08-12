@@ -1598,14 +1598,20 @@ export async function savePost(formData: FormData) {
     nextImage,
     id
   );
+  void import("@/lib/search-index").then((m) => m.invalidateSearchIndex());
   revalidatePath("/", "layout");
+  revalidatePath("/blog");
+  revalidatePath("/search");
   redirect(`/admin/blog/${id}?saved=1`);
 }
 
 export async function deletePost(formData: FormData) {
   await requireAdmin();
   getDb().prepare("DELETE FROM posts WHERE id = ?").run(Number(formData.get("id")));
+  void import("@/lib/search-index").then((m) => m.invalidateSearchIndex());
   revalidatePath("/", "layout");
+  revalidatePath("/blog");
+  revalidatePath("/search");
   redirect("/admin/blog?saved=1");
 }
 

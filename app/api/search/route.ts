@@ -11,6 +11,7 @@ const SCOPES = new Set<QuickSearchScope>([
   "lab",
   "certification",
   "testing",
+  "blog",
 ]);
 
 function parseScope(raw: string | null): QuickSearchScope {
@@ -22,6 +23,7 @@ function parseScope(raw: string | null): QuickSearchScope {
     return "certification";
   }
   if (v === "testing" || v === "test") return "testing";
+  if (v === "blog" || v === "blogs" || v === "articles") return "blog";
   if (SCOPES.has(v as QuickSearchScope)) return v as QuickSearchScope;
   return "all";
 }
