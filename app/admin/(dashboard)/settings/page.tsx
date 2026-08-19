@@ -205,6 +205,80 @@ export default async function SettingsPage({ searchParams }: Props) {
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
+          <h2 className="font-display font-bold text-ink-950">Blog article sidebar (defaults)</h2>
+          <p className="text-sm text-ink-600">
+            Used on every blog post when the post is set to <strong>Use defaults</strong>. Each post
+            can still override these under Edit Post → Article sidebar.
+          </p>
+          <div>
+            <label
+              htmlFor="blog_cta_default_kind"
+              className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5"
+            >
+              Default CTA type
+            </label>
+            <select
+              id="blog_cta_default_kind"
+              name="blog_cta_default_kind"
+              defaultValue={s.blog_cta_default_kind || "auto"}
+              className="w-full rounded-xl border border-cream-300 px-3 py-2.5 text-sm bg-white outline-none focus:border-butter-500"
+            >
+              <option value="auto">Auto (detect from article — certified vs tested)</option>
+              <option value="certification">Always “Get certified faster”</option>
+              <option value="testing">Always “Get tested faster”</option>
+            </select>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field
+              label="Heading — certification"
+              name="blog_cta_heading_cert"
+              defaultValue={s.blog_cta_heading_cert || "Get certified faster"}
+            />
+            <Field
+              label="Heading — testing"
+              name="blog_cta_heading_test"
+              defaultValue={s.blog_cta_heading_test || "Get tested faster"}
+            />
+          </div>
+          <Field
+            label="Topic fill-in (replaces {topic})"
+            name="blog_cta_default_topic"
+            defaultValue={s.blog_cta_default_topic || "your product"}
+            placeholder="your product"
+          />
+          <TextArea
+            label="Body template (write-up under the box title)"
+            name="blog_cta_body_template"
+            defaultValue={
+              s.blog_cta_body_template ||
+              "Our experts handle the application, coordinate testing for {topic} and manage the inspection. Free quote in 24 hours."
+            }
+            rows={3}
+          />
+          <p className="text-xs text-ink-500">
+            Use <code className="text-ink-800">{"{topic}"}</code> where the product / standard name
+            should appear.
+          </p>
+          <Field
+            label="Quote button name"
+            name="blog_cta_submit_label"
+            defaultValue={s.blog_cta_submit_label || "Request quote"}
+          />
+          <div className="pt-3 border-t border-cream-200 grid sm:grid-cols-2 gap-4">
+            <Field
+              label="Other blogs — box title"
+              name="blog_more_title"
+              defaultValue={s.blog_more_title || "More from the blog"}
+            />
+            <Field
+              label="Other blogs — box subtitle"
+              name="blog_more_subtitle"
+              defaultValue={s.blog_more_subtitle || "Scroll for more articles"}
+            />
+          </div>
+        </section>
+
+        <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Talk to a certification expert</h2>
           <p className="text-sm text-ink-600">
             Controls the header button, footer button and floating button on public pages. Keep the

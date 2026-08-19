@@ -23,6 +23,7 @@ import { ensureTestimonialsLibrary } from "./seed-testimonials";
 import { ensureTrustedBrandsLibrary } from "./seed-trusted-brands";
 import { ensureCountryHubsLibrary } from "./seed-country-hubs";
 import { ensureGdprLibrary } from "./seed-gdpr";
+import { ensureBlogSidebarColumns, ensureBlogSidebarCtaSettings } from "./blog-sidebar";
 import { PRIVACY_CONTENT, TERMS_CONTENT } from "./legal-content";
 import { CONTACT_POPUP_DEFAULTS } from "./contact-popup";
 import { getCertkoDataDir } from "./storage-paths";
@@ -221,7 +222,16 @@ function bootstrapSchema(db: SqliteDatabase): void {
       published_at TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       meta_title TEXT NOT NULL DEFAULT '',
-      meta_description TEXT NOT NULL DEFAULT ''
+      meta_description TEXT NOT NULL DEFAULT '',
+      cta_mode TEXT NOT NULL DEFAULT 'default',
+      cta_kind TEXT NOT NULL DEFAULT 'certification',
+      cta_heading TEXT NOT NULL DEFAULT '',
+      cta_topic TEXT NOT NULL DEFAULT '',
+      cta_body TEXT NOT NULL DEFAULT '',
+      cta_submit_label TEXT NOT NULL DEFAULT '',
+      more_posts_mode TEXT NOT NULL DEFAULT 'default',
+      more_posts_title TEXT NOT NULL DEFAULT '',
+      more_posts_subtitle TEXT NOT NULL DEFAULT ''
     );
     CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status);
     CREATE INDEX IF NOT EXISTS idx_posts_author ON posts(author_id);
@@ -368,6 +378,8 @@ function bootstrapSchema(db: SqliteDatabase): void {
   // FAQ + other seeded posts: never leave future dates live.
   syncBlogScheduleStatuses(db);
   ensurePagesNavColumns(db);
+  ensureBlogSidebarColumns(db);
+  ensureBlogSidebarCtaSettings(db);
   ensureLandingPages(db);
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
@@ -398,6 +410,8 @@ function runEnsures(db: SqliteDatabase) {
   ensureScheduledFaqPosts(db);
   syncBlogScheduleStatuses(db);
   ensurePagesNavColumns(db);
+  ensureBlogSidebarColumns(db);
+  ensureBlogSidebarCtaSettings(db);
   ensureLandingPages(db);
   ensureHeroSlidesCatalog(db);
   ensureTestimonialsLibrary(db);
@@ -1156,6 +1170,17 @@ export interface Post {
   created_at: string;
   meta_title: string;
   meta_description: string;
+  /** default = site template; custom = per-post overrides */
+  cta_mode?: string;
+  cta_kind?: string;
+  cta_heading?: string;
+  cta_topic?: string;
+  cta_body?: string;
+  cta_submit_label?: string;
+  /** default = show related list; custom = edit titles; hide = omit */
+  more_posts_mode?: string;
+  more_posts_title?: string;
+  more_posts_subtitle?: string;
   author_slug?: string | null;
   author_name?: string | null;
   author_title?: string | null;
