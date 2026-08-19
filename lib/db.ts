@@ -4,6 +4,7 @@ import {
   isSqliteReady,
   type SqliteDatabase,
   getDatabaseUrl,
+  withDeferredSqlJsPersist,
 } from "./sqlite";
 import { seedDatabase } from "./seed";
 import { ensureCertProductsCatalog } from "./seed-cert-products";
@@ -37,6 +38,7 @@ export function getWritableDataDir(): string {
 type DbGlobal = typeof globalThis & {
   __certkoDb?: SqliteDatabase;
   __certkoDbBootstrapped?: boolean;
+  __certkoDbBootstrap?: Promise<void>;
 };
 
 const g = globalThis as DbGlobal;
@@ -886,18 +888,29 @@ export async function ensureDbReady(): Promise<void> {
 
   try {
     await ensureSqliteReady();
-    if (!g.__certkoDbBootstrapped || !g.__certkoDb) {
-      const db = getSqliteDb();
-      bootstrapSchema(db);
-      g.__certkoDb = db;
-      g.__certkoDbBootstrapped = true;
-      const kind = getDatabaseUrl() ? "postgresql" : "sqlite";
-      console.info("[certko] CMS database ready:", kind);
-      void import("./search-index")
-        .then((m) => m.warmSearchIndex())
-        .catch(() => {});
+    if (g.__certkoDbBootstrapped && g.__certkoDb) return;
+
+    if (!g.__certkoDbBootstrap) {
+      g.__certkoDbBootstrap = (async () => {
+        const db = getSqliteDb();
+        // sql.js: one disk export after seed — not one export per INSERT
+        // (that pattern OOMs / blocks the event loop → Hostinger SIGTERM → nginx 504).
+        withDeferredSqlJsPersist(() => {
+          bootstrapSchema(db);
+        });
+        g.__certkoDb = db;
+        g.__certkoDbBootstrapped = true;
+        const kind = getDatabaseUrl() ? "postgresql" : "sqlite";
+        console.info("[certko] CMS database ready:", kind);
+        // Do NOT warm the full search index at boot — it loads every product/test
+        // into memory and competes with first-boot seed on Hostinger's small heap.
+        // getIndex() builds lazily on the first search request.
+      })();
     }
+
+    await g.__certkoDbBootstrap;
   } catch (err) {
+    g.__certkoDbBootstrap = undefined;
     console.error("[certko] ensureDbReady failed:", err);
     throw err;
   }
