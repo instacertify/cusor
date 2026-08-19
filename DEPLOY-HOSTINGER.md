@@ -178,14 +178,18 @@ That’s the whole deploy.
 
 ## Hostinger Node.js Web Apps panel (workaround, not VPS)
 
-The hPanel **Node.js** GitHub builder (`hbuilds`) replaces `versions/<uuid>/nodejs/` on every deploy. Certko now:
+The hPanel **Node.js** GitHub builder (`hbuilds`) replaces `versions/<uuid>/nodejs/` on every deploy and typically **keeps only about three version folders**. If the hashed login lived only inside an old `versions/<uuid>/nodejs/data` tree, the next deploy deletes that folder and the site falls back to seed `admin` / `certko-admin`.
 
-1. Writes SQLite, uploads, `.certko-secret`, lead archive, and settings snapshot to **`hbuilds/data/`** (sibling of `versions/`, not inside a version folder)
-2. Recovers those files from older version folders if they were left behind
+Certko now:
+
+1. Writes SQLite, uploads, `.certko-secret`, lead archive, settings snapshot, and **`.certko-admin.json`** (hashed login + login id) to **`hbuilds/data/`** and other persist dirs outside `versions/`
+2. Recovers those files from older version folders, **preferring a bcrypt login over seed defaults** (a newer folder with `admin` / `certko-admin` cannot overwrite a real password)
 3. Re-inserts contact leads from `inquiries.jsonl` if SQLite is empty
-4. Restores admin password / SMTP / site settings from `settings-archive.json` if SQLite was re-seeded
+4. Restores admin password / SMTP / site settings from `settings-archive.json` if SQLite was re-seeded; **does not snapshot seed defaults over a hashed archive**
 5. Signs admin cookies with the disk secret so a missing hPanel env var does **not** look like a password reset
 6. Does **not** check admin auth in Edge middleware (Edge cannot read the disk secret)
+
+If login already reset to `admin` / `certko-admin`, set a new password once after this deploy. The hashed file is then kept outside version folders.
 
 Set these **once** in hPanel → Environment. Never rotate them:
 
@@ -218,3 +222,4 @@ If the browser shows **Application error** with a digest like `ERROR 1358233113`
 2. Wrong output directory (`out`) — clear it  
 3. Uploads path ephemeral — data now prefers `hbuilds/data`; do not delete that folder  
 4. Duplicate Next processes on `:3000` — restart the Node app **once** from hPanel. Start command must be `npm start` (uses `server.cjs` so `$PORT` is bound immediately). Do not set a custom start of `next start` without `$PORT`.
+5. After login the browser goes to **`https://0.0.0.0:3000/...`** (`ERR_ADDRESS_INVALID`) — that was Next using the bind address in the `Location` header. Current `npm start` rewrites those to a same-site path (`/admin/login?...`). Redeploy this code; keep Start = `npm start`.

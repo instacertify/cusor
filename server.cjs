@@ -11,9 +11,13 @@
 "use strict";
 
 const { createServer } = require("node:http");
+const { patchOutgoingRedirects } = require("./lib/public-location.cjs");
 
 const port = Number.parseInt(process.env.PORT || "3000", 10);
-const hostname = process.env.HOSTNAME || "0.0.0.0";
+const bindHost = process.env.HOSTNAME || "0.0.0.0";
+// Next uses `hostname` for absolute URLs. 0.0.0.0 is a bind address, not a browser host.
+const nextHostname = bindHost === "0.0.0.0" || bindHost === "::" ? "localhost" : bindHost;
+const hostname = bindHost;
 const dev = process.env.NODE_ENV !== "production";
 
 function isBenignShutdownError(err) {
@@ -58,6 +62,7 @@ function flushPending() {
 }
 
 const server = createServer((req, res) => {
+  patchOutgoingRedirects(res);
   const url = (req.url || "/").split("?")[0];
   if (url === "/healthz" || url === "/ready" || (req.method === "HEAD" && url === "/")) {
     res.statusCode = 200;
@@ -94,7 +99,7 @@ server.listen(port, hostname, () => {
 const next = require("next");
 const app = next({
   dev,
-  hostname,
+  hostname: nextHostname,
   port,
   dir: process.cwd(),
   httpServer: server,
