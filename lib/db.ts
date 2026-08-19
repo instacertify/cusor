@@ -831,6 +831,7 @@ function clearLegacyHomeAnnouncement(db: SqliteDatabase) {
   }
 }
 
+
 /**
  * Never show lab contact-person name / phone / email on the public site.
  * Clears stored PII and rewrites FAQ copy that used to point visitors at it.
