@@ -1,11 +1,12 @@
 import crypto from "crypto";
 import { signPayload } from "./auth";
+import { resolveCertkoSecret } from "./durable-secret";
 
 export const CAPTCHA_COOKIE = "certko_captcha";
 const CAPTCHA_TTL_MS = 1000 * 60 * 10; // 10 minutes
 
 function getSecret(): string {
-  return process.env.CERTKO_SECRET || "certko-dev-secret-change-me";
+  return resolveCertkoSecret();
 }
 
 /** Large, high-contrast math captcha — easy to read and type. */

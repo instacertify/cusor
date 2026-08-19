@@ -4,24 +4,15 @@ import bcrypt from "bcryptjs";
 import { getSetting, setSetting } from "./db";
 import { ADMIN_COOKIE } from "./session-edge";
 import { shouldUseSecureCookies } from "./cookie-secure";
+import { resolveCertkoSecret } from "./durable-secret";
 
 export { ADMIN_COOKIE };
 
 const SESSION_DAYS = 7;
 const BCRYPT_ROUNDS = 12;
 
-let warnedMissingCertkoSecret = false;
-
 function getSecret(): string {
-  const secret = process.env.CERTKO_SECRET?.trim();
-  if (secret) return secret;
-  if (process.env.NODE_ENV === "production" && !warnedMissingCertkoSecret) {
-    warnedMissingCertkoSecret = true;
-    console.error(
-      "[certko] CERTKO_SECRET is missing. Set a stable secret in .env so admin sessions survive restarts. Using a weak default is insecure and will log everyone out if the process env changes."
-    );
-  }
-  return "certko-dev-secret-change-me";
+  return resolveCertkoSecret();
 }
 
 export function signPayload(payload: string, secret = getSecret()): string {

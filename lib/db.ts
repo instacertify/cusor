@@ -7,6 +7,9 @@ import {
   withDeferredSqlJsPersist,
 } from "./sqlite";
 import { seedDatabase } from "./seed";
+import { restoreArchivedInquiriesSafe } from "./inquiry-archive";
+import { restoreSettingsArchiveSafe, snapshotSettings } from "./settings-archive";
+import { resolveCertkoSecret } from "./durable-secret";
 import { ensureCertProductsCatalog } from "./seed-cert-products";
 import { ensureTestingCatalog } from "./seed-testing";
 import { ensureBisStandardsInTestingCatalog } from "./seed-bis-testing-map";
@@ -46,6 +49,9 @@ type DbGlobal = typeof globalThis & {
 const g = globalThis as DbGlobal;
 
 function bootstrapSchema(db: SqliteDatabase): void {
+  // Persist signing secret next to SQLite so Hostinger restarts keep admin sessions.
+  resolveCertkoSecret();
+
   // Postgres: pragma is a no-op. SQLite/sql.js uses DELETE journal for Hostinger.
   db.pragma("journal_mode = DELETE");
   db.pragma("foreign_keys = ON");
@@ -399,6 +405,9 @@ function bootstrapSchema(db: SqliteDatabase): void {
   ensureContactPopupSettings(db);
   scrubLabPublicContactDetails(db);
   ensureGdprLibrary(db);
+  restoreSettingsArchiveSafe(db);
+  restoreArchivedInquiriesSafe(db);
+  snapshotSettings(db);
 }
 
 function runEnsures(db: SqliteDatabase) {
@@ -958,11 +967,11 @@ export function getSettings(): Record<string, string> {
 }
 
 export function setSetting(key: string, value: string) {
-  getDb()
-    .prepare(
-      "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value"
-    )
-    .run(key, value);
+  const db = getDb();
+  db.prepare(
+    "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value"
+  ).run(key, value);
+  snapshotSettings(db);
 }
 
 export interface Category {
