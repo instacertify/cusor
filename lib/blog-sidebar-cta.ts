@@ -11,11 +11,14 @@ export const BLOG_CTA_DEFAULTS = {
   blog_cta_body_template:
     "Our experts handle the application, coordinate testing for {topic} and manage the inspection. Free quote in 24 hours.",
   blog_cta_default_topic: "your product",
+  blog_cta_submit_label: "Request quote",
+  blog_more_title: "More from the blog",
+  blog_more_subtitle: "Scroll for more articles",
 } as const;
 
 export type BlogCtaKind = "certification" | "testing";
 export type BlogCtaMode = "default" | "custom";
-export type BlogMorePostsMode = "default" | "hide";
+export type BlogMorePostsMode = "default" | "hide" | "custom";
 
 export type BlogSidebarCtaResolved = {
   kind: BlogCtaKind;
@@ -25,6 +28,8 @@ export type BlogSidebarCtaResolved = {
   intent: "certification" | "test";
   submitLabel: string;
   morePostsMode: BlogMorePostsMode;
+  moreTitle: string;
+  moreSubtitle: string;
 };
 
 const TEST_RE =
@@ -54,7 +59,10 @@ export type BlogSidebarPostFields = {
   cta_heading?: string | null;
   cta_topic?: string | null;
   cta_body?: string | null;
+  cta_submit_label?: string | null;
   more_posts_mode?: string | null;
+  more_posts_title?: string | null;
+  more_posts_subtitle?: string | null;
 };
 
 /** Resolve CTA + related-posts behaviour for one article. */
@@ -64,8 +72,9 @@ export function resolveBlogSidebarCta(
 ): BlogSidebarCtaResolved {
   const mode: BlogCtaMode =
     (post.cta_mode || "").trim() === "custom" ? "custom" : "default";
+  const moreRaw = (post.more_posts_mode || "").trim();
   const morePostsMode: BlogMorePostsMode =
-    (post.more_posts_mode || "").trim() === "hide" ? "hide" : "default";
+    moreRaw === "hide" ? "hide" : moreRaw === "custom" ? "custom" : "default";
 
   const defaultKindSetting = (settings.blog_cta_default_kind || "").trim().toLowerCase();
 
@@ -90,10 +99,21 @@ export function resolveBlogSidebarCta(
   const defaultTopic =
     (settings.blog_cta_default_topic || "").trim() ||
     BLOG_CTA_DEFAULTS.blog_cta_default_topic;
+  const defaultSubmit =
+    (settings.blog_cta_submit_label || "").trim() ||
+    BLOG_CTA_DEFAULTS.blog_cta_submit_label;
+  const defaultMoreTitle =
+    (settings.blog_more_title || "").trim() || BLOG_CTA_DEFAULTS.blog_more_title;
+  const defaultMoreSubtitle =
+    (settings.blog_more_subtitle || "").trim() ||
+    BLOG_CTA_DEFAULTS.blog_more_subtitle;
 
   const customHeading = (post.cta_heading || "").trim();
   const customTopic = (post.cta_topic || "").trim();
   const customBody = (post.cta_body || "").trim();
+  const customSubmit = (post.cta_submit_label || "").trim();
+  const customMoreTitle = (post.more_posts_title || "").trim();
+  const customMoreSubtitle = (post.more_posts_subtitle || "").trim();
 
   const heading =
     mode === "custom" && customHeading
@@ -112,13 +132,27 @@ export function resolveBlogSidebarCta(
       ? fillTopic(customBody, topic)
       : fillTopic(bodyTemplate, topic);
 
+  const submitLabel =
+    mode === "custom" && customSubmit ? customSubmit : defaultSubmit;
+
+  const moreTitle =
+    morePostsMode === "custom" && customMoreTitle
+      ? customMoreTitle
+      : defaultMoreTitle;
+  const moreSubtitle =
+    morePostsMode === "custom" && customMoreSubtitle
+      ? customMoreSubtitle
+      : defaultMoreSubtitle;
+
   return {
     kind,
     heading,
     body,
     topic,
     intent: kind === "testing" ? "test" : "certification",
-    submitLabel: "Request quote",
+    submitLabel,
     morePostsMode,
+    moreTitle,
+    moreSubtitle,
   };
 }

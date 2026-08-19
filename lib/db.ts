@@ -228,7 +228,10 @@ function bootstrapSchema(db: SqliteDatabase): void {
       cta_heading TEXT NOT NULL DEFAULT '',
       cta_topic TEXT NOT NULL DEFAULT '',
       cta_body TEXT NOT NULL DEFAULT '',
-      more_posts_mode TEXT NOT NULL DEFAULT 'default'
+      cta_submit_label TEXT NOT NULL DEFAULT '',
+      more_posts_mode TEXT NOT NULL DEFAULT 'default',
+      more_posts_title TEXT NOT NULL DEFAULT '',
+      more_posts_subtitle TEXT NOT NULL DEFAULT ''
     );
     CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status);
     CREATE INDEX IF NOT EXISTS idx_posts_author ON posts(author_id);
@@ -1173,8 +1176,11 @@ export interface Post {
   cta_heading?: string;
   cta_topic?: string;
   cta_body?: string;
-  /** default = show vertical related list; hide = omit */
+  cta_submit_label?: string;
+  /** default = show related list; custom = edit titles; hide = omit */
   more_posts_mode?: string;
+  more_posts_title?: string;
+  more_posts_subtitle?: string;
   author_slug?: string | null;
   author_name?: string | null;
   author_title?: string | null;

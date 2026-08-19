@@ -13,7 +13,10 @@ export function ensureBlogSidebarColumns(db: SqliteDatabase) {
   add("cta_heading", "cta_heading TEXT NOT NULL DEFAULT ''");
   add("cta_topic", "cta_topic TEXT NOT NULL DEFAULT ''");
   add("cta_body", "cta_body TEXT NOT NULL DEFAULT ''");
+  add("cta_submit_label", "cta_submit_label TEXT NOT NULL DEFAULT ''");
   add("more_posts_mode", "more_posts_mode TEXT NOT NULL DEFAULT 'default'");
+  add("more_posts_title", "more_posts_title TEXT NOT NULL DEFAULT ''");
+  add("more_posts_subtitle", "more_posts_subtitle TEXT NOT NULL DEFAULT ''");
 }
 
 /** Seed site-wide blog sidebar CTA defaults if missing (never overwrite human edits). */

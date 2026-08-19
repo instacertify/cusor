@@ -74,7 +74,7 @@ export default async function BlogPostPage({ params }: Props) {
   });
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-10">
       {jsonLd && (
         <script
           type="application/ld+json"
@@ -83,34 +83,42 @@ export default async function BlogPostPage({ params }: Props) {
       )}
       <Breadcrumbs crumbs={[{ label: "Blog", href: "/blog" }, { label: post.title }]} />
 
-      <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+      <div className="mt-6 lg:mt-8 grid gap-8 lg:gap-10 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
         <article className="min-w-0">
-          <AuthorByline
-            name={authorName}
-            slug={post.author_slug}
-            date={formatDate(post.published_at)}
-            dateTime={publishedIso}
-          />
-          <h1 className="mt-2 font-display text-3xl sm:text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
-            {post.title}
-          </h1>
-          <p className="mt-4 text-lg text-ink-600 leading-relaxed">{post.excerpt}</p>
-          {post.image && (
+          <header className="max-w-3xl">
+            <AuthorByline
+              name={authorName}
+              slug={post.author_slug}
+              date={formatDate(post.published_at)}
+              dateTime={publishedIso}
+            />
+            <h1 className="mt-3 font-display text-[1.85rem] sm:text-4xl font-semibold text-ink-950 tracking-tight leading-[1.15]">
+              {post.title}
+            </h1>
+            {post.excerpt ? (
+              <p className="mt-4 text-base sm:text-lg text-ink-600 leading-relaxed">
+                {post.excerpt}
+              </p>
+            ) : null}
+          </header>
+
+          {post.image ? (
             <BlogCoverImage
               src={post.image}
               alt={post.title}
               priority
-              sizes="(max-width: 1024px) 100vw, 720px"
-              className="mt-8 rounded-3xl border border-cream-300 shadow-card object-cover w-full aspect-[16/9]"
+              sizes="(max-width: 1024px) 100vw, 760px"
+              className="mt-7 sm:mt-8 rounded-2xl border border-cream-300 shadow-card object-cover w-full aspect-[16/9]"
             />
-          )}
+          ) : null}
+
           <div
-            className="prose-certko mt-8"
+            className="prose-certko mt-7 sm:mt-8 max-w-3xl"
             dangerouslySetInnerHTML={{ __html: renderMarkdown(post.content) }}
           />
 
           {(post.author_slug || authorName) && (
-            <aside className="mt-12 rounded-2xl border border-cream-300 bg-cream-50 p-5 sm:p-6">
+            <aside className="mt-10 sm:mt-12 max-w-3xl rounded-2xl border border-cream-300 bg-cream-50 p-5 sm:p-6">
               <div className="flex gap-4 items-start">
                 {post.author_image ? (
                   <CmsImage
@@ -167,7 +175,7 @@ export default async function BlogPostPage({ params }: Props) {
         <BlogArticleSidebar cta={cta} more={more} productHint={cta.topic} />
       </div>
 
-      <div className="mt-16">
+      <div className="mt-14 sm:mt-16">
         <TestimonialStrip />
       </div>
     </div>

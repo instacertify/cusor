@@ -23,12 +23,19 @@ export default function BlogArticleSidebar({
   more: Post[];
   productHint: string;
 }) {
+  const showMore = cta.morePostsMode !== "hide" && more.length > 0;
+
   return (
-    <aside className="space-y-6 lg:sticky lg:top-4 lg:self-start">
-      <div className="rounded-3xl border border-cream-300 bg-gradient-to-br from-ink-900 to-ink-800 text-white p-6 sm:p-7 shadow-card-hover">
-        <h2 className="font-display text-xl font-bold leading-snug">{cta.heading}</h2>
-        <p className="mt-2 text-sm text-ink-300 leading-relaxed">{cta.body}</p>
-        <div className="mt-5 rounded-2xl bg-white p-4 text-ink-950">
+    <aside className="flex flex-col gap-5 lg:sticky lg:top-6 lg:self-start w-full">
+      {/* Quote box */}
+      <section className="rounded-2xl border border-cream-300 bg-ink-950 text-white overflow-hidden shadow-card">
+        <div className="px-5 pt-5 pb-4 border-b border-white/10">
+          <h2 className="font-display text-lg sm:text-xl font-semibold leading-snug tracking-tight">
+            {cta.heading}
+          </h2>
+          <p className="mt-2 text-sm text-ink-300 leading-relaxed">{cta.body}</p>
+        </div>
+        <div className="bg-cream-50 px-4 py-4 text-ink-950">
           <ContactForm
             product={productHint || cta.topic}
             intent={cta.intent}
@@ -37,32 +44,37 @@ export default function BlogArticleSidebar({
             submitLabelOverride={cta.submitLabel}
           />
         </div>
-      </div>
+      </section>
 
-      {cta.morePostsMode === "default" && more.length > 0 ? (
-        <div className="rounded-3xl border border-cream-300 bg-white shadow-card overflow-hidden">
-          <div className="px-5 py-4 border-b border-cream-200">
-            <h2 className="font-display text-lg font-bold text-ink-950">More from the blog</h2>
-            <p className="text-xs text-ink-500 mt-0.5">Scroll for more articles</p>
+      {/* Related blogs box */}
+      {showMore ? (
+        <section className="rounded-2xl border border-cream-300 bg-white shadow-card overflow-hidden flex flex-col min-h-0">
+          <div className="px-5 py-4 border-b border-cream-200 bg-cream-50/80">
+            <h2 className="font-display text-base sm:text-lg font-semibold text-ink-950 leading-snug">
+              {cta.moreTitle}
+            </h2>
+            {cta.moreSubtitle ? (
+              <p className="text-xs text-ink-500 mt-1 leading-relaxed">{cta.moreSubtitle}</p>
+            ) : null}
           </div>
-          <div className="max-h-[28rem] overflow-y-auto overscroll-contain divide-y divide-cream-200">
+          <div className="max-h-[26rem] overflow-y-auto overscroll-contain divide-y divide-cream-200">
             {more.map((p) => (
               <Link
                 key={p.id}
                 href={`/blog/${p.slug}`}
-                className="group flex gap-3 p-4 hover:bg-cream-50 transition"
+                className="group flex gap-3 px-4 py-3.5 hover:bg-cream-50 transition"
               >
                 {p.image ? (
                   <CmsImage
                     src={p.image}
                     alt=""
-                    width={72}
-                    height={72}
-                    className="w-16 h-16 rounded-xl object-cover border border-cream-200 shrink-0"
+                    width={64}
+                    height={64}
+                    className="w-14 h-14 rounded-lg object-cover border border-cream-200 shrink-0"
                   />
                 ) : (
                   <div
-                    className="w-16 h-16 rounded-xl bg-cream-100 border border-cream-200 shrink-0"
+                    className="w-14 h-14 rounded-lg bg-cream-100 border border-cream-200 shrink-0"
                     aria-hidden
                   />
                 )}
@@ -70,7 +82,7 @@ export default function BlogArticleSidebar({
                   <p className="text-[11px] font-semibold text-ink-500">
                     {formatDate(p.published_at)}
                   </p>
-                  <h3 className="mt-0.5 font-display text-sm font-bold text-ink-950 leading-snug line-clamp-3 group-hover:text-butter-700 transition">
+                  <h3 className="mt-0.5 font-display text-sm font-semibold text-ink-950 leading-snug line-clamp-2 group-hover:text-butter-700 transition">
                     {p.title}
                   </h3>
                   <span className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-butter-700">
@@ -80,7 +92,7 @@ export default function BlogArticleSidebar({
               </Link>
             ))}
           </div>
-        </div>
+        </section>
       ) : null}
     </aside>
   );

@@ -1615,10 +1615,15 @@ export async function savePost(formData: FormData) {
   if (uploaded) nextImage = uploaded;
   else if (clearImage) nextImage = "";
 
+  const moreModeRaw = String(formData.get("more_posts_mode") ?? "default").trim();
+  const morePostsMode =
+    moreModeRaw === "hide" ? "hide" : moreModeRaw === "custom" ? "custom" : "default";
+
   db.prepare(
     `UPDATE posts SET slug=?, title=?, excerpt=?, content=?, author=?, author_id=?, status=?, published_at=?,
      meta_title=?, meta_description=?, image=?,
-     cta_mode=?, cta_kind=?, cta_heading=?, cta_topic=?, cta_body=?, more_posts_mode=?
+     cta_mode=?, cta_kind=?, cta_heading=?, cta_topic=?, cta_body=?, cta_submit_label=?,
+     more_posts_mode=?, more_posts_title=?, more_posts_subtitle=?
      WHERE id=?`
   ).run(
     slug,
@@ -1639,7 +1644,10 @@ export async function savePost(formData: FormData) {
     String(formData.get("cta_heading") ?? "").trim(),
     String(formData.get("cta_topic") ?? "").trim(),
     String(formData.get("cta_body") ?? "").trim(),
-    String(formData.get("more_posts_mode") ?? "default").trim() === "hide" ? "hide" : "default",
+    String(formData.get("cta_submit_label") ?? "").trim(),
+    morePostsMode,
+    String(formData.get("more_posts_title") ?? "").trim(),
+    String(formData.get("more_posts_subtitle") ?? "").trim(),
     id
   );
   void import("@/lib/search-index").then((m) => m.invalidateSearchIndex());

@@ -247,7 +247,7 @@ export default async function SettingsPage({ searchParams }: Props) {
             placeholder="your product"
           />
           <TextArea
-            label="Body template"
+            label="Body template (write-up under the box title)"
             name="blog_cta_body_template"
             defaultValue={
               s.blog_cta_body_template ||
@@ -259,6 +259,23 @@ export default async function SettingsPage({ searchParams }: Props) {
             Use <code className="text-ink-800">{"{topic}"}</code> where the product / standard name
             should appear.
           </p>
+          <Field
+            label="Quote button name"
+            name="blog_cta_submit_label"
+            defaultValue={s.blog_cta_submit_label || "Request quote"}
+          />
+          <div className="pt-3 border-t border-cream-200 grid sm:grid-cols-2 gap-4">
+            <Field
+              label="Other blogs — box title"
+              name="blog_more_title"
+              defaultValue={s.blog_more_title || "More from the blog"}
+            />
+            <Field
+              label="Other blogs — box subtitle"
+              name="blog_more_subtitle"
+              defaultValue={s.blog_more_subtitle || "Scroll for more articles"}
+            />
+          </div>
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
