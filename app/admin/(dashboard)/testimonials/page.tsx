@@ -3,17 +3,33 @@ import { saveTestimonial, deleteTestimonial } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton } from "@/components/admin/Field";
 import BulkImportLink from "@/components/admin/BulkImportLink";
 import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import AdminPagination from "@/components/admin/AdminPagination";
+import { paginateItems, parseAdminPage } from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; q?: string; page?: string; category?: string }>;
 }
 
 export default async function AdminTestimonials({ searchParams }: Props) {
   const sp = await searchParams;
-  const testimonials = getTestimonials();
-  const featuredCount = testimonials.filter((t) => t.featured).length;
+  const q = (sp.q ?? "").trim().toLowerCase();
+  const featured = (sp.category ?? "").trim();
+  const all = getTestimonials();
+  const filtered = all.filter((t) => {
+    if (featured === "featured" && !t.featured) return false;
+    if (featured === "other" && t.featured) return false;
+    if (!q) return true;
+    return (
+      t.name.toLowerCase().includes(q) ||
+      (t.role || "").toLowerCase().includes(q) ||
+      (t.quote || "").toLowerCase().includes(q)
+    );
+  });
+  const { items: testimonials, total, page } = paginateItems(filtered, parseAdminPage(sp.page));
+  const featuredCount = all.filter((t) => t.featured).length;
 
   return (
     <div>
@@ -27,6 +43,20 @@ export default async function AdminTestimonials({ searchParams }: Props) {
         {featuredCount} featured of {testimonials.length} total.
       </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
+
+      <AdminFilterBar
+        action="/admin/testimonials"
+        searchValue={q}
+        searchPlaceholder="Search name or quote…"
+        categoryName="category"
+        categoryValue={featured}
+        categoryLabel="Placement"
+        allLabel="All quotes"
+        categories={[
+          { value: "featured", label: "Featured" },
+          { value: "other", label: "Not featured" },
+        ]}
+      />
 
       <div className="space-y-4">
         {testimonials.map((t) => (
@@ -65,6 +95,13 @@ export default async function AdminTestimonials({ searchParams }: Props) {
           </div>
         ))}
       </div>
+      <AdminPagination
+        page={page}
+        total={total}
+        path="/admin/testimonials"
+        params={{ q, category: featured }}
+        noun="testimonials"
+      />
 
       <div className="mt-8 bg-cream-100 rounded-2xl border border-cream-300 p-5">
         <h2 className="font-display font-bold text-ink-950 mb-3">Add Testimonial</h2>

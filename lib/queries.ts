@@ -533,6 +533,90 @@ export function getAllPosts(): Post[] {
     .all() as Post[];
 }
 
+export function listAdminPosts(opts: {
+  q?: string;
+  status?: string;
+  authorId?: number;
+  limit?: number;
+  offset?: number;
+}): { posts: Post[]; total: number } {
+  const clauses: string[] = [];
+  const params: (string | number)[] = [];
+  const status = (opts.status ?? "").trim();
+  if (status) {
+    clauses.push("p.status = ?");
+    params.push(status);
+  }
+  if (opts.authorId) {
+    clauses.push("p.author_id = ?");
+    params.push(opts.authorId);
+  }
+  const q = (opts.q ?? "").trim().toLowerCase();
+  if (q) {
+    clauses.push(
+      "(LOWER(p.title) LIKE ? OR LOWER(p.slug) LIKE ? OR LOWER(p.excerpt) LIKE ? OR LOWER(IFNULL(a.name, p.author)) LIKE ?)"
+    );
+    const like = `%${q}%`;
+    params.push(like, like, like, like);
+  }
+  const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+  const from = `posts p LEFT JOIN authors a ON a.id = p.author_id`;
+  const total = (
+    getDb().prepare(`SELECT COUNT(*) AS n FROM ${from} ${where}`).get(...params) as { n: number }
+  ).n;
+  const limit = opts.limit ?? 15;
+  const offset = opts.offset ?? 0;
+  const posts = getDb()
+    .prepare(
+      `SELECT ${POST_AUTHOR_SELECT}
+       FROM ${from}
+       ${where}
+       ORDER BY p.id DESC
+       LIMIT ? OFFSET ?`
+    )
+    .all(...params, limit, offset) as Post[];
+  return { posts, total };
+}
+
+export function listAdminTestingServices(opts: {
+  q?: string;
+  categoryId?: number;
+  limit?: number;
+  offset?: number;
+}): { services: TestingService[]; total: number } {
+  const clauses: string[] = [];
+  const params: (string | number)[] = [];
+  if (opts.categoryId) {
+    clauses.push("s.category_id = ?");
+    params.push(opts.categoryId);
+  }
+  const q = (opts.q ?? "").trim();
+  if (q) {
+    const like = `%${q.replace(/\s+/g, "%")}%`;
+    clauses.push(
+      "(s.name LIKE ? OR s.standards LIKE ? OR s.test_type LIKE ? OR s.product_category LIKE ? OR s.summary LIKE ? OR c.name LIKE ?)"
+    );
+    params.push(like, like, like, like, like, like);
+  }
+  const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+  const from = `testing_services s JOIN testing_categories c ON c.id = s.category_id`;
+  const total = (
+    getDb().prepare(`SELECT COUNT(*) AS n FROM ${from} ${where}`).get(...params) as { n: number }
+  ).n;
+  const limit = opts.limit ?? 15;
+  const offset = opts.offset ?? 0;
+  const services = getDb()
+    .prepare(
+      `SELECT s.*, c.slug AS category_slug, c.name AS category_name, c.icon AS category_icon
+       FROM ${from}
+       ${where}
+       ORDER BY c.sort, s.sort, s.name
+       LIMIT ? OFFSET ?`
+    )
+    .all(...params, limit, offset) as TestingService[];
+  return { services, total };
+}
+
 export function getPostById(id: number): Post | undefined {
   return getDb()
     .prepare(

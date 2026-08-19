@@ -3,16 +3,29 @@ import { getAuthors } from "@/lib/queries";
 import { saveAuthor } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton } from "@/components/admin/Field";
 import BulkImportLink from "@/components/admin/BulkImportLink";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import AdminPagination from "@/components/admin/AdminPagination";
+import { paginateItems, parseAdminPage } from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; q?: string; page?: string }>;
 }
 
 export default async function AdminAuthorsPage({ searchParams }: Props) {
   const sp = await searchParams;
-  const authors = getAuthors();
+  const q = (sp.q ?? "").trim().toLowerCase();
+  const all = getAuthors();
+  const filtered = q
+    ? all.filter(
+        (a) =>
+          a.name.toLowerCase().includes(q) ||
+          a.slug.toLowerCase().includes(q) ||
+          (a.title || "").toLowerCase().includes(q)
+      )
+    : all;
+  const { items: authors, total, page } = paginateItems(filtered, parseAdminPage(sp.page));
 
   return (
     <div>
@@ -25,6 +38,13 @@ export default async function AdminAuthorsPage({ searchParams }: Props) {
         <code className="bg-cream-100 px-1 rounded">/authors/[slug]</code>. Or bulk-upload via Excel.
       </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
+
+      <AdminFilterBar
+        action="/admin/authors"
+        searchValue={q}
+        searchPlaceholder="Search author name…"
+        categories={[]}
+      />
 
       <div className="bg-white rounded-2xl border border-cream-300 shadow-card overflow-x-auto mb-8">
         <table className="w-full text-sm min-w-[560px]">
@@ -67,6 +87,13 @@ export default async function AdminAuthorsPage({ searchParams }: Props) {
           </tbody>
         </table>
       </div>
+      <AdminPagination
+        page={page}
+        total={total}
+        path="/admin/authors"
+        params={{ q }}
+        noun="authors"
+      />
 
       <div className="bg-cream-100 rounded-2xl border border-cream-300 p-5">
         <h2 className="font-display font-bold text-ink-950 mb-3">Create author</h2>

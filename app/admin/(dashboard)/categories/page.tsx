@@ -4,16 +4,24 @@ import { getCategories } from "@/lib/queries";
 import { createCategory } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import BulkImportLink from "@/components/admin/BulkImportLink";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import AdminPagination from "@/components/admin/AdminPagination";
+import { paginateItems, parseAdminPage } from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; q?: string; page?: string }>;
 }
 
 export default async function AdminCategories({ searchParams }: Props) {
   const sp = await searchParams;
-  const categories = getCategories();
+  const q = (sp.q ?? "").trim().toLowerCase();
+  const all = getCategories();
+  const filtered = q
+    ? all.filter((c) => c.name.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q))
+    : all;
+  const { items: categories, total, page } = paginateItems(filtered, parseAdminPage(sp.page));
 
   return (
     <div>
@@ -25,6 +33,13 @@ export default async function AdminCategories({ searchParams }: Props) {
         Create BIS product categories, or edit names, icons, descriptions, timelines and images.
       </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
+
+      <AdminFilterBar
+        action="/admin/categories"
+        searchValue={q}
+        searchPlaceholder="Search category name…"
+        categories={[]}
+      />
 
       <div className="bg-cream-100 rounded-2xl border border-cream-300 p-5 mb-8">
         <h2 className="font-display font-bold text-ink-950 mb-3">Add a BIS category</h2>
@@ -57,6 +72,13 @@ export default async function AdminCategories({ searchParams }: Props) {
           </Link>
         ))}
       </div>
+      <AdminPagination
+        page={page}
+        total={total}
+        path="/admin/categories"
+        params={{ q }}
+        noun="categories"
+      />
     </div>
   );
 }

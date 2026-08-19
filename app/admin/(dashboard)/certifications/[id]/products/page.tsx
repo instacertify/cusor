@@ -6,6 +6,9 @@ import { getCertProducts } from "@/lib/queries";
 import { saveCertProduct } from "../../../../actions";
 import { Field, TextArea, MarkdownEditor, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import CertProductExpandableList from "@/components/admin/CertProductExpandableList";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import AdminPagination from "@/components/admin/AdminPagination";
+import { paginateItems, parseAdminPage } from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +18,7 @@ function includesQ(value: string | null | undefined, q: string): boolean {
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string; error?: string; edit?: string; q?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; edit?: string; q?: string; page?: string; category?: string }>;
 }
 
 export default async function AdminCertificationProductsList({ params, searchParams }: Props) {
@@ -29,16 +32,23 @@ export default async function AdminCertificationProductsList({ params, searchPar
 
   const allProducts = getCertProducts(cert.id);
   const q = (sp.q ?? "").trim().toLowerCase();
-  const products = q
-    ? allProducts.filter(
-        (p) =>
-          includesQ(p.name, q) ||
-          includesQ(p.standards, q) ||
-          includesQ(p.family, q) ||
-          includesQ(p.regime, q) ||
-          includesQ(p.slug, q)
-      )
-    : allProducts;
+  const family = (sp.category ?? "").trim();
+  const families = Array.from(
+    new Set(allProducts.map((p) => (p.family || "").trim()).filter(Boolean))
+  ).sort((a, b) => a.localeCompare(b));
+  const filtered = allProducts.filter((p) => {
+    if (family && (p.family || "").trim() !== family) return false;
+    if (!q) return true;
+    return (
+      includesQ(p.name, q) ||
+      includesQ(p.standards, q) ||
+      includesQ(p.family, q) ||
+      includesQ(p.regime, q) ||
+      includesQ(p.slug, q)
+    );
+  });
+  const requested = parseAdminPage(sp.page);
+  const { items: products, total, page } = paginateItems(filtered, requested);
   const initialOpenId = sp.edit ? Number(sp.edit) || null : null;
 
   return (
@@ -55,8 +65,9 @@ export default async function AdminCertificationProductsList({ params, searchPar
             {cert.name} — all products
           </h1>
           <p className="text-sm text-ink-600 mt-1">
-            Full catalogue list ({allProducts.length}). Click <strong>Edit</strong> on a row to
-            enlarge and update that option.
+            Full catalogue list ({allProducts.length}
+            {q || family ? `, showing ${total}` : ""}). Click <strong>Edit</strong> on a row to
+            enlarge and update that option. 15 per page.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3 shrink-0 text-sm font-bold">
@@ -73,36 +84,22 @@ export default async function AdminCertificationProductsList({ params, searchPar
       </div>
       <SavedBanner saved={sp.saved} error={sp.error} />
 
-      <form
+      <AdminFilterBar
         action={`/admin/certifications/${cert.id}/products`}
-        method="GET"
-        className="mb-5 flex flex-wrap gap-3"
-      >
-        <input
-          type="search"
-          name="q"
-          defaultValue={sp.q ?? ""}
-          placeholder="Search name, standard, family…"
-          className="flex-1 min-w-[200px] rounded-xl border border-cream-300 px-4 py-2.5 text-sm outline-none focus:border-butter-500 bg-white"
-        />
-        <button className="bg-ink-900 hover:bg-ink-800 text-white text-sm font-bold rounded-xl px-5 py-2.5 transition">
-          Search
-        </button>
-        {q ? (
-          <Link
-            href={`/admin/certifications/${cert.id}/products`}
-            className="text-sm font-bold text-ink-600 self-center"
-          >
-            Clear
-          </Link>
-        ) : null}
-      </form>
+        searchValue={sp.q ?? ""}
+        searchPlaceholder="Search name, standard, family…"
+        categoryName="category"
+        categoryValue={family}
+        categoryLabel="Family / group"
+        allLabel="All families"
+        categories={families.map((f) => ({ value: f, label: f }))}
+      />
 
       <section className="mb-10 bg-white rounded-2xl border border-cream-300 shadow-card overflow-hidden">
         <div className="px-5 py-4 border-b border-cream-200 flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-display text-lg font-bold text-ink-950">
-            Showing {products.length}
-            {q ? ` match${products.length === 1 ? "" : "es"}` : ` product${products.length === 1 ? "" : "s"}`}
+            Showing {products.length} of {total}
+            {q || family ? " matches" : ` product${total === 1 ? "" : "s"}`}
           </h2>
         </div>
         <CertProductExpandableList
@@ -113,6 +110,13 @@ export default async function AdminCertificationProductsList({ params, searchPar
           initialOpenId={initialOpenId}
         />
       </section>
+      <AdminPagination
+        page={page}
+        total={total}
+        path={`/admin/certifications/${cert.id}/products`}
+        params={{ q: sp.q ?? "", category: family }}
+        noun="products"
+      />
 
       <section
         id="add-product"
