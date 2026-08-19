@@ -2,9 +2,13 @@ import { cookies, headers } from "next/headers";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { getSetting, setSetting } from "./db";
-import { ADMIN_COOKIE } from "./session-edge";
 import { shouldUseSecureCookies } from "./cookie-secure";
-import { resolveCertkoSecret } from "./durable-secret";
+import {
+  ADMIN_COOKIE,
+  signPayload,
+  verifySessionToken,
+  isAdmin,
+} from "./session-sign";
 import {
   DEFAULT_ADMIN_PASSWORD,
   DEFAULT_ADMIN_USERNAME,
@@ -13,7 +17,7 @@ import {
 
 export { DEFAULT_ADMIN_PASSWORD, DEFAULT_ADMIN_USERNAME };
 
-export { ADMIN_COOKIE };
+export { ADMIN_COOKIE, signPayload, verifySessionToken, isAdmin };
 
 export const ADMIN_SESSION_DAYS = 7;
 const SESSION_DAYS = ADMIN_SESSION_DAYS;
@@ -35,39 +39,10 @@ export function adminSessionCookieOptions(secure: boolean): {
   };
 }
 
-function getSecret(): string {
-  return resolveCertkoSecret();
-}
-
-export function signPayload(payload: string, secret = getSecret()): string {
-  return crypto.createHmac("sha256", secret).update(payload).digest("hex");
-}
-
 export function createSessionToken(): string {
   const expires = Date.now() + 1000 * 60 * 60 * 24 * SESSION_DAYS;
   const payload = String(expires);
   return `${payload}.${signPayload(payload)}`;
-}
-
-export function verifySessionToken(token: string | undefined | null): boolean {
-  if (!token) return false;
-  const [payload, sig] = token.split(".");
-  if (!payload || !sig) return false;
-  const expected = signPayload(payload);
-  try {
-    const a = Buffer.from(expected);
-    const b = Buffer.from(sig);
-    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return false;
-  } catch {
-    return false;
-  }
-  const expires = Number(payload);
-  return Number.isFinite(expires) && expires > Date.now();
-}
-
-export async function isAdmin(): Promise<boolean> {
-  const store = await cookies();
-  return verifySessionToken(store.get(ADMIN_COOKIE)?.value);
 }
 
 export async function requireAdmin(): Promise<void> {

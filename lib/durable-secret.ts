@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
-import { getCertkoDataDir } from "./storage-paths";
+import { getCertkoDataDir, listCertkoSecretCandidateFiles } from "./storage-paths";
 
 const DEFAULT_DEV = "certko-dev-secret-change-me";
 
@@ -27,31 +27,41 @@ function writeFileSecret(secret: string): void {
 }
 
 /**
- * Stable signing secret for admin sessions.
- * Preference: env CERTKO_SECRET → file in CERTKO_DATA_DIR → generate once.
- * The file lives next to SQLite/uploads so Hostinger hbuilds restarts keep sessions.
+ * Read the signing secret without creating the data dir or copying SQLite.
+ * Login/captcha use this so Hostinger does not migrate hbuilds on GET /admin/login.
  */
-export function resolveCertkoSecret(): string {
+export function peekCertkoSecret(): string {
   if (cachedSecret) return cachedSecret;
 
   const fromEnv = (process.env.CERTKO_SECRET || "").trim();
   if (fromEnv && fromEnv !== DEFAULT_DEV) {
-    try {
-      const existing = readFileSecret();
-      if (existing !== fromEnv) writeFileSecret(fromEnv);
-    } catch {
-      /* disk not writable — env still works */
-    }
     cachedSecret = fromEnv;
     return fromEnv;
   }
 
-  const fromFile = readFileSecret();
-  if (fromFile && fromFile !== DEFAULT_DEV && fromFile.length >= 16) {
-    if (!process.env.CERTKO_SECRET) process.env.CERTKO_SECRET = fromFile;
-    cachedSecret = fromFile;
-    return fromFile;
+  for (const file of listCertkoSecretCandidateFiles()) {
+    try {
+      const raw = fs.readFileSync(file, "utf8").trim();
+      if (raw && raw !== DEFAULT_DEV && raw.length >= 16) {
+        cachedSecret = raw;
+        if (!process.env.CERTKO_SECRET) process.env.CERTKO_SECRET = raw;
+        return raw;
+      }
+    } catch {
+      /* missing */
+    }
   }
+  return "";
+}
+
+/**
+ * Stable signing secret for admin sessions.
+ * Preference: env CERTKO_SECRET → existing secret file → generate once.
+ * Disk persist (and hbuilds migrate) runs only when peek misses.
+ */
+export function resolveCertkoSecret(): string {
+  const peeked = peekCertkoSecret();
+  if (peeked) return peeked;
 
   const generated = crypto.randomBytes(32).toString("hex");
   try {
@@ -64,7 +74,7 @@ export function resolveCertkoSecret(): string {
     return generated;
   } catch (err) {
     console.error("[certko] Could not persist CERTKO_SECRET to disk:", err);
-    cachedSecret = fromEnv || DEFAULT_DEV;
+    cachedSecret = (process.env.CERTKO_SECRET || "").trim() || DEFAULT_DEV;
     return cachedSecret;
   }
 }

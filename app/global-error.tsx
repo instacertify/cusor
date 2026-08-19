@@ -1,21 +1,19 @@
 "use client";
 
-import AutoReloadOnce from "@/components/AutoReloadOnce";
-
 export default function GlobalError({
   error,
+  reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
   return (
     <html lang="en-IN">
-      <body>
-        <AutoReloadOnce>
-          <p style={{ padding: 24, fontFamily: "system-ui, sans-serif" }}>
-            Loading…{error.digest ? ` (${error.digest})` : ""}
-          </p>
-        </AutoReloadOnce>
+      <body style={{ fontFamily: "system-ui, sans-serif", padding: 24 }}>
+        <p>The site failed to load{error.digest ? ` (${error.digest})` : ""}.</p>
+        <button type="button" onClick={() => reset()} style={{ marginTop: 12 }}>
+          Try again
+        </button>
       </body>
     </html>
   );
