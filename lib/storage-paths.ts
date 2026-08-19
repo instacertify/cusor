@@ -1,0 +1,149 @@
+import fs from "fs";
+import path from "path";
+
+/**
+ * Durable CMS storage (SQLite + uploads) — lives OUTSIDE the git deploy tree
+ * so `git pull` / rebuilds never delete blogs, passwords, or images.
+ *
+ * Layout (production):
+ *   CERTKO_DATA_DIR=/var/lib/certko
+ *     certko.db
+ *     uploads/
+ *
+ * Application code stays in /var/www/certko (replaceable).
+ */
+
+let cachedDir: string | null = null;
+let migrated = false;
+
+function canUse(dir: string): boolean {
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    fs.accessSync(dir, fs.constants.W_OK);
+    // Prove we can write (some hosts allow mkdir but not create files).
+    const probe = path.join(dir, ".certko-write-test");
+    fs.writeFileSync(probe, "ok");
+    fs.unlinkSync(probe);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function copyFileIfMissing(src: string, dest: string) {
+  if (!fs.existsSync(src) || fs.existsSync(dest)) return;
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  fs.copyFileSync(src, dest);
+}
+
+function copyDirContents(srcDir: string, destDir: string) {
+  if (!fs.existsSync(srcDir)) return;
+  fs.mkdirSync(destDir, { recursive: true });
+  for (const name of fs.readdirSync(srcDir)) {
+    if (name === ".gitkeep") continue;
+    const from = path.join(srcDir, name);
+    const to = path.join(destDir, name);
+    const st = fs.statSync(from);
+    if (st.isDirectory()) {
+      copyDirContents(from, to);
+    } else if (!fs.existsSync(to)) {
+      fs.copyFileSync(from, to);
+    }
+  }
+}
+
+/**
+ * One-time migrate from legacy in-app paths (./data, ./public/uploads)
+ * into the durable data dir — never deletes the source.
+ */
+function migrateLegacyInto(dataDir: string) {
+  if (migrated) return;
+  migrated = true;
+  try {
+    const appData = path.join(process.cwd(), "data");
+    const appUploads = path.join(process.cwd(), "public", "uploads");
+    const destDb = path.join(dataDir, "certko.db");
+    const destUploads = path.join(dataDir, "uploads");
+
+    if (path.resolve(appData) === path.resolve(dataDir)) {
+      // Already using ./data — still pull public/uploads into data/uploads.
+      copyDirContents(appUploads, destUploads);
+      return;
+    }
+
+    copyFileIfMissing(path.join(appData, "certko.db"), destDb);
+    for (const f of fs.existsSync(appData) ? fs.readdirSync(appData) : []) {
+      if (f.startsWith("certko.db-")) {
+        copyFileIfMissing(path.join(appData, f), path.join(dataDir, f));
+      }
+    }
+    copyDirContents(path.join(appData, "uploads"), destUploads);
+    copyDirContents(appUploads, destUploads);
+
+    if (fs.existsSync(destDb)) {
+      console.info("[certko] durable data dir ready:", dataDir);
+    }
+  } catch (err) {
+    console.warn("[certko] legacy data migrate skipped:", err);
+  }
+}
+
+/**
+ * Persistent root for SQLite + uploads.
+ * Prefer CERTKO_DATA_DIR, then /var/lib/certko in production, then ./data.
+ * Never silently use /tmp in production (that resets passwords/blogs on restart).
+ */
+export function getCertkoDataDir(): string {
+  if (cachedDir) return cachedDir;
+
+  const fromEnv = (process.env.CERTKO_DATA_DIR || "").trim();
+  if (fromEnv && canUse(fromEnv)) {
+    cachedDir = path.resolve(fromEnv);
+    migrateLegacyInto(cachedDir);
+    return cachedDir;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    const systemDir = "/var/lib/certko";
+    if (canUse(systemDir)) {
+      cachedDir = systemDir;
+      migrateLegacyInto(cachedDir);
+      return cachedDir;
+    }
+  }
+
+  const local = path.join(process.cwd(), "data");
+  if (canUse(local)) {
+    cachedDir = local;
+    migrateLegacyInto(cachedDir);
+    return cachedDir;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "[certko] No writable persistent data directory. Set CERTKO_DATA_DIR=/var/lib/certko (or another path outside the app deploy folder) and ensure it is writable. Refusing /tmp so blogs, uploads, and admin passwords survive restarts."
+    );
+  }
+
+  const tmp = path.join("/tmp", "certko-data");
+  fs.mkdirSync(tmp, { recursive: true });
+  console.warn("[certko] DEV ONLY: using temporary data dir", tmp);
+  cachedDir = tmp;
+  return cachedDir;
+}
+
+export function getCertkoUploadsDir(): string {
+  const dir = path.join(getCertkoDataDir(), "uploads");
+  fs.mkdirSync(dir, { recursive: true });
+  return dir;
+}
+
+export function getCertkoDbPath(): string {
+  return path.join(getCertkoDataDir(), "certko.db");
+}
+
+/** Reset cache (tests). */
+export function resetStoragePathCache() {
+  cachedDir = null;
+  migrated = false;
+}

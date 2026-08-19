@@ -11,7 +11,14 @@ const SESSION_DAYS = 7;
 const BCRYPT_ROUNDS = 12;
 
 function getSecret(): string {
-  return process.env.CERTKO_SECRET || "certko-dev-secret-change-me";
+  const secret = process.env.CERTKO_SECRET?.trim();
+  if (secret) return secret;
+  if (process.env.NODE_ENV === "production") {
+    console.error(
+      "[certko] CERTKO_SECRET is missing. Set a stable secret in .env so admin sessions survive restarts. Using a weak default is insecure and will log everyone out if the process env changes."
+    );
+  }
+  return "certko-dev-secret-change-me";
 }
 
 export function signPayload(payload: string, secret = getSecret()): string {

@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { getWritableDataDir } from "@/lib/db";
+import { getCertkoDataDir, getCertkoUploadsDir } from "@/lib/storage-paths";
 import {
   DEFAULT_IMAGE_EXTS,
   detectImageType,
@@ -38,21 +38,11 @@ export const MAX_IMAGE_EDGE_PX = 1920;
 const MAX_HERO_BYTES = 40 * 1024 * 1024;
 
 /**
- * Prefer public/uploads when writable; otherwise persist next to the SQLite DB
- * (same Hostinger / read-only app-dir fallback pattern as getWritableDataDir).
+ * Always write uploads next to the durable SQLite DB (CERTKO_DATA_DIR),
+ * never only into the replaceable app tree. Optionally mirror to public/.
  */
 export function getUploadsRoot(): string {
-  const preferred = path.join(process.cwd(), "public", "uploads");
-  try {
-    fs.mkdirSync(preferred, { recursive: true });
-    fs.accessSync(preferred, fs.constants.W_OK);
-    return preferred;
-  } catch {
-    const fallback = path.join(getWritableDataDir(), "uploads");
-    fs.mkdirSync(fallback, { recursive: true });
-    console.warn("[certko] public/uploads not writable; using", fallback);
-    return fallback;
-  }
+  return getCertkoUploadsDir();
 }
 
 export function getHeroUploadsRoot(): string {
@@ -182,7 +172,12 @@ export async function persistUploadedImage(
   fs.mkdirSync(dir, { recursive: true });
   const filename = `${Date.now()}-${sanitizeUploadBasename(file.name)}${optimized.ext}`;
   const dest = path.join(dir, filename);
-  fs.writeFileSync(dest, optimized.buf);
+  try {
+    fs.writeFileSync(dest, optimized.buf);
+  } catch (err) {
+    console.error("[certko] failed to write upload:", dest, err);
+    throw new Error("Could not save image to disk. Check CERTKO_DATA_DIR permissions.");
+  }
 
   // Best-effort mirror into public/ (API route is the reliable serve path).
   const publicDir = path.join(process.cwd(), "public", "uploads");
@@ -191,7 +186,7 @@ export async function persistUploadedImage(
       fs.mkdirSync(publicDir, { recursive: true });
       fs.copyFileSync(dest, path.join(publicDir, filename));
     } catch {
-      /* optional */
+      /* optional — durable copy already written */
     }
   }
 
@@ -255,8 +250,9 @@ export function resolveUploadFsPath(urlPath: string): string | null {
   if (!rel || rel.includes("..") || path.isAbsolute(rel)) return null;
   const candidates = [
     path.join(getUploadsRoot(), rel),
+    path.join(getCertkoDataDir(), "uploads", rel),
     path.join(process.cwd(), "public", "uploads", rel),
-    path.join(getWritableDataDir(), "uploads", rel),
+    path.join(process.cwd(), "data", "uploads", rel),
   ];
   for (const full of candidates) {
     try {

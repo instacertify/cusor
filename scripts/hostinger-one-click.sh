@@ -83,17 +83,18 @@ fi
 
 echo
 green "4/8 Writing .env.production…"
+DATA_DIR="${CERTKO_DATA_DIR:-/var/lib/certko}"
+mkdir -p "$DATA_DIR" "$DATA_DIR/uploads" "$APP_DIR/data" "$APP_DIR/public/uploads"
 # Never rotate secrets on re-install — that would log everyone out and look like a “reset”.
 if [[ -f "$APP_DIR/.env.production" || -f "$APP_DIR/.env" ]]; then
-  yellow "Keeping existing .env / .env.production (uploads + DB stay intact)."
-  # Ensure runtime dirs exist for CMS content
-  mkdir -p "$APP_DIR/data" "$APP_DIR/public/uploads" "$APP_DIR/data/uploads"
+  yellow "Keeping existing .env / .env.production (uploads + DB + password stay intact)."
 else
   SECRET="$(openssl rand -hex 32)"
   cat > "$APP_DIR/.env.production" <<EOF
 NODE_ENV=production
 PORT=${APP_PORT}
 CERTKO_SECRET=${SECRET}
+CERTKO_DATA_DIR=${DATA_DIR}
 COOKIE_SECURE=1
 EOF
   # Also expose for the running process
@@ -101,10 +102,25 @@ EOF
 NODE_ENV=production
 PORT=${APP_PORT}
 CERTKO_SECRET=${SECRET}
+CERTKO_DATA_DIR=${DATA_DIR}
 COOKIE_SECURE=1
 EOF
 fi
-mkdir -p "$APP_DIR/data" "$APP_DIR/public/uploads" "$APP_DIR/data/uploads"
+# Pin durable data dir on every install/update without rotating the secret
+if [[ -f "$APP_DIR/.env" ]] && ! grep -q '^CERTKO_DATA_DIR=' "$APP_DIR/.env"; then
+  printf '\nCERTKO_DATA_DIR=%s\n' "$DATA_DIR" >> "$APP_DIR/.env"
+fi
+if [[ -f "$APP_DIR/.env.production" ]] && ! grep -q '^CERTKO_DATA_DIR=' "$APP_DIR/.env.production"; then
+  printf '\nCERTKO_DATA_DIR=%s\n' "$DATA_DIR" >> "$APP_DIR/.env.production"
+fi
+# Migrate legacy in-app DB/uploads into durable dir (copy, never delete)
+if [[ ! -f "$DATA_DIR/certko.db" && -f "$APP_DIR/data/certko.db" ]]; then
+  yellow "Migrating existing database into $DATA_DIR"
+  cp -a "$APP_DIR/data/certko.db" "$DATA_DIR/certko.db"
+fi
+if [[ -d "$APP_DIR/public/uploads" ]]; then
+  cp -an "$APP_DIR/public/uploads/." "$DATA_DIR/uploads/" 2>/dev/null || true
+fi
 touch "$APP_DIR/public/uploads/.gitkeep"
 
 echo
@@ -117,6 +133,11 @@ echo
 green "6/8 Starting with PM2…"
 pm2 delete "$APP_NAME" >/dev/null 2>&1 || true
 cd "$APP_DIR"
+export CERTKO_DATA_DIR="$DATA_DIR"
+set -a
+# shellcheck disable=SC1091
+source "$APP_DIR/.env" 2>/dev/null || true
+set +a
 pm2 start npm --name "$APP_NAME" -- start
 pm2 save
 # Configure startup without interactive prompt when possible
