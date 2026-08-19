@@ -1,5 +1,5 @@
 import type { SqliteDatabase } from "./sqlite";
-import { seedStatusForPublishAt } from "./blog-schedule-time";
+import { insertBlogPostsIfMissing } from "./blog-seed";
 
 export type SeoPostSeed = {
   slug: string;
@@ -424,29 +424,19 @@ export function ensureSeoLocationPosts(db: SqliteDatabase) {
     .get() as { id: number; name: string } | undefined;
   if (!author) return;
 
-  const exists = db.prepare("SELECT id FROM posts WHERE slug = ?");
-  const insert = db.prepare(
-    `INSERT INTO posts
-      (slug, title, excerpt, content, image, author, author_id, status, published_at, meta_title, meta_description)
-     VALUES (?, ?, ?, ?, '', ?, ?, ?, ?, ?, ?)`
+  // Insert-if-missing only — never overwrite manual edits or cover images.
+  insertBlogPostsIfMissing(
+    db,
+    SEO_LOCATION_POSTS.map((p) => ({
+      slug: p.slug,
+      title: p.title,
+      excerpt: p.excerpt,
+      content: p.content,
+      image: "",
+      published_at: p.published_at,
+      meta_title: p.meta_title,
+      meta_description: p.meta_description,
+    })),
+    author
   );
-
-  const tx = db.transaction(() => {
-    for (const p of SEO_LOCATION_POSTS) {
-      if (exists.get(p.slug)) continue;
-      insert.run(
-        p.slug,
-        p.title,
-        p.excerpt,
-        p.content,
-        author.name,
-        author.id,
-        seedStatusForPublishAt(p.published_at),
-        p.published_at,
-        p.meta_title,
-        p.meta_description
-      );
-    }
-  });
-  tx();
 }

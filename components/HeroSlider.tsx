@@ -1,13 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import type { HeroSlide } from "@/lib/db";
-
-function isAnimatedOrExternal(src: string, mediaType: string) {
-  return mediaType === "gif" || mediaType === "video" || src.endsWith(".gif") || src.endsWith(".svg");
-}
+import { toServableUploadUrl } from "@/lib/upload-urls";
 
 export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   const activeSlides = useMemo(() => slides.filter((s) => s.media), [slides]);
@@ -68,8 +64,8 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
               <video
                 ref={visible ? videoRef : undefined}
                 className="h-full w-full object-cover"
-                src={s.media}
-                poster={s.poster || undefined}
+                src={toServableUploadUrl(s.media)}
+                poster={s.poster ? toServableUploadUrl(s.poster) : undefined}
                 muted
                 playsInline
                 autoPlay={visible}
@@ -78,18 +74,13 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                   if (count > 1 && !paused) go(index + 1);
                 }}
               />
-            ) : isAnimatedOrExternal(s.media, mediaType) ? (
-              // Keep GIF animation — next/image can flatten animated GIFs
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={s.media} alt={s.title || "Hero slide"} className="h-full w-full object-cover" />
             ) : (
-              <Image
-                src={s.media}
+              // Always plain <img> for CMS media — /api/uploads works on Hostinger
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={toServableUploadUrl(s.media)}
                 alt={s.title || "Hero slide"}
-                fill
-                priority={i === 0}
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 620px"
+                className="h-full w-full object-cover"
               />
             )}
             {(s.title || s.subtitle || s.link_href) && (

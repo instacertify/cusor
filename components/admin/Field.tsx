@@ -75,8 +75,8 @@ export function ImageUpload({
   previewFit = "cover",
   /** Tailwind aspect class for the preview frame (e.g. aspect-[16/9] for blog covers). */
   previewAspect,
-  accept = "image/png,image/jpeg,image/webp,image/gif,image/svg+xml",
-  hint = "Upload PNG/JPG/WebP to replace the current image.",
+  accept = "image/png,image/jpeg,image/jpg,image/webp,image/gif,image/avif,image/bmp,image/svg+xml,.png,.jpg,.jpeg,.webp,.gif,.avif,.bmp,.svg",
+  hint = "Max 8 MB upload. Stored compressed (≤1.5 MB, max 1920px). PNG/JPG/WebP/GIF/AVIF/SVG.",
 }: {
   current?: string;
   name?: string;
@@ -94,6 +94,11 @@ export function ImageUpload({
   const frameClass = previewAspect
     ? `w-full max-w-md ${previewAspect} rounded-xl border border-cream-300 mb-2 overflow-hidden`
     : "w-full max-w-xs rounded-xl border border-cream-300 mb-2";
+  const previewSrc = current
+    ? current.startsWith("/uploads/")
+      ? `/api/uploads/${current.slice("/uploads/".length)}`
+      : current
+    : "";
   return (
     <div>
       <label htmlFor={name} className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">
@@ -102,7 +107,7 @@ export function ImageUpload({
       {current ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={current}
+          src={previewSrc}
           alt="Current"
           className={`${frameClass} ${fitClass}`}
         />

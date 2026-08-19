@@ -304,6 +304,12 @@ video {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.prose-certko img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 1rem;
+  margin: 1.25rem 0;
+}
 .prose-certko table {
   width: 100%;
   border-collapse: collapse;

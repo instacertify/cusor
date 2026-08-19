@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
+import { renderMarkdown } from "@/lib/markdown";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { marked } from "marked";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
@@ -149,7 +149,7 @@ export default async function CertProductPage({ params }: Props) {
         {product.content && (
           <article
             className="prose-certko mt-10"
-            dangerouslySetInnerHTML={{ __html: marked.parse(product.content) as string }}
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(product.content) }}
           />
         )}
 

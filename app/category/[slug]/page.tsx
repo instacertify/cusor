@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
+import CmsImage from "@/components/CmsImage";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ProductCard from "@/components/ProductCard";
@@ -85,7 +85,7 @@ export default async function CategoryPage({ params }: Props) {
           </div>
         </div>
         {category.image ? (
-          <Image
+          <CmsImage
             src={category.image}
             alt={`${category.name} BIS certification`}
             width={520}

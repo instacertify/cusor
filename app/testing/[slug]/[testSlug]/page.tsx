@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
+import { renderMarkdown } from "@/lib/markdown";
 import Link from "next/link";
-import Image from "next/image";
+import CmsImage from "@/components/CmsImage";
 import type { Metadata } from "next";
-import { marked } from "marked";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
@@ -48,7 +48,7 @@ export default async function TestingServicePage({ params }: Props) {
   const siblings = getTestingServices(svc.category_id).filter((s) => s.id !== svc.id).slice(0, 6);
   const linkedProducts = getProductsForTestingService(svc.id, 36);
   const linkedProductTotal = countProductsForTestingService(svc.id);
-  const html = marked.parse(svc.content || "") as string;
+  const html = renderMarkdown(svc.content);
   const standardFamilies = standardFamiliesFromText(svc.standards || "");
 
   const jsonLd = buildJsonLd(enabledSchemaTypes(`test:${svc.id}`, "test"), {
@@ -164,7 +164,7 @@ export default async function TestingServicePage({ params }: Props) {
           </div>
         </div>
         {svc.image ? (
-          <Image
+          <CmsImage
             src={svc.image}
             alt={svc.name}
             width={520}

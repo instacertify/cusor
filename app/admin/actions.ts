@@ -3,8 +3,6 @@
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
-import fs from "fs";
-import path from "path";
 import { getDb, setSetting } from "@/lib/db";
 import {
   requireAdmin,
@@ -73,44 +71,14 @@ async function saveUploadedImage(
   file: File | null,
   allowedExts?: string[]
 ): Promise<string | null> {
-  if (!file || file.size === 0) return null;
-  const { DEFAULT_IMAGE_EXTS, detectImageType, sanitizeUploadBasename } = await import(
-    "@/lib/image-upload"
-  );
-  const allow = new Set(allowedExts ?? DEFAULT_IMAGE_EXTS);
-  // JPEG aliases map to canonical .jpg after detection
-  if ([...allow].some((e) => [".jpg", ".jpeg", ".jpe", ".jfif", ".jp"].includes(e))) {
-    allow.add(".jpg");
-    allow.add(".jpeg");
-    allow.add(".jpe");
-    allow.add(".jfif");
-    allow.add(".jp");
-  }
-
-  const buf = Buffer.from(await file.arrayBuffer());
-  const detected = detectImageType(buf, file.name);
-  if (!detected || !allow.has(detected.ext)) return null;
-
-  const dir = path.join(process.cwd(), "public", "uploads");
-  fs.mkdirSync(dir, { recursive: true });
-  // Always persist with the canonical lowercase extension from magic bytes
-  // so /uploads/...jpg|.png|.webp|.gif|.avif serve with the right type.
-  const name = `${Date.now()}-${sanitizeUploadBasename(file.name)}${detected.ext}`;
-  fs.writeFileSync(path.join(dir, name), buf);
-  return `/uploads/${name}`;
+  const { persistUploadedImage } = await import("@/lib/uploads");
+  return persistUploadedImage(file, allowedExts);
 }
 
 async function saveUploadedMedia(file: File | null): Promise<string | null> {
-  if (!file || file.size === 0) return null;
-  const ext = path.extname(file.name).toLowerCase();
+  const { persistUploadedHeroMedia } = await import("@/lib/uploads");
   const { HERO_MEDIA_EXTS } = await import("@/lib/hero-slides");
-  if (!HERO_MEDIA_EXTS.includes(ext)) return null;
-  const dir = path.join(process.cwd(), "public", "uploads", "hero");
-  fs.mkdirSync(dir, { recursive: true });
-  const name = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-  const buf = Buffer.from(await file.arrayBuffer());
-  fs.writeFileSync(path.join(dir, name), buf);
-  return `/uploads/hero/${name}`;
+  return persistUploadedHeroMedia(file, HERO_MEDIA_EXTS);
 }
 
 export async function logout() {
@@ -1568,10 +1536,16 @@ export async function savePost(formData: FormData) {
   const { slugify } = await import("@/lib/format");
   const id = Number(formData.get("id"));
   const { BLOG_COVER_EXTS } = await import("@/lib/image-upload");
-  const uploaded = await saveUploadedImage(
-    formData.get("image_file") as File | null,
-    BLOG_COVER_EXTS
-  );
+  const imageFile = formData.get("image_file") as File | null;
+  let uploaded: string | null = null;
+  try {
+    uploaded = await saveUploadedImage(imageFile, BLOG_COVER_EXTS);
+  } catch {
+    redirect(`/admin/blog/${id}?error=image`);
+  }
+  if (imageFile && imageFile.size > 0 && !uploaded) {
+    redirect(`/admin/blog/${id}?error=image`);
+  }
   const clearImage = formData.get("clear_image") === "1";
   const db = getDb();
   const existing = db
@@ -1624,14 +1598,20 @@ export async function savePost(formData: FormData) {
     nextImage,
     id
   );
+  void import("@/lib/search-index").then((m) => m.invalidateSearchIndex());
   revalidatePath("/", "layout");
+  revalidatePath("/blog");
+  revalidatePath("/search");
   redirect(`/admin/blog/${id}?saved=1`);
 }
 
 export async function deletePost(formData: FormData) {
   await requireAdmin();
   getDb().prepare("DELETE FROM posts WHERE id = ?").run(Number(formData.get("id")));
+  void import("@/lib/search-index").then((m) => m.invalidateSearchIndex());
   revalidatePath("/", "layout");
+  revalidatePath("/blog");
+  revalidatePath("/search");
   redirect("/admin/blog?saved=1");
 }
 

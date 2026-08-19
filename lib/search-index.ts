@@ -1,4 +1,5 @@
 import { getDb } from "./db";
+import { isBlogPubliclyVisible } from "./blog-scheduler";
 
 export type QuickSearchResult = {
   type:
@@ -9,7 +10,8 @@ export type QuickSearchResult = {
     | "cert-product"
     | "country"
     | "testing-category"
-    | "testing-service";
+    | "testing-service"
+    | "blog";
   name: string;
   detail: string;
   href: string;
@@ -69,7 +71,13 @@ function push(
   rows.push({ ...item, haystack, boost });
 }
 
-export type QuickSearchScope = "all" | "standard" | "lab" | "certification" | "testing";
+export type QuickSearchScope =
+  | "all"
+  | "standard"
+  | "lab"
+  | "certification"
+  | "testing"
+  | "blog";
 
 const SCOPE_TYPES: Record<QuickSearchScope, QuickSearchResult["type"][] | null> = {
   all: null,
@@ -77,6 +85,7 @@ const SCOPE_TYPES: Record<QuickSearchScope, QuickSearchResult["type"][] | null> 
   lab: ["lab"],
   certification: ["certification", "cert-product", "country"],
   testing: ["testing-category", "testing-service"],
+  blog: ["blog"],
 };
 
 function normalizeQueryTerms(q: string): string[] {
@@ -384,6 +393,49 @@ function buildIndex(): IndexRow[] {
     );
   }
 
+  try {
+    const posts = db
+      .prepare(
+        `SELECT slug, title, excerpt, content, author, status, published_at, meta_title, meta_description
+         FROM posts WHERE status = 'published'
+         ORDER BY published_at DESC, id DESC`
+      )
+      .all() as Array<{
+      slug: string;
+      title: string;
+      excerpt: string;
+      content: string;
+      author: string;
+      status: string;
+      published_at: string | null;
+      meta_title: string;
+      meta_description: string;
+    }>;
+    for (const p of posts) {
+      if (!isBlogPubliclyVisible(p)) continue;
+      // Keep haystack lean — strip markdown noise from body for matching.
+      const body = (p.content || "")
+        .replace(/```[\s\S]*?```/g, " ")
+        .replace(/[#>*_`\[\]()!-]/g, " ")
+        .slice(0, 4000);
+      push(
+        rows,
+        {
+          type: "blog",
+          name: p.title,
+          detail: p.excerpt?.trim()
+            ? `Blog · ${p.excerpt.trim().slice(0, 120)}`
+            : "Blog article",
+          href: `/blog/${p.slug}`,
+        },
+        [p.title, p.excerpt, p.meta_title, p.meta_description, p.author, p.slug, body, "blog", "article"],
+        3
+      );
+    }
+  } catch {
+    /* posts table may be unavailable during early boot */
+  }
+
   return rows;
 }
 
@@ -470,7 +522,9 @@ export function quickSearch(
     if (scope === "lab" && row.type === "lab") score -= 10;
     if (scope === "certification" && row.type === "certification") score -= 12;
     if (scope === "certification" && row.type === "country") score -= 10;
+    if (scope === "blog" && row.type === "blog") score -= 14;
     if (scope === "all" && row.type === "country") score -= 4;
+    if (scope === "all" && row.type === "blog") score -= 2;
     scored.push({ row, score });
   }
 

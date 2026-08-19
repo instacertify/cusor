@@ -17,6 +17,7 @@ interface Suggestion {
     | "testing-category"
     | "testing-service"
     | "testing"
+    | "blog"
     | "browse";
   name: string;
   detail: string;
@@ -33,7 +34,7 @@ const SCOPE_META: Record<
 > = {
   all: {
     label: "Search",
-    placeholder: "Search product, IS standard, certification or lab…",
+    placeholder: "Search product, IS standard, certification, lab or blog…",
     pageType: "",
     browse: [
       {
@@ -53,6 +54,12 @@ const SCOPE_META: Record<
         name: "Certifications by country",
         detail: "India, EU, USA, GCC, Saudi Arabia",
         href: "/certifications/countries",
+      },
+      {
+        type: "browse",
+        name: "Compliance blog",
+        detail: "Search articles on BIS, QCO, testing & export",
+        href: "/blog",
       },
       {
         type: "browse",
@@ -460,6 +467,8 @@ export default function SearchBox({
                     ? "bg-green-100 text-green-700"
                     : r.type === "country"
                     ? "bg-sky-100 text-sky-800"
+                    : r.type === "blog"
+                    ? "bg-amber-100 text-amber-800"
                     : r.type === "browse"
                     ? "bg-cream-200 text-ink-700"
                     : "bg-cream-200 text-ink-600"
@@ -475,6 +484,8 @@ export default function SearchBox({
                   ? "testing"
                   : r.type === "testing-service" || r.type === "testing"
                   ? "test"
+                  : r.type === "blog"
+                  ? "blog"
                   : r.type === "browse"
                   ? "go"
                   : r.type === "product"

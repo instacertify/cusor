@@ -83,20 +83,29 @@ fi
 
 echo
 green "4/8 Writing .env.production…"
-SECRET="$(openssl rand -hex 32)"
-cat > "$APP_DIR/.env.production" <<EOF
+# Never rotate secrets on re-install — that would log everyone out and look like a “reset”.
+if [[ -f "$APP_DIR/.env.production" || -f "$APP_DIR/.env" ]]; then
+  yellow "Keeping existing .env / .env.production (uploads + DB stay intact)."
+  # Ensure runtime dirs exist for CMS content
+  mkdir -p "$APP_DIR/data" "$APP_DIR/public/uploads" "$APP_DIR/data/uploads"
+else
+  SECRET="$(openssl rand -hex 32)"
+  cat > "$APP_DIR/.env.production" <<EOF
 NODE_ENV=production
 PORT=${APP_PORT}
 CERTKO_SECRET=${SECRET}
 COOKIE_SECURE=1
 EOF
-# Also expose for the running process
-cat > "$APP_DIR/.env" <<EOF
+  # Also expose for the running process
+  cat > "$APP_DIR/.env" <<EOF
 NODE_ENV=production
 PORT=${APP_PORT}
 CERTKO_SECRET=${SECRET}
 COOKIE_SECURE=1
 EOF
+fi
+mkdir -p "$APP_DIR/data" "$APP_DIR/public/uploads" "$APP_DIR/data/uploads"
+touch "$APP_DIR/public/uploads/.gitkeep"
 
 echo
 green "5/8 Installing dependencies & building…"
@@ -220,10 +229,16 @@ echo "  pm2 status"
 echo "  pm2 logs certko"
 echo "  pm2 restart certko"
 echo
-echo "Update later:"
+echo "Update later (preserves DB + uploads — preferred):"
+echo "  bash $APP_DIR/scripts/hostinger-safe-update.sh"
+echo
+echo "Or manually (never delete data/ or public/uploads):"
 echo "  cd $APP_DIR && git pull && npm ci && npm run build && pm2 restart certko"
+echo
+yellow "Do NOT: rm -rf $APP_DIR  — that wipes manual blogs and uploaded images."
 echo
 green "Backup these folders regularly:"
 echo "  $APP_DIR/data/certko.db"
 echo "  $APP_DIR/public/uploads/"
+echo "  $APP_DIR/data/uploads/   (fallback when public/uploads is not writable)"
 echo

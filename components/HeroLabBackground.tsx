@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { toServableUploadUrl } from "@/lib/upload-urls";
 
 export type TestingVideoSlide = {
   id: string;
@@ -71,7 +72,8 @@ const DEFAULT_SLIDES: TestingVideoSlide[] = [
 const HOLD_MS = 8000;
 
 function stillSrc(slide: TestingVideoSlide) {
-  return slide.posterSrc || slide.imageSrc || slide.gifSrc || "";
+  const raw = slide.posterSrc || slide.imageSrc || slide.gifSrc || "";
+  return raw ? toServableUploadUrl(raw) : "";
 }
 
 /**
@@ -161,9 +163,9 @@ export default function HeroLabBackground({
             loop
             playsInline
             preload="metadata"
-            poster={slide.posterSrc || undefined}
+            poster={slide.posterSrc ? toServableUploadUrl(slide.posterSrc) : undefined}
           >
-            <source src={slide.videoSrc} type="video/mp4" />
+            <source src={toServableUploadUrl(slide.videoSrc)} type="video/mp4" />
           </video>
         ) : null}
 
@@ -171,7 +173,7 @@ export default function HeroLabBackground({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             key={slide.gifSrc}
-            src={slide.gifSrc}
+            src={toServableUploadUrl(slide.gifSrc)}
             alt=""
             className={`absolute inset-0 h-full w-full scale-110 object-cover animate-lab-drift ${mediaTone}`}
           />

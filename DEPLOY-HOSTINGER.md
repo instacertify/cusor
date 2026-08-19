@@ -86,7 +86,24 @@ pm2 logs certko
 pm2 restart certko
 ```
 
-### Update site after new code
+### Update site after new code (keeps blogs + uploads)
+
+A new build must **not** reset earlier admin uploads or manually written blogs.
+Those live outside git:
+
+| Path | What it holds |
+|------|----------------|
+| `/var/www/certko/data/certko.db` | All CMS content (blogs, pages, settings) |
+| `/var/www/certko/public/uploads/` | Cover images & media |
+| `/var/www/certko/data/uploads/` | Fallback uploads if `public/uploads` is not writable |
+
+**Preferred (backs up first, then pulls + builds):**
+
+```bash
+bash /var/www/certko/scripts/hostinger-safe-update.sh
+```
+
+**Manual (never delete `data/` or `uploads`):**
 
 ```bash
 cd /var/www/certko
@@ -96,11 +113,26 @@ npm run build
 pm2 restart certko
 ```
 
+Do **not** run `rm -rf /var/www/certko` or re-clone over the live folder — that wipes the database and images.
+
+### Uploaded images on the public site
+
+Admin uploads are served at **`/api/uploads/...`** (not as raw Nginx static files). Keep Nginx proxying all traffic to Node (as the one-click script does). Do **not** add a separate `location /uploads` that points only at disk — missing files will 404 before Next.js can serve the fallback.
+
+Image storage limits (enforced on upload):
+
+- Max upload: **8 MB**
+- Max stored after compression: **~1.5 MB**
+- Max dimension: **1920px** (longest edge)
+- Photos are stored as **WebP** (PNG kept when transparency is needed)
+
 ### Backup (important)
 
 ```bash
 cp /var/www/certko/data/certko.db /root/certko-backup-$(date +%F).db
 tar -czf /root/uploads-backup-$(date +%F).tar.gz -C /var/www/certko/public uploads
+# if the fallback root is in use:
+tar -czf /root/data-uploads-backup-$(date +%F).tar.gz -C /var/www/certko/data uploads
 ```
 
 ---

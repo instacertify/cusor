@@ -22,6 +22,8 @@ import {
   getTestingCategories,
   getSearchBrowseSuggestions,
   getRelatedSearchSuggestions,
+  searchPublishedPosts,
+  countSearchPublishedPosts,
   type SearchBrowseSuggestion,
 } from "@/lib/queries";
 import type {
@@ -32,7 +34,10 @@ import type {
   TestingCategory,
   TestingService,
   Faq,
+  Post,
 } from "@/lib/db";
+import BlogCoverImage from "@/components/BlogCoverImage";
+import { toIsoDate } from "@/lib/seo";
 import {
   countryHubPath,
   getCountryHubs,
@@ -59,7 +64,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const PAGE_SIZE = 24;
 
-type Tab = "all" | "products" | "certs" | "testing" | "labs";
+type Tab = "all" | "products" | "certs" | "testing" | "labs" | "blog";
 
 interface Props {
   searchParams: Promise<{ q?: string; page?: string; type?: string; state?: string }>;
@@ -85,6 +90,9 @@ type SearchData = {
   allTestingCategories: TestingCategory[];
   testingCategories: TestingCategory[];
   uniqueTestingServices: TestingService[];
+  blogPosts: Post[];
+  blogTotal: number;
+  blogPages: number;
   labs: Lab[];
   labTotal: number;
   labPages: number;
@@ -188,6 +196,22 @@ function loadSearchData(
     console.error("[certko] search testing failed:", err);
   }
 
+  let blogPosts: Post[] = [];
+  let blogTotal = 0;
+  try {
+    if (q.length >= 2) {
+      blogTotal = countSearchPublishedPosts(q);
+      blogPosts = searchPublishedPosts(
+        q,
+        tab === "blog" ? PAGE_SIZE : 6,
+        tab === "blog" ? (page - 1) * PAGE_SIZE : 0
+      );
+    }
+  } catch (err) {
+    console.error("[certko] search blog failed:", err);
+  }
+  const blogPages = Math.ceil(blogTotal / PAGE_SIZE);
+
   const labLimit = tab === "labs" ? PAGE_SIZE : 6;
   let labs: Lab[] = [];
   let labTotal = 0;
@@ -230,6 +254,7 @@ function loadSearchData(
       countryHubs.length === 0 &&
       testingCategories.length === 0 &&
       uniqueTestingServices.length === 0 &&
+      blogTotal === 0 &&
       labs.length === 0) ||
       (tab === "products" && productTotal === 0) ||
       (tab === "certs" &&
@@ -237,6 +262,7 @@ function loadSearchData(
         certProducts.length === 0 &&
         countryHubs.length === 0) ||
       (tab === "testing" && testingCategories.length === 0 && uniqueTestingServices.length === 0) ||
+      (tab === "blog" && blogTotal === 0) ||
       (tab === "labs" && labTotal === 0));
 
   const relatedPicks = noExact ? getRelatedSearchSuggestions(q, 12) : [];
@@ -259,6 +285,9 @@ function loadSearchData(
     allTestingCategories,
     testingCategories,
     uniqueTestingServices,
+    blogPosts,
+    blogTotal,
+    blogPages,
     labs,
     labTotal,
     labPages,
@@ -293,6 +322,8 @@ export default async function SearchPage({ searchParams }: Props) {
         ? "certs"
         : sp.type === "testing" || sp.type === "test"
         ? "testing"
+        : sp.type === "blog" || sp.type === "blogs" || sp.type === "articles"
+        ? "blog"
         : "all";
     state = (sp.state ?? "").trim();
     data = loadSearchData(q, page, tab, state);
@@ -317,6 +348,9 @@ export default async function SearchPage({ searchParams }: Props) {
       allTestingCategories: [],
       testingCategories: [],
       uniqueTestingServices: [],
+      blogPosts: [],
+      blogTotal: 0,
+      blogPages: 0,
       labs: [],
       labTotal: 0,
       labPages: 0,
@@ -342,6 +376,9 @@ export default async function SearchPage({ searchParams }: Props) {
     allTestingCategories,
     testingCategories,
     uniqueTestingServices,
+    blogPosts,
+    blogTotal,
+    blogPages,
     labs,
     labTotal,
     labPages,
@@ -394,6 +431,12 @@ export default async function SearchPage({ searchParams }: Props) {
         ? testingCategories.length + uniqueTestingServices.length
         : allTestingCategories.reduce((n, c) => n + (c.service_count ?? 0), 0),
       icon: "flask",
+    },
+    {
+      key: "blog",
+      label: "Blog",
+      count: q ? blogTotal : undefined,
+      icon: "file",
     },
   ];
 
@@ -584,6 +627,67 @@ export default async function SearchPage({ searchParams }: Props) {
           <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{labs.map(labCard)}</div>
           {pagination(page, labPages, "labs")}
         </>
+      )}
+
+      {/* ---- Blog tab / all ---- */}
+      {(tab === "blog" || (tab === "all" && q && blogPosts.length > 0)) && (
+        <section className="mt-8">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="font-display text-xl font-semibold text-ink-950">Blog articles</h2>
+              {q ? (
+                <p className="mt-1 text-sm text-ink-600">
+                  {blogTotal} matching article{blogTotal === 1 ? "" : "s"} for “{q}”
+                </p>
+              ) : (
+                <p className="mt-1 text-sm text-ink-600">
+                  Search the compliance blog for BIS, QCO, testing and export guides.
+                </p>
+              )}
+            </div>
+            <Link href={q ? `/blog?q=${encodeURIComponent(q)}` : "/blog"} className="text-sm font-semibold text-butter-700 hover:underline">
+              Open blog search →
+            </Link>
+          </div>
+          {blogPosts.length > 0 ? (
+            <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {blogPosts.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/blog/${p.slug}`}
+                  className="bg-white rounded-2xl border border-cream-300 overflow-hidden hover:border-butter-500 transition flex flex-col"
+                >
+                  {p.image ? (
+                    <BlogCoverImage
+                      src={p.image}
+                      alt={p.title}
+                      className="w-full aspect-[16/9] object-cover"
+                    />
+                  ) : (
+                    <div className="w-full aspect-[16/9] bg-cream-200" aria-hidden />
+                  )}
+                  <div className="p-4 flex flex-col gap-1.5 flex-1">
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-butter-700">
+                      Blog
+                      {p.published_at ? ` · ${toIsoDate(p.published_at)?.slice(0, 10) || ""}` : ""}
+                    </div>
+                    <div className="font-semibold text-ink-950 line-clamp-2">{p.title}</div>
+                    <p className="text-sm text-ink-600 line-clamp-2">{p.excerpt}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-ink-500">
+              No blog articles matched. Try the{" "}
+              <Link href="/blog" className="font-semibold text-butter-700 hover:underline">
+                blog page search
+              </Link>
+              .
+            </p>
+          )}
+          {tab === "blog" && pagination(page, blogPages, "blog")}
+        </section>
       )}
 
       {/* ---- Product Testing tab / all ---- */}
