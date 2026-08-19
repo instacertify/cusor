@@ -1731,6 +1731,19 @@ export async function setInquiryStatus(formData: FormData) {
   redirect("/admin/inquiries?saved=1");
 }
 
+export async function deleteInquiry(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  const confirm = String(formData.get("confirm") ?? "").trim();
+  if (!id || confirm !== "DELETE") {
+    redirect("/admin/inquiries?error=confirm");
+  }
+  getDb().prepare("DELETE FROM inquiries WHERE id = ?").run(id);
+  const { flushSqlJsToDisk, isSqlJsReady } = await import("@/lib/sqlite");
+  if (isSqlJsReady()) flushSqlJsToDisk();
+  redirect("/admin/inquiries?deleted=1");
+}
+
 // ---------- product testing ----------
 export async function createTestingCategory(formData: FormData) {
   await requireAdmin();

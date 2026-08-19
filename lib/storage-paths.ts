@@ -100,6 +100,31 @@ function isNextBuildPhase(): boolean {
   );
 }
 
+/** Hostinger hbuilds deploys wipe `versions/<uuid>/nodejs/data` on each release. */
+function hostingerPersistentCandidates(cwd: string): string[] {
+  const resolved = path.resolve(cwd);
+  if (!resolved.includes("/hbuilds/")) return [];
+
+  const parts: string[] = [];
+  // hbuilds/versions/<uuid>/nodejs → hbuilds/data (shared across deploy versions)
+  parts.push(path.resolve(resolved, "../../../data"));
+  // domain root siblings (common on Hostinger File Manager layouts)
+  parts.push(path.resolve(resolved, "../../../../certko-data"));
+  parts.push(path.resolve(resolved, "../../../../private/certko-data"));
+  parts.push(path.resolve(resolved, "../../../../data/certko"));
+  parts.push(path.resolve(resolved, "../../../../.certko-data"));
+
+  const domainMatch = resolved.match(/^(.+\/domains\/[^/]+)\//);
+  if (domainMatch) {
+    const domainRoot = domainMatch[1];
+    parts.push(path.join(domainRoot, "certko-data"));
+    parts.push(path.join(domainRoot, "private", "certko-data"));
+    parts.push(path.join(domainRoot, "data", "certko"));
+  }
+
+  return [...new Set(parts)];
+}
+
 /**
  * Persistent root for uploads (and SQLite when DATABASE_URL is unset).
  * Prefer CERTKO_DATA_DIR, then /var/lib/certko in production, then ./data.
@@ -121,6 +146,15 @@ export function getCertkoDataDir(): string {
       cachedDir = systemDir;
       migrateLegacyInto(cachedDir);
       return cachedDir;
+    }
+
+    for (const candidate of hostingerPersistentCandidates(process.cwd())) {
+      if (canUse(candidate)) {
+        console.info("[certko] Using Hostinger persistent data dir:", candidate);
+        cachedDir = candidate;
+        migrateLegacyInto(cachedDir);
+        return cachedDir;
+      }
     }
   }
 

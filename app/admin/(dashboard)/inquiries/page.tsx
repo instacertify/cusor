@@ -1,6 +1,6 @@
-import { getDb } from "@/lib/db";
+import { getDb, ensureDbReady } from "@/lib/db";
 import type { Inquiry } from "@/lib/db";
-import { setInquiryStatus } from "../../actions";
+import { setInquiryStatus, deleteInquiry } from "../../actions";
 import { SavedBanner, SubmitButton } from "@/components/admin/Field";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPagination from "@/components/admin/AdminPagination";
@@ -9,11 +9,12 @@ import { paginateItems, parseAdminPage } from "@/lib/admin-list";
 export const dynamic = "force-dynamic";
 
 interface Props {
-  searchParams: Promise<{ saved?: string; q?: string; page?: string; category?: string }>;
+  searchParams: Promise<{ saved?: string; deleted?: string; error?: string; q?: string; page?: string; category?: string }>;
 }
 
 export default async function AdminInquiries({ searchParams }: Props) {
   const sp = await searchParams;
+  await ensureDbReady();
   const q = (sp.q ?? "").trim().toLowerCase();
   const status = (sp.category ?? "").trim();
   const all = getDb()
@@ -54,6 +55,16 @@ export default async function AdminInquiries({ searchParams }: Props) {
         saved={sp.saved}
         message="Done — inquiry status updated."
       />
+      {sp.deleted === "1" ? (
+        <p className="mb-4 text-sm text-green-800 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+          Inquiry deleted permanently.
+        </p>
+      ) : null}
+      {sp.error === "confirm" ? (
+        <p className="mb-4 text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+          Type <strong>DELETE</strong> in the confirmation box to remove an inquiry.
+        </p>
+      ) : null}
 
       {inquiries.length === 0 ? (
         <p className="text-sm text-ink-500 bg-white rounded-2xl border border-cream-300 p-6">
@@ -104,6 +115,27 @@ export default async function AdminInquiries({ searchParams }: Props) {
               {i.message && (
                 <p className="mt-2 text-sm text-ink-700 bg-cream-50 rounded-xl p-3">{i.message}</p>
               )}
+              <details className="mt-4 rounded-xl border border-red-200/80 bg-red-50/40 p-3">
+                <summary className="cursor-pointer text-xs font-bold uppercase tracking-wide text-red-800">
+                  Delete inquiry (requires confirmation)
+                </summary>
+                <form action={deleteInquiry} className="mt-3 flex flex-wrap items-end gap-2">
+                  <input type="hidden" name="id" value={i.id} />
+                  <label className="block text-xs text-ink-600">
+                    Type DELETE to confirm
+                    <input
+                      name="confirm"
+                      required
+                      placeholder="DELETE"
+                      className="mt-1 block w-40 rounded-lg border border-cream-300 px-2 py-1.5 text-sm bg-white outline-none focus:border-red-400"
+                    />
+                  </label>
+                  <SubmitButton
+                    label="Delete permanently"
+                    className="text-xs font-bold bg-red-700 text-white rounded-lg px-3 py-1.5 disabled:opacity-60 disabled:cursor-wait"
+                  />
+                </form>
+              </details>
             </div>
           ))}
         </div>
