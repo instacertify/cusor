@@ -17,17 +17,15 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     formats: ["image/avif", "image/webp"],
   },
-  // Keep captcha font / sql.js / sharp on disk (not bundled into server chunks)
-  serverExternalPackages: ["svg-captcha", "bcryptjs", "sql.js", "sharp"],
-  // If a host uses file tracing / standalone, keep sql.js assets available
+  // Keep captcha font / pg / sharp on disk (not bundled into server chunks)
+  serverExternalPackages: ["svg-captcha", "bcryptjs", "pg", "deasync", "sharp"],
   outputFileTracingIncludes: {
     "/**": [
-      "./node_modules/sql.js/dist/sql-asm.js",
-      "./node_modules/sql.js/dist/sql-wasm.js",
-      "./node_modules/sql.js/dist/sql-wasm.wasm",
+      "./node_modules/pg/**",
+      "./node_modules/deasync/**",
     ],
   },
-  // When public/uploads is not writable, files live next to SQLite and are served here.
+  // When public/uploads is not writable, files live under CERTKO_DATA_DIR and are served here.
   async rewrites() {
     return [
       {
