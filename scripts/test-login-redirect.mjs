@@ -134,7 +134,51 @@ assert(
   "root layout still skips CMS boot on /admin/login"
 );
 
+const loginForm = fs.readFileSync(
+  path.join(path.dirname(fileURLToPath(import.meta.url)), "../components/admin/AdminLoginForm.tsx"),
+  "utf8"
+);
+assert(
+  !/disabled=\{locked \|\| submitting/.test(loginForm),
+  "login form must not disable named fields on submit (browser omits them → captcha always fails)"
+);
+assert(
+  loginForm.includes("disabled={locked || !token}"),
+  "captcha input still disables only when locked or token missing"
+);
+assert(
+  loginForm.includes('name="captcha"'),
+  "captcha field is still posted"
+);
+
+const loginRoute = fs.readFileSync(
+  path.join(path.dirname(fileURLToPath(import.meta.url)), "../app/api/admin/login/route.ts"),
+  "utf8"
+);
+const postFn = loginRoute.split("export async function POST")[1] || "";
+assert(
+  postFn.indexOf("verifyCaptchaToken") < postFn.indexOf("await ensureDbReady()"),
+  "captcha must be verified before ensureDbReady() so migrate cannot rotate the signing secret"
+);
+const captchaFailBlock = postFn.split("verifyCaptchaToken")[1]?.split("ensureDbReady")[0] || "";
+assert(
+  captchaFailBlock.includes("bad_captcha"),
+  "captcha failures are still logged"
+);
+assert(
+  !captchaFailBlock.includes("recordLoginFailure"),
+  "captcha failures must not count toward the 15-minute lockout"
+);
+
+const captchaSrc = fs.readFileSync(
+  path.join(path.dirname(fileURLToPath(import.meta.url)), "../lib/captcha.ts"),
+  "utf8"
+);
+assert(captchaSrc.includes('const op = add ? "+" : "-"'), "captcha SVG uses ASCII minus, not unicode −");
+assert(captchaSrc.includes("normalizeCaptchaAnswer"), "captcha verify accepts typed sums like 6+4");
+
 console.log("ok login Location never uses 0.0.0.0");
 console.log("ok login page does not mutate cookies during render");
 console.log("ok login layout does not boot SQLite");
+console.log("ok login captcha fields stay enabled on submit");
 process.exit(0);

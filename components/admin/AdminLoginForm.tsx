@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type Props = {
   action?: (formData: FormData) => Promise<void>;
@@ -27,6 +27,7 @@ export default function AdminLoginForm({
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [captchaValue, setCaptchaValue] = useState("");
+  const submittingRef = useRef(false);
 
   const refreshCaptcha = useCallback(async () => {
     setLoadingCaptcha(true);
@@ -59,7 +60,17 @@ export default function AdminLoginForm({
     <form
       action="/api/admin/login"
       method="post"
-      onSubmit={() => setSubmitting(true)}
+      onSubmit={(e) => {
+        // Do not disable named inputs here. React re-renders before the browser
+        // serializes the POST, so disabled fields are omitted and the server
+        // sees an empty captcha → "Security check answer was wrong".
+        if (submittingRef.current) {
+          e.preventDefault();
+          return;
+        }
+        submittingRef.current = true;
+        setSubmitting(true);
+      }}
       className="space-y-5"
     >
       <input type="hidden" name="next" value={nextPath} />
@@ -86,7 +97,8 @@ export default function AdminLoginForm({
           type="text"
           required
           autoComplete="username"
-          disabled={locked || submitting}
+          disabled={locked}
+          readOnly={submitting}
           autoFocus
           className={inputClass}
           placeholder="e.g. admin"
@@ -108,7 +120,8 @@ export default function AdminLoginForm({
             type={showPassword ? "text" : "password"}
             required
             autoComplete="current-password"
-            disabled={locked || submitting}
+            disabled={locked}
+            readOnly={submitting}
             className={`${inputClass} pr-24`}
             placeholder="Enter your password"
           />
@@ -167,21 +180,22 @@ export default function AdminLoginForm({
           required
           autoComplete="off"
           spellCheck={false}
-          disabled={locked || submitting || !token}
+          disabled={locked || !token}
+          readOnly={submitting}
           value={captchaValue}
-          onChange={(e) => setCaptchaValue(e.target.value.replace(/[^\d-]/g, ""))}
+          onChange={(e) => setCaptchaValue(e.target.value.replace(/[^\d+\-−–—]/g, ""))}
           className={`${inputClass} mt-3 tracking-[0.2em]`}
-          placeholder="Type the number (e.g. 12)"
-          maxLength={3}
+          placeholder="Answer (e.g. 12)"
+          maxLength={8}
         />
         <p className="mt-1.5 text-[11px] text-cream-200/55">
-          Solve the sum or subtraction shown above, then type only the number.
+          Type the result only (for 7 - 3 type 4). Typing the whole sum also works.
         </p>
       </div>
 
       <button
         type="submit"
-        disabled={locked || submitting || !token}
+        disabled={locked || !token}
         className="group relative w-full overflow-hidden rounded-2xl bg-butter-400 px-6 py-3.5 text-sm font-bold text-ink-950 transition hover:bg-butter-300 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <span className="relative z-10">
