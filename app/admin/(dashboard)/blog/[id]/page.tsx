@@ -197,7 +197,7 @@ export default async function AdminPostEdit({ params, searchParams }: Props) {
               name="cta_body"
               defaultValue={post.cta_body || ""}
               rows={3}
-              placeholder="Our experts handle the application, coordinate testing for {topic} and manage the inspection. Free quote in 24 hours."
+              hint="Example: Our experts handle the application, coordinate testing for {topic} and manage the inspection. Free quote in 24 hours."
             />
           </div>
 
