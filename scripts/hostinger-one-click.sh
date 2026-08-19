@@ -52,13 +52,13 @@ read -r -p "Install free HTTPS with Let's Encrypt now? (y/N): " WANT_SSL
 WANT_SSL="$(echo "${WANT_SSL:-n}" | tr '[:upper:]' '[:lower:]')"
 
 echo
-green "1/8 Updating system packages…"
+green "1/9 Updating system packages…"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
-apt-get install -y git curl ca-certificates ufw nginx openssl
+apt-get install -y git curl ca-certificates ufw nginx openssl postgresql postgresql-contrib
 
 echo
-green "2/8 Installing Node.js ${NODE_MAJOR}…"
+green "2/9 Installing Node.js ${NODE_MAJOR}…"
 if ! command -v node >/dev/null 2>&1 || [[ "$(node -v | sed 's/v//;s/\..*//')" -lt "$NODE_MAJOR" ]]; then
   curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | bash -
   apt-get install -y nodejs
@@ -68,7 +68,22 @@ node -v
 npm -v
 
 echo
-green "3/8 Getting Certko code…"
+green "3/9 Ensuring PostgreSQL is running…"
+if command -v pg_ctlcluster >/dev/null 2>&1; then
+  pg_lsclusters --no-header 2>/dev/null | while read -r ver name rest; do
+    [[ -n "$ver" && -n "$name" ]] || continue
+    pg_ctlcluster "$ver" "$name" start 2>/dev/null || true
+  done
+fi
+systemctl start postgresql 2>/dev/null || service postgresql start 2>/dev/null || true
+# Wait briefly for the socket
+for _ in 1 2 3 4 5; do
+  sudo -u postgres psql -c "SELECT 1" >/dev/null 2>&1 && break
+  sleep 1
+done
+
+echo
+green "4/9 Getting Certko code…"
 mkdir -p /var/www
 if [[ -d "$APP_DIR/.git" ]]; then
   cd "$APP_DIR"
@@ -82,9 +97,19 @@ else
 fi
 
 echo
-green "4/8 Writing .env.production…"
+green "5/9 Writing .env + PostgreSQL DATABASE_URL…"
 DATA_DIR="${CERTKO_DATA_DIR:-/var/lib/certko}"
 mkdir -p "$DATA_DIR" "$DATA_DIR/uploads" "$APP_DIR/data" "$APP_DIR/public/uploads"
+
+ensure_env_key() {
+  local file="$1" key="$2" value="$3"
+  [[ -f "$file" ]] || touch "$file"
+  if grep -q "^${key}=" "$file" 2>/dev/null; then
+    return 0
+  fi
+  printf '\n%s=%s\n' "$key" "$value" >> "$file"
+}
+
 # Never rotate secrets on re-install — that would log everyone out and look like a “reset”.
 if [[ -f "$APP_DIR/.env.production" || -f "$APP_DIR/.env" ]]; then
   yellow "Keeping existing .env / .env.production (uploads + DB + password stay intact)."
@@ -97,7 +122,6 @@ CERTKO_SECRET=${SECRET}
 CERTKO_DATA_DIR=${DATA_DIR}
 COOKIE_SECURE=1
 EOF
-  # Also expose for the running process
   cat > "$APP_DIR/.env" <<EOF
 NODE_ENV=production
 PORT=${APP_PORT}
@@ -106,31 +130,51 @@ CERTKO_DATA_DIR=${DATA_DIR}
 COOKIE_SECURE=1
 EOF
 fi
-# Pin durable data dir on every install/update without rotating the secret
-if [[ -f "$APP_DIR/.env" ]] && ! grep -q '^CERTKO_DATA_DIR=' "$APP_DIR/.env"; then
-  printf '\nCERTKO_DATA_DIR=%s\n' "$DATA_DIR" >> "$APP_DIR/.env"
+
+ensure_env_key "$APP_DIR/.env" "CERTKO_DATA_DIR" "$DATA_DIR"
+ensure_env_key "$APP_DIR/.env" "NODE_ENV" "production"
+ensure_env_key "$APP_DIR/.env" "PORT" "$APP_PORT"
+if [[ -f "$APP_DIR/.env.production" ]]; then
+  ensure_env_key "$APP_DIR/.env.production" "CERTKO_DATA_DIR" "$DATA_DIR"
 fi
-if [[ -f "$APP_DIR/.env.production" ]] && ! grep -q '^CERTKO_DATA_DIR=' "$APP_DIR/.env.production"; then
-  printf '\nCERTKO_DATA_DIR=%s\n' "$DATA_DIR" >> "$APP_DIR/.env.production"
+
+# Create Postgres role/DB once; keep existing password from DATABASE_URL if present
+PG_PASS=""
+if [[ -f "$APP_DIR/.env" ]] && grep -q '^DATABASE_URL=' "$APP_DIR/.env"; then
+  yellow "Keeping existing DATABASE_URL."
+else
+  PG_PASS="$(openssl rand -hex 16)"
+  sudo -u postgres psql -v ON_ERROR_STOP=1 -c "DO \$\$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'certko') THEN CREATE ROLE certko LOGIN PASSWORD '${PG_PASS}'; ELSE ALTER ROLE certko WITH LOGIN PASSWORD '${PG_PASS}'; END IF; END \$\$;"
+  if ! sudo -u postgres psql -Atc "SELECT 1 FROM pg_database WHERE datname='certko'" | grep -q 1; then
+    sudo -u postgres psql -v ON_ERROR_STOP=1 -c "CREATE DATABASE certko OWNER certko;"
+  fi
+  sudo -u postgres psql -v ON_ERROR_STOP=1 -c "GRANT ALL PRIVILEGES ON DATABASE certko TO certko;"
+  sudo -u postgres psql -d certko -c "GRANT ALL ON SCHEMA public TO certko; ALTER SCHEMA public OWNER TO certko;"
+  DB_URL="postgres://certko:${PG_PASS}@127.0.0.1:5432/certko"
+  ensure_env_key "$APP_DIR/.env" "DATABASE_URL" "$DB_URL"
+  if [[ -f "$APP_DIR/.env.production" ]]; then
+    ensure_env_key "$APP_DIR/.env.production" "DATABASE_URL" "$DB_URL"
+  fi
+  green "PostgreSQL database 'certko' ready."
 fi
-# Migrate legacy in-app DB/uploads into durable dir (copy, never delete)
-if [[ ! -f "$DATA_DIR/certko.db" && -f "$APP_DIR/data/certko.db" ]]; then
-  yellow "Migrating existing database into $DATA_DIR"
-  cp -a "$APP_DIR/data/certko.db" "$DATA_DIR/certko.db"
-fi
+
+# Migrate legacy upload dirs into durable dir (copy, never delete). SQLite files are obsolete.
 if [[ -d "$APP_DIR/public/uploads" ]]; then
   cp -an "$APP_DIR/public/uploads/." "$DATA_DIR/uploads/" 2>/dev/null || true
+fi
+if [[ -d "$APP_DIR/data/uploads" ]]; then
+  cp -an "$APP_DIR/data/uploads/." "$DATA_DIR/uploads/" 2>/dev/null || true
 fi
 touch "$APP_DIR/public/uploads/.gitkeep"
 
 echo
-green "5/8 Installing dependencies & building…"
+green "6/9 Installing dependencies & building…"
 cd "$APP_DIR"
 npm ci
 npm run build
 
 echo
-green "6/8 Starting with PM2…"
+green "7/9 Starting with PM2…"
 pm2 delete "$APP_NAME" >/dev/null 2>&1 || true
 cd "$APP_DIR"
 export CERTKO_DATA_DIR="$DATA_DIR"
@@ -138,9 +182,15 @@ set -a
 # shellcheck disable=SC1091
 source "$APP_DIR/.env" 2>/dev/null || true
 set +a
-pm2 start npm --name "$APP_NAME" -- start
+# ecosystem.config.cjs reloads .env on every restart so password/DB URL never vanish
+if [[ -f "$APP_DIR/ecosystem.config.cjs" ]]; then
+  pm2 start "$APP_DIR/ecosystem.config.cjs"
+else
+  pm2 start npm --name "$APP_NAME" -- start --update-env
+fi
 pm2 save
-# Configure startup without interactive prompt when possible
+# Ensure Postgres + PM2 come back after VPS reboot
+systemctl enable postgresql 2>/dev/null || true
 STARTUP_CMD="$(pm2 startup systemd -u root --hp /root | tail -n 1 || true)"
 if [[ "$STARTUP_CMD" == sudo* ]]; then
   eval "$STARTUP_CMD" || true
@@ -148,7 +198,7 @@ fi
 pm2 save
 
 echo
-green "7/8 Configuring Nginx…"
+green "8/9 Configuring Nginx…"
 if [[ -n "$DOMAIN" ]]; then
   SERVER_NAMES="$DOMAIN $WWW_DOMAIN"
 else
@@ -187,7 +237,7 @@ ufw allow 'Nginx Full' >/dev/null 2>&1 || true
 ufw --force enable >/dev/null 2>&1 || true
 
 echo
-green "8/8 HTTPS (optional)…"
+green "9/9 HTTPS (optional)…"
 if [[ "$WANT_SSL" == "y" || "$WANT_SSL" == "yes" ]]; then
   if [[ -z "$DOMAIN" ]]; then
     red "SSL skipped — no domain entered."
@@ -258,8 +308,8 @@ echo "  cd $APP_DIR && git pull && npm ci && npm run build && pm2 restart certko
 echo
 yellow "Do NOT: rm -rf $APP_DIR  — that wipes manual blogs and uploaded images."
 echo
-green "Backup these folders regularly:"
-echo "  $APP_DIR/data/certko.db"
-echo "  $APP_DIR/public/uploads/"
-echo "  $APP_DIR/data/uploads/   (fallback when public/uploads is not writable)"
+green "Backup these folders/files regularly:"
+echo "  PostgreSQL database (pg_dump)"
+echo "  $DATA_DIR/uploads/   (images — outside git)"
+echo "  $APP_DIR/.env        (CERTKO_SECRET + DATABASE_URL)"
 echo

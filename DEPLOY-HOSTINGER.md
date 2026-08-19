@@ -36,13 +36,6 @@ curl -fsSL https://raw.githubusercontent.com/instacertify/cusor/main/scripts/hos
 bash install.sh
 ```
 
-If `main` does not have the script yet, use your deploy branch:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/instacertify/cusor/cursor/certko-website-cms-2bc7/scripts/hostinger-one-click.sh -o install.sh
-bash install.sh
-```
-
 **Option B — clone first:**
 
 ```bash
@@ -57,8 +50,10 @@ bash scripts/hostinger-one-click.sh
 2. **Branch** — press Enter for `main` (or type your branch)
 3. **SSL** — type `y` for free HTTPS (only if DNS already points to this VPS)
 
-The script installs Node, builds Certko, starts PM2, configures Nginx, and optionally SSL.  
-SQLite uses **sql.js** (`sql-asm.js` — pure JS, no Python / `node-gyp` / native modules / `.wasm`).
+The script installs **Node**, **PostgreSQL**, builds Certko, starts PM2, configures Nginx, and optionally SSL.
+
+CMS data (blogs, pages, settings, admin password) lives in **PostgreSQL**.  
+Uploaded images live on disk under `CERTKO_DATA_DIR/uploads`.
 
 ---
 
@@ -90,17 +85,16 @@ pm2 restart certko
 
 A new build must **not** reset earlier admin uploads, manually written blogs, or the admin password.
 
-Durable data lives **outside** the git app folder:
-
 | Path | What it holds |
 |------|----------------|
-| `/var/lib/certko/certko.db` | All CMS content (blogs, pages, settings, **admin password hash**) |
+| PostgreSQL (`DATABASE_URL`) | All CMS content (blogs, pages, settings, **admin password hash**) |
 | `/var/lib/certko/uploads/` | Cover images & media |
 | `/var/www/certko/` | Application code only (safe to `git pull`) |
 
 Set once in `.env`:
 
 ```bash
+DATABASE_URL=postgres://certko:PASSWORD@127.0.0.1:5432/certko
 CERTKO_DATA_DIR=/var/lib/certko
 CERTKO_SECRET=<keep-this-stable>
 ```
@@ -111,8 +105,9 @@ CERTKO_SECRET=<keep-this-stable>
 bash /var/www/certko/scripts/hostinger-safe-update.sh
 ```
 
-Do **not** run `rm -rf /var/lib/certko` — that deletes blogs, images, and the admin password.  
-Do **not** rotate `CERTKO_SECRET` on every deploy — that only invalidates sessions (password itself is in SQLite).
+Do **not** drop the Postgres database — that deletes blogs and the admin password.  
+Do **not** run `rm -rf /var/lib/certko` — that deletes uploaded images.  
+Do **not** rotate `CERTKO_SECRET` on every deploy — that only invalidates sessions (password itself is in Postgres).
 
 ### Uploaded images on the public site
 
@@ -127,8 +122,17 @@ Image storage limits:
 ### Backup (important)
 
 ```bash
-cp /var/lib/certko/certko.db /root/certko-backup-$(date +%F).db
+# Load DATABASE_URL from app env
+set -a; source /var/www/certko/.env; set +a
+pg_dump "$DATABASE_URL" --no-owner -f /root/certko-backup-$(date +%F).sql
 tar -czf /root/uploads-backup-$(date +%F).tar.gz -C /var/lib/certko uploads
+```
+
+Local Docker Postgres (dev):
+
+```bash
+docker compose up -d db
+export DATABASE_URL=postgres://certko:certko@127.0.0.1:5432/certko
 ```
 
 ---
@@ -146,9 +150,9 @@ certbot --nginx -d yourdomain.com -d www.yourdomain.com
 ## What the one-click script does for you
 
 1. Updates Ubuntu  
-2. Installs Node.js + PM2 + Nginx  
+2. Installs Node.js + PM2 + Nginx + **PostgreSQL**  
 3. Clones/updates Certko  
-4. Creates a strong `CERTKO_SECRET`  
+4. Creates `DATABASE_URL` + a strong `CERTKO_SECRET` (once)  
 5. Runs `npm ci` + `npm run build`  
 6. Starts the app with PM2 (auto-restart on reboot)  
 7. Configures Nginx reverse proxy  
@@ -158,9 +162,24 @@ That’s the whole deploy.
 
 ---
 
-## Hostinger Node.js Web Apps panel (optional)
+## Hostinger Node.js Web Apps panel (not recommended)
 
-If you deploy from hPanel **Node.js** (GitHub build) instead of VPS SSH:
+The hPanel **Node.js** GitHub builder runs in an ephemeral `hbuilds` sandbox. That environment:
+
+- often has **no durable disk** for uploads  
+- usually has **no local PostgreSQL**  
+- replaces the app tree on every deploy  
+
+Prefer the **VPS one-click installer** above. If you must use the Node panel, you still need:
+
+| Variable | Required value |
+|----------|----------------|
+| `DATABASE_URL` | External/managed Postgres URL (not wiped by deploys) |
+| `CERTKO_DATA_DIR` | Persistent writable path **outside** the build folder |
+| `CERTKO_SECRET` | Stable secret — set once, never rotate on deploy |
+| `COOKIE_SECURE` | `1` on HTTPS |
+
+Leaving these unset (or regenerating `.env` each deploy) is what made the admin password look “reset.”
 
 | Setting | Value |
 |---------|--------|
@@ -172,13 +191,10 @@ If you deploy from hPanel **Node.js** (GitHub build) instead of VPS SSH:
 | Start | `npm start` (uses `$PORT` automatically) |
 | Output directory | **leave empty** (do not set `out`) |
 
-Environment variables:
+`next build` no longer requires Postgres or a durable uploads dir (it soft-skips). **Runtime** still requires `DATABASE_URL` + writable `CERTKO_DATA_DIR`.
 
-- `CERTKO_SECRET` — long random string  
-- `COOKIE_SECURE=1` — when the site is on HTTPS  
+If the browser shows **Application error** with a digest like `ERROR 1358233113`, open **Deployments → Logs**. Common causes:
 
-If the browser shows **Application error** with a digest like `ERROR 1358233113`, open **Deployments → Logs** (runtime/server logs). The real message is there (digest alone is not enough). Common causes:
-
-1. Old deploy still on `better-sqlite3` / Python — redeploy latest `main`  
+1. Missing `DATABASE_URL` at runtime  
 2. Wrong output directory (`out`) — clear it  
-3. App can’t write `data/` — latest code falls back to `/tmp/certko-data`
+3. Uploads path ephemeral — set `CERTKO_DATA_DIR` outside the deploy folder  

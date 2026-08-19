@@ -38,8 +38,8 @@ export const MAX_IMAGE_EDGE_PX = 1920;
 const MAX_HERO_BYTES = 40 * 1024 * 1024;
 
 /**
- * Always write uploads next to the durable SQLite DB (CERTKO_DATA_DIR),
- * never only into the replaceable app tree. Optionally mirror to public/.
+ * Always write uploads under CERTKO_DATA_DIR (outside the replaceable app tree).
+ * Optionally mirror to public/. Relational CMS data lives in PostgreSQL.
  */
 export function getUploadsRoot(): string {
   return getCertkoUploadsDir();

@@ -2,13 +2,14 @@ import fs from "fs";
 import path from "path";
 
 /**
- * Durable CMS storage (SQLite + uploads) — lives OUTSIDE the git deploy tree
- * so `git pull` / rebuilds never delete blogs, passwords, or images.
+ * Durable CMS file storage (uploads) — lives OUTSIDE the git deploy tree
+ * so `git pull` / rebuilds never delete images.
+ * Relational CMS data (blogs, settings, password hash) lives in PostgreSQL.
  *
  * Layout (production):
  *   CERTKO_DATA_DIR=/var/lib/certko
- *     certko.db
  *     uploads/
+ *   DATABASE_URL=postgres://…
  *
  * Application code stays in /var/www/certko (replaceable).
  */
@@ -88,10 +89,20 @@ function migrateLegacyInto(dataDir: string) {
   }
 }
 
+function isNextBuildPhase(): boolean {
+  const lifecycle = process.env.npm_lifecycle_event || "";
+  if (lifecycle === "start" || lifecycle === "dev") return false;
+  return (
+    process.env.NEXT_PHASE === "phase-production-build" ||
+    lifecycle === "build"
+  );
+}
+
 /**
- * Persistent root for SQLite + uploads.
+ * Persistent root for uploads (and legacy SQLite files if present).
  * Prefer CERTKO_DATA_DIR, then /var/lib/certko in production, then ./data.
- * Never silently use /tmp in production (that resets passwords/blogs on restart).
+ * Never silently use /tmp at runtime in production (images would vanish on restart).
+ * During `next build` only, a temp dir is allowed so Hostinger/CI page collection can finish.
  */
 export function getCertkoDataDir(): string {
   if (cachedDir) return cachedDir;
@@ -119,9 +130,18 @@ export function getCertkoDataDir(): string {
     return cachedDir;
   }
 
+  // Hostinger/CI `next build` must not crash when the deploy sandbox has no durable dir.
+  if (isNextBuildPhase()) {
+    const tmp = path.join("/tmp", "certko-build-data");
+    fs.mkdirSync(tmp, { recursive: true });
+    console.warn("[certko] build-only temp data dir (not used at runtime):", tmp);
+    cachedDir = tmp;
+    return cachedDir;
+  }
+
   if (process.env.NODE_ENV === "production") {
     throw new Error(
-      "[certko] No writable persistent data directory. Set CERTKO_DATA_DIR=/var/lib/certko (or another path outside the app deploy folder) and ensure it is writable. Refusing /tmp so blogs, uploads, and admin passwords survive restarts."
+      "[certko] No writable persistent data directory. Set CERTKO_DATA_DIR=/var/lib/certko (or another path outside the app deploy folder) and ensure it is writable. Refusing /tmp so uploads survive restarts."
     );
   }
 
