@@ -1738,6 +1738,17 @@ export async function deleteInquiry(formData: FormData) {
   if (!id || confirm !== "DELETE") {
     redirect("/admin/inquiries?error=confirm");
   }
+  const row = getDb()
+    .prepare("SELECT name, email, created_at FROM inquiries WHERE id = ?")
+    .get(id) as { name: string; email: string; created_at: string } | undefined;
+  if (row) {
+    const { archiveInquiryDeleted } = await import("@/lib/inquiry-archive");
+    archiveInquiryDeleted({
+      name: row.name,
+      email: row.email,
+      created_at: String(row.created_at ?? ""),
+    });
+  }
   getDb().prepare("DELETE FROM inquiries WHERE id = ?").run(id);
   const { flushSqlJsToDisk, isSqlJsReady } = await import("@/lib/sqlite");
   if (isSqlJsReady()) flushSqlJsToDisk();

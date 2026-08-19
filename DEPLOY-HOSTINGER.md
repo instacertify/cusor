@@ -1,4 +1,17 @@
-# Hostinger NVMe — one-click install (simple)
+# Certko on Hostinger — permanent vs Node panel
+
+There are two Hostinger products. They are not interchangeable.
+
+| Goal | Use this |
+|------|----------|
+| **Permanent** (blogs, password, leads, uploads survive forever) | **VPS (NVMe)** + PostgreSQL + `CERTKO_DATA_DIR=/var/lib/certko` — one-click script below |
+| Temporary / already on Node.js Web Apps | Code now stores SQLite, secret, leads, and settings **outside** `hbuilds/versions/…` (usually `hbuilds/data/`). Still set `CERTKO_SECRET` once in hPanel. This is **durable across deploys**, not a substitute for Postgres if Hostinger wipes the whole `hbuilds` tree. |
+
+Do **not** rotate `CERTKO_SECRET`. Do **not** delete `hbuilds/data` or `/var/lib/certko`.
+
+---
+
+# Hostinger NVMe — one-click install (permanent)
 
 Certko needs a **Hostinger VPS (NVMe)** with SSH — not shared hosting.
 
@@ -163,24 +176,29 @@ That’s the whole deploy.
 
 ---
 
-## Hostinger Node.js Web Apps panel (not recommended)
+## Hostinger Node.js Web Apps panel (workaround, not VPS)
 
-The hPanel **Node.js** GitHub builder runs in an ephemeral `hbuilds` sandbox. That environment:
+The hPanel **Node.js** GitHub builder (`hbuilds`) replaces `versions/<uuid>/nodejs/` on every deploy. Certko now:
 
-- often has **no durable disk** for uploads  
-- usually has **no local PostgreSQL**  
-- replaces the app tree on every deploy  
+1. Writes SQLite, uploads, `.certko-secret`, lead archive, and settings snapshot to **`hbuilds/data/`** (sibling of `versions/`, not inside a version folder)
+2. Recovers those files from older version folders if they were left behind
+3. Re-inserts contact leads from `inquiries.jsonl` if SQLite is empty
+4. Restores admin password / SMTP / site settings from `settings-archive.json` if SQLite was re-seeded
+5. Signs admin cookies with the disk secret so a missing hPanel env var does **not** look like a password reset
+6. Does **not** check admin auth in Edge middleware (Edge cannot read the disk secret)
 
-Prefer the **VPS one-click installer** above. If you must use the Node panel, the site **will boot without Postgres** (SQLite under `./data` or `CERTKO_DATA_DIR`). For data that survives deploys, still set:
+Set these **once** in hPanel → Environment. Never rotate them:
 
 | Variable | Recommended value |
 |----------|----------------|
-| `DATABASE_URL` | External/managed Postgres URL (not wiped by deploys) |
-| `CERTKO_DATA_DIR` | Persistent writable path **outside** the build folder |
-| `CERTKO_SECRET` | Stable secret — set once, never rotate on deploy |
+| `CERTKO_SECRET` | `openssl rand -hex 32` — paste once, leave forever (optional if disk secret already exists) |
 | `COOKIE_SECURE` | `1` on HTTPS |
+| `DATABASE_URL` | External/managed Postgres URL if you have one (best Node-panel option) |
+| `CERTKO_DATA_DIR` | Optional override; default auto-detects `hbuilds/data` |
 
-Leaving `CERTKO_SECRET` unset (or regenerating `.env` each deploy) is what made the admin password look “reset.” Missing `DATABASE_URL` no longer 500s the public site.
+SMTP is optional. Leads still save without it. Configure Admin → Email / SMTP so notify mail works.
+
+Leaving `CERTKO_SECRET` unset used to regenerate a weak in-memory secret every process start (admin looked “reset”). The disk secret file fixes that **as long as `hbuilds/data` is not deleted**.
 
 | Setting | Value |
 |---------|--------|
@@ -198,4 +216,5 @@ If the browser shows **Application error** with a digest like `ERROR 1358233113`
 
 1. A previous build that required `DATABASE_URL` at runtime (fixed — SQLite fallback)  
 2. Wrong output directory (`out`) — clear it  
-3. Uploads path ephemeral — set `CERTKO_DATA_DIR` outside the deploy folder  
+3. Uploads path ephemeral — data now prefers `hbuilds/data`; do not delete that folder  
+4. Duplicate Next processes on `:3000` — restart the Node app once from hPanel; do not set a custom start that binds 3000 without `$PORT`

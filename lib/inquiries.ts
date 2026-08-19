@@ -1,6 +1,7 @@
 import { ensureDbReady, getDb } from "./db";
 import { sendLeadNotification } from "./mail";
 import { flushSqlJsToDisk, isSqlJsReady } from "./sqlite";
+import { archiveInquiry } from "./inquiry-archive";
 
 export type InquiryInput = {
   name: string;
@@ -35,11 +36,21 @@ export async function createInquiry(input: InquiryInput): Promise<InquiryResult>
 
   try {
     await ensureDbReady();
-    getDb()
-      .prepare(
-        "INSERT INTO inquiries (name, email, phone, product, message, intent) VALUES (?, ?, ?, ?, ?, ?)"
-      )
-      .run(name, email, phone, product, message, intent);
+    const createdAt = new Date().toISOString();
+    const db = getDb();
+    db.prepare(
+      "INSERT INTO inquiries (name, email, phone, product, message, intent, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    ).run(name, email, phone, product, message, intent, "new", createdAt);
+    archiveInquiry({
+      name,
+      email,
+      phone,
+      product,
+      message,
+      intent,
+      status: "new",
+      created_at: createdAt,
+    });
     // Persist leads immediately on SQLite — Hostinger restarts must not lose rows
     // waiting on the debounced sql.js disk flush.
     if (isSqlJsReady()) flushSqlJsToDisk();

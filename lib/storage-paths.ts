@@ -39,6 +39,15 @@ function copyFileIfMissing(src: string, dest: string) {
   fs.copyFileSync(src, dest);
 }
 
+/** Prefer a real SQLite file over a zero-byte placeholder. */
+function copyDbIfDestEmpty(src: string, dest: string) {
+  if (!fs.existsSync(src)) return;
+  const destExists = fs.existsSync(dest);
+  if (destExists && fs.statSync(dest).size > 0) return;
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  fs.copyFileSync(src, dest);
+}
+
 function copyDirContents(srcDir: string, destDir: string) {
   if (!fs.existsSync(srcDir)) return;
   fs.mkdirSync(destDir, { recursive: true });
@@ -71,24 +80,34 @@ function migrateLegacyInto(dataDir: string) {
     if (path.resolve(appData) === path.resolve(dataDir)) {
       // Already using ./data — still pull public/uploads into data/uploads.
       copyDirContents(appUploads, destUploads);
-      return;
-    }
-
-    copyFileIfMissing(path.join(appData, "certko.db"), destDb);
-    for (const f of fs.existsSync(appData) ? fs.readdirSync(appData) : []) {
-      if (f.startsWith("certko.db-")) {
-        copyFileIfMissing(path.join(appData, f), path.join(dataDir, f));
+    } else {
+      copyDbIfDestEmpty(path.join(appData, "certko.db"), destDb);
+      copyFileIfMissing(path.join(appData, ".certko-secret"), path.join(dataDir, ".certko-secret"));
+      copyFileIfMissing(path.join(appData, "inquiries.jsonl"), path.join(dataDir, "inquiries.jsonl"));
+      copyFileIfMissing(
+        path.join(appData, "inquiries-deleted.jsonl"),
+        path.join(dataDir, "inquiries-deleted.jsonl")
+      );
+      copyFileIfMissing(
+        path.join(appData, "settings-archive.json"),
+        path.join(dataDir, "settings-archive.json")
+      );
+      for (const f of fs.existsSync(appData) ? fs.readdirSync(appData) : []) {
+        if (f.startsWith("certko.db-")) {
+          copyFileIfMissing(path.join(appData, f), path.join(dataDir, f));
+        }
       }
-    }
-    copyDirContents(path.join(appData, "uploads"), destUploads);
-    copyDirContents(appUploads, destUploads);
+      copyDirContents(path.join(appData, "uploads"), destUploads);
+      copyDirContents(appUploads, destUploads);
 
-    if (fs.existsSync(destDb)) {
-      console.info("[certko] durable data dir ready:", dataDir);
+      if (fs.existsSync(destDb)) {
+        console.info("[certko] durable data dir ready:", dataDir);
+      }
     }
   } catch (err) {
     console.warn("[certko] legacy data migrate skipped:", err);
   }
+  recoverFromPriorHbuildsVersions(dataDir);
 }
 
 function isNextBuildPhase(): boolean {
@@ -123,6 +142,65 @@ function hostingerPersistentCandidates(cwd: string): string[] {
   }
 
   return [...new Set(parts)];
+}
+
+const SIDECAR_FILES = [
+  "certko.db",
+  ".certko-secret",
+  "inquiries.jsonl",
+  "inquiries-deleted.jsonl",
+  "settings-archive.json",
+];
+
+/**
+ * Copy CMS files from older Hostinger version folders when the shared data dir
+ * is missing them (first boot after switching persist path).
+ */
+function recoverFromPriorHbuildsVersions(dataDir: string): void {
+  const cwd = path.resolve(process.cwd());
+  const match = cwd.match(/^(.*\/hbuilds)\/versions\//);
+  if (!match) return;
+  const versionsRoot = path.join(match[1], "versions");
+  if (!fs.existsSync(versionsRoot)) return;
+
+  let versionDirs: string[] = [];
+  try {
+    versionDirs = fs
+      .readdirSync(versionsRoot)
+      .map((name) => path.join(versionsRoot, name))
+      .filter((dir) => {
+        try {
+          return fs.statSync(dir).isDirectory();
+        } catch {
+          return false;
+        }
+      });
+  } catch {
+    return;
+  }
+
+  versionDirs.sort((a, b) => {
+    try {
+      return fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs;
+    } catch {
+      return 0;
+    }
+  });
+
+  for (const versionDir of versionDirs.slice(0, 20)) {
+    const srcDir = path.join(versionDir, "nodejs", "data");
+    if (!fs.existsSync(srcDir)) continue;
+    for (const name of SIDECAR_FILES) {
+      const from = path.join(srcDir, name);
+      const to = path.join(dataDir, name);
+      if (name === "certko.db") copyDbIfDestEmpty(from, to);
+      else copyFileIfMissing(from, to);
+    }
+    const srcUploads = path.join(srcDir, "uploads");
+    if (fs.existsSync(srcUploads)) {
+      copyDirContents(srcUploads, path.join(dataDir, "uploads"));
+    }
+  }
 }
 
 /**

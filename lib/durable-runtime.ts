@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { getDatabaseUrl } from "./sqlite";
 import { getCertkoDataDir, getCertkoUploadsDir } from "./storage-paths";
+import { resolveCertkoSecret } from "./durable-secret";
 
 function isNextBuildPhase(): boolean {
   const lifecycle = process.env.npm_lifecycle_event || "";
@@ -38,17 +39,17 @@ export function assertDurableRuntimeConfig(): void {
 
   const production = process.env.NODE_ENV === "production";
   const url = getDatabaseUrl();
-  const secret = (process.env.CERTKO_SECRET || "").trim();
+  const secret = resolveCertkoSecret();
 
   if (!url) {
     console.warn(
-      "[certko] DATABASE_URL is not set — using SQLite file storage so the site can boot. Set DATABASE_URL on a VPS for restart-safe CMS data."
+      "[certko] DATABASE_URL is not set — using SQLite file storage so the site can boot. A Hostinger VPS + PostgreSQL is the permanent store for CMS data."
     );
   }
 
   if (production && (!secret || secret === "certko-dev-secret-change-me")) {
     console.warn(
-      "[certko] CERTKO_SECRET is missing or default. Sessions will not survive restarts (looks like a password reset). Set a stable random value in .env."
+      "[certko] CERTKO_SECRET could not be persisted. Admin sessions may reset on restart. Set CERTKO_SECRET once in hPanel, or use the VPS installer."
     );
   }
 
