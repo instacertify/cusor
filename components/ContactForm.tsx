@@ -105,7 +105,7 @@ export default function ContactForm({
       : intent === "book" || intent === "test"
         ? "Lab / product / test"
         : intent === "certification"
-          ? "Certification / scheme"
+          ? "Certification"
           : "Product / test / certification";
 
   const messageLabel =
