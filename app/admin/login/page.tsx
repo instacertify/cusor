@@ -1,10 +1,8 @@
-import { headers, cookies } from "next/headers";
 import Logo from "@/components/Logo";
 import HardRedirect from "@/components/HardRedirect";
 import AdminLoginForm from "@/components/admin/AdminLoginForm";
-import { isAdmin, clearAdminSession } from "@/lib/auth";
-import { CAPTCHA_COOKIE, createCaptchaChallenge } from "@/lib/captcha";
-import { shouldUseSecureCookies } from "@/lib/cookie-secure";
+import { isAdmin } from "@/lib/auth";
+import { createCaptchaChallenge } from "@/lib/captcha";
 import { safeAdminNextPath } from "@/lib/request-path";
 
 export const dynamic = "force-dynamic";
@@ -36,25 +34,11 @@ export default async function AdminLoginPage({ searchParams }: Props) {
   const locked = sp.error === "locked";
   const next = safeNextPath(sp.next);
 
-  if (sp.error === "session") {
-    await clearAdminSession();
-  }
-
-  // Server-rendered captcha so the form works even if the client fetch fails
+  // Captcha answer is HMAC-signed in `challenge.token` and posted as a hidden
+  // field. Next.js 16 forbids mutating the cookie store during page render
+  // ("Cookies can only be modified in a Server Action or Route Handler"),
+  // which took down /admin/login after Hostinger build 95.
   const challenge = createCaptchaChallenge();
-  const hdrs = await headers();
-  const jar = await cookies();
-  try {
-    jar.set(CAPTCHA_COOKIE, challenge.token, {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 10,
-      secure: shouldUseSecureCookies(hdrs),
-    });
-  } catch {
-    // Setting cookies during render can fail in some contexts — form token still works
-  }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0b1220] text-cream-50">

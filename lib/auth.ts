@@ -76,12 +76,14 @@ export async function requireAdmin(): Promise<void> {
   }
 }
 
+/** Server Action only — Route Handlers must use `response.cookies.set`. */
 export async function setAdminSession(): Promise<void> {
   const store = await cookies();
   const hdrs = await headers();
   store.set(ADMIN_COOKIE, createSessionToken(), adminSessionCookieOptions(shouldUseSecureCookies(hdrs)));
 }
 
+/** Server Action only — Route Handlers must use `response.cookies.delete`. */
 export async function clearAdminSession(): Promise<void> {
   const store = await cookies();
   store.delete(ADMIN_COOKIE);
