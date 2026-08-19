@@ -247,13 +247,13 @@ assert(
   "recovered secret from prior hbuilds version"
 );
 
-const esbuildBin = [
-  path.join(process.cwd(), "node_modules", "esbuild", "bin", "esbuild"),
-  path.join(process.cwd(), "node_modules", "next", "node_modules", "esbuild", "bin", "esbuild"),
-].find((p) => fs.existsSync(p));
+const esbuild = spawnSync("npx", ["--yes", "esbuild", "--version"], {
+  encoding: "utf8",
+});
+const hasEsbuild = esbuild.status === 0;
 
-if (esbuildBin) {
-  const entry = path.join(root, "entry.mjs");
+if (hasEsbuild) {
+  const entry = path.join(root, "entry.ts");
   const outfile = path.join(root, "lib-bundle.mjs");
   fs.writeFileSync(
     entry,
@@ -266,8 +266,8 @@ export { restoreArchivedInquiries, restoreSettingsArchive, resolveCertkoSecret, 
 `
   );
   const bundled = spawnSync(
-    process.execPath,
-    [esbuildBin, entry, "--bundle", "--platform=node", "--format=esm", `--outfile=${outfile}`],
+    "npx",
+    ["--yes", "esbuild", entry, "--bundle", "--platform=node", "--format=esm", `--outfile=${outfile}`],
     { encoding: "utf8" }
   );
   if (bundled.status !== 0) {
@@ -334,7 +334,7 @@ export { restoreArchivedInquiries, restoreSettingsArchive, resolveCertkoSecret, 
   });
   console.log("ok real library restore + secret reuse");
 } else {
-  console.warn("skip real library bundle (esbuild not found)");
+  fail("esbuild is required to verify the real TypeScript restore path");
 }
 
 console.log("ok durable persist proof");
