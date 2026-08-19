@@ -11,12 +11,16 @@ export const dynamic = "force-dynamic";
 
 export const metadata = { robots: { index: false } };
 
+async function AdminReady({ children }: { children: React.ReactNode }) {
+  await ensureDbReady();
+  return <>{children}</>;
+}
+
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  await ensureDbReady();
   if (!(await isAdmin())) {
     return <HardRedirect href="/admin/login?error=session" />;
   }
@@ -32,7 +36,9 @@ export default async function AdminLayout({
           <Suspense fallback={null}>
             <AdminCacheClearedBanner />
           </Suspense>
-          {children}
+          <Suspense fallback={<p className="p-6 text-sm text-ink-600 animate-pulse">Loading CMS…</p>}>
+            <AdminReady>{children}</AdminReady>
+          </Suspense>
         </div>
       </div>
     </>

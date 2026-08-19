@@ -8,8 +8,25 @@ import { resolveCertkoSecret } from "./durable-secret";
 
 export { ADMIN_COOKIE };
 
-const SESSION_DAYS = 7;
+export const ADMIN_SESSION_DAYS = 7;
+const SESSION_DAYS = ADMIN_SESSION_DAYS;
 const BCRYPT_ROUNDS = 12;
+
+export function adminSessionCookieOptions(secure: boolean): {
+  httpOnly: true;
+  sameSite: "lax";
+  path: "/";
+  maxAge: number;
+  secure: boolean;
+} {
+  return {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * SESSION_DAYS,
+    secure,
+  };
+}
 
 function getSecret(): string {
   return resolveCertkoSecret();
@@ -55,13 +72,7 @@ export async function requireAdmin(): Promise<void> {
 export async function setAdminSession(): Promise<void> {
   const store = await cookies();
   const hdrs = await headers();
-  store.set(ADMIN_COOKIE, createSessionToken(), {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * SESSION_DAYS,
-    secure: shouldUseSecureCookies(hdrs),
-  });
+  store.set(ADMIN_COOKIE, createSessionToken(), adminSessionCookieOptions(shouldUseSecureCookies(hdrs)));
 }
 
 export async function clearAdminSession(): Promise<void> {

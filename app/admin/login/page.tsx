@@ -1,23 +1,11 @@
-import { redirect } from "next/navigation";
 import { headers, cookies } from "next/headers";
 import Logo from "@/components/Logo";
 import HardRedirect from "@/components/HardRedirect";
 import AdminLoginForm from "@/components/admin/AdminLoginForm";
-import {
-  isAdmin,
-  setAdminSession,
-  checkCredentials,
-  clearAdminSession,
-} from "@/lib/auth";
-import { CAPTCHA_COOKIE, createCaptchaChallenge, verifyCaptchaToken } from "@/lib/captcha";
+import { isAdmin, clearAdminSession } from "@/lib/auth";
+import { CAPTCHA_COOKIE, createCaptchaChallenge } from "@/lib/captcha";
 import { shouldUseSecureCookies } from "@/lib/cookie-secure";
-import {
-  clearLoginFailures,
-  getClientIp,
-  isLoginRateLimited,
-  logAdminEvent,
-  recordLoginFailure,
-} from "@/lib/admin-audit";
+import { safeAdminNextPath } from "@/lib/request-path";
 
 export const dynamic = "force-dynamic";
 
@@ -27,60 +15,7 @@ export const metadata = {
 };
 
 function safeNextPath(raw: string | undefined): string {
-  if (!raw || !raw.startsWith("/admin") || raw.startsWith("//") || raw.includes("://")) {
-    return "/admin";
-  }
-  if (raw.startsWith("/admin/login")) return "/admin";
-  return raw;
-}
-
-async function login(formData: FormData) {
-  "use server";
-  const hdrs = await headers();
-  const ip = getClientIp(hdrs);
-
-  if (isLoginRateLimited(ip)) {
-    logAdminEvent("login_blocked", ip, "rate_limited");
-    redirect("/admin/login?error=locked");
-  }
-
-  const username = String(formData.get("username") ?? "");
-  const password = String(formData.get("password") ?? "");
-  const captcha = String(formData.get("captcha") ?? "");
-  const formToken = String(formData.get("captcha_token") ?? "").trim();
-  const next = safeNextPath(String(formData.get("next") ?? "/admin"));
-  const jar = await cookies();
-  const cookieToken = jar.get(CAPTCHA_COOKIE)?.value;
-  // Prefer form token — works even when Secure cookies are dropped on HTTP
-  const captchaToken = formToken || cookieToken || "";
-
-  if (!verifyCaptchaToken(captchaToken, captcha)) {
-    recordLoginFailure(ip);
-    logAdminEvent("login_fail", ip, "bad_captcha");
-    try {
-      jar.delete(CAPTCHA_COOKIE);
-    } catch {
-      /* ignore */
-    }
-    redirect("/admin/login?error=captcha");
-  }
-
-  try {
-    jar.delete(CAPTCHA_COOKIE);
-  } catch {
-    /* ignore */
-  }
-
-  if (!(await checkCredentials(username, password))) {
-    const n = recordLoginFailure(ip);
-    logAdminEvent("login_fail", ip, `bad_credentials attempt=${n}`);
-    redirect(n >= 8 ? "/admin/login?error=locked" : "/admin/login?error=1");
-  }
-
-  clearLoginFailures(ip);
-  await setAdminSession();
-  logAdminEvent("login_ok", ip, "session_created");
-  redirect(next);
+  return safeAdminNextPath(raw);
 }
 
 interface Props {
@@ -194,7 +129,6 @@ export default async function AdminLoginPage({ searchParams }: Props) {
               </p>
             </div>
             <AdminLoginForm
-              action={login}
               error={error}
               locked={locked}
               nextPath={next}

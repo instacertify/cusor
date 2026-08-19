@@ -207,7 +207,7 @@ Leaving `CERTKO_SECRET` unset used to regenerate a weak in-memory secret every p
 | Root | `./` |
 | Install | `npm install` (or `npm ci`) |
 | Build | `npm run build` |
-| Start | `npm start` (uses `$PORT` automatically) |
+| Start | `npm start` (binds `$PORT` immediately via `server.cjs`) |
 | Output directory | **leave empty** (do not set `out`) |
 
 `next build` skips DB init. **Runtime** uses PostgreSQL when `DATABASE_URL` is set, otherwise SQLite so pages can serve.
@@ -217,4 +217,4 @@ If the browser shows **Application error** with a digest like `ERROR 1358233113`
 1. A previous build that required `DATABASE_URL` at runtime (fixed — SQLite fallback)  
 2. Wrong output directory (`out`) — clear it  
 3. Uploads path ephemeral — data now prefers `hbuilds/data`; do not delete that folder  
-4. Duplicate Next processes on `:3000` — restart the Node app once from hPanel; do not set a custom start that binds 3000 without `$PORT`
+4. Duplicate Next processes on `:3000` — restart the Node app **once** from hPanel. Start command must be `npm start` (uses `server.cjs` so `$PORT` is bound immediately). Do not set a custom start of `next start` without `$PORT`.
