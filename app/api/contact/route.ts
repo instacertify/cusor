@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createInquiry } from "@/lib/inquiries";
+import { seeOther } from "@/lib/http-redirect";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -9,8 +10,8 @@ function wantsJson(req: NextRequest) {
   return accept.includes("application/json");
 }
 
-function redirectTo(req: NextRequest, path: string) {
-  return NextResponse.redirect(new URL(path, req.url), 303);
+function redirectTo(path: string) {
+  return seeOther(path);
 }
 
 /** Classic form POST — works even when Next.js server actions / RSC are flaky. */
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
-      return redirectTo(req, "/contact?error=1");
+      return redirectTo("/contact?error=1");
     }
 
     const result = await createInquiry({
@@ -49,9 +50,9 @@ export async function POST(req: NextRequest) {
         );
       }
       if (result.error === "missing_fields") {
-        return redirectTo(req, "/contact?error=1");
+        return redirectTo("/contact?error=1");
       }
-      return redirectTo(req, "/contact?error=save");
+      return redirectTo("/contact?error=save");
     }
 
     if (json) {
@@ -59,12 +60,12 @@ export async function POST(req: NextRequest) {
     }
     const params = new URLSearchParams({ sent: "1" });
     if (intent) params.set("intent", intent);
-    return redirectTo(req, `/contact?${params.toString()}`);
+    return redirectTo(`/contact?${params.toString()}`);
   } catch (err) {
     console.error("[api/contact] unexpected error:", err);
     if (json) {
       return NextResponse.json({ ok: false, error: "save_failed" }, { status: 500 });
     }
-    return redirectTo(req, "/contact?error=save");
+    return redirectTo("/contact?error=save");
   }
 }

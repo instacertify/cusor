@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import {
   ADMIN_COOKIE,
   adminSessionCookieOptions,
@@ -8,6 +8,7 @@ import {
 import { CAPTCHA_COOKIE, verifyCaptchaToken } from "@/lib/captcha";
 import { shouldUseSecureCookies } from "@/lib/cookie-secure";
 import { ensureDbReady } from "@/lib/db";
+import { seeOther } from "@/lib/http-redirect";
 import { safeAdminNextPath } from "@/lib/request-path";
 import {
   clearLoginFailures,
@@ -20,14 +21,15 @@ import {
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-function redirectTo(req: NextRequest, path: string) {
-  return NextResponse.redirect(new URL(path, req.url), 303);
+function redirectTo(path: string) {
+  return seeOther(path);
 }
 
 /**
- * Classic form POST + 303. Do not use next/navigation redirect() here —
- * Hostinger's RSC follow-up fetch fails ("failed to get redirect response"),
- * which shows an error until the user reloads.
+ * Classic form POST + 303 with a relative Location.
+ * Do not use next/navigation redirect() or `new URL(path, req.url)` —
+ * Hostinger binds 0.0.0.0, so req.url becomes https://0.0.0.0:3000/... and
+ * Chrome shows ERR_ADDRESS_INVALID. RSC redirect() also fails loopback fetch.
  */
 export async function POST(req: NextRequest) {
   await ensureDbReady();
@@ -38,7 +40,7 @@ export async function POST(req: NextRequest) {
 
   if (isLoginRateLimited(ip)) {
     logAdminEvent("login_blocked", ip, "rate_limited");
-    return redirectTo(req, "/admin/login?error=locked");
+    return redirectTo("/admin/login?error=locked");
   }
 
   const username = String(form.get("username") ?? "");
@@ -51,7 +53,7 @@ export async function POST(req: NextRequest) {
   if (!verifyCaptchaToken(captchaToken, captcha)) {
     recordLoginFailure(ip);
     logAdminEvent("login_fail", ip, "bad_captcha");
-    const res = redirectTo(req, "/admin/login?error=captcha");
+    const res = redirectTo("/admin/login?error=captcha");
     res.cookies.delete(CAPTCHA_COOKIE);
     return res;
   }
@@ -60,7 +62,6 @@ export async function POST(req: NextRequest) {
     const n = recordLoginFailure(ip);
     logAdminEvent("login_fail", ip, `bad_credentials attempt=${n}`);
     const res = redirectTo(
-      req,
       n >= 8 ? "/admin/login?error=locked" : "/admin/login?error=1"
     );
     res.cookies.delete(CAPTCHA_COOKIE);
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
 
   clearLoginFailures(ip);
   logAdminEvent("login_ok", ip, "session_created");
-  const res = redirectTo(req, next);
+  const res = redirectTo(next);
   res.cookies.set(ADMIN_COOKIE, createSessionToken(), adminSessionCookieOptions(secure));
   res.cookies.delete(CAPTCHA_COOKIE);
   return res;

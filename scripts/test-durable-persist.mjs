@@ -259,10 +259,11 @@ if (hasEsbuild) {
     entry,
     `
 import { restoreArchivedInquiries } from ${JSON.stringify(path.join(process.cwd(), "lib/inquiry-archive.ts"))};
-import { restoreSettingsArchive } from ${JSON.stringify(path.join(process.cwd(), "lib/settings-archive.ts"))};
+import { restoreSettingsArchive, snapshotSettings } from ${JSON.stringify(path.join(process.cwd(), "lib/settings-archive.ts"))};
+import { restoreAdminCredentials, persistAdminCredentials, peekAdminCredentials } from ${JSON.stringify(path.join(process.cwd(), "lib/admin-credentials.ts"))};
 import { resolveCertkoSecret, resetDurableSecretCache } from ${JSON.stringify(path.join(process.cwd(), "lib/durable-secret.ts"))};
-import { resetStoragePathCache } from ${JSON.stringify(path.join(process.cwd(), "lib/storage-paths.ts"))};
-export { restoreArchivedInquiries, restoreSettingsArchive, resolveCertkoSecret, resetDurableSecretCache, resetStoragePathCache };
+import { resetStoragePathCache, getCertkoDataDir, recoverDurableSidecars } from ${JSON.stringify(path.join(process.cwd(), "lib/storage-paths.ts"))};
+export { restoreArchivedInquiries, restoreSettingsArchive, snapshotSettings, restoreAdminCredentials, persistAdminCredentials, peekAdminCredentials, resolveCertkoSecret, resetDurableSecretCache, resetStoragePathCache, getCertkoDataDir, recoverDurableSidecars };
 `
   );
   const bundled = spawnSync(
@@ -331,8 +332,112 @@ export { restoreArchivedInquiries, restoreSettingsArchive, resolveCertkoSecret, 
     assert(s >= 1, "library restored settings");
     const pass = db.prepare("SELECT value FROM settings WHERE key = ?").get("admin_password").value;
     assert(pass === bcryptHash, "library restored bcrypt admin password");
+    const userBefore = db.prepare("SELECT value FROM settings WHERE key = ?").get("admin_username");
+    assert(!userBefore || userBefore.value === "admin" || userBefore.value === "ops-admin", "username row exists");
   });
-  console.log("ok real library restore + secret reuse");
+
+  // Snapshot must not clobber a hashed archive with seed defaults.
+  const snapDir = path.join(root, "snap-data");
+  fs.mkdirSync(snapDir, { recursive: true });
+  process.env.CERTKO_DATA_DIR = snapDir;
+  mod.resetStoragePathCache();
+  fs.writeFileSync(
+    path.join(snapDir, "settings-archive.json"),
+    JSON.stringify({ admin_password: bcryptHash, admin_username: "ops-admin" })
+  );
+  const snapDb = path.join(snapDir, "seed.db");
+  await withSql(snapDb, async (db) => {
+    db.exec(`CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL DEFAULT '')`);
+    db.prepare("INSERT INTO settings (key, value) VALUES (?, ?)").run("admin_username", "admin");
+    db.prepare("INSERT INTO settings (key, value) VALUES (?, ?)").run("admin_password", "certko-admin");
+    mod.snapshotSettings(db);
+    const after = JSON.parse(fs.readFileSync(path.join(snapDir, "settings-archive.json"), "utf8"));
+    assert(after.admin_password === bcryptHash, "snapshot kept bcrypt instead of certko-admin");
+    assert(after.admin_username === "ops-admin", "snapshot kept custom login id");
+  });
+
+  // Restore custom username even when live password is already hashed.
+  await withSql(snapDb, async (db) => {
+    db.exec(`CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL DEFAULT '')`);
+    db.prepare(
+      "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value"
+    ).run("admin_username", "admin");
+    db.prepare(
+      "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value"
+    ).run("admin_password", bcryptHash);
+    fs.writeFileSync(
+      path.join(snapDir, "settings-archive.json"),
+      JSON.stringify({ admin_password: bcryptHash, admin_username: "ops-admin" })
+    );
+    mod.restoreSettingsArchive(db);
+    const user = db.prepare("SELECT value FROM settings WHERE key = ?").get("admin_username").value;
+    assert(user === "ops-admin", "restored custom username while hash already live");
+  });
+
+  // Dedicated credentials file restores both id and hash.
+  const credDir = path.join(root, "cred-data");
+  fs.mkdirSync(credDir, { recursive: true });
+  process.env.CERTKO_DATA_DIR = credDir;
+  mod.resetStoragePathCache();
+  fs.writeFileSync(
+    path.join(credDir, ".certko-admin.json"),
+    JSON.stringify({
+      username: "ops-admin",
+      passwordHash: bcryptHash,
+      savedAt: "2026-08-01T00:00:00.000Z",
+    })
+  );
+  const credDb = path.join(credDir, "cred.db");
+  await withSql(credDb, async (db) => {
+    db.exec(`CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL DEFAULT '')`);
+    db.prepare("INSERT INTO settings (key, value) VALUES (?, ?)").run("admin_username", "admin");
+    db.prepare("INSERT INTO settings (key, value) VALUES (?, ?)").run("admin_password", "certko-admin");
+    const n = mod.restoreAdminCredentials(db);
+    assert(n >= 2, "credentials file restored user+hash, got " + n);
+    assert(db.prepare("SELECT value FROM settings WHERE key = ?").get("admin_username").value === "ops-admin", "file restored username");
+    assert(db.prepare("SELECT value FROM settings WHERE key = ?").get("admin_password").value === bcryptHash, "file restored hash");
+    mod.persistAdminCredentials(db);
+    assert(fs.existsSync(path.join(credDir, ".certko-admin.json")), "persisted credentials file");
+  });
+
+  // Hostinger ~3 version prune: newest folders have seed defaults; oldest has the real login.
+  const hRoot = path.join(root, "hbuilds");
+  const v1 = path.join(hRoot, "versions", "11111111-aaaa-4aaa-8aaa-111111111111", "nodejs", "data");
+  const v2 = path.join(hRoot, "versions", "22222222-bbbb-4bbb-8bbb-222222222222", "nodejs", "data");
+  const v3 = path.join(hRoot, "versions", "33333333-cccc-4ccc-8ccc-333333333333", "nodejs", "data");
+  const shared = path.join(hRoot, "data");
+  fs.mkdirSync(v1, { recursive: true });
+  fs.mkdirSync(v2, { recursive: true });
+  fs.mkdirSync(v3, { recursive: true });
+  fs.mkdirSync(shared, { recursive: true });
+  const seedArchive = JSON.stringify({ admin_username: "admin", admin_password: "certko-admin" });
+  fs.writeFileSync(
+    path.join(v1, ".certko-admin.json"),
+    JSON.stringify({ username: "ops-admin", passwordHash: bcryptHash, savedAt: "2026-08-01T00:00:00.000Z" })
+  );
+  fs.writeFileSync(
+    path.join(v1, "settings-archive.json"),
+    JSON.stringify({ admin_username: "ops-admin", admin_password: bcryptHash })
+  );
+  fs.writeFileSync(path.join(v2, "settings-archive.json"), seedArchive);
+  fs.writeFileSync(path.join(v3, "settings-archive.json"), seedArchive);
+  fs.writeFileSync(path.join(shared, "settings-archive.json"), seedArchive);
+
+  const prevCwd = process.cwd();
+  process.chdir(path.join(hRoot, "versions", "33333333-cccc-4ccc-8ccc-333333333333", "nodejs"));
+  process.env.CERTKO_DATA_DIR = shared;
+  process.env.NODE_ENV = "production";
+  mod.resetStoragePathCache();
+  const chosen = mod.getCertkoDataDir();
+  assert(path.resolve(chosen) === path.resolve(shared), "hbuilds shared data dir, got " + chosen);
+  const recoveredArchive = JSON.parse(fs.readFileSync(path.join(shared, "settings-archive.json"), "utf8"));
+  assert(recoveredArchive.admin_password === bcryptHash, "3rd build recovered bcrypt over seed archive");
+  assert(recoveredArchive.admin_username === "ops-admin", "3rd build recovered custom login id");
+  const recoveredCreds = JSON.parse(fs.readFileSync(path.join(shared, ".certko-admin.json"), "utf8"));
+  assert(recoveredCreds.username === "ops-admin", "3rd build recovered credentials file username");
+  assert(recoveredCreds.passwordHash === bcryptHash, "3rd build recovered credentials file hash");
+  process.chdir(prevCwd);
+  console.log("ok credential restore after simulated 3rd Hostinger build");
 } else {
   fail("esbuild is required to verify the real TypeScript restore path");
 }

@@ -30,11 +30,13 @@ export function middleware(request: NextRequest) {
   }
 
   if (pathname === "/certifications/global-market-access") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/certifications";
-    url.hash = "";
-    url.searchParams.set("section", "global-market-access");
-    return NextResponse.redirect(url, 308);
+    return withSecurityHeaders(
+      new NextResponse(null, {
+        status: 308,
+        headers: { Location: "/certifications?section=global-market-access" },
+      }),
+      pathname
+    );
   }
 
   const requestHeaders = new Headers(request.headers);
