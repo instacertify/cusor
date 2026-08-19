@@ -54,9 +54,9 @@ export default function MarkdownEditor({
       </div>
       {hint ? <p className="text-[11px] text-ink-500 mt-1">{hint}</p> : null}
       <p className="text-[11px] text-ink-400 mt-1">
-        Rich text editor — toolbar includes text color, highlight, headings, lists, links and tables.
-        Switch to Source for raw Markdown. Content stays Markdown (with HTML color spans) for the public
-        site.
+        Rich text editor — toolbar includes text color, highlight, headings, lists, links, tables, and{" "}
+        <strong>PDFs</strong> (upload + reorder a numbered PDF viewer sequence). Switch to Source for
+        raw Markdown.
       </p>
     </div>
   );

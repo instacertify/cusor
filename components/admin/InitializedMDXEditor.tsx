@@ -28,6 +28,7 @@ import {
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
 import TextColorToolbar from "./TextColorToolbar";
+import PdfSequenceToolbar from "./PdfSequenceToolbar";
 
 type Props = Omit<MDXEditorProps, "markdown"> & {
   markdown: string;
@@ -68,6 +69,8 @@ export default function InitializedMDXEditor({ editorRef, ...props }: Props) {
               <CreateLink />
               <InsertTable />
               <InsertThematicBreak />
+              <Separator />
+              <PdfSequenceToolbar />
             </DiffSourceToggleWrapper>
           ),
         }),
