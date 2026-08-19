@@ -201,7 +201,7 @@ function wrapDatabase(raw: SqlJsDatabase, filePath: string): Engine {
             const changes = eng.raw.getRowsModified();
             const idRes = eng.raw.exec("SELECT last_insert_rowid() AS id");
             const lastInsertRowid = (idRes[0]?.values?.[0]?.[0] as number | bigint) ?? 0;
-            markDirty(eng);
+            if (changes > 0) markDirty(eng);
             return { changes, lastInsertRowid };
           } finally {
             stmt.free();
@@ -233,7 +233,10 @@ function wrapDatabase(raw: SqlJsDatabase, filePath: string): Engine {
 
     exec(sql: string) {
       eng.raw.exec(sql);
-      markDirty(eng);
+      // CREATE IF NOT EXISTS / no-op schema must not rewrite the 13MB Hostinger file.
+      if (/\b(INSERT|UPDATE|DELETE|REPLACE|DROP|ALTER)\b/i.test(sql)) {
+        markDirty(eng);
+      }
     },
 
     pragma(source: string) {
@@ -253,7 +256,6 @@ function wrapDatabase(raw: SqlJsDatabase, filePath: string): Engine {
           const value = fn();
           eng.raw.run("COMMIT");
           eng.txDepth -= 1;
-          markDirty(eng);
           return value;
         } catch (err) {
           try {

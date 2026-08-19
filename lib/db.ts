@@ -44,6 +44,7 @@ type DbGlobal = typeof globalThis & {
   __certkoDb?: SqliteDatabase;
   __certkoDbBootstrapped?: boolean;
   __certkoDbBootstrap?: Promise<void>;
+  __certkoCatalogEnsure?: Promise<void>;
 };
 
 const g = globalThis as DbGlobal;
@@ -367,6 +368,22 @@ function bootstrapSchema(db: SqliteDatabase): void {
     CREATE INDEX IF NOT EXISTS idx_admin_audit_created ON admin_audit_log(created_at);
   `);
 
+  // Login must work before the heavy catalog seed. Insert defaults only if missing;
+  // settings-archive restores the real bcrypt hash when SQLite was replaced.
+  db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)").run(
+    "admin_username",
+    "admin"
+  );
+  db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)").run(
+    "admin_password",
+    "certko-admin"
+  );
+  restoreSettingsArchiveSafe(db);
+  restoreArchivedInquiriesSafe(db);
+  snapshotSettings(db);
+}
+
+function runEnsures(db: SqliteDatabase) {
   const countRow = db.prepare("SELECT COUNT(*) AS n FROM categories").get() as
     | { n: number | string }
     | undefined;
@@ -374,43 +391,6 @@ function bootstrapSchema(db: SqliteDatabase): void {
   if (count === 0) {
     seedDatabase(db);
   }
-  ensureCertProductsCatalog(db);
-  ensureTestingCatalog(db);
-  ensureBisStandardsInTestingCatalog(db);
-  ensureAuthorsCatalog(db);
-  ensureSeoLocationPosts(db);
-  ensureMigrationPosts(db);
-  ensureMsdsPosts(db);
-  ensureComplianceBlogPosts(db);
-  ensureScheduledFaqPosts(db);
-  // FAQ + other seeded posts: never leave future dates live.
-  syncBlogScheduleStatuses(db);
-  ensurePagesNavColumns(db);
-  ensureBlogSidebarColumns(db);
-  ensureBlogSidebarCtaSettings(db);
-  ensureLandingPages(db);
-  ensureHeroSlidesCatalog(db);
-  ensureTestimonialsLibrary(db);
-  ensureTrustedBrandsLibrary(db);
-  ensureCountryHubsLibrary(db);
-  clearLegacyHomeAnnouncement(db);
-  ensureContactExpertCopy(db);
-  ensureCanonicalContactAddress(db);
-  ensureContactPageFaqsGlobalCopy(db);
-  ensureHomeHeroTestingSolutionCopy(db);
-  ensureCanonicalCertMarketRegions(db);
-  ensureHomeStatLabels(db);
-  ensureExpertCtaSettings(db);
-  ensureSolutionPartnerIdentity(db);
-  ensureContactPopupSettings(db);
-  scrubLabPublicContactDetails(db);
-  ensureGdprLibrary(db);
-  restoreSettingsArchiveSafe(db);
-  restoreArchivedInquiriesSafe(db);
-  snapshotSettings(db);
-}
-
-function runEnsures(db: SqliteDatabase) {
   ensureCertProductsCatalog(db);
   ensureTestingCatalog(db);
   ensureBisStandardsInTestingCatalog(db);
@@ -928,9 +908,7 @@ export async function ensureDbReady(): Promise<void> {
         g.__certkoDbBootstrapped = true;
         const kind = getDatabaseUrl() ? "postgresql" : "sqlite";
         console.info("[certko] CMS database ready:", kind);
-        // Do NOT warm the full search index at boot — it loads every product/test
-        // into memory and competes with first-boot seed on Hostinger's small heap.
-        // getIndex() builds lazily on the first search request.
+        scheduleCatalogEnsure(db);
       })();
     }
 
@@ -940,6 +918,29 @@ export async function ensureDbReady(): Promise<void> {
     console.error("[certko] ensureDbReady failed:", err);
     throw err;
   }
+}
+
+function scheduleCatalogEnsure(db: SqliteDatabase): void {
+  if (g.__certkoCatalogEnsure) return;
+  const later = setTimeout(() => {
+    g.__certkoCatalogEnsure = (async () => {
+      try {
+        withDeferredSqlJsPersist(() => {
+          runEnsures(db);
+          snapshotSettings(db);
+        });
+        console.info("[certko] CMS catalog ensure complete");
+      } catch (err) {
+        g.__certkoCatalogEnsure = undefined;
+        console.error("[certko] CMS catalog ensure failed:", err);
+      }
+    })();
+  }, 2_000);
+  later.unref?.();
+}
+
+export function isCmsReady(): boolean {
+  return Boolean(g.__certkoDbBootstrapped && g.__certkoDb);
 }
 
 export function getDb(): SqliteDatabase {

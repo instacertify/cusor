@@ -8,7 +8,8 @@ import TalkToCertificationExpertBar from "@/components/TalkToCertificationExpert
 import TimedContactPopup from "@/components/TimedContactPopup";
 import AnalyticsGate from "@/components/AnalyticsGate";
 import CookieConsent from "@/components/CookieConsent";
-import { ensureDbReady, getSettings } from "@/lib/db";
+import { ensureDbReady, getSettings, isCmsReady } from "@/lib/db";
+import { isDbFreePath } from "@/lib/request-path";
 import { getGdprPublicSettings } from "@/lib/gdpr";
 import { resolveExpertCta } from "@/lib/expert-cta";
 import { resolveContactPopup } from "@/lib/contact-popup";
@@ -26,6 +27,16 @@ import { resolveIconStyle } from "@/lib/icon-style";
 export const dynamic = "force-dynamic";
 
 export async function generateViewport(): Promise<Viewport> {
+  const pathname = (await headers()).get("x-pathname") || "";
+  if (isDbFreePath(pathname)) {
+    return {
+      width: "device-width",
+      initialScale: 1,
+      maximumScale: 5,
+      themeColor: "#16263D",
+      viewportFit: "cover",
+    };
+  }
   await ensureDbReady();
   const settings = getSettings();
   const scheme = resolveColorScheme(settings.color_scheme);
@@ -53,6 +64,13 @@ const display = Poppins({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
+  const pathname = (await headers()).get("x-pathname") || "";
+  if (isDbFreePath(pathname)) {
+    return {
+      title: "Admin Login | Certko",
+      robots: { index: false, follow: false, nocache: true },
+    };
+  }
   await ensureDbReady();
   const home = getPage("home");
   const settings = getSettings();
@@ -124,15 +142,30 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  await ensureDbReady();
-  const settings = getSettings();
-  const gdprSettings = getGdprPublicSettings();
+  const pathname = (await headers()).get("x-pathname") || "";
+  const isAdminShell = pathname.startsWith("/admin");
+  const skipDb = isDbFreePath(pathname);
+
+  if (!skipDb) await ensureDbReady();
+  const settings = skipDb || !isCmsReady() ? {} : getSettings();
+  const gdprSettings = skipDb || !isCmsReady()
+    ? {
+        bannerEnabled: false,
+        requireAnalyticsConsent: true,
+        bannerTitle: "",
+        bannerText: "",
+        privacyOfficerEmail: "",
+        inquiryRetentionDays: 365,
+        policyVersion: "",
+        showFloatingCookieButton: false,
+        bannerShowCategoriesDefault: false,
+        categories: [],
+      }
+    : getGdprPublicSettings();
   const scheme = resolveColorScheme(settings.color_scheme);
   const iconStyle = resolveIconStyle(settings.icon_style);
   const expertCta = resolveExpertCta(settings);
   const contactPopup = resolveContactPopup(settings);
-  const pathname = (await headers()).get("x-pathname") || "";
-  const isAdminShell = pathname.startsWith("/admin");
   // Sitewide Organization + WebSite (site name, favicon attribution, sitelinks search box).
   const orgJsonLd = isAdminShell
     ? null

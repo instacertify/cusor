@@ -1,4 +1,4 @@
-import { ensureDbReady, getSetting } from "@/lib/db";
+import { getSetting, isCmsReady } from "@/lib/db";
 
 const DEFAULT_PRIMARY = "/brand/certko-logo.png";
 const DEFAULT_ON_DARK = "/brand/certko-logo-light.png";
@@ -24,12 +24,15 @@ export default async function Logo({
   priority?: boolean;
 }) {
   void withTagline;
-  await ensureDbReady();
   const height = Math.round(width * 0.28);
   const onDark = variant === "reverse" || variant === "onDark";
-  const src = onDark
-    ? getSetting("logo_on_dark", DEFAULT_ON_DARK) || DEFAULT_ON_DARK
-    : getSetting("logo_primary", DEFAULT_PRIMARY) || DEFAULT_PRIMARY;
+  const fallback = onDark ? DEFAULT_ON_DARK : DEFAULT_PRIMARY;
+  const src =
+    isCmsReady()
+      ? (onDark
+          ? getSetting("logo_on_dark", DEFAULT_ON_DARK)
+          : getSetting("logo_primary", DEFAULT_PRIMARY)) || fallback
+      : fallback;
 
   return (
     // eslint-disable-next-line @next/next/no-img-element

@@ -36,6 +36,8 @@ function safeNextPath(raw: string | undefined): string {
 
 async function login(formData: FormData) {
   "use server";
+  const { ensureDbReady } = await import("@/lib/db");
+  await ensureDbReady();
   const hdrs = await headers();
   const ip = getClientIp(hdrs);
 
