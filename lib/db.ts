@@ -933,20 +933,6 @@ export async function ensureDbReady(): Promise<void> {
   }
 }
 
-/**
- * Eager init so first public request is not racing schema bootstrap.
- * Skipped during `next build`.
- */
-if (!isNextBuildPhase()) {
-  void ensureDbReady().catch((err) => {
-    if (isNextBuildPhase()) {
-      console.warn("[certko] DB init skipped during build:", err);
-    } else {
-      console.error("[certko] Eager DB init failed:", err);
-    }
-  });
-}
-
 export function getDb(): SqliteDatabase {
   if (!isSqliteReady() || !g.__certkoDb) {
     throw new Error(

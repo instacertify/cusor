@@ -17,8 +17,13 @@ import {
 import { getCertifications, getCertificationCoveredProducts } from "@/lib/queries";
 import { CERT_MARKETS, groupCertificationsByMarket } from "@/lib/market-applicability";
 import { buildMetadata } from "@/lib/seo";
+import ScrollToId from "@/components/ScrollToId";
 
 export const dynamic = "force-dynamic";
+
+interface Props {
+  searchParams: Promise<{ section?: string }>;
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata("page:certifications", {
@@ -30,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default function CertificationsPage() {
+export default async function CertificationsPage({ searchParams }: Props) {
   const certs = getCertifications().map((c) => {
     const products = getCertificationCoveredProducts(c);
     const regimes = [...new Set(products.map((p) => p.regime).filter(Boolean))];
@@ -53,9 +58,12 @@ export default function CertificationsPage() {
     .filter((group) => group.hubs.length > 0);
 
   const otherCount = otherRegions.reduce((n, g) => n + g.hubs.length, 0);
+  const sp = await searchParams;
+  const scrollToGma = (sp.section || "") === "global-market-access";
 
   return (
     <>
+      {scrollToGma ? <ScrollToId id="global-market-access" /> : null}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
         <Breadcrumbs crumbs={[{ label: "Certifications" }]} />
         <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight">

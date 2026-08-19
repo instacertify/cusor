@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { headers, cookies } from "next/headers";
 import Logo from "@/components/Logo";
+import HardRedirect from "@/components/HardRedirect";
 import AdminLoginForm from "@/components/admin/AdminLoginForm";
 import {
   isAdmin,
@@ -94,7 +95,7 @@ const ERRORS: Record<string, string> = {
 };
 
 export default async function AdminLoginPage({ searchParams }: Props) {
-  if (await isAdmin()) redirect("/admin");
+  if (await isAdmin()) return <HardRedirect href="/admin" />;
   const sp = await searchParams;
   const error = sp.error ? ERRORS[sp.error] || ERRORS["1"] : undefined;
   const locked = sp.error === "locked";
