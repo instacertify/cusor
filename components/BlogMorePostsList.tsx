@@ -13,8 +13,10 @@ export type BlogMoreItem = {
   published_at: string | null;
 };
 
-const INITIAL_COUNT = 4;
-const STEP = 4;
+/** First paint: a short list, no scrollbar. */
+const INITIAL_COUNT = 3;
+/** Each “Show more” click reveals this many additional posts. */
+const STEP = 3;
 
 function formatDate(d: string | null): string {
   if (!d) return "";
@@ -38,6 +40,8 @@ export default function BlogMorePostsList({
   const shown = posts.slice(0, visible);
   const remaining = posts.length - visible;
   const canShowMore = remaining > 0;
+  /* Scroll only inside More blogs — and only after the user expands past the short list */
+  const listScrolls = visible > INITIAL_COUNT;
 
   return (
     <section className="rounded-2xl border border-cream-300 bg-white shadow-card overflow-hidden flex flex-col">
@@ -50,8 +54,14 @@ export default function BlogMorePostsList({
         ) : null}
       </div>
 
-      {/* Only this list scrolls — not the whole sticky sidebar */}
-      <div className="max-h-[18rem] overflow-y-auto overscroll-contain divide-y divide-cream-200">
+      <div
+        className={
+          "divide-y divide-cream-200 " +
+          (listScrolls
+            ? "max-h-[20rem] overflow-y-auto overscroll-contain"
+            : "")
+        }
+      >
         {shown.map((p) => (
           <Link
             key={p.id}
