@@ -9,7 +9,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "NODE_ENV=production node server.cjs",
-    "start:next": "next start -H 0.0.0.0 -p ${PORT:-3000}",
+    "start:next": "NODE_ENV=production node server.cjs",
     "lint": "eslint",
     "sitemap:generate": "node scripts/generate-sitemap.mjs"
   },

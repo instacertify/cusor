@@ -221,6 +221,6 @@ If the browser shows **Application error** with a digest like `ERROR 1358233113`
 1. A previous build that required `DATABASE_URL` at runtime (fixed — SQLite fallback)  
 2. Wrong output directory (`out`) — clear it  
 3. Uploads path ephemeral — data now prefers `hbuilds/data`; do not delete that folder  
-4. Duplicate Next processes on `:3000` — restart the Node app **once** from hPanel. Start command must be `npm start` (uses `server.cjs` so `$PORT` is bound immediately). Do not set a custom start of `next start` without `$PORT`.
+4. Duplicate Next processes on `:3000` / logs show **`Ready in 0ms` twice**, then **`Error: Server is not running`**, then `[certko] DATABASE_URL is not set` — that is a **new-build upload restart**, not a captcha bug. Hostinger SIGTERMs the old `next start` while the new process boots. Restart the Node app **once**. Start command must be **`npm start`** (not `next start`). Do not set output directory `out`.
 5. After login the browser goes to **`https://0.0.0.0:3000/...`** (`ERR_ADDRESS_INVALID`) — that was Next using the bind address in the `Location` header. Current `npm start` rewrites those to a same-site path (`/admin/login?...`). Redeploy this code; keep Start = `npm start`.
 6. Logs show **`Cookies can only be modified in a Server Action or Route Handler`** and `/admin/login` (or the whole site) spins on “Loading…” — a previous build set the captcha cookie during page render. Current code only sets cookies from `/api/admin/login`, `/api/admin/logout`, and `/api/admin/captcha`. Redeploy this code.

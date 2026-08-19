@@ -10,6 +10,7 @@
  */
 "use strict";
 
+require("./lib/patch-http-server-close.cjs");
 const { createServer } = require("node:http");
 const { patchOutgoingRedirects } = require("./lib/public-location.cjs");
 
