@@ -729,6 +729,29 @@ video {
 /* ---------- Sitewide icon chips (outline / original / 3d) ---------- */
 /* Controlled by html[data-icon-style] and admin preview [data-icon-style-preview] */
 
+/* ---------- Sitewide icon chips (outline / original / soft / lifelike / 3d) ---------- */
+/* Controlled by html[data-icon-style], html[data-icon-scale], and admin previews */
+
+:root {
+  --icon-scale: 1.15;
+}
+
+html[data-icon-scale="100"],
+[data-icon-scale-preview="100"] {
+  --icon-scale: 1;
+}
+html[data-icon-scale="115"],
+[data-icon-scale-preview="115"] {
+  --icon-scale: 1.15;
+}
+html[data-icon-scale="125"],
+[data-icon-scale-preview="125"] {
+  --icon-scale: 1.25;
+}
+html[data-icon-scale="135"],
+[data-icon-scale-preview="135"] {
+  --icon-scale: 1.35;
+}
 /* No-color outline — stroke only, no filled chip */
 html[data-icon-style="outline"] .icon-chip,
 [data-icon-style-preview="outline"] .icon-chip {
@@ -810,6 +833,215 @@ html[data-icon-style="original"] .icon-chip[data-hue="11"],
 [data-icon-style-preview="original"] .icon-chip[data-hue="11"] {
   background: #faf5ff;
   color: #7e22ce;
+}
+
+/* Soft real — rounded product-UI chips with gentle inner depth */
+html[data-icon-style="soft"] .icon-chip,
+[data-icon-style-preview="soft"] .icon-chip {
+  border-radius: 1rem;
+  border: 1px solid rgb(255 255 255 / 0.65);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.7),
+    inset 0 -2px 4px rgb(22 38 61 / 0.06),
+    0 4px 10px -4px rgb(22 38 61 / 0.18);
+}
+
+html[data-icon-style="soft"] .icon-chip svg,
+[data-icon-style-preview="soft"] .icon-chip svg {
+  stroke-width: 2;
+  filter: drop-shadow(0 1px 0.5px rgb(22 38 61 / 0.12));
+}
+
+html[data-icon-style="soft"] .group:hover .icon-chip,
+[data-icon-style-preview="soft"] .group:hover .icon-chip {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.8),
+    inset 0 -2px 4px rgb(22 38 61 / 0.06),
+    0 8px 16px -6px rgb(22 38 61 / 0.22);
+}
+
+html[data-icon-style="soft"] .icon-chip[data-hue="0"],
+[data-icon-style-preview="soft"] .icon-chip[data-hue="0"] {
+  background: linear-gradient(180deg, #fff7d6 0%, #fde68a 100%);
+  color: #a16207;
+}
+html[data-icon-style="soft"] .icon-chip[data-hue="1"],
+[data-icon-style-preview="soft"] .icon-chip[data-hue="1"] {
+  background: linear-gradient(180deg, #e8f1ff 0%, #bfdbfe 100%);
+  color: #1d4ed8;
+}
+html[data-icon-style="soft"] .icon-chip[data-hue="2"],
+[data-icon-style-preview="soft"] .icon-chip[data-hue="2"] {
+  background: linear-gradient(180deg, #e8fcef 0%, #bbf7d0 100%);
+  color: #15803d;
+}
+html[data-icon-style="soft"] .icon-chip[data-hue="3"],
+[data-icon-style-preview="soft"] .icon-chip[data-hue="3"] {
+  background: linear-gradient(180deg, #fce8f3 0%, #fbcfe8 100%);
+  color: #be185d;
+}
+html[data-icon-style="soft"] .icon-chip[data-hue="4"],
+[data-icon-style-preview="soft"] .icon-chip[data-hue="4"] {
+  background: linear-gradient(180deg, #eef0ff 0%, #c7d2fe 100%);
+  color: #4338ca;
+}
+html[data-icon-style="soft"] .icon-chip[data-hue="5"],
+[data-icon-style-preview="soft"] .icon-chip[data-hue="5"] {
+  background: linear-gradient(180deg, #fff1e6 0%, #fed7aa 100%);
+  color: #c2410c;
+}
+html[data-icon-style="soft"] .icon-chip[data-hue="6"],
+[data-icon-style-preview="soft"] .icon-chip[data-hue="6"] {
+  background: linear-gradient(180deg, #e6faf6 0%, #99f6e4 100%);
+  color: #0f766e;
+}
+html[data-icon-style="soft"] .icon-chip[data-hue="7"],
+[data-icon-style-preview="soft"] .icon-chip[data-hue="7"] {
+  background: linear-gradient(180deg, #f3effe 0%, #ddd6fe 100%);
+  color: #6d28d9;
+}
+html[data-icon-style="soft"] .icon-chip[data-hue="8"],
+[data-icon-style-preview="soft"] .icon-chip[data-hue="8"] {
+  background: linear-gradient(180deg, #feecec 0%, #fecaca 100%);
+  color: #b91c1c;
+}
+html[data-icon-style="soft"] .icon-chip[data-hue="9"],
+[data-icon-style-preview="soft"] .icon-chip[data-hue="9"] {
+  background: linear-gradient(180deg, #f4fce8 0%, #d9f99d 100%);
+  color: #3f6212;
+}
+html[data-icon-style="soft"] .icon-chip[data-hue="10"],
+[data-icon-style-preview="soft"] .icon-chip[data-hue="10"] {
+  background: linear-gradient(180deg, #e8f6fe 0%, #bae6fd 100%);
+  color: #0369a1;
+}
+html[data-icon-style="soft"] .icon-chip[data-hue="11"],
+[data-icon-style-preview="soft"] .icon-chip[data-hue="11"] {
+  background: linear-gradient(180deg, #f7f0ff 0%, #e9d5ff 100%);
+  color: #7e22ce;
+}
+
+/* Lifelike example — richer material look like real app / product icons */
+html[data-icon-style="lifelike"] .icon-chip,
+[data-icon-style-preview="lifelike"] .icon-chip {
+  position: relative;
+  border-radius: 1.05rem;
+  border: 1px solid rgb(255 255 255 / 0.55);
+  box-shadow:
+    inset 0 1.5px 0 rgb(255 255 255 / 0.85),
+    inset 0 -4px 8px rgb(22 38 61 / 0.1),
+    0 1px 2px rgb(22 38 61 / 0.08),
+    0 10px 18px -8px rgb(22 38 61 / 0.35);
+  overflow: hidden;
+}
+
+html[data-icon-style="lifelike"] .icon-chip::before,
+[data-icon-style-preview="lifelike"] .icon-chip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    155deg,
+    rgb(255 255 255 / 0.72) 0%,
+    rgb(255 255 255 / 0.12) 38%,
+    transparent 52%,
+    rgb(22 38 61 / 0.08) 100%
+  );
+  pointer-events: none;
+}
+
+html[data-icon-style="lifelike"] .icon-chip::after,
+[data-icon-style-preview="lifelike"] .icon-chip::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 8%;
+  height: 28%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.55), transparent);
+  pointer-events: none;
+}
+
+html[data-icon-style="lifelike"] .icon-chip svg,
+[data-icon-style-preview="lifelike"] .icon-chip svg {
+  position: relative;
+  z-index: 1;
+  stroke-width: 2.15;
+  filter:
+    drop-shadow(0 1px 0 rgb(255 255 255 / 0.35))
+    drop-shadow(0 2px 2px rgb(22 38 61 / 0.28));
+}
+
+html[data-icon-style="lifelike"] .group:hover .icon-chip,
+[data-icon-style-preview="lifelike"] .group:hover .icon-chip {
+  box-shadow:
+    inset 0 1.5px 0 rgb(255 255 255 / 0.9),
+    inset 0 -4px 8px rgb(22 38 61 / 0.1),
+    0 2px 4px rgb(22 38 61 / 0.1),
+    0 14px 24px -8px rgb(22 38 61 / 0.4);
+}
+
+html[data-icon-style="lifelike"] .icon-chip[data-hue="0"],
+[data-icon-style-preview="lifelike"] .icon-chip[data-hue="0"] {
+  background: linear-gradient(150deg, #fff9e6 0%, #fbbf24 48%, #d97706 100%);
+  color: #78350f;
+}
+html[data-icon-style="lifelike"] .icon-chip[data-hue="1"],
+[data-icon-style-preview="lifelike"] .icon-chip[data-hue="1"] {
+  background: linear-gradient(150deg, #eff6ff 0%, #60a5fa 48%, #1d4ed8 100%);
+  color: #1e3a8a;
+}
+html[data-icon-style="lifelike"] .icon-chip[data-hue="2"],
+[data-icon-style-preview="lifelike"] .icon-chip[data-hue="2"] {
+  background: linear-gradient(150deg, #ecfdf5 0%, #4ade80 48%, #15803d 100%);
+  color: #14532d;
+}
+html[data-icon-style="lifelike"] .icon-chip[data-hue="3"],
+[data-icon-style-preview="lifelike"] .icon-chip[data-hue="3"] {
+  background: linear-gradient(150deg, #fdf2f8 0%, #f472b6 48%, #be185d 100%);
+  color: #831843;
+}
+html[data-icon-style="lifelike"] .icon-chip[data-hue="4"],
+[data-icon-style-preview="lifelike"] .icon-chip[data-hue="4"] {
+  background: linear-gradient(150deg, #eef2ff 0%, #818cf8 48%, #4338ca 100%);
+  color: #312e81;
+}
+html[data-icon-style="lifelike"] .icon-chip[data-hue="5"],
+[data-icon-style-preview="lifelike"] .icon-chip[data-hue="5"] {
+  background: linear-gradient(150deg, #fff7ed 0%, #fb923c 48%, #c2410c 100%);
+  color: #7c2d12;
+}
+html[data-icon-style="lifelike"] .icon-chip[data-hue="6"],
+[data-icon-style-preview="lifelike"] .icon-chip[data-hue="6"] {
+  background: linear-gradient(150deg, #f0fdfa 0%, #2dd4bf 48%, #0f766e 100%);
+  color: #134e4a;
+}
+html[data-icon-style="lifelike"] .icon-chip[data-hue="7"],
+[data-icon-style-preview="lifelike"] .icon-chip[data-hue="7"] {
+  background: linear-gradient(150deg, #f5f3ff 0%, #a78bfa 48%, #6d28d9 100%);
+  color: #4c1d95;
+}
+html[data-icon-style="lifelike"] .icon-chip[data-hue="8"],
+[data-icon-style-preview="lifelike"] .icon-chip[data-hue="8"] {
+  background: linear-gradient(150deg, #fef2f2 0%, #f87171 48%, #b91c1c 100%);
+  color: #7f1d1d;
+}
+html[data-icon-style="lifelike"] .icon-chip[data-hue="9"],
+[data-icon-style-preview="lifelike"] .icon-chip[data-hue="9"] {
+  background: linear-gradient(150deg, #f7fee7 0%, #a3e635 48%, #4d7c0f 100%);
+  color: #365314;
+}
+html[data-icon-style="lifelike"] .icon-chip[data-hue="10"],
+[data-icon-style-preview="lifelike"] .icon-chip[data-hue="10"] {
+  background: linear-gradient(150deg, #f0f9ff 0%, #38bdf8 48%, #0369a1 100%);
+  color: #0c4a6e;
+}
+html[data-icon-style="lifelike"] .icon-chip[data-hue="11"],
+[data-icon-style-preview="lifelike"] .icon-chip[data-hue="11"] {
+  background: linear-gradient(150deg, #faf5ff 0%, #c084fc 48%, #7e22ce 100%);
+  color: #581c87;
 }
 
 /* 3D embossed chips — depth, gloss, slight isometric tilt */

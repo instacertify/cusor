@@ -21,7 +21,7 @@ import {
   buildJsonLd,
 } from "@/lib/seo";
 import { resolveColorScheme } from "@/lib/color-schemes";
-import { resolveIconStyle } from "@/lib/icon-style";
+import { resolveIconScale, resolveIconStyle } from "@/lib/icon-style";
 
 export const dynamic = "force-dynamic";
 
@@ -129,6 +129,7 @@ export default async function RootLayout({
   const gdprSettings = getGdprPublicSettings();
   const scheme = resolveColorScheme(settings.color_scheme);
   const iconStyle = resolveIconStyle(settings.icon_style);
+  const iconScale = resolveIconScale(settings.icon_scale);
   const expertCta = resolveExpertCta(settings);
   const contactPopup = resolveContactPopup(settings);
   const pathname = (await headers()).get("x-pathname") || "";
@@ -142,7 +143,12 @@ export default async function RootLayout({
         url: BASE_URL,
       });
   return (
-    <html lang="en-IN" data-color-scheme={scheme.id} data-icon-style={iconStyle}>
+    <html
+      lang="en-IN"
+      data-color-scheme={scheme.id}
+      data-icon-style={iconStyle}
+      data-icon-scale={iconScale}
+    >
       <body className={`${body.variable} ${display.variable} min-h-screen flex flex-col`}>
         {!isAdminShell && (
           <AnalyticsGate

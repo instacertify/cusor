@@ -2,11 +2,17 @@ import Link from "next/link";
 import { getSettings } from "@/lib/db";
 import { isMailConfigured } from "@/lib/mail";
 import { resolveColorScheme } from "@/lib/color-schemes";
-import { iconStyleLabel, resolveIconStyle } from "@/lib/icon-style";
+import {
+  iconScaleLabel,
+  iconStyleLabel,
+  resolveIconScale,
+  resolveIconStyle,
+} from "@/lib/icon-style";
 import { saveSettings } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import ColorSchemePicker from "@/components/ColorSchemePicker";
 import IconStylePicker from "@/components/IconStylePicker";
+import IconScalePicker from "@/components/IconScalePicker";
 import SocialIconGlyph from "@/components/SocialIconGlyph";
 import { SOCIAL_NETWORKS } from "@/lib/social-links";
 
@@ -27,6 +33,7 @@ export default async function SettingsPage({ searchParams }: Props) {
   const mailReady = isMailConfigured();
   const colorScheme = resolveColorScheme(s.color_scheme);
   const iconStyle = resolveIconStyle(s.icon_style);
+  const iconScale = resolveIconScale(s.icon_scale);
 
   return (
     <div>
@@ -54,11 +61,21 @@ export default async function SettingsPage({ searchParams }: Props) {
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">Icon style</h2>
           <p className="text-sm text-ink-600">
-            Choose no-color outline, original color, or original color 3D icons for chips across
-            the whole website. Current:{" "}
+            Pick how icons look sitewide — including soft real and lifelike examples that feel closer
+            to real product UI. Current:{" "}
             <strong className="text-ink-950">{iconStyleLabel(iconStyle)}</strong>.
           </p>
           <IconStylePicker value={iconStyle} />
+        </section>
+
+        <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
+          <h2 className="font-display font-bold text-ink-950">Icon size</h2>
+          <p className="text-sm text-ink-600">
+            Scale every icon chip across the website. Default is <strong>115%</strong> (15% bigger).
+            Current:{" "}
+            <strong className="text-ink-950">{iconScaleLabel(iconScale)}</strong>.
+          </p>
+          <IconScalePicker value={iconScale} />
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
