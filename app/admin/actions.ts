@@ -71,14 +71,44 @@ async function saveUploadedImage(
   file: File | null,
   allowedExts?: string[]
 ): Promise<string | null> {
-  const { persistUploadedImage } = await import("@/lib/uploads");
-  return persistUploadedImage(file, allowedExts);
+  if (!file || file.size === 0) return null;
+  try {
+    const { persistUploadedImage } = await import("@/lib/uploads");
+    return await persistUploadedImage(file, allowedExts);
+  } catch (err) {
+    // Never crash the admin UI on a bad re-upload — caller keeps the previous image.
+    console.error("[certko] image upload failed:", err);
+    return null;
+  }
 }
 
 async function saveUploadedMedia(file: File | null): Promise<string | null> {
-  const { persistUploadedHeroMedia } = await import("@/lib/uploads");
-  const { HERO_MEDIA_EXTS } = await import("@/lib/hero-slides");
-  return persistUploadedHeroMedia(file, HERO_MEDIA_EXTS);
+  if (!file || file.size === 0) return null;
+  try {
+    const { persistUploadedHeroMedia } = await import("@/lib/uploads");
+    const { HERO_MEDIA_EXTS } = await import("@/lib/hero-slides");
+    return await persistUploadedHeroMedia(file, HERO_MEDIA_EXTS);
+  } catch (err) {
+    console.error("[certko] media upload failed:", err);
+    return null;
+  }
+}
+
+/** Persist image or redirect with ?error=image so the editor can show a banner. */
+async function saveUploadedImageOrRedirect(
+  file: File | null,
+  errorRedirect: string,
+  allowedExts?: string[]
+): Promise<string | null> {
+  if (!file || file.size === 0) return null;
+  const { persistUploadedImage } = await import("@/lib/uploads");
+  try {
+    const url = await persistUploadedImage(file, allowedExts);
+    if (!url) redirect(`${errorRedirect.split("?")[0]}?error=image`);
+    return url;
+  } catch {
+    redirect(`${errorRedirect.split("?")[0]}?error=image`);
+  }
 }
 
 export async function logout() {
@@ -373,7 +403,11 @@ export async function createPage(formData: FormData) {
 export async function savePage(formData: FormData) {
   await requireAdmin();
   const slug = String(formData.get("slug"));
-  const image = await saveUploadedImage(formData.get("image_file") as File | null);
+  const imageFile = formData.get("image_file") as File | null;
+  const image = await saveUploadedImage(imageFile);
+  if (imageFile && imageFile.size > 0 && !image) {
+    redirect(`/admin/pages/${slug}?error=image`);
+  }
   const db = getDb();
   const nav = pageNavFlags(formData);
   const pageType =

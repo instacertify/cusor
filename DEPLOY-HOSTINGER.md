@@ -86,16 +86,24 @@ pm2 logs certko
 pm2 restart certko
 ```
 
-### Update site after new code (keeps blogs + uploads)
+### Update site after new code (keeps blogs + uploads + password)
 
-A new build must **not** reset earlier admin uploads or manually written blogs.
-Those live outside git:
+A new build must **not** reset earlier admin uploads, manually written blogs, or the admin password.
+
+Durable data lives **outside** the git app folder:
 
 | Path | What it holds |
 |------|----------------|
-| `/var/www/certko/data/certko.db` | All CMS content (blogs, pages, settings) |
-| `/var/www/certko/public/uploads/` | Cover images & media |
-| `/var/www/certko/data/uploads/` | Fallback uploads if `public/uploads` is not writable |
+| `/var/lib/certko/certko.db` | All CMS content (blogs, pages, settings, **admin password hash**) |
+| `/var/lib/certko/uploads/` | Cover images & media |
+| `/var/www/certko/` | Application code only (safe to `git pull`) |
+
+Set once in `.env`:
+
+```bash
+CERTKO_DATA_DIR=/var/lib/certko
+CERTKO_SECRET=<keep-this-stable>
+```
 
 **Preferred (backs up first, then pulls + builds):**
 
@@ -103,36 +111,24 @@ Those live outside git:
 bash /var/www/certko/scripts/hostinger-safe-update.sh
 ```
 
-**Manual (never delete `data/` or `uploads`):**
-
-```bash
-cd /var/www/certko
-git pull
-npm ci
-npm run build
-pm2 restart certko
-```
-
-Do **not** run `rm -rf /var/www/certko` or re-clone over the live folder — that wipes the database and images.
+Do **not** run `rm -rf /var/lib/certko` — that deletes blogs, images, and the admin password.  
+Do **not** rotate `CERTKO_SECRET` on every deploy — that only invalidates sessions (password itself is in SQLite).
 
 ### Uploaded images on the public site
 
-Admin uploads are served at **`/api/uploads/...`** (not as raw Nginx static files). Keep Nginx proxying all traffic to Node (as the one-click script does). Do **not** add a separate `location /uploads` that points only at disk — missing files will 404 before Next.js can serve the fallback.
+Admin uploads are served at **`/api/uploads/...`**. Keep Nginx proxying all traffic to Node. Do **not** add a static-only `location /uploads`.
 
-Image storage limits (enforced on upload):
+Image storage limits:
 
 - Max upload: **8 MB**
 - Max stored after compression: **~1.5 MB**
 - Max dimension: **1920px** (longest edge)
-- Photos are stored as **WebP** (PNG kept when transparency is needed)
 
 ### Backup (important)
 
 ```bash
-cp /var/www/certko/data/certko.db /root/certko-backup-$(date +%F).db
-tar -czf /root/uploads-backup-$(date +%F).tar.gz -C /var/www/certko/public uploads
-# if the fallback root is in use:
-tar -czf /root/data-uploads-backup-$(date +%F).tar.gz -C /var/www/certko/data uploads
+cp /var/lib/certko/certko.db /root/certko-backup-$(date +%F).db
+tar -czf /root/uploads-backup-$(date +%F).tar.gz -C /var/lib/certko uploads
 ```
 
 ---

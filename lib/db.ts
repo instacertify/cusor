@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import {
   ensureSqliteReady,
   getSqliteDb,
@@ -25,24 +23,18 @@ import { ensureCountryHubsLibrary } from "./seed-country-hubs";
 import { ensureGdprLibrary } from "./seed-gdpr";
 import { PRIVACY_CONTENT, TERMS_CONTENT } from "./legal-content";
 import { CONTACT_POPUP_DEFAULTS } from "./contact-popup";
+import { getCertkoDataDir, getCertkoDbPath } from "./storage-paths";
 
-/** Prefer ./data; fall back to /tmp when the app dir is not writable (some Node hosts). */
+/**
+ * Persistent CMS data directory (SQLite + uploads).
+ * Prefer CERTKO_DATA_DIR / /var/lib/certko so deploys never wipe content.
+ */
 export function getWritableDataDir(): string {
-  const preferredDir = path.join(process.cwd(), "data");
-  try {
-    fs.mkdirSync(preferredDir, { recursive: true });
-    fs.accessSync(preferredDir, fs.constants.W_OK);
-    return preferredDir;
-  } catch {
-    const fallbackDir = path.join("/tmp", "certko-data");
-    fs.mkdirSync(fallbackDir, { recursive: true });
-    console.warn("[certko] data/ is not writable; using", fallbackDir);
-    return fallbackDir;
-  }
+  return getCertkoDataDir();
 }
 
 function resolveDbPath(): string {
-  return path.join(getWritableDataDir(), "certko.db");
+  return getCertkoDbPath();
 }
 
 type DbGlobal = typeof globalThis & {
