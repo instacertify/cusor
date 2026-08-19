@@ -26,9 +26,17 @@ export default function BlogArticleSidebar({
   const showMore = cta.morePostsMode !== "hide" && more.length > 0;
 
   return (
-    <aside className="flex flex-col gap-5 lg:sticky lg:top-6 lg:self-start w-full">
+    <aside
+      className={
+        "flex w-full flex-col gap-5 " +
+        /* Desktop: pin beside the article while it scrolls (clears sticky header). */
+        "lg:sticky lg:top-24 lg:z-20 lg:self-start " +
+        "lg:max-h-[calc(100dvh-6.5rem)] lg:overflow-y-auto lg:overscroll-contain " +
+        "lg:[scrollbar-gutter:stable]"
+      }
+    >
       {/* Quote box */}
-      <section className="rounded-2xl border border-cream-300 bg-ink-950 text-white overflow-hidden shadow-card">
+      <section className="rounded-2xl border border-cream-300 bg-ink-950 text-white overflow-hidden shadow-card shrink-0">
         <div className="px-5 pt-5 pb-4 border-b border-white/10">
           <h2 className="font-display text-lg sm:text-xl font-semibold leading-snug tracking-tight">
             {cta.heading}
@@ -48,7 +56,7 @@ export default function BlogArticleSidebar({
 
       {/* Related blogs box */}
       {showMore ? (
-        <section className="rounded-2xl border border-cream-300 bg-white shadow-card overflow-hidden flex flex-col min-h-0">
+        <section className="rounded-2xl border border-cream-300 bg-white shadow-card overflow-hidden flex flex-col min-h-0 shrink-0">
           <div className="px-5 py-4 border-b border-cream-200 bg-cream-50/80">
             <h2 className="font-display text-base sm:text-lg font-semibold text-ink-950 leading-snug">
               {cta.moreTitle}
@@ -57,7 +65,7 @@ export default function BlogArticleSidebar({
               <p className="text-xs text-ink-500 mt-1 leading-relaxed">{cta.moreSubtitle}</p>
             ) : null}
           </div>
-          <div className="max-h-[26rem] overflow-y-auto overscroll-contain divide-y divide-cream-200">
+          <div className="max-h-[22rem] overflow-y-auto overscroll-contain divide-y divide-cream-200">
             {more.map((p) => (
               <Link
                 key={p.id}

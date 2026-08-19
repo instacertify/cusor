@@ -206,6 +206,7 @@ html {
    * browser-zoomed at 105–110%. Forms on touch devices stay ≥16px below.
    */
   font-size: 93.75%; /* 15px when the browser default is 16px */
+  /* Prefer clip on html only; body stays visible so sticky sidebars work. */
   overflow-x: clip;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -218,7 +219,7 @@ body {
   font-size: 1rem;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  overflow-x: clip;
+  /* Do not set overflow-x: clip here — it breaks position:sticky sidebars (blog quote box). */
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }

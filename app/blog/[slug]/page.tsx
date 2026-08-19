@@ -84,7 +84,7 @@ export default async function BlogPostPage({ params }: Props) {
       <Breadcrumbs crumbs={[{ label: "Blog", href: "/blog" }, { label: post.title }]} />
 
       <div className="mt-6 lg:mt-8 grid gap-8 lg:gap-10 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
-        <article className="min-w-0">
+        <article className="min-w-0 lg:min-h-0">
           <header className="max-w-3xl">
             <AuthorByline
               name={authorName}
