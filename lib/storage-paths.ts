@@ -2,14 +2,16 @@ import fs from "fs";
 import path from "path";
 
 /**
- * Durable CMS file storage (uploads) — lives OUTSIDE the git deploy tree
+ * Durable CMS file storage (uploads) — prefer a path outside the git deploy tree
  * so `git pull` / rebuilds never delete images.
- * Relational CMS data (blogs, settings, password hash) lives in PostgreSQL.
+ * Relational CMS data uses PostgreSQL when DATABASE_URL is set, otherwise SQLite
+ * at CERTKO_DATA_DIR/certko.db so Hostinger Node hosting can boot without Postgres.
  *
- * Layout (production):
+ * Layout (production VPS):
  *   CERTKO_DATA_DIR=/var/lib/certko
  *     uploads/
- *   DATABASE_URL=postgres://…
+ *     certko.db          (only when DATABASE_URL is unset)
+ *   DATABASE_URL=postgres://…  (preferred)
  *
  * Application code stays in /var/www/certko (replaceable).
  */
@@ -99,10 +101,9 @@ function isNextBuildPhase(): boolean {
 }
 
 /**
- * Persistent root for uploads (and legacy SQLite files if present).
+ * Persistent root for uploads (and SQLite when DATABASE_URL is unset).
  * Prefer CERTKO_DATA_DIR, then /var/lib/certko in production, then ./data.
- * Never silently use /tmp at runtime in production (images would vanish on restart).
- * During `next build` only, a temp dir is allowed so Hostinger/CI page collection can finish.
+ * Fall back to /tmp with a warning so the public site can still boot.
  */
 export function getCertkoDataDir(): string {
   if (cachedDir) return cachedDir;
@@ -139,15 +140,13 @@ export function getCertkoDataDir(): string {
     return cachedDir;
   }
 
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(
-      "[certko] No writable persistent data directory. Set CERTKO_DATA_DIR=/var/lib/certko (or another path outside the app deploy folder) and ensure it is writable. Refusing /tmp so uploads survive restarts."
-    );
-  }
-
   const tmp = path.join("/tmp", "certko-data");
   fs.mkdirSync(tmp, { recursive: true });
-  console.warn("[certko] DEV ONLY: using temporary data dir", tmp);
+  console.warn(
+    "[certko] No writable persistent data directory; using",
+    tmp,
+    "— uploads and SQLite may vanish on restart. Set CERTKO_DATA_DIR=/var/lib/certko when possible."
+  );
   cachedDir = tmp;
   return cachedDir;
 }

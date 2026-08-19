@@ -28,7 +28,7 @@ import { getCertkoDataDir } from "./storage-paths";
 
 /**
  * Persistent CMS data directory for uploads (images stay on disk).
- * Relational CMS data lives in PostgreSQL (DATABASE_URL).
+ * Relational CMS data uses PostgreSQL when DATABASE_URL is set, otherwise SQLite.
  */
 export function getWritableDataDir(): string {
   return getCertkoDataDir();
@@ -42,7 +42,7 @@ type DbGlobal = typeof globalThis & {
 const g = globalThis as DbGlobal;
 
 function bootstrapSchema(db: SqliteDatabase): void {
-  // Postgres: pragma is a no-op; kept for API compatibility.
+  // Postgres: pragma is a no-op. SQLite/sql.js uses DELETE journal for Hostinger.
   db.pragma("journal_mode = DELETE");
   db.pragma("foreign_keys = ON");
 
@@ -873,30 +873,26 @@ function isNextBuildPhase(): boolean {
 
 /** Call once on server start (instrumentation / root layout). Idempotent. */
 export async function ensureDbReady(): Promise<void> {
-  // Never open Postgres during `next build` — Hostinger/CI sandboxes must stay fast
-  // and must not seed or lock the production database while compiling.
+  // Never open the DB during `next build` — Hostinger/CI sandboxes must stay fast
+  // and must not seed or lock a production database while compiling.
   if (isNextBuildPhase()) {
     if (!getDatabaseUrl()) {
-      console.warn("[certko] DATABASE_URL not set during build — skipping DB init");
+      console.warn("[certko] Skipping DB init during build (no DATABASE_URL — SQLite at runtime)");
     } else {
       console.warn("[certko] Skipping DB init during build (connects at runtime)");
     }
     return;
   }
 
-  const url = getDatabaseUrl();
-  if (!url) {
-    throw new Error(
-      "[certko] DATABASE_URL is required. Set postgres://user:pass@host:5432/dbname"
-    );
-  }
   try {
-    await ensureSqliteReady(url);
+    await ensureSqliteReady();
     if (!g.__certkoDbBootstrapped || !g.__certkoDb) {
       const db = getSqliteDb();
       bootstrapSchema(db);
       g.__certkoDb = db;
       g.__certkoDbBootstrapped = true;
+      const kind = getDatabaseUrl() ? "postgresql" : "sqlite";
+      console.info("[certko] CMS database ready:", kind);
       void import("./search-index")
         .then((m) => m.warmSearchIndex())
         .catch(() => {});
@@ -908,15 +904,13 @@ export async function ensureDbReady(): Promise<void> {
 }
 
 /**
- * Eager init when DATABASE_URL is present.
- * Fixes Next.js parallel RSC races on first request.
+ * Eager init so first public request is not racing schema bootstrap.
+ * Skipped during `next build`.
  */
-if (getDatabaseUrl() || process.env.NODE_ENV !== "production") {
+if (!isNextBuildPhase()) {
   void ensureDbReady().catch((err) => {
     if (isNextBuildPhase()) {
       console.warn("[certko] DB init skipped during build:", err);
-    } else if (!getDatabaseUrl()) {
-      console.warn("[certko] DATABASE_URL missing — set it before starting the server");
     } else {
       console.error("[certko] Eager DB init failed:", err);
     }
@@ -926,7 +920,7 @@ if (getDatabaseUrl() || process.env.NODE_ENV !== "production") {
 export function getDb(): SqliteDatabase {
   if (!isSqliteReady() || !g.__certkoDb) {
     throw new Error(
-      "Database not ready yet. Set DATABASE_URL and ensure ensureDbReady() completed."
+      "Database not ready yet. Wait for ensureDbReady() (SQLite file or DATABASE_URL)."
     );
   }
   return g.__certkoDb;

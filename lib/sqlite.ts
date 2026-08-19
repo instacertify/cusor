@@ -1,18 +1,55 @@
 /**
- * Database facade — PostgreSQL (primary).
- * Keeps historical export names (SqliteDatabase, ensureSqliteReady) so call sites
- * keep working; statement methods stay sync (deasync over pg).
+ * Database facade.
+ * PostgreSQL when DATABASE_URL is set; otherwise SQLite via sql.js so Hostinger
+ * Node hosting can serve public pages without Postgres.
  */
+import { getCertkoDbPath } from "./storage-paths";
+import {
+  ensurePostgresReady,
+  getDatabaseUrl,
+  getPostgresDb,
+  isPostgresReady,
+} from "./pg-database";
+import {
+  ensureSqlJsReady,
+  getSqlJsDb,
+  isSqlJsReady,
+} from "./sqljs-database";
+
 export type {
   SqliteRunResult,
   SqliteStatement,
   SqliteDatabase,
-} from "./pg-database";
+} from "./sqljs-database";
 
-export {
-  ensurePostgresReady as ensureSqliteReady,
-  getPostgresDb as getSqliteDb,
-  isPostgresReady as isSqliteReady,
-  getDatabaseUrl,
-  sqliteToPg,
-} from "./pg-database";
+export { getDatabaseUrl, sqliteToPg } from "./pg-database";
+
+function looksLikePostgresUrl(value: string): boolean {
+  return /^postgres(ql)?:\/\//i.test(value.trim());
+}
+
+export async function ensureSqliteReady(target?: string) {
+  const url = getDatabaseUrl();
+  if (url) {
+    return ensurePostgresReady(url);
+  }
+  const filePath =
+    target && !looksLikePostgresUrl(target) ? target : getCertkoDbPath();
+  return ensureSqlJsReady(filePath);
+}
+
+export function getSqliteDb() {
+  if (isPostgresReady()) return getPostgresDb();
+  if (isSqlJsReady()) return getSqlJsDb();
+  throw new Error(
+    "Database not ready. ensureSqliteReady() must run before handling requests."
+  );
+}
+
+export function isSqliteReady(): boolean {
+  return isPostgresReady() || isSqlJsReady();
+}
+
+export function isUsingPostgres(): boolean {
+  return Boolean(getDatabaseUrl());
+}
