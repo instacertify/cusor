@@ -2,42 +2,25 @@ import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import TalkToCertificationExpertBar from "@/components/TalkToCertificationExpert";
-import TimedContactPopup from "@/components/TimedContactPopup";
-import AnalyticsGate from "@/components/AnalyticsGate";
-import CookieConsent from "@/components/CookieConsent";
 import ClearAutoReloadFlag from "@/components/ClearAutoReloadFlag";
-import { ensureDbReady, getSettings, isCmsReady } from "@/lib/db";
 import { isDbFreePath } from "@/lib/request-path";
-import { getGdprPublicSettings } from "@/lib/gdpr";
-import { resolveExpertCta } from "@/lib/expert-cta";
-import { resolveContactPopup } from "@/lib/contact-popup";
-import { getPage } from "@/lib/queries";
-import {
-  BASE_URL,
-  DEFAULT_OG_IMAGE,
-  DEFAULT_OG_IMAGE_HEIGHT,
-  DEFAULT_OG_IMAGE_WIDTH,
-  buildJsonLd,
-} from "@/lib/seo";
-import { resolveColorScheme } from "@/lib/color-schemes";
-import { resolveIconStyle } from "@/lib/icon-style";
 
 export const dynamic = "force-dynamic";
 
+const LOGIN_VIEWPORT: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#16263D",
+  viewportFit: "cover",
+};
+
 export async function generateViewport(): Promise<Viewport> {
   const pathname = (await headers()).get("x-pathname") || "";
-  if (isDbFreePath(pathname)) {
-    return {
-      width: "device-width",
-      initialScale: 1,
-      maximumScale: 5,
-      themeColor: "#16263D",
-      viewportFit: "cover",
-    };
-  }
+  if (isDbFreePath(pathname)) return LOGIN_VIEWPORT;
+
+  const { ensureDbReady, getSettings } = await import("@/lib/db");
+  const { resolveColorScheme } = await import("@/lib/color-schemes");
   await ensureDbReady();
   const settings = getSettings();
   const scheme = resolveColorScheme(settings.color_scheme);
@@ -72,6 +55,13 @@ export async function generateMetadata(): Promise<Metadata> {
       robots: { index: false, follow: false, nocache: true },
     };
   }
+  const { ensureDbReady, getSettings } = await import("@/lib/db");
+  const { getPage } = await import("@/lib/queries");
+  const {
+    DEFAULT_OG_IMAGE,
+    DEFAULT_OG_IMAGE_HEIGHT,
+    DEFAULT_OG_IMAGE_WIDTH,
+  } = await import("@/lib/seo");
   await ensureDbReady();
   const home = getPage("home");
   const settings = getSettings();
@@ -90,7 +80,6 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: home?.meta_description || settings.tagline,
     metadataBase: new URL("https://certko.com"),
-    // Public pages are indexable by default. Admin layouts override to noindex.
     robots: {
       index: true,
       follow: true,
@@ -119,8 +108,6 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: settings.site_name || "Certko",
       type: "website",
       locale: "en_IN",
-      // Do not set a sitewide openGraph.url — Next merges metadata shallowly and
-      // child pages would inherit the homepage URL. Each page sets its own via buildMetadata.
       images: [
         {
           url: DEFAULT_OG_IMAGE,
@@ -140,16 +127,34 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
-  const pathname = (await headers()).get("x-pathname") || "";
-  const isAdminShell = pathname.startsWith("/admin");
-  const skipDb = isDbFreePath(pathname);
+const fontClass = `${body.variable} ${display.variable} min-h-screen flex flex-col`;
 
-  if (!skipDb) await ensureDbReady();
-  const settings = skipDb || !isCmsReady() ? {} : getSettings();
-  const gdprSettings = skipDb || !isCmsReady()
+async function CmsShell({
+  children,
+  pathname,
+}: {
+  children: React.ReactNode;
+  pathname: string;
+}) {
+  const isAdminShell = pathname.startsWith("/admin");
+  const { ensureDbReady, getSettings, isCmsReady } = await import("@/lib/db");
+  const { getGdprPublicSettings } = await import("@/lib/gdpr");
+  const { resolveExpertCta } = await import("@/lib/expert-cta");
+  const { resolveContactPopup } = await import("@/lib/contact-popup");
+  const { resolveColorScheme } = await import("@/lib/color-schemes");
+  const { resolveIconStyle } = await import("@/lib/icon-style");
+  const { BASE_URL, buildJsonLd } = await import("@/lib/seo");
+  const Header = (await import("@/components/Header")).default;
+  const Footer = (await import("@/components/Footer")).default;
+  const TalkToCertificationExpertBar = (await import("@/components/TalkToCertificationExpert"))
+    .default;
+  const TimedContactPopup = (await import("@/components/TimedContactPopup")).default;
+  const AnalyticsGate = (await import("@/components/AnalyticsGate")).default;
+  const CookieConsent = (await import("@/components/CookieConsent")).default;
+
+  await ensureDbReady();
+  const settings = !isCmsReady() ? {} : getSettings();
+  const gdprSettings = !isCmsReady()
     ? {
         bannerEnabled: false,
         requireAnalyticsConsent: true,
@@ -167,7 +172,6 @@ export default async function RootLayout({
   const iconStyle = resolveIconStyle(settings.icon_style);
   const expertCta = resolveExpertCta(settings);
   const contactPopup = resolveContactPopup(settings);
-  // Sitewide Organization + WebSite (site name, favicon attribution, sitelinks search box).
   const orgJsonLd = isAdminShell
     ? null
     : buildJsonLd(["Organization", "WebSite"], {
@@ -175,9 +179,10 @@ export default async function RootLayout({
         description: settings.tagline || "",
         url: BASE_URL,
       });
+
   return (
     <html lang="en-IN" data-color-scheme={scheme.id} data-icon-style={iconStyle}>
-      <body className={`${body.variable} ${display.variable} min-h-screen flex flex-col`}>
+      <body className={fontClass}>
         <ClearAutoReloadFlag />
         {!isAdminShell && (
           <AnalyticsGate
@@ -208,4 +213,24 @@ export default async function RootLayout({
       </body>
     </html>
   );
+}
+
+export default async function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  const pathname = (await headers()).get("x-pathname") || "";
+
+  // Login must not import SQLite / seed / Header. Those modules made
+  // GET /admin/login hang on Hostinger until the error boundary showed "Loading…".
+  if (isDbFreePath(pathname)) {
+    return (
+      <html lang="en-IN" data-color-scheme="certko" data-icon-style="original">
+        <body className={fontClass}>
+          <main className="flex-1">{children}</main>
+        </body>
+      </html>
+    );
+  }
+
+  return <CmsShell pathname={pathname}>{children}</CmsShell>;
 }

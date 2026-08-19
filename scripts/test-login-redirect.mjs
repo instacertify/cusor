@@ -113,12 +113,28 @@ const loginPage = fs.readFileSync(
 );
 assert(!loginPage.includes("clearAdminSession"), "login page must not clear cookies during render");
 assert(!loginPage.includes("jar.set"), "login page must not cookies().set during render");
-assert(!loginPage.includes("cookies()"), "login page must not import cookies() to mutate");
+assert(!loginPage.includes('from "next/headers"'), "login page must not import next/headers cookies");
+assert(!loginPage.includes("@/lib/auth"), "login page must not import lib/auth (pulls SQLite)");
+assert(!loginPage.includes("@/components/Logo"), "login page must not import Logo (pulls SQLite)");
 assert(
   loginPage.includes("createCaptchaChallenge"),
   "login page still issues a signed captcha token for the form"
 );
 
+const layoutSrc = fs.readFileSync(
+  path.join(path.dirname(fileURLToPath(import.meta.url)), "../app/layout.tsx"),
+  "utf8"
+);
+assert(
+  !layoutSrc.includes('import { ensureDbReady'),
+  "root layout must not statically import the database (login would boot SQLite)"
+);
+assert(
+  layoutSrc.includes("isDbFreePath"),
+  "root layout still skips CMS boot on /admin/login"
+);
+
 console.log("ok login Location never uses 0.0.0.0");
 console.log("ok login page does not mutate cookies during render");
+console.log("ok login layout does not boot SQLite");
 process.exit(0);

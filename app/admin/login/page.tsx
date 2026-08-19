@@ -1,7 +1,6 @@
-import Logo from "@/components/Logo";
 import HardRedirect from "@/components/HardRedirect";
 import AdminLoginForm from "@/components/admin/AdminLoginForm";
-import { isAdmin } from "@/lib/auth";
+import { isAdmin } from "@/lib/session-sign";
 import { createCaptchaChallenge } from "@/lib/captcha";
 import { safeAdminNextPath } from "@/lib/request-path";
 
@@ -76,7 +75,15 @@ export default async function AdminLoginPage({ searchParams }: Props) {
             Secure CMS access
           </div>
           <div className="mt-8 max-w-md">
-            <Logo width={220} withTagline priority variant="onDark" />
+            {/* Static brand mark — do not import Logo (it reads CMS settings / SQLite). */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/certko-logo-light.png"
+              alt="Certko"
+              width={220}
+              height={62}
+              className="h-auto w-[220px]"
+            />
           </div>
           <h1 className="mt-8 font-display text-4xl sm:text-5xl font-semibold tracking-tight text-cream-50 leading-[1.1]">
             Certko

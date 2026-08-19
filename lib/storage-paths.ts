@@ -341,6 +341,22 @@ export function getCertkoDbPath(): string {
   return path.join(getCertkoDataDir(), "certko.db");
 }
 
+/** Secret files only — no SQLite copy / migrate. Safe to read during login. */
+export function listCertkoSecretCandidateFiles(): string[] {
+  const files: string[] = [];
+  const envDir = (process.env.CERTKO_DATA_DIR || "").trim();
+  if (envDir) files.push(path.join(path.resolve(envDir), ".certko-secret"));
+  files.push(path.join(process.cwd(), "data", ".certko-secret"));
+  files.push(path.join("/var/lib/certko", ".certko-secret"));
+  for (const dir of hostingerPersistentCandidates(process.cwd())) {
+    files.push(path.join(dir, ".certko-secret"));
+  }
+  for (const dir of listHbuildsVersionDataDirs()) {
+    files.push(path.join(dir, ".certko-secret"));
+  }
+  return [...new Set(files.map((f) => path.resolve(f)))];
+}
+
 /** Harvest sidecars into an already-chosen data dir (tests / recover). */
 export function recoverDurableSidecars(dataDir: string): void {
   recoverFromPriorHbuildsVersions(dataDir);
