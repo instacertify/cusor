@@ -1,7 +1,9 @@
 import crypto from "crypto";
 import { signPayload } from "./session-sign";
 import { peekCertkoSecret, resolveCertkoSecret } from "./durable-secret";
+import { normalizeCaptchaAnswer } from "./captcha-answer";
 
+export { normalizeCaptchaAnswer };
 export const CAPTCHA_COOKIE = "certko_captcha";
 const CAPTCHA_TTL_MS = 1000 * 60 * 10; // 10 minutes
 
@@ -19,7 +21,7 @@ function buildMathCaptcha(): { svg: string; answer: string; prompt: string } {
     left = right;
     right = tmp;
   }
-  const op = add ? "+" : "−";
+  const op = add ? "+" : "-";
   const answer = String(add ? left + right : left - right);
   const prompt = `${left} ${op} ${right}`;
 
@@ -36,7 +38,7 @@ function buildMathCaptcha(): { svg: string; answer: string; prompt: string } {
 
 export function createCaptchaChallenge(): { svg: string; token: string; text: string } {
   const { svg, answer } = buildMathCaptcha();
-  const normalized = answer.trim().toLowerCase();
+  const normalized = normalizeCaptchaAnswer(answer);
   const expires = String(Date.now() + CAPTCHA_TTL_MS);
   const answerHash = crypto
     .createHash("sha256")
@@ -69,7 +71,8 @@ export function verifyCaptchaToken(
   }
   if (Number(expires) < Date.now()) return false;
 
-  const normalized = userAnswer.trim().toLowerCase().replace(/\s+/g, "");
+  const normalized = normalizeCaptchaAnswer(userAnswer);
+  if (!normalized) return false;
   const got = crypto
     .createHash("sha256")
     .update(`${normalized}:${getSecret()}`)

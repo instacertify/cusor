@@ -32,7 +32,6 @@ function redirectTo(path: string) {
  * Chrome shows ERR_ADDRESS_INVALID. RSC redirect() also fails loopback fetch.
  */
 export async function POST(req: NextRequest) {
-  await ensureDbReady();
   const form = await req.formData();
   const ip = getClientIp(req.headers);
   const next = safeAdminNextPath(String(form.get("next") ?? "/admin"));
@@ -50,13 +49,17 @@ export async function POST(req: NextRequest) {
   const cookieToken = req.cookies.get(CAPTCHA_COOKIE)?.value || "";
   const captchaToken = formToken || cookieToken;
 
+  // Verify before ensureDbReady() so a data-dir migrate cannot rotate the
+  // signing secret between GET /admin/login and this POST.
   if (!verifyCaptchaToken(captchaToken, captcha)) {
-    recordLoginFailure(ip);
+    // Wrong/empty captcha is not a credential failure — do not lock the IP.
     logAdminEvent("login_fail", ip, "bad_captcha");
     const res = redirectTo("/admin/login?error=captcha");
     res.cookies.delete(CAPTCHA_COOKIE);
     return res;
   }
+
+  await ensureDbReady();
 
   if (!(await checkCredentials(username, password))) {
     const n = recordLoginFailure(ip);
