@@ -188,6 +188,17 @@ export function ensureBisStandardsInTestingCatalog(db: SqliteDatabase): void {
     .all() as { id: number; slug: string; name: string }[];
   if (testingCats.length === 0) return;
 
+  const existingCount = Number(
+    (
+      db.prepare("SELECT COUNT(*) AS n FROM testing_services").get() as
+        | { n: number | string }
+        | undefined
+    )?.n ?? 0
+  );
+  // Warm Hostinger boots: remapping thousands of BIS standards blocks the event
+  // loop and the panel SIGTERMs ("Server is not running"). Skip when already seeded.
+  if (existingCount >= 200) return;
+
   const catBySlug = new Map(testingCats.map((c) => [c.slug, c]));
 
   const products = db
