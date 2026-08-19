@@ -23,9 +23,40 @@ function withSecurityHeaders(res: NextResponse, pathname: string) {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const host = (request.headers.get("host") || "").split(":")[0].toLowerCase();
+
+  // Apex canonical host — edge redirect avoids Next.js config redirects that
+  // trigger internal fetch() on Hostinger (→ "failed to get redirect response").
+  if (host === "www.certko.com") {
+    const url = request.nextUrl.clone();
+    url.protocol = "https:";
+    url.host = "certko.com";
+    return NextResponse.redirect(url, 308);
+  }
+
+  // Legacy GMA URL — server redirect() with a hash fragment breaks RSC on some hosts.
+  if (pathname === "/certifications/global-market-access") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/certifications";
+    url.hash = "";
+    url.searchParams.set("section", "global-market-access");
+    return NextResponse.redirect(url, 308);
+  }
+
+  const isAdminRoute =
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/") ||
+    pathname.startsWith("/api/admin/");
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", pathname);
+
+  if (!isAdminRoute) {
+    return withSecurityHeaders(
+      NextResponse.next({ request: { headers: requestHeaders } }),
+      pathname
+    );
+  }
 
   const isAdminApi = pathname === "/api/admin" || pathname.startsWith("/api/admin/");
 
@@ -60,5 +91,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*", "/api/admin/:path*"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|llms.txt|api/uploads|brand).*)",
+  ],
 };

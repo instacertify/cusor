@@ -1,5 +1,6 @@
 import { ensureDbReady, getDb } from "./db";
 import { sendLeadNotification } from "./mail";
+import { flushSqlJsToDisk, isSqlJsReady } from "./sqlite";
 
 export type InquiryInput = {
   name: string;
@@ -39,6 +40,9 @@ export async function createInquiry(input: InquiryInput): Promise<InquiryResult>
         "INSERT INTO inquiries (name, email, phone, product, message, intent) VALUES (?, ?, ?, ?, ?, ?)"
       )
       .run(name, email, phone, product, message, intent);
+    // Persist leads immediately on SQLite — Hostinger restarts must not lose rows
+    // waiting on the debounced sql.js disk flush.
+    if (isSqlJsReady()) flushSqlJsToDisk();
   } catch (err) {
     console.error("[inquiry] save failed:", err);
     return {
