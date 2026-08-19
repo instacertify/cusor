@@ -106,6 +106,135 @@ export default async function AdminPostEdit({ params, searchParams }: Props) {
           />
         </section>
 
+        <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-5">
+          <div>
+            <h2 className="font-display font-bold text-ink-950">Article sidebar</h2>
+            <p className="text-sm text-ink-600 mt-1">
+              Quote box (“Get certified faster” / “Get tested faster”) plus a vertical scroll of other
+              blogs. Choose site defaults or edit this post only.
+            </p>
+          </div>
+
+          <fieldset className="space-y-2">
+            <legend className="text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">
+              Quote CTA
+            </legend>
+            <label className="flex items-start gap-2 text-sm text-ink-800">
+              <input
+                type="radio"
+                name="cta_mode"
+                value="default"
+                defaultChecked={(post.cta_mode || "default") !== "custom"}
+                className="mt-1"
+              />
+              <span>
+                <strong className="text-ink-950">Use defaults</strong>
+                <span className="block text-ink-500 text-xs mt-0.5">
+                  From Admin → Settings → Blog article sidebar (auto certified vs tested).
+                </span>
+              </span>
+            </label>
+            <label className="flex items-start gap-2 text-sm text-ink-800">
+              <input
+                type="radio"
+                name="cta_mode"
+                value="custom"
+                defaultChecked={(post.cta_mode || "") === "custom"}
+                className="mt-1"
+              />
+              <span>
+                <strong className="text-ink-950">Edit for this post</strong>
+                <span className="block text-ink-500 text-xs mt-0.5">
+                  Override heading, topic blank, and certified vs tested copy below.
+                </span>
+              </span>
+            </label>
+          </fieldset>
+
+          <div className="rounded-xl border border-cream-200 bg-cream-50 p-4 space-y-4">
+            <p className="text-xs font-semibold text-ink-500 uppercase tracking-wide">
+              Custom CTA fields (used when “Edit for this post” is selected)
+            </p>
+            <div>
+              <span className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">
+                Type
+              </span>
+              <div className="flex flex-wrap gap-4 text-sm">
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="cta_kind"
+                    value="certification"
+                    defaultChecked={(post.cta_kind || "certification") !== "testing"}
+                  />
+                  Get certified faster
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="cta_kind"
+                    value="testing"
+                    defaultChecked={(post.cta_kind || "") === "testing"}
+                  />
+                  Get tested faster
+                </label>
+              </div>
+            </div>
+            <Field
+              label="Heading (optional override)"
+              name="cta_heading"
+              defaultValue={post.cta_heading || ""}
+              placeholder="Leave blank to use Get certified / tested faster"
+            />
+            <Field
+              label="Topic fill-in (for “coordinate testing for _____”)"
+              name="cta_topic"
+              defaultValue={post.cta_topic || ""}
+              placeholder="e.g. BIS CRS / EMI-EMC / your product"
+            />
+            <TextArea
+              label="Body (optional full override — use {topic})"
+              name="cta_body"
+              defaultValue={post.cta_body || ""}
+              rows={3}
+              placeholder="Our experts handle the application, coordinate testing for {topic} and manage the inspection. Free quote in 24 hours."
+            />
+          </div>
+
+          <fieldset className="space-y-2">
+            <legend className="text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">
+              Other blogs (vertical scroll)
+            </legend>
+            <label className="flex items-start gap-2 text-sm text-ink-800">
+              <input
+                type="radio"
+                name="more_posts_mode"
+                value="default"
+                defaultChecked={(post.more_posts_mode || "default") !== "hide"}
+                className="mt-1"
+              />
+              <span>
+                <strong className="text-ink-950">Show defaults</strong>
+                <span className="block text-ink-500 text-xs mt-0.5">
+                  Vertical scroll of other published articles beside the post.
+                </span>
+              </span>
+            </label>
+            <label className="flex items-start gap-2 text-sm text-ink-800">
+              <input
+                type="radio"
+                name="more_posts_mode"
+                value="hide"
+                defaultChecked={(post.more_posts_mode || "") === "hide"}
+                className="mt-1"
+              />
+              <span>
+                <strong className="text-ink-950">Hide on this post</strong>
+              </span>
+            </label>
+          </fieldset>
+        </section>
+
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
           <h2 className="font-display font-bold text-ink-950">SEO</h2>
           <Field label="Meta Title" name="meta_title" defaultValue={post.meta_title} />
