@@ -949,6 +949,9 @@ html:not([data-icon-style]) .icon-chip--neutral {
   background: #faf6ee;
   border-bottom: 1px solid #e8e0d4;
   flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 30;
 }
 .mdxeditor-admin .mdxeditor-root-contenteditable {
   min-height: inherit;

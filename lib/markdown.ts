@@ -27,3 +27,17 @@ export function renderMarkdown(markdown: string | null | undefined): string {
   // Inline ![…](/uploads/…) must hit /api/uploads on Hostinger.
   return rewriteUploadUrlsInHtml(html);
 }
+
+/** Plain text from CMS markdown (cards, meta, search snippets). */
+export function markdownToPlainText(markdown: string | null | undefined): string {
+  const html = renderMarkdown(markdown);
+  if (!html) return "";
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}

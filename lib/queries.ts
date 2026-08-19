@@ -438,11 +438,41 @@ export function getPublishedPosts(limit = 50, offset = 0): Post[] {
   return rows.filter((p) => isBlogPubliclyVisible(p)).slice(offset, offset + limit);
 }
 
-/** Case-insensitive blog search over title / excerpt / body / meta / author. */
-export function searchPublishedPosts(q: string, limit = 24, offset = 0): Post[] {
+function blogSearchTokens(q: string): string[] {
+  return q
+    .trim()
+    .toLowerCase()
+    .split(/[^a-z0-9]+/i)
+    .filter((t) => t.length >= 1);
+}
+
+function stripMarkdownForSearch(value: string): string {
+  return value
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/[#*_`>[\]()!-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function postMatchesBlogQuery(p: Post, tokens: string[]): boolean {
+  const blob = [
+    p.title,
+    p.excerpt,
+    stripMarkdownForSearch(p.content || ""),
+    p.meta_title,
+    p.meta_description,
+    p.author,
+    p.author_name,
+    p.slug,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  return tokens.every((t) => blob.includes(t));
+}
+
+function loadLivePostsForSearch(): Post[] {
   flushDueBlogPosts();
-  const needle = q.trim().toLowerCase();
-  if (needle.length < 2) return [];
   const rows = getDb()
     .prepare(
       `SELECT ${POST_AUTHOR_SELECT}
@@ -452,55 +482,32 @@ export function searchPublishedPosts(q: string, limit = 24, offset = 0): Post[] 
        ORDER BY p.published_at DESC, p.id DESC`
     )
     .all() as Post[];
-  const hits = rows.filter((p) => {
-    if (!isBlogPubliclyVisible(p)) return false;
-    const blob = [
-      p.title,
-      p.excerpt,
-      p.content,
-      p.meta_title,
-      p.meta_description,
-      p.author,
-      p.author_name,
-      p.slug,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-    return blob.includes(needle);
+  return rows.filter((p) => isBlogPubliclyVisible(p));
+}
+
+/** Case-insensitive blog search: all tokens must match title / excerpt / body / meta / author. */
+export function searchPublishedPosts(q: string, limit = 24, offset = 0): Post[] {
+  const tokens = blogSearchTokens(q);
+  if (tokens.length === 0) return [];
+  const hits = loadLivePostsForSearch().filter((p) => postMatchesBlogQuery(p, tokens));
+  const phrase = q.trim().toLowerCase();
+  hits.sort((a, b) => {
+    const at = (a.title || "").toLowerCase();
+    const bt = (b.title || "").toLowerCase();
+    const aTitle = tokens.every((t) => at.includes(t)) ? 0 : 1;
+    const bTitle = tokens.every((t) => bt.includes(t)) ? 0 : 1;
+    if (aTitle !== bTitle) return aTitle - bTitle;
+    const aExact = at.includes(phrase) ? 0 : 1;
+    const bExact = bt.includes(phrase) ? 0 : 1;
+    return aExact - bExact;
   });
   return hits.slice(offset, offset + limit);
 }
 
 export function countSearchPublishedPosts(q: string): number {
-  flushDueBlogPosts();
-  const needle = q.trim().toLowerCase();
-  if (needle.length < 2) return 0;
-  const rows = getDb()
-    .prepare(
-      `SELECT ${POST_AUTHOR_SELECT}
-       FROM posts p
-       LEFT JOIN authors a ON a.id = p.author_id
-       WHERE ${LIVE_POST_SQL}`
-    )
-    .all() as Post[];
-  return rows.filter((p) => {
-    if (!isBlogPubliclyVisible(p)) return false;
-    const blob = [
-      p.title,
-      p.excerpt,
-      p.content,
-      p.meta_title,
-      p.meta_description,
-      p.author,
-      p.author_name,
-      p.slug,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-    return blob.includes(needle);
-  }).length;
+  const tokens = blogSearchTokens(q);
+  if (tokens.length === 0) return 0;
+  return loadLivePostsForSearch().filter((p) => postMatchesBlogQuery(p, tokens)).length;
 }
 
 export function getPostBySlug(slug: string): Post | undefined {

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { renderMarkdown } from "@/lib/markdown";
+import { renderMarkdown, markdownToPlainText } from "@/lib/markdown";
 import Link from "next/link";
 import CmsImage from "@/components/CmsImage";
 import type { Metadata } from "next";
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!svc) return {};
   return buildMetadata(`test:${svc.id}`, {
     title: svc.meta_title || `${svc.name} Testing | Certko`,
-    description: svc.meta_description || svc.summary,
+    description: svc.meta_description || markdownToPlainText(svc.summary),
     path: `/testing/${svc.category_slug}/${svc.slug}`,
     image: svc.image,
   });
@@ -53,10 +53,13 @@ export default async function TestingServicePage({ params }: Props) {
 
   const jsonLd = buildJsonLd(enabledSchemaTypes(`test:${svc.id}`, "test"), {
     name: `${svc.name} Testing`,
-    description: svc.summary,
+    description: markdownToPlainText(svc.summary),
     url: `${BASE_URL}/testing/${svc.category_slug}/${svc.slug}`,
     image: svc.image,
-    faqs,
+    faqs: faqs.map((f) => ({
+      question: f.question,
+      answer: markdownToPlainText(f.answer),
+    })),
     breadcrumbs: [
       { name: "Home", url: "/" },
       { name: "Product Testing", url: "/testing" },
@@ -89,7 +92,10 @@ export default async function TestingServicePage({ params }: Props) {
           <h1 className="font-display text-4xl font-semibold text-ink-950 tracking-tight leading-tight">
             {svc.name}
           </h1>
-          <p className="mt-4 text-lg text-ink-600 leading-relaxed">{svc.summary}</p>
+          <div
+            className="mt-4 text-lg text-ink-600 leading-relaxed prose-certko max-w-none"
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(svc.summary) }}
+          />
           {svc.standards ? (
             <div className="mt-4">
               <StandardApplicabilityChips standards={svc.standards} />
@@ -185,7 +191,7 @@ export default async function TestingServicePage({ params }: Props) {
 
       {html ? (
         <article
-          className="prose prose-ink mt-12 max-w-3xl"
+          className="prose-certko mt-12 max-w-3xl"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       ) : null}

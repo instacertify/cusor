@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export type SearchScope = "all" | "standard" | "lab" | "certification";
+export type SearchScope = "all" | "standard" | "lab" | "certification" | "blog";
 
 interface Suggestion {
   type:
@@ -156,11 +156,34 @@ const SCOPE_META: Record<
       },
     ],
   },
+  blog: {
+    label: "Search blog",
+    placeholder: "Search articles (BIS, EMI, MSDS, export…)",
+    pageType: "blog",
+    browse: [
+      {
+        type: "browse",
+        name: "Compliance blog",
+        detail: "All published articles",
+        href: "/blog",
+      },
+      {
+        type: "browse",
+        name: "Product testing",
+        detail: "Lab tests, timelines and prices",
+        href: "/testing",
+      },
+    ],
+  },
 };
 
 function searchPageHref(term: string, scope: SearchScope): string {
+  const t = term.trim();
+  if (scope === "blog") {
+    return t ? `/blog?q=${encodeURIComponent(t)}` : "/blog";
+  }
   const params = new URLSearchParams();
-  if (term.trim()) params.set("q", term.trim());
+  if (t) params.set("q", t);
   const pageType = SCOPE_META[scope].pageType;
   if (pageType) params.set("type", pageType);
   const qs = params.toString();
@@ -205,11 +228,11 @@ export default function SearchBox({
   useEffect(() => {
     const query = q.trim();
 
-    // Close immediately when under 2 chars — prevents stale “See all for ”
+    // Under 2 chars: keep browse shortcuts if the field is already open.
+    // Do not force-close — that made the header search feel dead on focus.
     if (query.length < 2) {
-      setResults([]);
+      setResults(browseFallback);
       setResultsQuery("");
-      setOpen(false);
       setLoading(false);
       return;
     }
@@ -237,7 +260,9 @@ export default function SearchBox({
               ? "standard"
               : scope === "lab"
                 ? "lab"
-                : "certification";
+                : scope === "blog"
+                  ? "blog"
+                  : "certification";
         const url = `/api/search?q=${encodeURIComponent(query)}${
           apiType ? `&type=${apiType}` : ""
         }`;
@@ -339,7 +364,7 @@ export default function SearchBox({
 
   const showDropdown = open && results.length > 0;
   const seeAllTerm = resultsQuery.trim() || q.trim();
-  const scopes: SearchScope[] = ["standard", "all", "lab", "certification"];
+  const scopes: SearchScope[] = ["standard", "all", "lab", "certification", "blog"];
 
   return (
     <div ref={boxRef} className="relative w-full">

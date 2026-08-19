@@ -1,4 +1,5 @@
 import type { Faq } from "@/lib/db";
+import { renderMarkdown } from "@/lib/markdown";
 
 export default function FaqAccordion({
   faqs,
@@ -27,9 +28,10 @@ export default function FaqAccordion({
                 </svg>
               </span>
             </summary>
-            <div className="px-5 pb-5 text-sm leading-relaxed text-ink-700">
-              {f.answer}
-            </div>
+            <div
+              className="px-5 pb-5 text-sm leading-relaxed text-ink-700 prose-certko max-w-none"
+              dangerouslySetInnerHTML={{ __html: renderMarkdown(f.answer) }}
+            />
           </details>
         ))}
       </div>

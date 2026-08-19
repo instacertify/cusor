@@ -116,7 +116,7 @@ export default async function AdminCertificationProductsList({ params, searchPar
 
       <section
         id="add-product"
-        className="mb-6 bg-cream-100 rounded-2xl border border-cream-300 p-5 scroll-mt-24"
+        className="mb-6 bg-cream-100 rounded-2xl border border-cream-300 p-5 scroll-mt-4"
       >
         <h2 className="font-display font-bold text-ink-950 mb-1">
           Add a product covered under {cert.name}

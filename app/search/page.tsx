@@ -8,6 +8,7 @@ import Icon from "@/components/Icon";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { MarketBadge } from "@/components/MarketApplicability";
 import MarketCard from "@/components/MarketCard";
+import { markdownToPlainText } from "@/lib/markdown";
 import {
   searchProducts,
   countSearchProducts,
@@ -199,7 +200,7 @@ function loadSearchData(
   let blogPosts: Post[] = [];
   let blogTotal = 0;
   try {
-    if (q.length >= 2) {
+    if (q.length > 0) {
       blogTotal = countSearchPublishedPosts(q);
       blogPosts = searchPublishedPosts(
         q,
@@ -710,7 +711,9 @@ export default async function SearchPage({ searchParams }: Props) {
                     {c.service_count ?? 0} tests
                   </div>
                   <div className="mt-1 font-display font-semibold text-ink-950">{c.name}</div>
-                  <p className="mt-2 text-sm text-ink-600 line-clamp-2">{c.summary}</p>
+                  <p className="mt-2 text-sm text-ink-600 line-clamp-2">
+                    {markdownToPlainText(c.summary)}
+                  </p>
                 </Link>
                 <RequestQuoteButton subject={c.name} kind="test" variant="compact" short />
               </div>

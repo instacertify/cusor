@@ -9,6 +9,7 @@ import {
 } from "../../actions";
 import { Field, TextArea, MarkdownEditor, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import BulkImportLink from "@/components/admin/BulkImportLink";
+import { toServableUploadUrl } from "@/lib/upload-urls";
 
 export const dynamic = "force-dynamic";
 
@@ -188,7 +189,7 @@ export default async function AdminCertifications({ searchParams }: Props) {
                 {c.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={c.image}
+                    src={toServableUploadUrl(c.image)}
                     alt=""
                     className="w-11 h-11 rounded-xl object-cover border border-cream-200 shrink-0"
                   />

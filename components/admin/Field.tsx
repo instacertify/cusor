@@ -1,3 +1,5 @@
+import { toServableUploadUrl } from "@/lib/upload-urls";
+
 export function Field({
   label,
   name,
@@ -94,11 +96,7 @@ export function ImageUpload({
   const frameClass = previewAspect
     ? `w-full max-w-md ${previewAspect} rounded-xl border border-cream-300 mb-2 overflow-hidden`
     : "w-full max-w-xs rounded-xl border border-cream-300 mb-2";
-  const previewSrc = current
-    ? current.startsWith("/uploads/")
-      ? `/api/uploads/${current.slice("/uploads/".length)}`
-      : current
-    : "";
+  const previewSrc = current ? toServableUploadUrl(current) : "";
   return (
     <div>
       <label htmlFor={name} className="block text-xs font-bold uppercase tracking-wide text-ink-600 mb-1.5">

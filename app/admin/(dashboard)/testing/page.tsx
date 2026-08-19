@@ -1,5 +1,6 @@
 import Link from "next/link";
 import IconChip from "@/components/IconChip";
+import { toServableUploadUrl } from "@/lib/upload-urls";
 import { getTestingCategories, getTestingServices } from "@/lib/queries";
 import { createTestingCategory, saveTestingService } from "../../actions";
 import { Field, TextArea, MarkdownEditor, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
@@ -50,7 +51,12 @@ export default async function AdminTesting({ searchParams }: Props) {
               <Field label="Icon" name="icon" placeholder="microscope" defaultValue="microscope" />
               <Field label="Menu sort" name="sort" type="number" placeholder="auto" />
             </div>
-            <Field label="Summary" name="summary" placeholder="One-line description for cards & search" />
+            <MarkdownEditor
+              label="Summary"
+              name="summary"
+              minHeightClass="min-h-[8rem]"
+              hint="Short intro on cards and the public category page."
+            />
             <MarkdownEditor
               label="Category content"
               name="content"
@@ -132,7 +138,12 @@ export default async function AdminTesting({ searchParams }: Props) {
                   placeholder="Indicative; confirm on quote"
                 />
               </div>
-              <TextArea label="Summary" name="summary" rows={2} />
+              <MarkdownEditor
+                label="Summary"
+                name="summary"
+                minHeightClass="min-h-[8rem]"
+                hint="Short intro on cards. Keep it brief."
+              />
               <MarkdownEditor
                 label="Content writeup"
                 name="content"
@@ -161,7 +172,7 @@ export default async function AdminTesting({ searchParams }: Props) {
                 {c.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={c.image}
+                    src={toServableUploadUrl(c.image)}
                     alt=""
                     className="w-11 h-11 rounded-xl object-cover border border-cream-200 shrink-0"
                   />

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { renderMarkdown } from "@/lib/markdown";
+import { renderMarkdown, markdownToPlainText } from "@/lib/markdown";
 import Link from "next/link";
 import CmsImage from "@/components/CmsImage";
 import type { Metadata } from "next";
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!cat) return {};
   return buildMetadata(`testcat:${cat.id}`, {
     title: cat.meta_title || `${cat.name} | Product Testing`,
-    description: cat.meta_description || cat.summary,
+    description: cat.meta_description || markdownToPlainText(cat.summary),
     path: `/testing/${cat.slug}`,
     image: cat.image,
   });
@@ -66,10 +66,13 @@ export default async function TestingCategoryPage({ params, searchParams }: Prop
 
   const jsonLd = buildJsonLd(enabledSchemaTypes(`testcat:${cat.id}`, "testcat"), {
     name: `${cat.name} Services`,
-    description: cat.summary,
+    description: markdownToPlainText(cat.summary),
     url: `${BASE_URL}/testing/${cat.slug}`,
     image: cat.image,
-    faqs,
+    faqs: faqs.map((f) => ({
+      question: f.question,
+      answer: markdownToPlainText(f.answer),
+    })),
     breadcrumbs: [
       { name: "Home", url: "/" },
       { name: "Product Testing", url: "/testing" },
@@ -109,7 +112,10 @@ export default async function TestingCategoryPage({ params, searchParams }: Prop
               </p>
             </div>
           </div>
-          <p className="mt-5 text-lg text-ink-600 leading-relaxed">{cat.summary}</p>
+          <div
+            className="mt-5 text-lg text-ink-600 leading-relaxed prose-certko max-w-none"
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(cat.summary) }}
+          />
           <p className="mt-3 text-sm text-ink-600 max-w-2xl">
             Includes BIS certification testing standards mapped from notified products — every IS
             standard is a laboratory testing standard under this discipline.
@@ -132,7 +138,7 @@ export default async function TestingCategoryPage({ params, searchParams }: Prop
 
       {html ? (
         <article
-          className="prose prose-ink mt-12 max-w-3xl"
+          className="prose-certko mt-12 max-w-3xl"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       ) : null}
@@ -186,7 +192,9 @@ export default async function TestingCategoryPage({ params, searchParams }: Prop
                   </p>
                 )}
                 <StandardApplicabilityChips standards={s.standards || ""} />
-                <p className="text-sm text-ink-600 line-clamp-3">{s.summary}</p>
+                <p className="text-sm text-ink-600 line-clamp-3">
+                  {markdownToPlainText(s.summary)}
+                </p>
                 <p className="text-sm font-semibold text-ink-900">
                   <span className="text-xs font-bold uppercase tracking-wide text-ink-500">Tentative price: </span>
                   {formatPriceRange(s.min_price, s.max_price)}

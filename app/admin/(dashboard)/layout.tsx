@@ -20,17 +20,19 @@ export default async function AdminLayout({
   if (!(await isAdmin())) redirect("/admin/login");
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 grid lg:grid-cols-[240px_1fr] gap-8">
+    <>
       <Suspense fallback={null}>
         <AdminBusyBar />
       </Suspense>
-      <AdminNav logoutAction={logout} clearCacheAction={clearSiteCache} />
-      <div className="min-w-0">
-        <Suspense fallback={null}>
-          <AdminCacheClearedBanner />
-        </Suspense>
-        {children}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 lg:py-8 grid lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start gap-6 lg:gap-8">
+        <AdminNav logoutAction={logout} clearCacheAction={clearSiteCache} />
+        <div className="min-w-0">
+          <Suspense fallback={null}>
+            <AdminCacheClearedBanner />
+          </Suspense>
+          {children}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

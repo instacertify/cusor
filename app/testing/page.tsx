@@ -9,6 +9,7 @@ import IconChip from "@/components/IconChip";
 import SearchBox from "@/components/SearchBox";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { TestingStandardFamiliesPanel } from "@/components/MarketApplicability";
+import { markdownToPlainText } from "@/lib/markdown";
 import { getFaqs, getTestingCategories } from "@/lib/queries";
 import { BASE_URL, buildJsonLd, buildMetadata } from "@/lib/seo";
 
@@ -31,7 +32,10 @@ export default function TestingIndexPage() {
     description:
       "Chemical, electrical, EMC, physical, microbiology and mechanical product testing pathways with Certko.",
     url: `${BASE_URL}/testing`,
-    faqs: faqs.map(({ question, answer }) => ({ question, answer })),
+    faqs: faqs.map(({ question, answer }) => ({
+      question,
+      answer: markdownToPlainText(answer),
+    })),
     breadcrumbs: [
       { name: "Home", url: "/" },
       { name: "Product Testing" },
@@ -93,7 +97,9 @@ export default function TestingIndexPage() {
               <h2 className="font-display text-xl font-bold text-ink-950 group-hover:text-butter-700 transition">
                 {c.name}
               </h2>
-              <p className="text-sm text-ink-600 leading-relaxed line-clamp-3">{c.summary}</p>
+              <p className="text-sm text-ink-600 leading-relaxed line-clamp-3">
+                {markdownToPlainText(c.summary)}
+              </p>
               <span className="text-sm font-bold text-butter-700 inline-flex items-center gap-1.5">
                 Browse tests <Icon name="arrow-right" size={15} />
               </span>

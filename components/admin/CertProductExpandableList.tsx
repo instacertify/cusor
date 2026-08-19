@@ -36,7 +36,7 @@ export default function CertProductExpandableList({
       {products.map((p) => {
         const open = openId === p.id;
         return (
-          <li key={p.id} id={`product-${p.id}`} className="scroll-mt-24">
+          <li key={p.id} id={`product-${p.id}`} className="scroll-mt-4">
             <div
               className={`flex flex-wrap items-center gap-3 px-5 py-3 ${
                 open ? "bg-butter-300/20" : "hover:bg-cream-50"
