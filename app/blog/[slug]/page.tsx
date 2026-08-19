@@ -53,6 +53,7 @@ export default async function BlogPostPage({ params }: Props) {
   if (!post || !isBlogPubliclyVisible(post)) notFound();
   const settings = getSettings();
   const cta = resolveBlogSidebarCta(post, settings);
+  /* Enough related posts for “Show more”; list itself stays short until the user expands */
   const more = getPublishedPosts(24).filter((p) => p.id !== post.id).slice(0, 12);
   const authorName = post.author_name || post.author;
   const publishedIso = toIsoDate(post.published_at || post.created_at);
