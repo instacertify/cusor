@@ -147,9 +147,13 @@ export function startBlogScheduler(): void {
     }
   };
 
-  // Run once on boot, then every 30s.
-  tick();
-  globalThis.__certkoBlogSchedulerTimer = setInterval(tick, SCHEDULER_INTERVAL_MS);
-  // Do not keep the Node process alive solely for the timer in edge cases.
-  globalThis.__certkoBlogSchedulerTimer.unref?.();
+  // Bootstrap already syncs schedules in ensureDbReady(); defer the first tick
+  // so Hostinger boot is not competing with sitemap rebuild on the event loop.
+  const BOOT_TICK_DELAY_MS = 30_000;
+  const bootTimer = setTimeout(() => {
+    tick();
+    globalThis.__certkoBlogSchedulerTimer = setInterval(tick, SCHEDULER_INTERVAL_MS);
+    globalThis.__certkoBlogSchedulerTimer.unref?.();
+  }, BOOT_TICK_DELAY_MS);
+  bootTimer.unref?.();
 }

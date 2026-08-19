@@ -7,23 +7,28 @@ export async function register() {
       // Never take the public site down for a durability warning.
       console.error("[certko] durable runtime warning (continuing):", err);
     }
-    const { ensureDbReady } = await import("@/lib/db");
-    await ensureDbReady();
 
-    // Delay heavy post-boot work so Hostinger health checks can reach a live
-    // Node process. Immediate full sitemap rebuild after first-boot seed was
-    // allocating a huge URL list + rewriting public/sitemap.xml while the
-    // supervisor still expected a responsive upstream (→ SIGTERM → nginx 504).
-    const { refreshSitemapFiles } = await import("@/lib/sitemap-xml");
-    const sitemapTimer = setTimeout(() => {
-      void refreshSitemapFiles().catch((err) => {
-        console.error("[certko] deferred sitemap refresh failed:", err);
-      });
-    }, 60_000);
-    sitemapTimer.unref?.();
+    // Do not await CMS bootstrap here — Hostinger's Node panel health checks
+    // expect the HTTP port to open quickly (~10s). Blocking instrumentation on
+    // ensureDbReady() delayed port bind → SIGTERM → "Server is not running".
+    // Pages already call ensureDbReady() before reading the DB.
+    void (async () => {
+      const { ensureDbReady } = await import("@/lib/db");
+      await ensureDbReady();
 
-    // Auto-publish blog posts whose scheduled time has arrived.
-    const { startBlogScheduler } = await import("@/lib/blog-scheduler");
-    startBlogScheduler();
+      // Delay heavy post-boot work so the first requests stay responsive.
+      const { refreshSitemapFiles } = await import("@/lib/sitemap-xml");
+      const sitemapTimer = setTimeout(() => {
+        void refreshSitemapFiles().catch((err) => {
+          console.error("[certko] deferred sitemap refresh failed:", err);
+        });
+      }, 60_000);
+      sitemapTimer.unref?.();
+
+      const { startBlogScheduler } = await import("@/lib/blog-scheduler");
+      startBlogScheduler();
+    })().catch((err) => {
+      console.error("[certko] background boot failed:", err);
+    });
   }
 }

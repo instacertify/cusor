@@ -68,7 +68,7 @@ export function assertDurableRuntimeConfig(): void {
 
   if (production && looksInsideReplaceableAppTree(dataDir)) {
     console.warn(
-      `[certko] CERTKO_DATA_DIR is inside the app folder (${dataDir}). Prefer /var/lib/certko so Hostinger deploys never wipe uploads.`
+      `[certko] CERTKO_DATA_DIR is inside the app folder (${dataDir}). On Hostinger hbuilds, set CERTKO_DATA_DIR to a persistent path outside the version folder (or use managed Postgres + DATABASE_URL). Uploads and SQLite reset on each deploy otherwise.`
     );
   }
 
