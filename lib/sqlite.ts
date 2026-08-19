@@ -14,6 +14,7 @@ import {
   ensureSqlJsReady,
   getSqlJsDb,
   isSqlJsReady,
+  withDeferredSqlJsPersist,
 } from "./sqljs-database";
 
 export type {
@@ -22,6 +23,7 @@ export type {
   SqliteDatabase,
 } from "./sqljs-database";
 
+export { withDeferredSqlJsPersist } from "./sqljs-database";
 export { getDatabaseUrl, sqliteToPg } from "./pg-database";
 
 function looksLikePostgresUrl(value: string): boolean {

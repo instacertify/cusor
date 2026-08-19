@@ -3,6 +3,12 @@
  * Uses sql-asm.js by default so Hostinger / constrained hosts never need a .wasm file.
  *
  * Used when DATABASE_URL is not set so public pages can still boot.
+ *
+ * CRITICAL (Hostinger 504 root cause):
+ * sql.js keeps the DB in memory. Naively calling export()+writeFileSync after every
+ * INSERT rewrites the *entire* file thousands of times during first-boot seed, blocks
+ * the Node event loop, spikes memory, and Hostinger's supervisor SIGTERMs the process.
+ * Nginx then returns 504 Gateway Timeout. We defer/debounce disk persists instead.
  */
 import fs from "fs";
 import path from "path";
@@ -32,17 +38,24 @@ type Engine = {
   raw: SqlJsDatabase;
   filePath: string;
   txDepth: number;
+  /** >0 means keep dirty bits in memory; flush once when it returns to 0. */
+  deferPersist: number;
   dirty: boolean;
+  persistTimer?: ReturnType<typeof setTimeout>;
   wrapper: SqliteDatabase;
 };
 
 type SqlGlobal = typeof globalThis & {
   __certkoSqlEngine?: Engine;
   __certkoSqlInit?: Promise<void>;
+  __certkoSqlFlushHooks?: boolean;
 };
 
 const g = globalThis as SqlGlobal;
 const requireFromCwd = createRequire(path.join(process.cwd(), "package.json"));
+
+/** Debounce normal writes so page traffic does not rewrite the full DB each INSERT. */
+const PERSIST_DEBOUNCE_MS = 400;
 
 function isNamedParams(value: unknown): value is Record<string, unknown> {
   return (
@@ -80,17 +93,91 @@ function bindStatement(stmt: Statement, sql: string, params: unknown[]) {
   stmt.bind(params as any);
 }
 
-function persist(eng: Engine) {
-  if (!eng.dirty || eng.txDepth > 0) return;
+function clearPersistTimer(eng: Engine) {
+  if (!eng.persistTimer) return;
+  clearTimeout(eng.persistTimer);
+  eng.persistTimer = undefined;
+}
+
+function persist(eng: Engine, force = false) {
+  if (!eng.dirty) return;
+  if (!force && (eng.txDepth > 0 || eng.deferPersist > 0)) return;
+  clearPersistTimer(eng);
   const data = eng.raw.export();
   fs.mkdirSync(path.dirname(eng.filePath), { recursive: true });
-  fs.writeFileSync(eng.filePath, Buffer.from(data));
+  // Atomic-ish replace so a crash mid-write does not truncate certko.db.
+  const tmp = `${eng.filePath}.tmp`;
+  fs.writeFileSync(tmp, Buffer.from(data));
+  fs.renameSync(tmp, eng.filePath);
   eng.dirty = false;
+}
+
+function schedulePersist(eng: Engine) {
+  if (eng.txDepth > 0 || eng.deferPersist > 0) return;
+  if (eng.persistTimer) return;
+  eng.persistTimer = setTimeout(() => {
+    eng.persistTimer = undefined;
+    try {
+      persist(eng, true);
+    } catch (err) {
+      console.error("[certko] SQLite persist failed:", err);
+    }
+  }, PERSIST_DEBOUNCE_MS);
+  // Do not keep the process alive solely for a pending flush.
+  eng.persistTimer.unref?.();
 }
 
 function markDirty(eng: Engine) {
   eng.dirty = true;
-  if (eng.txDepth === 0) persist(eng);
+  if (eng.txDepth > 0 || eng.deferPersist > 0) return;
+  schedulePersist(eng);
+}
+
+function installFlushHooks() {
+  if (g.__certkoSqlFlushHooks) return;
+  g.__certkoSqlFlushHooks = true;
+  const flush = () => {
+    const eng = g.__certkoSqlEngine;
+    if (!eng) return;
+    try {
+      persist(eng, true);
+    } catch (err) {
+      console.error("[certko] SQLite flush on exit failed:", err);
+    }
+  };
+  process.once("beforeExit", flush);
+  process.once("exit", flush);
+}
+
+/**
+ * Run a bulk write (schema seed / catalog ensure) without exporting the DB on
+ * every statement. One export+write happens when the callback finishes.
+ */
+export function withDeferredSqlJsPersist<T>(fn: () => T): T {
+  const eng = g.__certkoSqlEngine;
+  if (!eng) return fn();
+  eng.deferPersist += 1;
+  clearPersistTimer(eng);
+  try {
+    return fn();
+  } finally {
+    eng.deferPersist = Math.max(0, eng.deferPersist - 1);
+    if (eng.deferPersist === 0 && eng.txDepth === 0) {
+      try {
+        persist(eng, true);
+      } catch (err) {
+        console.error("[certko] SQLite deferred persist failed:", err);
+        throw err;
+      }
+    }
+  }
+}
+
+/** Force a disk flush if the in-memory DB is dirty. */
+export function flushSqlJsToDisk(): void {
+  const eng = g.__certkoSqlEngine;
+  if (!eng) return;
+  persist(eng, true);
 }
 
 function wrapDatabase(raw: SqlJsDatabase, filePath: string): Engine {
@@ -98,6 +185,7 @@ function wrapDatabase(raw: SqlJsDatabase, filePath: string): Engine {
     raw,
     filePath,
     txDepth: 0,
+    deferPersist: 0,
     dirty: false,
     wrapper: null as unknown as SqliteDatabase,
   };
@@ -180,7 +268,7 @@ function wrapDatabase(raw: SqlJsDatabase, filePath: string): Engine {
     },
 
     close() {
-      persist(eng);
+      persist(eng, true);
       eng.raw.close();
       g.__certkoSqlEngine = undefined;
     },
@@ -250,6 +338,7 @@ export async function ensureSqlJsReady(filePath: string): Promise<SqliteDatabase
         raw = new SQL.Database();
       }
       g.__certkoSqlEngine = wrapDatabase(raw, filePath);
+      installFlushHooks();
       console.info("[certko] SQLite ready via sql.js at", filePath);
     })();
   }
