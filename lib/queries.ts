@@ -438,11 +438,41 @@ export function getPublishedPosts(limit = 50, offset = 0): Post[] {
   return rows.filter((p) => isBlogPubliclyVisible(p)).slice(offset, offset + limit);
 }
 
-/** Case-insensitive blog search over title / excerpt / body / meta / author. */
-export function searchPublishedPosts(q: string, limit = 24, offset = 0): Post[] {
+function blogSearchTokens(q: string): string[] {
+  return q
+    .trim()
+    .toLowerCase()
+    .split(/[^a-z0-9]+/i)
+    .filter((t) => t.length >= 1);
+}
+
+function stripMarkdownForSearch(value: string): string {
+  return value
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/[#*_`>[\]()!-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function postMatchesBlogQuery(p: Post, tokens: string[]): boolean {
+  const blob = [
+    p.title,
+    p.excerpt,
+    stripMarkdownForSearch(p.content || ""),
+    p.meta_title,
+    p.meta_description,
+    p.author,
+    p.author_name,
+    p.slug,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  return tokens.every((t) => blob.includes(t));
+}
+
+function loadLivePostsForSearch(): Post[] {
   flushDueBlogPosts();
-  const needle = q.trim().toLowerCase();
-  if (needle.length < 2) return [];
   const rows = getDb()
     .prepare(
       `SELECT ${POST_AUTHOR_SELECT}
@@ -452,55 +482,32 @@ export function searchPublishedPosts(q: string, limit = 24, offset = 0): Post[] 
        ORDER BY p.published_at DESC, p.id DESC`
     )
     .all() as Post[];
-  const hits = rows.filter((p) => {
-    if (!isBlogPubliclyVisible(p)) return false;
-    const blob = [
-      p.title,
-      p.excerpt,
-      p.content,
-      p.meta_title,
-      p.meta_description,
-      p.author,
-      p.author_name,
-      p.slug,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-    return blob.includes(needle);
+  return rows.filter((p) => isBlogPubliclyVisible(p));
+}
+
+/** Case-insensitive blog search: all tokens must match title / excerpt / body / meta / author. */
+export function searchPublishedPosts(q: string, limit = 24, offset = 0): Post[] {
+  const tokens = blogSearchTokens(q);
+  if (tokens.length === 0) return [];
+  const hits = loadLivePostsForSearch().filter((p) => postMatchesBlogQuery(p, tokens));
+  const phrase = q.trim().toLowerCase();
+  hits.sort((a, b) => {
+    const at = (a.title || "").toLowerCase();
+    const bt = (b.title || "").toLowerCase();
+    const aTitle = tokens.every((t) => at.includes(t)) ? 0 : 1;
+    const bTitle = tokens.every((t) => bt.includes(t)) ? 0 : 1;
+    if (aTitle !== bTitle) return aTitle - bTitle;
+    const aExact = at.includes(phrase) ? 0 : 1;
+    const bExact = bt.includes(phrase) ? 0 : 1;
+    return aExact - bExact;
   });
   return hits.slice(offset, offset + limit);
 }
 
 export function countSearchPublishedPosts(q: string): number {
-  flushDueBlogPosts();
-  const needle = q.trim().toLowerCase();
-  if (needle.length < 2) return 0;
-  const rows = getDb()
-    .prepare(
-      `SELECT ${POST_AUTHOR_SELECT}
-       FROM posts p
-       LEFT JOIN authors a ON a.id = p.author_id
-       WHERE ${LIVE_POST_SQL}`
-    )
-    .all() as Post[];
-  return rows.filter((p) => {
-    if (!isBlogPubliclyVisible(p)) return false;
-    const blob = [
-      p.title,
-      p.excerpt,
-      p.content,
-      p.meta_title,
-      p.meta_description,
-      p.author,
-      p.author_name,
-      p.slug,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-    return blob.includes(needle);
-  }).length;
+  const tokens = blogSearchTokens(q);
+  if (tokens.length === 0) return 0;
+  return loadLivePostsForSearch().filter((p) => postMatchesBlogQuery(p, tokens)).length;
 }
 
 export function getPostBySlug(slug: string): Post | undefined {
@@ -524,6 +531,90 @@ export function getAllPosts(): Post[] {
        ORDER BY p.id DESC`
     )
     .all() as Post[];
+}
+
+export function listAdminPosts(opts: {
+  q?: string;
+  status?: string;
+  authorId?: number;
+  limit?: number;
+  offset?: number;
+}): { posts: Post[]; total: number } {
+  const clauses: string[] = [];
+  const params: (string | number)[] = [];
+  const status = (opts.status ?? "").trim();
+  if (status) {
+    clauses.push("p.status = ?");
+    params.push(status);
+  }
+  if (opts.authorId) {
+    clauses.push("p.author_id = ?");
+    params.push(opts.authorId);
+  }
+  const q = (opts.q ?? "").trim().toLowerCase();
+  if (q) {
+    clauses.push(
+      "(LOWER(p.title) LIKE ? OR LOWER(p.slug) LIKE ? OR LOWER(p.excerpt) LIKE ? OR LOWER(IFNULL(a.name, p.author)) LIKE ?)"
+    );
+    const like = `%${q}%`;
+    params.push(like, like, like, like);
+  }
+  const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+  const from = `posts p LEFT JOIN authors a ON a.id = p.author_id`;
+  const total = (
+    getDb().prepare(`SELECT COUNT(*) AS n FROM ${from} ${where}`).get(...params) as { n: number }
+  ).n;
+  const limit = opts.limit ?? 15;
+  const offset = opts.offset ?? 0;
+  const posts = getDb()
+    .prepare(
+      `SELECT ${POST_AUTHOR_SELECT}
+       FROM ${from}
+       ${where}
+       ORDER BY p.id DESC
+       LIMIT ? OFFSET ?`
+    )
+    .all(...params, limit, offset) as Post[];
+  return { posts, total };
+}
+
+export function listAdminTestingServices(opts: {
+  q?: string;
+  categoryId?: number;
+  limit?: number;
+  offset?: number;
+}): { services: TestingService[]; total: number } {
+  const clauses: string[] = [];
+  const params: (string | number)[] = [];
+  if (opts.categoryId) {
+    clauses.push("s.category_id = ?");
+    params.push(opts.categoryId);
+  }
+  const q = (opts.q ?? "").trim();
+  if (q) {
+    const like = `%${q.replace(/\s+/g, "%")}%`;
+    clauses.push(
+      "(s.name LIKE ? OR s.standards LIKE ? OR s.test_type LIKE ? OR s.product_category LIKE ? OR s.summary LIKE ? OR c.name LIKE ?)"
+    );
+    params.push(like, like, like, like, like, like);
+  }
+  const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+  const from = `testing_services s JOIN testing_categories c ON c.id = s.category_id`;
+  const total = (
+    getDb().prepare(`SELECT COUNT(*) AS n FROM ${from} ${where}`).get(...params) as { n: number }
+  ).n;
+  const limit = opts.limit ?? 15;
+  const offset = opts.offset ?? 0;
+  const services = getDb()
+    .prepare(
+      `SELECT s.*, c.slug AS category_slug, c.name AS category_name, c.icon AS category_icon
+       FROM ${from}
+       ${where}
+       ORDER BY c.sort, s.sort, s.name
+       LIMIT ? OFFSET ?`
+    )
+    .all(...params, limit, offset) as TestingService[];
+  return { services, total };
 }
 
 export function getPostById(id: number): Post | undefined {

@@ -2,25 +2,53 @@ import { getDb } from "@/lib/db";
 import type { Inquiry } from "@/lib/db";
 import { setInquiryStatus } from "../../actions";
 import { SavedBanner, SubmitButton } from "@/components/admin/Field";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import AdminPagination from "@/components/admin/AdminPagination";
+import { paginateItems, parseAdminPage } from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; q?: string; page?: string; category?: string }>;
 }
 
 export default async function AdminInquiries({ searchParams }: Props) {
   const sp = await searchParams;
-  const inquiries = getDb()
-    .prepare("SELECT * FROM inquiries ORDER BY id DESC LIMIT 200")
+  const q = (sp.q ?? "").trim().toLowerCase();
+  const status = (sp.category ?? "").trim();
+  const all = getDb()
+    .prepare("SELECT * FROM inquiries ORDER BY id DESC")
     .all() as Inquiry[];
+  const filtered = all.filter((i) => {
+    if (status && i.status !== status) return false;
+    if (!q) return true;
+    const blob = [i.name, i.email, i.phone, i.product, i.message, i.intent].join(" ").toLowerCase();
+    return blob.includes(q);
+  });
+  const { items: inquiries, total, page } = paginateItems(filtered, parseAdminPage(sp.page));
 
   return (
     <div>
       <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Inquiries</h1>
       <p className="text-ink-600 text-sm mb-6">
-        Leads from the Contact / Get Expert Help forms and lab testing requests.
+        Leads from the Contact / Get Expert Help forms and lab testing requests.{" "}
+        {total.toLocaleString("en-IN")} shown with filters · 15 per page.
       </p>
+
+      <AdminFilterBar
+        action="/admin/inquiries"
+        searchValue={q}
+        searchPlaceholder="Search name, email, product…"
+        categoryName="category"
+        categoryValue={status}
+        categoryLabel="Status"
+        allLabel="All statuses"
+        categories={[
+          { value: "new", label: "New" },
+          { value: "contacted", label: "Contacted" },
+          { value: "closed", label: "Closed" },
+        ]}
+      />
 
       <SavedBanner
         saved={sp.saved}
@@ -80,6 +108,13 @@ export default async function AdminInquiries({ searchParams }: Props) {
           ))}
         </div>
       )}
+      <AdminPagination
+        page={page}
+        total={total}
+        path="/admin/inquiries"
+        params={{ q, category: status }}
+        noun="inquiries"
+      />
     </div>
   );
 }

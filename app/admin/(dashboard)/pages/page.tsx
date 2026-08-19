@@ -5,11 +5,14 @@ import { createPage } from "../../actions";
 import { Field, SavedBanner, SubmitButton } from "@/components/admin/Field";
 import PageNavPlacement from "@/components/admin/PageNavPlacement";
 import BulkImportLink from "@/components/admin/BulkImportLink";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import AdminPagination from "@/components/admin/AdminPagination";
+import { paginateItems, parseAdminPage } from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; q?: string; page?: string; category?: string }>;
 }
 
 function locationBadges(p: {
@@ -28,9 +31,22 @@ function locationBadges(p: {
 
 export default async function AdminPagesList({ searchParams }: Props) {
   const sp = await searchParams;
-  const pages = getAllPages();
-  const landings = pages.filter((p) => p.page_type === "landing");
-  const contentPages = pages.filter((p) => p.page_type !== "landing");
+  const q = (sp.q ?? "").trim().toLowerCase();
+  const type = (sp.category ?? "").trim();
+  const allPages = getAllPages();
+  const filtered = allPages.filter((p) => {
+    if (type === "landing" && p.page_type !== "landing") return false;
+    if (type === "content" && p.page_type === "landing") return false;
+    if (!q) return true;
+    return (
+      p.title.toLowerCase().includes(q) ||
+      p.slug.toLowerCase().includes(q) ||
+      (p.meta_description || "").toLowerCase().includes(q)
+    );
+  });
+  const { items: pageRows, total, page } = paginateItems(filtered, parseAdminPage(sp.page));
+  const landings = pageRows.filter((p) => p.page_type === "landing");
+  const contentPages = pageRows.filter((p) => p.page_type !== "landing");
 
   return (
     <div>
@@ -43,6 +59,20 @@ export default async function AdminPagesList({ searchParams }: Props) {
         stay out of the main nav by default so you can share campaign URLs only.
       </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
+
+      <AdminFilterBar
+        action="/admin/pages"
+        searchValue={q}
+        searchPlaceholder="Search page title or slug…"
+        categoryName="category"
+        categoryValue={type}
+        categoryLabel="Page type"
+        allLabel="All pages"
+        categories={[
+          { value: "content", label: "Content pages" },
+          { value: "landing", label: "Advertising landings" },
+        ]}
+      />
 
       <div className="bg-cream-100 rounded-2xl border border-cream-300 p-5 mb-8 space-y-4">
         <h2 className="font-display font-bold text-ink-950">Add a new page</h2>
@@ -141,6 +171,13 @@ export default async function AdminPagesList({ searchParams }: Props) {
           );
         })}
       </div>
+      <AdminPagination
+        page={page}
+        total={total}
+        path="/admin/pages"
+        params={{ q, category: type }}
+        noun="pages"
+      />
     </div>
   );
 }

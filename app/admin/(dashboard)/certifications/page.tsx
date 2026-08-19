@@ -9,15 +9,21 @@ import {
 } from "../../actions";
 import { Field, TextArea, MarkdownEditor, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import BulkImportLink from "@/components/admin/BulkImportLink";
+import { toServableUploadUrl } from "@/lib/upload-urls";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import AdminPagination from "@/components/admin/AdminPagination";
+import { paginateItems, parseAdminPage } from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; q?: string; page?: string; category?: string }>;
 }
 
 export default async function AdminCertifications({ searchParams }: Props) {
   const sp = await searchParams;
+  const q = (sp.q ?? "").trim().toLowerCase();
+  const categorySlug = (sp.category ?? "").trim();
   const certs = getCertifications();
   const existingSlugs = new Set(certs.map((c) => c.slug));
   const missingPresets = CERTIFICATION_PRESETS.filter((p) => !existingSlugs.has(p.slug));
@@ -25,6 +31,18 @@ export default async function AdminCertifications({ searchParams }: Props) {
     ...c,
     products: getCertProducts(c.id),
   }));
+  const filtered = certsWithProducts.filter((c) => {
+    if (categorySlug && c.slug !== categorySlug) return false;
+    if (!q) return true;
+    return (
+      c.name.toLowerCase().includes(q) ||
+      c.slug.toLowerCase().includes(q) ||
+      (c.region || "").toLowerCase().includes(q) ||
+      c.products.some((p) => p.name.toLowerCase().includes(q))
+    );
+  });
+  const requested = parseAdminPage(sp.page);
+  const { items: pageCerts, total, page } = paginateItems(filtered, requested);
   const totalProducts = certsWithProducts.reduce((n, c) => n + c.products.length, 0);
 
   return (
@@ -174,8 +192,18 @@ export default async function AdminCertifications({ searchParams }: Props) {
       <h2 className="font-display text-xl font-bold text-ink-950 mb-3">
         Certifications & products covered
       </h2>
+      <AdminFilterBar
+        action="/admin/certifications"
+        searchValue={q}
+        searchPlaceholder="Search certification or covered product…"
+        categoryName="category"
+        categoryValue={categorySlug}
+        categoryLabel="Certification"
+        allLabel="All certifications"
+        categories={certs.map((c) => ({ value: c.slug, label: c.name }))}
+      />
       <div className="space-y-4">
-        {certsWithProducts.map((c) => (
+        {pageCerts.map((c) => (
           <div
             key={c.id}
             className="bg-white rounded-2xl border border-cream-300 shadow-card overflow-hidden"
@@ -188,7 +216,7 @@ export default async function AdminCertifications({ searchParams }: Props) {
                 {c.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={c.image}
+                    src={toServableUploadUrl(c.image)}
                     alt=""
                     className="w-11 h-11 rounded-xl object-cover border border-cream-200 shrink-0"
                   />
@@ -270,6 +298,13 @@ export default async function AdminCertifications({ searchParams }: Props) {
           </div>
         ))}
       </div>
+      <AdminPagination
+        page={page}
+        total={total}
+        path="/admin/certifications"
+        params={{ q, category: categorySlug }}
+        noun="certifications"
+      />
     </div>
   );
 }

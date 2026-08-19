@@ -61,7 +61,7 @@ export default async function AdminTestingServiceEdit({ params, searchParams }: 
 
       <section
         id="faqs"
-        className="mb-10 bg-butter-300/25 rounded-2xl border border-butter-400/50 p-5 scroll-mt-24"
+        className="mb-10 bg-butter-300/25 rounded-2xl border border-butter-400/50 p-5 scroll-mt-4"
       >
         <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
           <div>
@@ -99,7 +99,13 @@ export default async function AdminTestingServiceEdit({ params, searchParams }: 
                     <Field label="Question" name="question" defaultValue={f.question} required />
                     <Field label="Order" name="sort" type="number" defaultValue={f.sort} />
                   </div>
-                  <TextArea label="Answer" name="answer" defaultValue={f.answer} rows={3} />
+                  <MarkdownEditor
+                    label="Answer"
+                    name="answer"
+                    defaultValue={f.answer}
+                    minHeightClass="min-h-[10rem]"
+                    hint="Tables, lists and formatting show on the public test page."
+                  />
                   <SubmitButton label="Save FAQ" />
                 </form>
                 <ConfirmDeleteForm action={deleteFaq} className="mt-2" itemLabel="this FAQ">
@@ -114,14 +120,19 @@ export default async function AdminTestingServiceEdit({ params, searchParams }: 
           </div>
         )}
 
-        <div id="add-faq" className="bg-white rounded-xl border border-cream-300 p-4 scroll-mt-24">
+        <div id="add-faq" className="bg-white rounded-xl border border-cream-300 p-4 scroll-mt-4">
           <h3 className="font-display font-bold text-ink-950 mb-3">Add FAQ for this test</h3>
           <form action={saveFaq} className="space-y-3">
             <input type="hidden" name="scope" value={`test:${service.id}`} />
             <input type="hidden" name="back" value={`${back}#faqs`} />
             <input type="hidden" name="sort" value={faqs.length} />
             <Field label="Question" name="question" required placeholder="e.g. How many samples do I need?" />
-            <TextArea label="Answer" name="answer" rows={3} />
+            <MarkdownEditor
+              label="Answer"
+              name="answer"
+              minHeightClass="min-h-[10rem]"
+              hint="Tables, lists and formatting show on the public test page."
+            />
             <SubmitButton label="Add FAQ to this test" />
           </form>
         </div>
@@ -197,7 +208,13 @@ export default async function AdminTestingServiceEdit({ params, searchParams }: 
           <p className="text-xs text-ink-500">
             Tentative prices are shown publicly as an indicative range. Leave blank for “On request”.
           </p>
-          <TextArea label="Summary" name="summary" defaultValue={service.summary} rows={2} />
+          <MarkdownEditor
+            label="Summary"
+            name="summary"
+            defaultValue={service.summary}
+            minHeightClass="min-h-[8rem]"
+            hint="Short intro on cards and the test page. Keep it brief."
+          />
           <ImageUpload current={service.image} label="Test image" />
         </section>
 

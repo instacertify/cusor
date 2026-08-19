@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import SubmitButton from "./SubmitButton";
+import { toServableUploadUrl } from "@/lib/upload-urls";
 
 export interface SeoEditorData {
   entity: string;
@@ -275,7 +276,7 @@ export default function SeoEditor({
           <div className="max-w-md border border-cream-300 rounded-2xl overflow-hidden bg-cream-50">
             {(ogImage || data.image) && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={ogImage || data.image} alt="Social preview" className="w-full h-40 object-cover" />
+              <img src={toServableUploadUrl(ogImage || data.image)} alt="Social preview" className="w-full h-40 object-cover" />
             )}
             <div className="p-3">
               <p className="text-[11px] uppercase text-ink-500">certko.com</p>
@@ -355,7 +356,7 @@ export default function SeoEditor({
       </div>
 
       {/* 10: score panel */}
-      <aside className="lg:sticky lg:top-24 bg-white rounded-2xl border border-cream-300 shadow-card p-6">
+      <aside className="lg:sticky lg:top-4 self-start bg-white rounded-2xl border border-cream-300 shadow-card p-6">
         <h2 className="font-display font-bold text-ink-950 mb-3">SEO Analysis</h2>
         <div className="flex items-center gap-4 mb-4">
           <div className={`font-display text-5xl font-semibold ${scoreColor}`}>{analysis.score}</div>

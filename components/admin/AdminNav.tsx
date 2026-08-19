@@ -31,7 +31,7 @@ export default function AdminNav({
   const pathname = usePathname() || "/admin";
 
   return (
-    <aside className="lg:sticky lg:top-24 self-start bg-white rounded-2xl border border-cream-300 shadow-card p-3">
+    <aside className="lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto self-start bg-white rounded-2xl border border-cream-300 shadow-card p-3">
       <div className="px-3 py-2 mb-1">
         <p className="text-xs font-bold uppercase tracking-wider text-ink-500">Certko Admin</p>
         <p className="text-[11px] text-ink-500 mt-0.5">Organised by work area</p>

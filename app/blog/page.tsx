@@ -38,7 +38,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const sp = await searchParams;
   const q = (param(sp.q) ?? "").trim();
   const page = Math.max(1, Number(param(sp.page)) || 1);
-  const total = q.length >= 2 ? countSearchPublishedPosts(q) : countPublishedPosts();
+  const total = q.length > 0 ? countSearchPublishedPosts(q) : countPublishedPosts();
   const totalPages = Math.max(1, Math.ceil(total / BLOG_PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const isFirst = safePage <= 1 && !q;
@@ -70,7 +70,7 @@ function formatDate(d: string | null): string {
 export default async function BlogIndexPage({ searchParams }: Props) {
   const sp = await searchParams;
   const q = (param(sp.q) ?? "").trim();
-  const searching = q.length >= 2;
+  const searching = q.length > 0;
   const requested = Math.max(1, Number(param(sp.page)) || 1);
   const total = searching ? countSearchPublishedPosts(q) : countPublishedPosts();
   const totalPages = Math.max(1, Math.ceil(total / BLOG_PAGE_SIZE));
@@ -110,7 +110,7 @@ export default async function BlogIndexPage({ searchParams }: Props) {
         costs and selling compliant products in India and abroad.
       </p>
 
-      <form action="/blog" method="GET" className="mt-8 max-w-xl flex gap-2" role="search">
+      <form action="/blog" method="GET" className="mt-8 max-w-2xl flex flex-col sm:flex-row gap-2" role="search">
         <label htmlFor="blog-search" className="sr-only">
           Search blog articles
         </label>
@@ -120,28 +120,36 @@ export default async function BlogIndexPage({ searchParams }: Props) {
           name="q"
           defaultValue={q}
           placeholder="Search articles (BIS, EMI, MSDS, export…)"
+          autoComplete="off"
+          enterKeyHint="search"
           className="flex-1 min-w-0 rounded-xl border border-cream-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-butter-500"
         />
-        <button
-          type="submit"
-          className="shrink-0 rounded-xl bg-ink-900 hover:bg-ink-800 text-white text-sm font-bold px-5 py-2.5 transition"
-        >
-          Search
-        </button>
-        {q ? (
-          <Link
-            href="/blog"
-            className="shrink-0 inline-flex items-center rounded-xl border border-cream-300 bg-white px-4 py-2.5 text-sm font-semibold text-ink-700 hover:border-butter-500"
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            className="shrink-0 rounded-xl bg-ink-900 hover:bg-ink-800 text-white text-sm font-bold px-5 py-2.5 transition"
           >
-            Clear
-          </Link>
-        ) : null}
+            Search
+          </button>
+          {q ? (
+            <Link
+              href="/blog"
+              className="shrink-0 inline-flex items-center rounded-xl border border-cream-300 bg-white px-4 py-2.5 text-sm font-semibold text-ink-700 hover:border-butter-500"
+            >
+              Clear
+            </Link>
+          ) : null}
+        </div>
       </form>
       {searching ? (
         <p className="mt-3 text-sm text-ink-600">
           {total} article{total === 1 ? "" : "s"} matching “{q}”
         </p>
-      ) : null}
+      ) : (
+        <p className="mt-3 text-sm text-ink-500">
+          Search titles, excerpts and article text. Words can be in any order.
+        </p>
+      )}
 
       <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {posts.map((p) => {

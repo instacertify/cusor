@@ -3,17 +3,32 @@ import { getAllCountryHubRecords } from "@/lib/country-certifications";
 import { GMA_REGIONS, gmaRegionLabel } from "@/lib/gma-regions";
 import { createCountryHub } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton } from "@/components/admin/Field";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import AdminPagination from "@/components/admin/AdminPagination";
+import { paginateItems, parseAdminPage } from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; q?: string; page?: string; category?: string }>;
 }
 
 export default async function AdminCountriesPage({ searchParams }: Props) {
   const sp = await searchParams;
-  const hubs = getAllCountryHubRecords();
-  const activeCount = hubs.filter((h) => h.active).length;
+  const q = (sp.q ?? "").trim().toLowerCase();
+  const region = (sp.category ?? "").trim();
+  const all = getAllCountryHubRecords();
+  const filtered = all.filter((h) => {
+    if (region && h.region !== region) return false;
+    if (!q) return true;
+    return (
+      h.name.toLowerCase().includes(q) ||
+      h.slug.toLowerCase().includes(q) ||
+      (h.short_name || "").toLowerCase().includes(q)
+    );
+  });
+  const { items: hubs, total, page } = paginateItems(filtered, parseAdminPage(sp.page));
+  const activeCount = all.filter((h) => h.active).length;
 
   return (
     <div>
@@ -27,6 +42,17 @@ export default async function AdminCountriesPage({ searchParams }: Props) {
         {activeCount} active of {hubs.length} total.
       </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
+
+      <AdminFilterBar
+        action="/admin/countries"
+        searchValue={q}
+        searchPlaceholder="Search country…"
+        categoryName="category"
+        categoryValue={region}
+        categoryLabel="Region"
+        allLabel="All regions"
+        categories={GMA_REGIONS.map((r) => ({ value: r.id, label: r.label }))}
+      />
 
       <div className="bg-white rounded-2xl border border-cream-300 shadow-card overflow-hidden mb-10">
         <table className="w-full text-sm">
@@ -84,6 +110,13 @@ export default async function AdminCountriesPage({ searchParams }: Props) {
           </tbody>
         </table>
       </div>
+      <AdminPagination
+        page={page}
+        total={total}
+        path="/admin/countries"
+        params={{ q, category: region }}
+        noun="countries"
+      />
 
       <div className="bg-cream-100 rounded-2xl border border-cream-300 p-5 max-w-2xl">
         <h2 className="font-display font-bold text-ink-950 mb-1">Add a country</h2>

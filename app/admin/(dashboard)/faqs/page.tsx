@@ -4,6 +4,9 @@ import { saveFaq, deleteFaq } from "../../actions";
 import { Field, TextArea, SavedBanner, SubmitButton } from "@/components/admin/Field";
 import BulkImportLink from "@/components/admin/BulkImportLink";
 import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import AdminPagination from "@/components/admin/AdminPagination";
+import { paginateItems, parseAdminPage } from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
@@ -22,13 +25,20 @@ const PAGE_SCOPES = [
 ];
 
 interface Props {
-  searchParams: Promise<{ saved?: string; error?: string; scope?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; scope?: string; q?: string; page?: string }>;
 }
 
 export default async function AdminFaqs({ searchParams }: Props) {
   const sp = await searchParams;
   const scope = sp.scope || "global";
-  const faqs = getFaqs(scope);
+  const q = (sp.q ?? "").trim().toLowerCase();
+  const allFaqs = getFaqs(scope);
+  const filtered = q
+    ? allFaqs.filter(
+        (f) => f.question.toLowerCase().includes(q) || (f.answer || "").toLowerCase().includes(q)
+      )
+    : allFaqs;
+  const { items: faqs, total, page } = paginateItems(filtered, parseAdminPage(sp.page));
   const back = `/admin/faqs?scope=${encodeURIComponent(scope)}`;
 
   const categories = getDb()
@@ -78,24 +88,21 @@ export default async function AdminFaqs({ searchParams }: Props) {
         You can also edit testing FAQs inside Admin → Product Testing, or bulk-upload via Excel.
       </p>
 
-      <form action="/admin/faqs" method="GET" className="mb-6 flex items-center gap-3">
-        <select
-          name="scope"
-          defaultValue={scope}
-          className="rounded-xl border border-cream-300 px-3 py-2.5 text-sm bg-white outline-none focus:border-butter-500 min-w-[260px]"
-        >
-          {scopeOptions.map((s) => (
-            <option key={s.value} value={s.value}>{s.label}</option>
-          ))}
-        </select>
-        <button className="bg-ink-900 hover:bg-ink-800 text-white text-sm font-bold rounded-xl px-5 py-2.5 transition">
-          Load FAQs
-        </button>
-      </form>
+      <AdminFilterBar
+        action="/admin/faqs"
+        searchValue={q}
+        searchPlaceholder="Search question or answer…"
+        categoryName="scope"
+        categoryValue={scope}
+        categoryLabel="Page / category"
+        allLabel={PAGE_SCOPES[0].label}
+        categories={scopeOptions}
+        requireCategory
+      />
 
       <SavedBanner saved={sp.saved} error={sp.error} />
       <h2 className="font-display text-lg font-bold text-ink-950 mb-4">
-        {currentLabel} — {faqs.length} FAQ{faqs.length === 1 ? "" : "s"}
+        {currentLabel} — {total} FAQ{total === 1 ? "" : "s"}
       </h2>
 
       <div className="space-y-4">
@@ -125,13 +132,20 @@ export default async function AdminFaqs({ searchParams }: Props) {
           </p>
         )}
       </div>
+      <AdminPagination
+        page={page}
+        total={total}
+        path="/admin/faqs"
+        params={{ scope, q }}
+        noun="FAQs"
+      />
 
       <div className="mt-8 bg-cream-100 rounded-2xl border border-cream-300 p-5">
         <h2 className="font-display font-bold text-ink-950 mb-3">Add New FAQ to “{currentLabel}”</h2>
         <form action={saveFaq} className="space-y-3">
           <input type="hidden" name="scope" value={scope} />
           <input type="hidden" name="back" value={back} />
-          <input type="hidden" name="sort" value={faqs.length} />
+          <input type="hidden" name="sort" value={allFaqs.length} />
           <Field label="Question" name="question" required />
           <TextArea label="Answer" name="answer" rows={3} />
           <SubmitButton label="Add FAQ" />

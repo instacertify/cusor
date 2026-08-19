@@ -1,24 +1,46 @@
 import Link from "next/link";
 import IconChip from "@/components/IconChip";
-import { getTestingCategories, getTestingServices } from "@/lib/queries";
+import { toServableUploadUrl } from "@/lib/upload-urls";
+import { getTestingCategories, listAdminTestingServices } from "@/lib/queries";
 import { createTestingCategory, saveTestingService } from "../../actions";
 import { Field, TextArea, MarkdownEditor, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import BulkImportLink from "@/components/admin/BulkImportLink";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import AdminPagination from "@/components/admin/AdminPagination";
+import {
+  ADMIN_PAGE_SIZE,
+  adminListHref,
+  adminOffset,
+  clampAdminPage,
+  parseAdminPage,
+} from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; q?: string; page?: string; category?: string }>;
 }
 
 export default async function AdminTesting({ searchParams }: Props) {
   const sp = await searchParams;
+  const q = (sp.q ?? "").trim();
+  const categoryId = Number(sp.category) || 0;
+  const requested = parseAdminPage(sp.page);
   const categories = getTestingCategories();
-  const categoriesWithTests = categories.map((c) => ({
-    ...c,
-    tests: getTestingServices(c.id),
-  }));
-  const totalTests = categoriesWithTests.reduce((n, c) => n + c.tests.length, 0);
+  const counted = listAdminTestingServices({
+    q,
+    categoryId: categoryId || undefined,
+    limit: 1,
+    offset: 0,
+  }).total;
+  const page = clampAdminPage(requested, counted);
+  const { services, total } = listAdminTestingServices({
+    q,
+    categoryId: categoryId || undefined,
+    limit: ADMIN_PAGE_SIZE,
+    offset: adminOffset(page),
+  });
+  const filterParams = { q, category: categoryId || undefined };
 
   return (
     <div>
@@ -30,7 +52,8 @@ export default async function AdminTesting({ searchParams }: Props) {
         Create a <strong>master testing category</strong> (shown in the header Testing menu), then add
         product/test pages mapped to that category. Use bulk import for many testing solutions with
         tentative prices. {categories.length} categor{categories.length === 1 ? "y" : "ies"} ·{" "}
-        {totalTests} testing solution{totalTests === 1 ? "" : "s"}.
+        {counted.toLocaleString("en-IN")} testing solution{counted === 1 ? "" : "s"}
+        {categoryId ? " in this category" : ""}.
       </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
 
@@ -50,7 +73,12 @@ export default async function AdminTesting({ searchParams }: Props) {
               <Field label="Icon" name="icon" placeholder="microscope" defaultValue="microscope" />
               <Field label="Menu sort" name="sort" type="number" placeholder="auto" />
             </div>
-            <Field label="Summary" name="summary" placeholder="One-line description for cards & search" />
+            <MarkdownEditor
+              label="Summary"
+              name="summary"
+              minHeightClass="min-h-[8rem]"
+              hint="Short intro on cards and the public category page."
+            />
             <MarkdownEditor
               label="Category content"
               name="content"
@@ -132,7 +160,12 @@ export default async function AdminTesting({ searchParams }: Props) {
                   placeholder="Indicative; confirm on quote"
                 />
               </div>
-              <TextArea label="Summary" name="summary" rows={2} />
+              <MarkdownEditor
+                label="Summary"
+                name="summary"
+                minHeightClass="min-h-[8rem]"
+                hint="Short intro on cards. Keep it brief."
+              />
               <MarkdownEditor
                 label="Content writeup"
                 name="content"
@@ -148,86 +181,136 @@ export default async function AdminTesting({ searchParams }: Props) {
       </div>
 
       <h2 className="font-display text-xl font-bold text-ink-950 mb-3">
-        Categories & their test pages
+        Categories &amp; their test pages
       </h2>
-      <div className="space-y-4">
-        {categoriesWithTests.map((c) => (
-          <div
+      <AdminFilterBar
+        action="/admin/testing"
+        searchValue={q}
+        searchPlaceholder="Search test name, standard or type…"
+        categoryName="category"
+        categoryValue={categoryId ? String(categoryId) : ""}
+        categoryLabel="Testing category"
+        categories={categories.map((c) => ({
+          value: String(c.id),
+          label: `${c.name} (${c.service_count ?? 0})`,
+        }))}
+      />
+
+      <div className="flex flex-wrap gap-2 mb-4">
+        <Link
+          href={adminListHref("/admin/testing", { q })}
+          className={`text-xs font-bold rounded-full px-3 py-1.5 border ${
+            !categoryId ? "bg-ink-900 text-white border-ink-900" : "bg-white text-ink-700 border-cream-300 hover:border-butter-500"
+          }`}
+        >
+          All
+        </Link>
+        {categories.map((c) => (
+          <Link
             key={c.id}
-            className="bg-white rounded-2xl border border-cream-300 shadow-card overflow-hidden"
+            href={adminListHref("/admin/testing", { q, category: c.id })}
+            className={`text-xs font-bold rounded-full px-3 py-1.5 border ${
+              categoryId === c.id
+                ? "bg-ink-900 text-white border-ink-900"
+                : "bg-white text-ink-700 border-cream-300 hover:border-butter-500"
+            }`}
           >
-            <div className="flex flex-wrap items-center gap-4 p-5 border-b border-cream-200">
-              <Link href={`/admin/testing/${c.id}`} className="flex items-center gap-4 min-w-0 flex-1">
+            {c.name}
+          </Link>
+        ))}
+      </div>
+
+      <div className="space-y-3 mb-6">
+        {categories
+          .filter((c) => !categoryId || c.id === categoryId)
+          .map((c) => (
+            <div
+              key={c.id}
+              className="bg-white rounded-2xl border border-cream-300 shadow-card px-5 py-3 flex flex-wrap items-center gap-3"
+            >
+              <Link href={`/admin/testing/${c.id}`} className="flex items-center gap-3 min-w-0 flex-1">
                 {c.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={c.image}
+                    src={toServableUploadUrl(c.image)}
                     alt=""
-                    className="w-11 h-11 rounded-xl object-cover border border-cream-200 shrink-0"
+                    className="w-10 h-10 rounded-xl object-cover border border-cream-200 shrink-0"
                   />
                 ) : (
-                  <IconChip name={c.icon} size={24} chip="lg" tone="neutral" />
+                  <IconChip name={c.icon} size={22} chip="lg" tone="neutral" />
                 )}
                 <span className="min-w-0">
                   <span className="block font-display font-bold text-ink-950 truncate">{c.name}</span>
                   <span className="block text-xs text-ink-500">
-                    /testing/{c.slug} · {c.tests.length} test page{c.tests.length === 1 ? "" : "s"}
+                    /testing/{c.slug} · {c.service_count ?? 0} test page
+                    {(c.service_count ?? 0) === 1 ? "" : "s"}
                   </span>
                 </span>
               </Link>
-              <div className="flex items-center gap-3 text-sm font-bold shrink-0">
-                <Link href={`/testing/${c.slug}`} target="_blank" className="text-ink-600 hover:text-ink-900">
+              <Link href={`/testing/${c.slug}`} target="_blank" className="text-xs font-bold text-ink-600">
+                View ↗
+              </Link>
+              <Link href={`/admin/testing/${c.id}`} className="text-xs font-bold text-butter-700">
+                Manage category →
+              </Link>
+            </div>
+          ))}
+      </div>
+
+      <div className="bg-white rounded-2xl border border-cream-300 shadow-card overflow-hidden">
+        <div className="px-5 py-4 border-b border-cream-200">
+          <h3 className="font-display font-bold text-ink-950">
+            Test pages ({counted.toLocaleString("en-IN")})
+            <span className="font-medium text-ink-500 text-sm"> · {ADMIN_PAGE_SIZE} per page</span>
+          </h3>
+        </div>
+        {services.length === 0 ? (
+          <p className="px-5 py-6 text-sm text-ink-500">
+            No test pages match this filter. Create one above, or choose another category.
+          </p>
+        ) : (
+          <ul className="divide-y divide-cream-100">
+            {services.map((t) => (
+              <li key={t.id} className="flex flex-wrap items-center gap-3 px-5 py-3 hover:bg-cream-50">
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold text-ink-950 truncate">{t.name}</span>
+                  <span className="block text-xs text-ink-500 truncate">
+                    {t.category_name} · /testing/{t.category_slug}/{t.slug}
+                    {t.standards ? ` · ${t.standards}` : ""}
+                    {t.test_type ? ` · ${t.test_type}` : ""}
+                  </span>
+                </span>
+                <Link
+                  href={`/testing/${t.category_slug}/${t.slug}`}
+                  target="_blank"
+                  className="text-xs font-bold text-ink-600 hover:text-ink-900"
+                >
                   View ↗
                 </Link>
-                <Link href={`/admin/testing/${c.id}`} className="text-butter-700 hover:text-butter-600">
-                  Manage category →
+                <Link
+                  href={`/admin/testing/service/${t.id}#faqs`}
+                  className="text-xs font-bold text-ink-800 border border-cream-300 rounded-lg px-2.5 py-1 hover:border-butter-400"
+                >
+                  Edit FAQs
                 </Link>
-              </div>
-            </div>
-
-            {c.tests.length === 0 ? (
-              <p className="px-5 py-4 text-sm text-ink-500">
-                No test pages yet. Use “Add a test page” above (select this category), or open Manage
-                category.
-              </p>
-            ) : (
-              <ul className="divide-y divide-cream-100">
-                {c.tests.map((t) => (
-                  <li key={t.id} className="flex flex-wrap items-center gap-3 px-5 py-3 hover:bg-cream-50">
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold text-ink-950 truncate">{t.name}</span>
-                      <span className="block text-xs text-ink-500 truncate">
-                        /testing/{c.slug}/{t.slug}
-                        {t.standards ? ` · ${t.standards}` : ""}
-                        {t.test_type ? ` · ${t.test_type}` : ""}
-                      </span>
-                    </span>
-                    <Link
-                      href={`/testing/${c.slug}/${t.slug}`}
-                      target="_blank"
-                      className="text-xs font-bold text-ink-600 hover:text-ink-900"
-                    >
-                      View ↗
-                    </Link>
-                    <Link
-                      href={`/admin/testing/service/${t.id}#faqs`}
-                      className="text-xs font-bold text-ink-800 border border-cream-300 rounded-lg px-2.5 py-1 hover:border-butter-400"
-                    >
-                      Edit FAQs
-                    </Link>
-                    <Link
-                      href={`/admin/testing/service/${t.id}`}
-                      className="text-xs font-bold text-butter-700 hover:text-butter-600"
-                    >
-                      Edit test →
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        ))}
+                <Link
+                  href={`/admin/testing/service/${t.id}`}
+                  className="text-xs font-bold text-butter-700 hover:text-butter-600"
+                >
+                  Edit test →
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
+      <AdminPagination
+        page={page}
+        total={total}
+        path="/admin/testing"
+        params={filterParams}
+        noun="tests"
+      />
     </div>
   );
 }

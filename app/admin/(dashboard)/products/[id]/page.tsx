@@ -127,7 +127,7 @@ export default async function AdminProductEdit({ params, searchParams }: Props) 
       )}
 
       {/* Linked labs */}
-      <section id="product-labs" className="mt-10 scroll-mt-24">
+      <section id="product-labs" className="mt-10 scroll-mt-4">
         <h2 className="font-display text-xl font-bold text-ink-950 mb-1">
           Linked Labs ({linkedLabs.length})
         </h2>
@@ -204,7 +204,7 @@ export default async function AdminProductEdit({ params, searchParams }: Props) 
       </section>
 
       {/* Linked testing */}
-      <section id="product-testing" className="mt-10 scroll-mt-24">
+      <section id="product-testing" className="mt-10 scroll-mt-4">
         <h2 className="font-display text-xl font-bold text-ink-950 mb-1">
           Linked Testing ({linkedTests.length})
         </h2>
@@ -291,7 +291,13 @@ export default async function AdminProductEdit({ params, searchParams }: Props) 
                 <input type="hidden" name="back" value={back} />
                 <input type="hidden" name="sort" value={f.sort} />
                 <Field label="Question" name="question" defaultValue={f.question} required />
-                <TextArea label="Answer" name="answer" defaultValue={f.answer} rows={3} />
+                <MarkdownEditor
+                  label="Answer"
+                  name="answer"
+                  defaultValue={f.answer}
+                  minHeightClass="min-h-[10rem]"
+                  hint="Tables, lists and formatting show on the public product page."
+                />
                 <div className="flex items-center gap-4">
                   <SubmitButton label="Save FAQ" />
                 </div>
@@ -312,7 +318,12 @@ export default async function AdminProductEdit({ params, searchParams }: Props) 
             <input type="hidden" name="back" value={back} />
             <input type="hidden" name="sort" value={faqs.length} />
             <Field label="Question" name="question" required placeholder="e.g. Is a factory inspection required?" />
-            <TextArea label="Answer" name="answer" rows={3} />
+            <MarkdownEditor
+              label="Answer"
+              name="answer"
+              minHeightClass="min-h-[10rem]"
+              hint="Tables, lists and formatting show on the public product page."
+            />
             <SubmitButton label="Add FAQ" />
           </form>
         </div>

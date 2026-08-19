@@ -12,12 +12,15 @@ import {
 } from "../../../actions";
 import { Field, TextArea, MarkdownEditor, SavedBanner, SubmitButton, ImageUpload } from "@/components/admin/Field";
 import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import AdminPagination from "@/components/admin/AdminPagination";
+import { ADMIN_PAGE_SIZE, paginateItems, parseAdminPage } from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; q?: string; page?: string }>;
 }
 
 export default async function AdminTestingEdit({ params, searchParams }: Props) {
@@ -28,7 +31,19 @@ export default async function AdminTestingEdit({ params, searchParams }: Props) 
     .get(Number(id)) as TestingCategory | undefined;
   if (!cat) notFound();
   const faqs = getFaqs(`testcat:${cat.slug}`);
-  const services = getTestingServices(cat.id);
+  const allServices = getTestingServices(cat.id);
+  const q = (sp.q ?? "").trim().toLowerCase();
+  const filtered = q
+    ? allServices.filter(
+        (s) =>
+          s.name.toLowerCase().includes(q) ||
+          (s.standards || "").toLowerCase().includes(q) ||
+          (s.test_type || "").toLowerCase().includes(q) ||
+          (s.product_category || "").toLowerCase().includes(q)
+      )
+    : allServices;
+  const requested = parseAdminPage(sp.page);
+  const { items: services, total, page } = paginateItems(filtered, requested);
   const back = `/admin/testing/${cat.id}`;
 
   return (
@@ -42,8 +57,8 @@ export default async function AdminTestingEdit({ params, searchParams }: Props) 
             Category: {cat.name}
           </h1>
           <p className="text-sm text-ink-600 mt-1">
-            {services.length} test page{services.length === 1 ? "" : "s"} under this category — each
-            has its own editable FAQ set.
+            {services.length} test page{services.length === 1 ? "" : "s"} under this category
+            {q ? ` matching “${q}”` : ""} — {total} total, {ADMIN_PAGE_SIZE} per page.
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
@@ -60,7 +75,7 @@ export default async function AdminTestingEdit({ params, searchParams }: Props) 
       <section className="mb-10 bg-white rounded-2xl border border-cream-300 shadow-card overflow-hidden">
         <div className="px-5 py-4 border-b border-cream-200 flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-display text-xl font-bold text-ink-950">
-            Test pages in this category ({services.length})
+            Test pages in this category ({total})
           </h2>
           <a
             href="#add-test"
@@ -68,6 +83,15 @@ export default async function AdminTestingEdit({ params, searchParams }: Props) 
           >
             + Add test page
           </a>
+        </div>
+        <div className="px-5 pt-4">
+          <AdminFilterBar
+            action={`/admin/testing/${cat.id}`}
+            searchValue={q}
+            searchPlaceholder="Filter tests in this category…"
+            categories={[]}
+            showSearch
+          />
         </div>
         {services.length === 0 ? (
           <p className="px-5 py-5 text-sm text-ink-600">
@@ -116,9 +140,18 @@ export default async function AdminTestingEdit({ params, searchParams }: Props) 
             })}
           </ul>
         )}
+        <div className="px-5 pb-4">
+          <AdminPagination
+            page={page}
+            total={total}
+            path={`/admin/testing/${cat.id}`}
+            params={{ q }}
+            noun="tests"
+          />
+        </div>
       </section>
 
-      <section id="add-test" className="mb-10 bg-cream-100 rounded-2xl border border-cream-300 p-5 scroll-mt-24">
+      <section id="add-test" className="mb-10 bg-cream-100 rounded-2xl border border-cream-300 p-5 scroll-mt-4">
         <h2 className="font-display font-bold text-ink-950 mb-1">Add a test page under {cat.name}</h2>
         <p className="text-xs text-ink-600 mb-4">
           Complete options below. Starter FAQs are created automatically — then edit them on the
@@ -160,7 +193,12 @@ export default async function AdminTestingEdit({ params, searchParams }: Props) 
               placeholder="Indicative; confirm on quote"
             />
           </div>
-          <TextArea label="Summary" name="summary" rows={2} />
+          <MarkdownEditor
+            label="Summary"
+            name="summary"
+            minHeightClass="min-h-[8rem]"
+            hint="Short intro on category cards. Keep it brief."
+          />
           <MarkdownEditor
             label="Content writeup"
             name="content"
@@ -183,7 +221,13 @@ export default async function AdminTestingEdit({ params, searchParams }: Props) 
             <Field label="Icon name" name="icon" defaultValue={cat.icon} />
             <Field label="Menu sort" name="sort" type="number" defaultValue={String(cat.sort)} />
           </div>
-          <TextArea label="Summary" name="summary" defaultValue={cat.summary} rows={2} />
+          <MarkdownEditor
+            label="Summary"
+            name="summary"
+            defaultValue={cat.summary}
+            minHeightClass="min-h-[8rem]"
+            hint="Short intro on the public category page. Keep it brief."
+          />
           <ImageUpload current={cat.image} label="Front / hero image" />
         </section>
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">
@@ -220,7 +264,13 @@ export default async function AdminTestingEdit({ params, searchParams }: Props) 
                 <input type="hidden" name="back" value={back} />
                 <input type="hidden" name="sort" value={f.sort} />
                 <Field label="Question" name="question" defaultValue={f.question} required />
-                <TextArea label="Answer" name="answer" defaultValue={f.answer} rows={3} />
+                <MarkdownEditor
+                  label="Answer"
+                  name="answer"
+                  defaultValue={f.answer}
+                  minHeightClass="min-h-[10rem]"
+                  hint="Tables, lists and formatting show on the public category page."
+                />
                 <SubmitButton label="Save FAQ" />
               </form>
               <ConfirmDeleteForm action={deleteFaq} className="mt-2" itemLabel="this FAQ">
@@ -238,7 +288,12 @@ export default async function AdminTestingEdit({ params, searchParams }: Props) 
             <input type="hidden" name="back" value={back} />
             <input type="hidden" name="sort" value={faqs.length} />
             <Field label="Question" name="question" required />
-            <TextArea label="Answer" name="answer" rows={3} />
+            <MarkdownEditor
+              label="Answer"
+              name="answer"
+              minHeightClass="min-h-[10rem]"
+              hint="Tables, lists and formatting show on the public category page."
+            />
             <SubmitButton label="Add FAQ" />
           </form>
         </div>

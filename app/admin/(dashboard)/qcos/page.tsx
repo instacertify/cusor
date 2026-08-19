@@ -3,16 +3,31 @@ import { saveQco, deleteQco } from "../../actions";
 import { Field, SavedBanner, SubmitButton } from "@/components/admin/Field";
 import BulkImportLink from "@/components/admin/BulkImportLink";
 import ConfirmDeleteForm from "@/components/admin/ConfirmDeleteForm";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import AdminPagination from "@/components/admin/AdminPagination";
+import { paginateItems, parseAdminPage } from "@/lib/admin-list";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; q?: string; page?: string; category?: string }>;
 }
 
 export default async function AdminQcos({ searchParams }: Props) {
   const sp = await searchParams;
-  const qcos = getUpcomingQcos();
+  const q = (sp.q ?? "").trim().toLowerCase();
+  const scheme = (sp.category ?? "").trim();
+  const all = getUpcomingQcos();
+  const filtered = all.filter((item) => {
+    if (scheme && item.scheme !== scheme) return false;
+    if (!q) return true;
+    return (
+      item.product.toLowerCase().includes(q) ||
+      (item.standard || "").toLowerCase().includes(q) ||
+      (item.ministry || "").toLowerCase().includes(q)
+    );
+  });
+  const { items: qcos, total, page } = paginateItems(filtered, parseAdminPage(sp.page));
 
   return (
     <div>
@@ -24,6 +39,20 @@ export default async function AdminQcos({ searchParams }: Props) {
         Upcoming Quality Control Orders shown on the public /qco page and the homepage teaser. Add one below or bulk-upload via Excel.
       </p>
       <SavedBanner saved={sp.saved} error={sp.error} />
+
+      <AdminFilterBar
+        action="/admin/qcos"
+        searchValue={q}
+        searchPlaceholder="Search product or standard…"
+        categoryName="category"
+        categoryValue={scheme}
+        categoryLabel="Scheme"
+        allLabel="All schemes"
+        categories={[
+          { value: "ISI", label: "ISI" },
+          { value: "CRS", label: "CRS" },
+        ]}
+      />
 
       <div className="space-y-4">
         {qcos.map((q) => (
@@ -63,6 +92,13 @@ export default async function AdminQcos({ searchParams }: Props) {
           </div>
         ))}
       </div>
+      <AdminPagination
+        page={page}
+        total={total}
+        path="/admin/qcos"
+        params={{ q, category: scheme }}
+        noun="alerts"
+      />
 
       <div className="mt-8 bg-cream-100 rounded-2xl border border-cream-300 p-5">
         <h2 className="font-display font-bold text-ink-950 mb-3">Add QCO Alert</h2>

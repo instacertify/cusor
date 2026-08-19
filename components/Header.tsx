@@ -119,7 +119,7 @@ export default async function Header() {
 
         <div className="hidden lg:flex items-center gap-2.5 ml-auto shrink-0 w-full max-w-md xl:max-w-lg">
           <div className="flex-1 min-w-0">
-            <SearchBox compact placeholder="Product, HSN, or standard…" />
+            <SearchBox compact placeholder="Product, standard or blog…" />
           </div>
           <TalkToCertificationExpertLink variant="header" short cta={expertCta} />
         </div>

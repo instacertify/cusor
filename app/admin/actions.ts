@@ -1730,7 +1730,10 @@ export async function createTestingCategory(formData: FormData) {
   ).m;
   const sortRaw = String(formData.get("sort") ?? "").trim();
   const sort = sortRaw ? Number(sortRaw) || maxSort + 1 : maxSort + 1;
-  const image = (await saveUploadedImage(formData.get("image_file") as File | null)) ?? "";
+  const image = (await saveUploadedImageOrRedirect(
+    formData.get("image_file") as File | null,
+    "/admin/testing"
+  )) ?? "";
   const summary = String(formData.get("summary") ?? "").trim();
   const content =
     String(formData.get("content") ?? "").trim() ||
@@ -1755,7 +1758,7 @@ export async function createTestingCategory(formData: FormData) {
       metaDescription,
       sort
     );
-  revalidatePath("/", "layout");
+  revalidateSoon("/", "layout");
   redirect(`/admin/testing/${Number(res.lastInsertRowid)}?saved=1`);
 }
 
@@ -1779,7 +1782,7 @@ export async function deleteTestingCategory(formData: FormData) {
     db.prepare("DELETE FROM testing_services WHERE category_id = ?").run(id);
     db.prepare("DELETE FROM testing_categories WHERE id = ?").run(id);
   }
-  revalidatePath("/", "layout");
+  revalidateSoon("/", "layout");
   redirect("/admin/testing?saved=1");
 }
 
@@ -1799,7 +1802,10 @@ export async function saveTestingCategory(formData: FormData) {
     .get(slug, id) as { id: number } | undefined;
   if (clash) slug = `${slug}-${id}`;
 
-  const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
+  const uploaded = await saveUploadedImageOrRedirect(
+    formData.get("image_file") as File | null,
+    `/admin/testing/${id}`
+  );
   const clearImage = formData.get("clear_image") === "1";
   const image = uploaded ?? (clearImage ? "" : current.image);
   const sort = Number(formData.get("sort") ?? 0) || 0;
@@ -1827,7 +1833,7 @@ export async function saveTestingCategory(formData: FormData) {
     );
   }
 
-  revalidatePath("/", "layout");
+  revalidateSoon("/", "layout");
   redirect(`/admin/testing/${id}?saved=1`);
 }
 
@@ -1846,7 +1852,13 @@ export async function saveTestingService(formData: FormData) {
   if (!catExists) redirect("/admin/testing?error=1");
 
   let slug = slugify(String(formData.get("slug") ?? "").trim() || name);
-  const uploaded = await saveUploadedImage(formData.get("image_file") as File | null);
+  const failHref = id
+    ? `/admin/testing/service/${id}`
+    : `/admin/testing/${categoryId}`;
+  const uploaded = await saveUploadedImageOrRedirect(
+    formData.get("image_file") as File | null,
+    failHref
+  );
   const clearImage = formData.get("clear_image") === "1";
   const minPriceRaw = String(formData.get("min_price") ?? "").trim();
   const maxPriceRaw = String(formData.get("max_price") ?? "").trim();
@@ -1963,7 +1975,7 @@ export async function saveTestingService(formData: FormData) {
     starterFaqs.forEach(([q, a], i) => insFaq.run(`test:${savedId}`, q, a, i));
   }
 
-  revalidatePath("/", "layout");
+  revalidateSoon("/", "layout");
   if (returnTo === "list" || returnTo === "/admin/testing") {
     redirect("/admin/testing?saved=1");
   }
@@ -1981,7 +1993,7 @@ export async function deleteTestingService(formData: FormData) {
   db.prepare("DELETE FROM faqs WHERE scope = ?").run(`test:${id}`);
   db.prepare("DELETE FROM seo_meta WHERE entity = ?").run(`test:${id}`);
   db.prepare("DELETE FROM testing_services WHERE id = ?").run(id);
-  revalidatePath("/", "layout");
+  revalidateSoon("/", "layout");
   redirect(`/admin/testing/${categoryId}?saved=1`);
 }
 

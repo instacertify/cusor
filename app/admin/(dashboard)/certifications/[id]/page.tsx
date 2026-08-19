@@ -187,7 +187,13 @@ export default async function AdminCertificationEdit({ params, searchParams }: P
                 <input type="hidden" name="back" value={back} />
                 <input type="hidden" name="sort" value={f.sort} />
                 <Field label="Question" name="question" defaultValue={f.question} required />
-                <TextArea label="Answer" name="answer" defaultValue={f.answer} rows={3} />
+                <MarkdownEditor
+                  label="Answer"
+                  name="answer"
+                  defaultValue={f.answer}
+                  minHeightClass="min-h-[10rem]"
+                  hint="Tables, lists and formatting show on the public certification page."
+                />
                 <SubmitButton label="Save FAQ" />
               </form>
               <ConfirmDeleteForm action={deleteFaq} className="mt-2" itemLabel="this FAQ">
@@ -207,7 +213,12 @@ export default async function AdminCertificationEdit({ params, searchParams }: P
             <input type="hidden" name="back" value={back} />
             <input type="hidden" name="sort" value={faqs.length} />
             <Field label="Question" name="question" required />
-            <TextArea label="Answer" name="answer" rows={3} />
+            <MarkdownEditor
+              label="Answer"
+              name="answer"
+              minHeightClass="min-h-[10rem]"
+              hint="Tables, lists and formatting show on the public certification page."
+            />
             <SubmitButton label="Add FAQ" />
           </form>
         </div>
