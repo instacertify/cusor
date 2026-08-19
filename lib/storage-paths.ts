@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { sidecarCredentialStrength } from "./admin-credential-guards";
 
 /**
  * Durable CMS file storage (uploads) — prefer a path outside the git deploy tree
@@ -35,6 +36,17 @@ function canUse(dir: string): boolean {
 
 function copyFileIfMissing(src: string, dest: string) {
   if (!fs.existsSync(src) || fs.existsSync(dest)) return;
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  fs.copyFileSync(src, dest);
+}
+
+/** Replace dest when source has a hashed login and dest is missing or seed defaults. */
+function copySidecarPreferStronger(src: string, dest: string) {
+  if (!fs.existsSync(src)) return;
+  const srcScore = sidecarCredentialStrength(src);
+  if (srcScore < 2) return;
+  const destScore = sidecarCredentialStrength(dest);
+  if (srcScore <= destScore) return;
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.copyFileSync(src, dest);
 }
@@ -88,9 +100,13 @@ function migrateLegacyInto(dataDir: string) {
         path.join(appData, "inquiries-deleted.jsonl"),
         path.join(dataDir, "inquiries-deleted.jsonl")
       );
-      copyFileIfMissing(
+      copySidecarPreferStronger(
         path.join(appData, "settings-archive.json"),
         path.join(dataDir, "settings-archive.json")
+      );
+      copySidecarPreferStronger(
+        path.join(appData, ".certko-admin.json"),
+        path.join(dataDir, ".certko-admin.json")
       );
       for (const f of fs.existsSync(appData) ? fs.readdirSync(appData) : []) {
         if (f.startsWith("certko.db-")) {
@@ -150,18 +166,19 @@ const SIDECAR_FILES = [
   "inquiries.jsonl",
   "inquiries-deleted.jsonl",
   "settings-archive.json",
+  ".certko-admin.json",
 ];
 
-/**
- * Copy CMS files from older Hostinger version folders when the shared data dir
- * is missing them (first boot after switching persist path).
- */
-function recoverFromPriorHbuildsVersions(dataDir: string): void {
-  const cwd = path.resolve(process.cwd());
-  const match = cwd.match(/^(.*\/hbuilds)\/versions\//);
-  if (!match) return;
-  const versionsRoot = path.join(match[1], "versions");
-  if (!fs.existsSync(versionsRoot)) return;
+const CREDENTIAL_SIDECARS = new Set(["settings-archive.json", ".certko-admin.json"]);
+
+function hbuildsVersionsRoot(cwd = process.cwd()): string | null {
+  const match = path.resolve(cwd).match(/^(.*\/hbuilds)\/versions\//);
+  return match ? path.join(match[1], "versions") : null;
+}
+
+function listHbuildsVersionDataDirs(cwd = process.cwd()): string[] {
+  const versionsRoot = hbuildsVersionsRoot(cwd);
+  if (!versionsRoot || !fs.existsSync(versionsRoot)) return [];
 
   let versionDirs: string[] = [];
   try {
@@ -176,7 +193,7 @@ function recoverFromPriorHbuildsVersions(dataDir: string): void {
         }
       });
   } catch {
-    return;
+    return [];
   }
 
   versionDirs.sort((a, b) => {
@@ -187,18 +204,69 @@ function recoverFromPriorHbuildsVersions(dataDir: string): void {
     }
   });
 
-  for (const versionDir of versionDirs.slice(0, 20)) {
-    const srcDir = path.join(versionDir, "nodejs", "data");
-    if (!fs.existsSync(srcDir)) continue;
-    for (const name of SIDECAR_FILES) {
-      const from = path.join(srcDir, name);
-      const to = path.join(dataDir, name);
-      if (name === "certko.db") copyDbIfDestEmpty(from, to);
-      else copyFileIfMissing(from, to);
-    }
-    const srcUploads = path.join(srcDir, "uploads");
-    if (fs.existsSync(srcUploads)) {
-      copyDirContents(srcUploads, path.join(dataDir, "uploads"));
+  return versionDirs.slice(0, 20).map((dir) => path.join(dir, "nodejs", "data"));
+}
+
+function harvestSidecarsFromDir(srcDir: string, dataDir: string): void {
+  if (!fs.existsSync(srcDir)) return;
+  if (path.resolve(srcDir) === path.resolve(dataDir)) return;
+  for (const name of SIDECAR_FILES) {
+    const from = path.join(srcDir, name);
+    const to = path.join(dataDir, name);
+    if (name === "certko.db") copyDbIfDestEmpty(from, to);
+    else if (CREDENTIAL_SIDECARS.has(name)) copySidecarPreferStronger(from, to);
+    else copyFileIfMissing(from, to);
+  }
+  const srcUploads = path.join(srcDir, "uploads");
+  if (fs.existsSync(srcUploads)) {
+    copyDirContents(srcUploads, path.join(dataDir, "uploads"));
+  }
+}
+
+/**
+ * Copy CMS files from older Hostinger version folders and sibling persist dirs.
+ * Credential sidecars prefer a bcrypt login over seed defaults, even if the
+ * dest file already exists (Hostinger keeps ~3 version folders; the newest
+ * often only has `admin` / `certko-admin`).
+ */
+function recoverFromPriorHbuildsVersions(dataDir: string): void {
+  const sources = [
+    ...listHbuildsVersionDataDirs(),
+    ...hostingerPersistentCandidates(process.cwd()),
+  ];
+  for (const srcDir of sources) {
+    harvestSidecarsFromDir(srcDir, dataDir);
+  }
+}
+
+/** Dirs that may hold CMS sidecars (current data dir, hbuilds persist, old versions). */
+export function listDurableSidecarSearchDirs(): string[] {
+  const dirs: string[] = [];
+  if (cachedDir) dirs.push(cachedDir);
+  else {
+    const fromEnv = (process.env.CERTKO_DATA_DIR || "").trim();
+    if (fromEnv) dirs.push(path.resolve(fromEnv));
+    dirs.push(path.join(process.cwd(), "data"));
+  }
+  dirs.push(...hostingerPersistentCandidates(process.cwd()));
+  dirs.push(...listHbuildsVersionDataDirs());
+  return [...new Set(dirs.map((d) => path.resolve(d)))];
+}
+
+/** Write a sidecar into every writable Hostinger persist dir (not only the active one). */
+export function replicateDurableTextFile(filename: string, contents: string, mode = 0o600): void {
+  const dirs = new Set<string>();
+  if (cachedDir) dirs.add(cachedDir);
+  for (const candidate of hostingerPersistentCandidates(process.cwd())) {
+    if (canUse(candidate)) dirs.add(path.resolve(candidate));
+  }
+  for (const dir of dirs) {
+    try {
+      const dest = path.join(dir, filename);
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(dest, contents, { encoding: "utf8", mode });
+    } catch {
+      /* optional extra copy */
     }
   }
 }
@@ -271,6 +339,11 @@ export function getCertkoUploadsDir(): string {
 
 export function getCertkoDbPath(): string {
   return path.join(getCertkoDataDir(), "certko.db");
+}
+
+/** Harvest sidecars into an already-chosen data dir (tests / recover). */
+export function recoverDurableSidecars(dataDir: string): void {
+  recoverFromPriorHbuildsVersions(dataDir);
 }
 
 /** Reset cache (tests). */

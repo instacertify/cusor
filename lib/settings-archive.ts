@@ -1,7 +1,12 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
-import { getCertkoDataDir } from "./storage-paths";
+import { getCertkoDataDir, replicateDurableTextFile } from "./storage-paths";
+import {
+  isBcryptPassword,
+  isSeedAdminPassword,
+  isSeedAdminUsername,
+} from "./admin-credential-guards";
 import type { SqliteDatabase } from "./sqlite";
 
 /**
@@ -12,10 +17,6 @@ const INSTANCE_KEY = "certko_data_instance";
 
 function archivePath(): string {
   return path.join(getCertkoDataDir(), "settings-archive.json");
-}
-
-function isBcrypt(value: string): boolean {
-  return /^\$2[aby]?\$\d{2}\$/.test(value);
 }
 
 function readAllSettings(db: SqliteDatabase): Record<string, string> {
@@ -36,16 +37,42 @@ function upsertSetting(db: SqliteDatabase, key: string, value: string): void {
   ).run(key, value);
 }
 
+/**
+ * Never replace a hashed login in the archive with seed `admin` / `certko-admin`.
+ * Hostinger can boot a blank SQLite, snapshot immediately, and wipe the real password.
+ */
+function preserveHashedLogin(
+  live: Record<string, string>,
+  existing: Record<string, string>
+): Record<string, string> {
+  const out = { ...live };
+  const existingPass = existing.admin_password || "";
+  const livePass = live.admin_password || "";
+  if (isBcryptPassword(existingPass) && isSeedAdminPassword(livePass)) {
+    out.admin_password = existingPass;
+    const existingUser = existing.admin_username || "";
+    if (existingUser && isSeedAdminUsername(live.admin_username || "")) {
+      out.admin_username = existingUser;
+    }
+  }
+  return out;
+}
+
 export function snapshotSettings(db: SqliteDatabase): void {
   try {
-    const data = readAllSettings(db);
-    if (!data[INSTANCE_KEY]) {
+    const live = readAllSettings(db);
+    if (!live[INSTANCE_KEY]) {
       const id = crypto.randomUUID();
       upsertSetting(db, INSTANCE_KEY, id);
-      data[INSTANCE_KEY] = id;
+      live[INSTANCE_KEY] = id;
     }
+    const data = preserveHashedLogin(live, readSnapshot());
+    const json = JSON.stringify(data);
     fs.mkdirSync(path.dirname(archivePath()), { recursive: true });
-    fs.writeFileSync(archivePath(), JSON.stringify(data), "utf8");
+    fs.writeFileSync(archivePath(), json, "utf8");
+    if (isBcryptPassword(data.admin_password || "")) {
+      replicateDurableTextFile("settings-archive.json", json);
+    }
   } catch (err) {
     console.error("[certko] settings archive write failed:", err);
   }
@@ -73,11 +100,12 @@ function liveLooksFresh(db: SqliteDatabase): boolean {
         | { value: string }
         | undefined
     )?.value ?? "";
-  return !current || current === "certko-admin" || !isBcrypt(current);
+  return isSeedAdminPassword(current);
 }
 
 /**
  * Restore snapshot onto a wiped/re-seeded DB. Never overwrite a live bcrypt password.
+ * Username `admin` is a seed default — restore a custom login id even if the hash is already live.
  */
 export function restoreSettingsArchive(db: SqliteDatabase): number {
   const snap = readSnapshot();
@@ -100,7 +128,15 @@ export function restoreSettingsArchive(db: SqliteDatabase): number {
     if (current === snapVal) continue;
 
     if (key === "admin_password") {
-      if (isBcrypt(snapVal) && !isBcrypt(current)) {
+      if (isBcryptPassword(snapVal) && isSeedAdminPassword(current)) {
+        upsertSetting(db, key, snapVal);
+        restored += 1;
+      }
+      continue;
+    }
+
+    if (key === "admin_username") {
+      if (fullRestore || isSeedAdminUsername(current)) {
         upsertSetting(db, key, snapVal);
         restored += 1;
       }

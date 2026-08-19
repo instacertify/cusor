@@ -9,6 +9,8 @@ import {
 import { seedDatabase } from "./seed";
 import { restoreArchivedInquiriesSafe } from "./inquiry-archive";
 import { restoreSettingsArchiveSafe, snapshotSettings } from "./settings-archive";
+import { persistAdminCredentials, peekAdminCredentials, restoreAdminCredentialsSafe } from "./admin-credentials";
+import { isBcryptPassword } from "./admin-credential-guards";
 import { resolveCertkoSecret } from "./durable-secret";
 import { ensureCertProductsCatalog } from "./seed-cert-products";
 import { ensureTestingCatalog } from "./seed-testing";
@@ -368,19 +370,24 @@ function bootstrapSchema(db: SqliteDatabase): void {
     CREATE INDEX IF NOT EXISTS idx_admin_audit_created ON admin_audit_log(created_at);
   `);
 
-  // Login must work before the heavy catalog seed. Insert defaults only if missing;
-  // settings-archive restores the real bcrypt hash when SQLite was replaced.
+  // Login must work before the heavy catalog seed. Prefer a hashed sidecar over
+  // seed defaults so Hostinger's ~3 retained version folders cannot reset login.
+  const savedLogin = peekAdminCredentials();
   db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)").run(
     "admin_username",
-    "admin"
+    savedLogin?.username || "admin"
   );
   db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)").run(
     "admin_password",
-    "certko-admin"
+    savedLogin && isBcryptPassword(savedLogin.passwordHash)
+      ? savedLogin.passwordHash
+      : "certko-admin"
   );
   restoreSettingsArchiveSafe(db);
+  restoreAdminCredentialsSafe(db);
   restoreArchivedInquiriesSafe(db);
   snapshotSettings(db);
+  persistAdminCredentials(db);
 }
 
 function runEnsures(db: SqliteDatabase) {
@@ -973,6 +980,9 @@ export function setSetting(key: string, value: string) {
     "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value"
   ).run(key, value);
   snapshotSettings(db);
+  if (key === "admin_username" || key === "admin_password") {
+    persistAdminCredentials(db);
+  }
 }
 
 export interface Category {

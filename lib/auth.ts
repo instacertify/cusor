@@ -5,6 +5,13 @@ import { getSetting, setSetting } from "./db";
 import { ADMIN_COOKIE } from "./session-edge";
 import { shouldUseSecureCookies } from "./cookie-secure";
 import { resolveCertkoSecret } from "./durable-secret";
+import {
+  DEFAULT_ADMIN_PASSWORD,
+  DEFAULT_ADMIN_USERNAME,
+  isBcryptPassword,
+} from "./admin-credential-guards";
+
+export { DEFAULT_ADMIN_PASSWORD, DEFAULT_ADMIN_USERNAME };
 
 export { ADMIN_COOKIE };
 
@@ -81,15 +88,12 @@ export async function clearAdminSession(): Promise<void> {
 }
 
 function isBcryptHash(value: string): boolean {
-  return /^\$2[aby]?\$\d{2}\$/.test(value);
+  return isBcryptPassword(value);
 }
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, BCRYPT_ROUNDS);
 }
-
-export const DEFAULT_ADMIN_USERNAME = "admin";
-export const DEFAULT_ADMIN_PASSWORD = "certko-admin";
 
 export function getAdminUsername(): string {
   const stored = getSetting("admin_username", "").trim();
