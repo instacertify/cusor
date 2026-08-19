@@ -14,7 +14,6 @@ import {
   ensureSqlJsReady,
   getSqlJsDb,
   isSqlJsReady,
-  withDeferredSqlJsPersist,
 } from "./sqljs-database";
 
 export type {
