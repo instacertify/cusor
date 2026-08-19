@@ -44,6 +44,18 @@ process.on("unhandledRejection", (reason) => {
 
 let nextReady = false;
 let nextHandler = null;
+const pending = [];
+
+function flushPending() {
+  if (!nextHandler) return;
+  while (pending.length) {
+    const job = pending.shift();
+    if (!job) continue;
+    const { req, res } = job;
+    if (res.writableEnded) continue;
+    nextHandler(req, res);
+  }
+}
 
 const server = createServer((req, res) => {
   const url = (req.url || "/").split("?")[0];
@@ -57,10 +69,13 @@ const server = createServer((req, res) => {
     nextHandler(req, res);
     return;
   }
-  res.statusCode = 200;
-  res.setHeader("cache-control", "no-store");
-  res.setHeader("content-type", "text/plain; charset=utf-8");
-  res.end("ok");
+  // Do not return a fake 200 HTML body — that shows as a broken page, then
+  // a reload "fixes" it once Next is ready. Hold the request instead.
+  pending.push({ req, res });
+  res.on("close", () => {
+    const idx = pending.findIndex((job) => job.res === res);
+    if (idx >= 0) pending.splice(idx, 1);
+  });
 });
 
 const originalClose = server.close.bind(server);
@@ -91,6 +106,7 @@ app
     nextHandler = app.getRequestHandler();
     nextReady = true;
     console.info(`[certko] Next.js ready on ${hostname}:${port}`);
+    flushPending();
   })
   .catch((err) => {
     console.error("[certko] Next.js prepare failed:", err);

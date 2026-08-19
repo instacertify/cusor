@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 type Props = {
-  action: (formData: FormData) => Promise<void>;
+  action?: (formData: FormData) => Promise<void>;
   error?: string;
   locked?: boolean;
   nextPath?: string;
@@ -15,7 +15,6 @@ const inputClass =
   "w-full rounded-2xl border border-cream-300 bg-white px-4 py-3.5 text-base text-ink-950 outline-none placeholder:text-ink-400 focus:border-butter-500 focus:ring-4 focus:ring-butter-300/40 disabled:opacity-60";
 
 export default function AdminLoginForm({
-  action,
   error,
   locked,
   nextPath = "/admin",
@@ -58,15 +57,9 @@ export default function AdminLoginForm({
 
   return (
     <form
-      action={async (fd) => {
-        setSubmitting(true);
-        try {
-          await action(fd);
-        } finally {
-          setSubmitting(false);
-          void refreshCaptcha();
-        }
-      }}
+      action="/api/admin/login"
+      method="post"
+      onSubmit={() => setSubmitting(true)}
       className="space-y-5"
     >
       <input type="hidden" name="next" value={nextPath} />

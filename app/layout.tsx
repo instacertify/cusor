@@ -8,6 +8,7 @@ import TalkToCertificationExpertBar from "@/components/TalkToCertificationExpert
 import TimedContactPopup from "@/components/TimedContactPopup";
 import AnalyticsGate from "@/components/AnalyticsGate";
 import CookieConsent from "@/components/CookieConsent";
+import ClearAutoReloadFlag from "@/components/ClearAutoReloadFlag";
 import { ensureDbReady, getSettings, isCmsReady } from "@/lib/db";
 import { isDbFreePath } from "@/lib/request-path";
 import { getGdprPublicSettings } from "@/lib/gdpr";
@@ -177,6 +178,7 @@ export default async function RootLayout({
   return (
     <html lang="en-IN" data-color-scheme={scheme.id} data-icon-style={iconStyle}>
       <body className={`${body.variable} ${display.variable} min-h-screen flex flex-col`}>
+        <ClearAutoReloadFlag />
         {!isAdminShell && (
           <AnalyticsGate
             ga4MeasurementId={settings.ga4_measurement_id || ""}

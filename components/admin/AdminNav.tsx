@@ -22,10 +22,9 @@ function ClearCacheButton() {
 }
 
 export default function AdminNav({
-  logoutAction,
   clearCacheAction,
 }: {
-  logoutAction: () => Promise<void>;
+  logoutAction?: () => Promise<void>;
   clearCacheAction: (formData: FormData) => Promise<void>;
 }) {
   const pathname = usePathname() || "/admin";
@@ -77,7 +76,7 @@ export default function AdminNav({
         ))}
       </nav>
 
-      <form action={logoutAction} className="mt-4 border-t border-cream-200 pt-3">
+      <form action="/api/admin/logout" method="post" className="mt-4 border-t border-cream-200 pt-3">
         <button
           type="submit"
           className="w-full text-left flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50"
