@@ -14,12 +14,12 @@ function isNextBuildPhase(): boolean {
 
 function looksEphemeral(dir: string): boolean {
   const resolved = path.resolve(dir).toLowerCase();
-  return (
-    resolved.startsWith("/tmp/") ||
-    resolved === "/tmp" ||
-    resolved.includes("/hbuilds/") ||
-    resolved.includes("/tmp/certko")
-  );
+  if (resolved.startsWith("/tmp/") || resolved === "/tmp" || resolved.includes("/tmp/certko")) {
+    return true;
+  }
+  // Hostinger wipes version folders; hbuilds/data (outside versions/) is the shared persist path.
+  if (resolved.includes("/hbuilds/versions/")) return true;
+  return false;
 }
 
 function looksInsideReplaceableAppTree(dir: string): boolean {

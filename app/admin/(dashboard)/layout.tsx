@@ -1,11 +1,11 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/auth";
 import { ensureDbReady } from "@/lib/db";
 import { logout, clearSiteCache } from "../actions";
 import AdminNav from "@/components/admin/AdminNav";
 import AdminBusyBar from "@/components/admin/AdminBusyBar";
 import AdminCacheClearedBanner from "@/components/admin/AdminCacheClearedBanner";
+import HardRedirect from "@/components/HardRedirect";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +17,9 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   await ensureDbReady();
-  if (!(await isAdmin())) redirect("/admin/login");
+  if (!(await isAdmin())) {
+    return <HardRedirect href="/admin/login?error=session" />;
+  }
 
   return (
     <>

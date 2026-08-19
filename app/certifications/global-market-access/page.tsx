@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
+import HardRedirect from "@/components/HardRedirect";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-/** GMA framework now lives on /certifications?section=global-market-access (middleware redirect). */
 export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata("page:gma-redirect", {
     title: "Global Market Access Framework",
@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-/** Body never renders — middleware redirects to /certifications?section=global-market-access */
+/** Fallback if Edge middleware does not run on Hostinger Node panel. */
 export default function GlobalMarketAccessPage() {
-  return null;
+  return <HardRedirect href="/certifications?section=global-market-access" />;
 }
