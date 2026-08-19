@@ -87,7 +87,8 @@ A new build must **not** reset earlier admin uploads, manually written blogs, or
 
 | Path | What it holds |
 |------|----------------|
-| PostgreSQL (`DATABASE_URL`) | All CMS content (blogs, pages, settings, **admin password hash**) |
+| PostgreSQL (`DATABASE_URL`) | Preferred CMS store (blogs, pages, settings, **admin password hash**) |
+| SQLite (`CERTKO_DATA_DIR/certko.db`) | Automatic fallback when `DATABASE_URL` is unset (Hostinger Node panel) |
 | `/var/lib/certko/uploads/` | Cover images & media |
 | `/var/www/certko/` | Application code only (safe to `git pull`) |
 
@@ -170,16 +171,16 @@ The hPanel **Node.js** GitHub builder runs in an ephemeral `hbuilds` sandbox. Th
 - usually has **no local PostgreSQL**  
 - replaces the app tree on every deploy  
 
-Prefer the **VPS one-click installer** above. If you must use the Node panel, you still need:
+Prefer the **VPS one-click installer** above. If you must use the Node panel, the site **will boot without Postgres** (SQLite under `./data` or `CERTKO_DATA_DIR`). For data that survives deploys, still set:
 
-| Variable | Required value |
+| Variable | Recommended value |
 |----------|----------------|
 | `DATABASE_URL` | External/managed Postgres URL (not wiped by deploys) |
 | `CERTKO_DATA_DIR` | Persistent writable path **outside** the build folder |
 | `CERTKO_SECRET` | Stable secret — set once, never rotate on deploy |
 | `COOKIE_SECURE` | `1` on HTTPS |
 
-Leaving these unset (or regenerating `.env` each deploy) is what made the admin password look “reset.”
+Leaving `CERTKO_SECRET` unset (or regenerating `.env` each deploy) is what made the admin password look “reset.” Missing `DATABASE_URL` no longer 500s the public site.
 
 | Setting | Value |
 |---------|--------|
@@ -191,10 +192,10 @@ Leaving these unset (or regenerating `.env` each deploy) is what made the admin 
 | Start | `npm start` (uses `$PORT` automatically) |
 | Output directory | **leave empty** (do not set `out`) |
 
-`next build` no longer requires Postgres or a durable uploads dir (it soft-skips). **Runtime** still requires `DATABASE_URL` + writable `CERTKO_DATA_DIR`.
+`next build` skips DB init. **Runtime** uses PostgreSQL when `DATABASE_URL` is set, otherwise SQLite so pages can serve.
 
 If the browser shows **Application error** with a digest like `ERROR 1358233113`, open **Deployments → Logs**. Common causes:
 
-1. Missing `DATABASE_URL` at runtime  
+1. A previous build that required `DATABASE_URL` at runtime (fixed — SQLite fallback)  
 2. Wrong output directory (`out`) — clear it  
 3. Uploads path ephemeral — set `CERTKO_DATA_DIR` outside the deploy folder  

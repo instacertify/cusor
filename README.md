@@ -4,7 +4,7 @@ BIS / product certification website with a full CMS admin backend.
 
 **Repo:** https://github.com/instacertify/cusor  
 **Stack:** Next.js 16 · React 19 · **PostgreSQL** · Tailwind · disk uploads  
-**Requires:** Node.js **18+** and PostgreSQL **14+** (16 recommended)
+**Requires:** Node.js **18+**. PostgreSQL **14+** is preferred in production; without `DATABASE_URL` the app falls back to SQLite so pages still serve.
 
 ---
 
@@ -53,8 +53,8 @@ bash install.sh
 
 | Item | Where it lives | Rule |
 |------|----------------|------|
-| Admin password hash | PostgreSQL `settings.admin_password` | Keep the same `DATABASE_URL` |
-| Blogs / pages / CMS | PostgreSQL | Never drop the database |
+| Admin password hash | Postgres `settings.admin_password`, or SQLite if `DATABASE_URL` is unset | Keep the same DB / data dir |
+| Blogs / pages / CMS | PostgreSQL or SQLite fallback | Never drop the database |
 | Uploaded images | `CERTKO_DATA_DIR/uploads` | Keep `/var/lib/certko` |
 | Login sessions | Signed with `CERTKO_SECRET` | Never regenerate `.env` |
 

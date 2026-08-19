@@ -30,8 +30,8 @@ function looksInsideReplaceableAppTree(dir: string): boolean {
 }
 
 /**
- * Fail fast in production if config would lose password/blogs/uploads on restart.
- * Soft during `next build` so Hostinger/CI page collection can finish.
+ * Warn (never crash public pages) if config would lose password/blogs/uploads
+ * on restart. Soft during `next build` so Hostinger/CI page collection can finish.
  */
 export function assertDurableRuntimeConfig(): void {
   if (isNextBuildPhase()) return;
@@ -41,16 +41,14 @@ export function assertDurableRuntimeConfig(): void {
   const secret = (process.env.CERTKO_SECRET || "").trim();
 
   if (!url) {
-    const msg =
-      "[certko] DATABASE_URL is required. CMS data (blogs, settings, admin password) lives in PostgreSQL and must survive restarts.";
-    if (production) throw new Error(msg);
-    console.warn(msg);
-    return;
+    console.warn(
+      "[certko] DATABASE_URL is not set — using SQLite file storage so the site can boot. Set DATABASE_URL on a VPS for restart-safe CMS data."
+    );
   }
 
   if (production && (!secret || secret === "certko-dev-secret-change-me")) {
-    throw new Error(
-      "[certko] CERTKO_SECRET must be set to a stable random value in .env. Regenerating it on every deploy logs everyone out (looks like a password reset)."
+    console.warn(
+      "[certko] CERTKO_SECRET is missing or default. Sessions will not survive restarts (looks like a password reset). Set a stable random value in .env."
     );
   }
 
@@ -58,15 +56,14 @@ export function assertDurableRuntimeConfig(): void {
   try {
     dataDir = getCertkoDataDir();
   } catch (err) {
-    if (production) throw err;
     console.warn("[certko] data dir not ready:", err);
     return;
   }
 
   if (looksEphemeral(dataDir)) {
-    const msg = `[certko] CERTKO_DATA_DIR resolves to ephemeral path (${dataDir}). Uploads would vanish on restart. Set CERTKO_DATA_DIR=/var/lib/certko`;
-    if (production) throw new Error(msg);
-    console.warn(msg);
+    console.warn(
+      `[certko] CERTKO_DATA_DIR resolves to ephemeral path (${dataDir}). Uploads may vanish on restart. Prefer CERTKO_DATA_DIR=/var/lib/certko`
+    );
   }
 
   if (production && looksInsideReplaceableAppTree(dataDir)) {
@@ -79,8 +76,8 @@ export function assertDurableRuntimeConfig(): void {
   fs.mkdirSync(uploads, { recursive: true });
 
   console.info("[certko] durable runtime OK", {
-    database: "postgresql",
+    database: url ? "postgresql" : "sqlite",
     uploadsDir: uploads,
-    secretConfigured: Boolean(secret),
+    secretConfigured: Boolean(secret) && secret !== "certko-dev-secret-change-me",
   });
 }

@@ -1,9 +1,23 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const { assertDurableRuntimeConfig } = await import("@/lib/durable-runtime");
-    assertDurableRuntimeConfig();
+    try {
+      assertDurableRuntimeConfig();
+    } catch (err) {
+      // Never take the public site down for a durability warning.
+      console.error("[certko] durable runtime warning (continuing):", err);
+    }
     const { ensureDbReady } = await import("@/lib/db");
     await ensureDbReady();
+    // Keep a static public/sitemap.xml on disk so Google/LiteSpeed can fetch
+    // it with Content-Length (avoids GSC "General HTTP error").
+    const { refreshSitemapFiles } = await import("@/lib/sitemap-xml");
+    void refreshSitemapFiles();
+    // Auto-publish blog posts whose scheduled time has arrived.
+    const { startBlogScheduler } = await import("@/lib/blog-scheduler");
+    startBlogScheduler();
+  }
+}
     // Keep a static public/sitemap.xml on disk so Google/LiteSpeed can fetch
     // it with Content-Length (avoids GSC "General HTTP error").
     const { refreshSitemapFiles } = await import("@/lib/sitemap-xml");

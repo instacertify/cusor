@@ -17,12 +17,15 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     formats: ["image/avif", "image/webp"],
   },
-  // Keep captcha font / pg / sharp on disk (not bundled into server chunks)
-  serverExternalPackages: ["svg-captcha", "bcryptjs", "pg", "deasync", "sharp"],
+  // Keep captcha font / pg / sql.js / sharp on disk (not bundled into server chunks)
+  serverExternalPackages: ["svg-captcha", "bcryptjs", "pg", "deasync", "sql.js", "sharp"],
   outputFileTracingIncludes: {
     "/**": [
       "./node_modules/pg/**",
       "./node_modules/deasync/**",
+      "./node_modules/sql.js/dist/sql-asm.js",
+      "./node_modules/sql.js/dist/sql-wasm.js",
+      "./node_modules/sql.js/dist/sql-wasm.wasm",
     ],
   },
   // When public/uploads is not writable, files live under CERTKO_DATA_DIR and are served here.
