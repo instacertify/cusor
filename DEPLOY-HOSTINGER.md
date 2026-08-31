@@ -176,6 +176,34 @@ That’s the whole deploy.
 
 ---
 
+## Build updates keep your live data
+
+A GitHub / hPanel **rebuild replaces application code only** (`hbuilds/versions/…`).  
+CMS data is stored **outside** that tree and must not be deleted.
+
+| Keep forever | What it is |
+|--------------|------------|
+| `…/hbuilds/data/` (auto) or `CERTKO_DATA_DIR` | SQLite `certko.db`, uploads, password sidecars, lead archive |
+| `CERTKO_SECRET` in hPanel | Stable session signing — set once, never rotate on deploy |
+| Postgres `DATABASE_URL` (if set) | Preferred CMS store on VPS |
+
+**Before every deploy (recommended):**
+
+```bash
+bash scripts/backup-certko-data.sh
+```
+
+**Do not:**
+
+- Delete `hbuilds/data` or `/var/lib/certko`
+- Point `CERTKO_DATA_DIR` inside `hbuilds/versions/…`
+- Drop the Postgres database
+- Rotate `CERTKO_SECRET` on each release
+
+On boot the app logs `durable runtime OK — build updates keep this data` with the data path and SQLite size. It also writes `certko.db.bak` / daily `.bak` files beside the live DB, and will recover a **richer** SQLite from an older version folder if a thin seed ever appears.
+
+---
+
 ## Hostinger Node.js Web Apps panel (workaround, not VPS)
 
 The hPanel **Node.js** GitHub builder (`hbuilds`) replaces `versions/<uuid>/nodejs/` on every deploy and typically **keeps only about three version folders**. If the hashed login lived only inside an old `versions/<uuid>/nodejs/data` tree, the next deploy deletes that folder and the site falls back to seed `admin` / `certko-admin`.
@@ -200,7 +228,7 @@ Set these **once** in hPanel → Environment. Never rotate them:
 | `DATABASE_URL` | External/managed Postgres URL if you have one (best Node-panel option) |
 | `CERTKO_DATA_DIR` | Optional override; default auto-detects `hbuilds/data` |
 
-SMTP is optional. Leads still save without it. Configure Admin → Email / SMTP so notify mail works.
+SMTP is not used for leads. Forms save into **Admin → Inquiries** only.
 
 Leaving `CERTKO_SECRET` unset used to regenerate a weak in-memory secret every process start (admin looked “reset”). The disk secret file fixes that **as long as `hbuilds/data` is not deleted**.
 

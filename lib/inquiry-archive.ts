@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { getCertkoDataDir } from "./storage-paths";
+import { getCertkoDataDir, replicateDurableTextFile } from "./storage-paths";
 import type { SqliteDatabase } from "./sqlite";
 
 export type ArchivedInquiry = {
@@ -49,24 +49,33 @@ export function inquiryRowKey(r: {
   return `${(r.email || "").trim().toLowerCase()}|${normalizeInquiryCreatedAt(r.created_at)}|${(r.name || "").trim().toLowerCase()}`;
 }
 
-/** Append-only lead backup — survives SQLite file replacement on Hostinger. */
-export function archiveInquiry(row: ArchivedInquiry): void {
+function rewriteJsonl(file: string, rows: ArchivedInquiry[]): void {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const body = rows.length === 0 ? "" : rows.map((r) => JSON.stringify(r) + "\n").join("");
+  fs.writeFileSync(file, body, "utf8");
+  // Mirror into every Hostinger persist dir so a version wipe cannot drop leads.
   try {
-    const line = JSON.stringify(row) + "\n";
-    fs.mkdirSync(path.dirname(archivePath()), { recursive: true });
-    fs.appendFileSync(archivePath(), line, "utf8");
-  } catch (err) {
-    console.error("[certko] inquiry archive write failed:", err);
+    replicateDurableTextFile(path.basename(file), body);
+  } catch {
+    /* optional */
   }
 }
 
-function rewriteJsonl(file: string, rows: ArchivedInquiry[]): void {
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  if (rows.length === 0) {
-    if (fs.existsSync(file)) fs.writeFileSync(file, "", "utf8");
-    return;
+/** Append-only lead backup — survives SQLite file replacement on Hostinger. */
+export function archiveInquiry(row: ArchivedInquiry): void {
+  try {
+    const file = archivePath();
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.appendFileSync(file, JSON.stringify(row) + "\n", "utf8");
+    try {
+      const full = fs.readFileSync(file, "utf8");
+      replicateDurableTextFile("inquiries.jsonl", full);
+    } catch {
+      /* optional */
+    }
+  } catch (err) {
+    console.error("[certko] inquiry archive write failed:", err);
   }
-  fs.writeFileSync(file, rows.map((r) => JSON.stringify(r) + "\n").join(""), "utf8");
 }
 
 /**
@@ -80,9 +89,10 @@ export function archiveInquiryDeleted(key: {
 }): void {
   try {
     const target = inquiryRowKey(key);
-    fs.mkdirSync(path.dirname(tombstonePath()), { recursive: true });
+    const tomb = tombstonePath();
+    fs.mkdirSync(path.dirname(tomb), { recursive: true });
     fs.appendFileSync(
-      tombstonePath(),
+      tomb,
       JSON.stringify({
         email: key.email,
         created_at: key.created_at,
@@ -91,6 +101,11 @@ export function archiveInquiryDeleted(key: {
       }) + "\n",
       "utf8"
     );
+    try {
+      replicateDurableTextFile("inquiries-deleted.jsonl", fs.readFileSync(tomb, "utf8"));
+    } catch {
+      /* optional */
+    }
 
     const remaining = readJsonl(archivePath()).filter((row) => inquiryRowKey(row) !== target);
     rewriteJsonl(archivePath(), remaining);
