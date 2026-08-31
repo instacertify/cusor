@@ -46,10 +46,31 @@ type DbGlobal = typeof globalThis & {
   __certkoDb?: SqliteDatabase;
   __certkoDbBootstrapped?: boolean;
   __certkoDbBootstrap?: Promise<void>;
+  /** Set when the shared bootstrap promise rejects (cleared on retry). */
+  __certkoDbBootstrapError?: unknown;
   __certkoCatalogEnsure?: Promise<void>;
 };
 
 const g = globalThis as DbGlobal;
+
+/**
+ * Wait for CMS bootstrap without throwing "Database not ready yet".
+ * Uses deasync.loopWhile on readiness *flags* (not Promise.await) so the
+ * event loop can finish sql.js / pg init — same pattern as lib/pg-database.ts.
+ * Required when Hostinger runs bare `next start` and skips server.cjs warm-gate.
+ */
+function waitForDbReady(timeoutMs = 90_000): void {
+  if (g.__certkoDbBootstrapped && g.__certkoDb && isSqliteReady()) return;
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const deasync = require("deasync") as { loopWhile: (pred: () => boolean) => void };
+  const deadline = Date.now() + timeoutMs;
+  deasync.loopWhile(() => {
+    if (g.__certkoDbBootstrapped && g.__certkoDb && isSqliteReady()) return false;
+    if (g.__certkoDbBootstrapError) return false;
+    if (Date.now() > deadline) return false;
+    return true;
+  });
+}
 
 function bootstrapSchema(db: SqliteDatabase): void {
   // Persist signing secret next to SQLite so Hostinger restarts keep admin sessions.
@@ -904,6 +925,7 @@ export async function ensureDbReady(): Promise<void> {
     if (g.__certkoDbBootstrapped && g.__certkoDb) return;
 
     if (!g.__certkoDbBootstrap) {
+      g.__certkoDbBootstrapError = undefined;
       g.__certkoDbBootstrap = (async () => {
         const db = getSqliteDb();
         // sql.js: one disk export after seed — not one export per INSERT
@@ -925,11 +947,13 @@ export async function ensureDbReady(): Promise<void> {
       })();
     }
 
+    g.__certkoDbBootstrapError = undefined;
     await g.__certkoDbBootstrap;
   } catch (err) {
     g.__certkoDbBootstrap = undefined;
     g.__certkoDb = undefined;
     g.__certkoDbBootstrapped = false;
+    g.__certkoDbBootstrapError = err;
     console.error("[certko] ensureDbReady failed:", err);
     throw err;
   }
@@ -962,12 +986,29 @@ export function getDb(): SqliteDatabase {
   if (g.__certkoDbBootstrapped && g.__certkoDb && isSqliteReady()) {
     return g.__certkoDb;
   }
-  // Kick off shared bootstrap so a later await ensureDbReady() can finish.
-  // Do not deasync-wait here — Promise+deasync deadlocks under Next/Node 22.
-  if (!isNextBuildPhase() && !g.__certkoDbBootstrap) {
+  if (isNextBuildPhase()) {
+    throw new Error(
+      "Database not available during next build. Queries run at runtime only."
+    );
+  }
+  // Start shared bootstrap, then block this sync caller until flags flip.
+  // Do NOT `await` the Promise inside loopWhile — that deadlocks under Node 22 / pg.
+  // Flag-based wait lets the event loop complete sql.js init (Hostinger next start).
+  if (!g.__certkoDbBootstrap && !g.__certkoDbBootstrapped) {
+    g.__certkoDbBootstrapError = undefined;
     void ensureDbReady().catch((err) => {
+      g.__certkoDbBootstrapError = err;
       console.error("[certko] background ensureDbReady from getDb:", err);
     });
+  }
+  waitForDbReady();
+  if (g.__certkoDbBootstrapped && g.__certkoDb && isSqliteReady()) {
+    return g.__certkoDb;
+  }
+  if (g.__certkoDbBootstrapError) {
+    throw g.__certkoDbBootstrapError instanceof Error
+      ? g.__certkoDbBootstrapError
+      : new Error(String(g.__certkoDbBootstrapError));
   }
   throw new Error(
     "Database not ready yet. Wait for ensureDbReady() (SQLite file or DATABASE_URL)."
