@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getDb, getSettings } from "./db";
+import { ensureDbReady, getDb, getSettings } from "./db";
 import { getSocialLinks } from "./social-links";
 
 export const BASE_URL = "https://certko.com";
@@ -318,7 +318,7 @@ function ogImageEntry(url: string) {
 }
 
 /** Merge stored SEO meta with per-page fallbacks into a Next.js Metadata object. */
-export function buildMetadata(
+export async function buildMetadata(
   entity: string,
   fallback: {
     title: string;
@@ -332,7 +332,10 @@ export function buildMetadata(
     publishedTime?: string | null;
     modifiedTime?: string | null;
   }
-): Metadata {
+): Promise<Metadata> {
+  // Child generateMetadata often runs in parallel with the root layout — always
+  // wait for CMS bootstrap so cold starts do not throw "Database not ready yet".
+  await ensureDbReady();
   const settings = getSettings();
   const siteName = settings.site_name || "Certko";
   const seo = getSeoMeta(entity);

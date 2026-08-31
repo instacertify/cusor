@@ -6,6 +6,7 @@ import TestimonialStrip from "@/components/TestimonialStrip";
 import AuthorByline from "@/components/AuthorByline";
 import BlogPagination, { BLOG_PAGE_SIZE } from "@/components/BlogPagination";
 import BlogCoverImage from "@/components/BlogCoverImage";
+import { ensureDbReady } from "@/lib/db";
 import {
   countPublishedPosts,
   countSearchPublishedPosts,
@@ -35,6 +36,7 @@ interface Props {
 }
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  await ensureDbReady();
   const sp = await searchParams;
   const q = (param(sp.q) ?? "").trim();
   const page = Math.max(1, Number(param(sp.page)) || 1);

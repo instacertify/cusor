@@ -922,6 +922,8 @@ export async function ensureDbReady(): Promise<void> {
     await g.__certkoDbBootstrap;
   } catch (err) {
     g.__certkoDbBootstrap = undefined;
+    g.__certkoDb = undefined;
+    g.__certkoDbBootstrapped = false;
     console.error("[certko] ensureDbReady failed:", err);
     throw err;
   }
@@ -951,12 +953,19 @@ export function isCmsReady(): boolean {
 }
 
 export function getDb(): SqliteDatabase {
-  if (!isSqliteReady() || !g.__certkoDb) {
-    throw new Error(
-      "Database not ready yet. Wait for ensureDbReady() (SQLite file or DATABASE_URL)."
-    );
+  if (g.__certkoDbBootstrapped && g.__certkoDb && isSqliteReady()) {
+    return g.__certkoDb;
   }
-  return g.__certkoDb;
+  // Kick off shared bootstrap so a later await ensureDbReady() can finish.
+  // Do not deasync-wait here — Promise+deasync deadlocks under Next/Node 22.
+  if (!isNextBuildPhase() && !g.__certkoDbBootstrap) {
+    void ensureDbReady().catch((err) => {
+      console.error("[certko] background ensureDbReady from getDb:", err);
+    });
+  }
+  throw new Error(
+    "Database not ready yet. Wait for ensureDbReady() (SQLite file or DATABASE_URL)."
+  );
 }
 
 export function getSetting(key: string, fallback = ""): string {

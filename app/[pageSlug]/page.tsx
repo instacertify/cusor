@@ -9,6 +9,7 @@ import FaqAccordion from "@/components/FaqAccordion";
 import LandingPageView from "@/components/LandingPageView";
 import { getPage, getFaqs } from "@/lib/queries";
 import { isRoutableContentPage } from "@/lib/pages-nav";
+import { ensureDbReady } from "@/lib/db";
 import {
   buildMetadata,
   buildJsonLd,
@@ -35,6 +36,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  await ensureDbReady();
   const { pageSlug } = await params;
   if (!isRoutableContentPage(pageSlug)) return {};
   const page = getPage(pageSlug);

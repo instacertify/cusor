@@ -7,6 +7,7 @@ import FaqAccordion from "@/components/FaqAccordion";
 import ScrollTable from "@/components/ScrollTable";
 import ProductsTableFilters from "@/components/ProductsTableFilters";
 import CertificationSolutionRow from "@/components/CertificationSolutionRow";
+import { ensureDbReady } from "@/lib/db";
 import {
   queryProductsTable,
   getCategories,
@@ -43,6 +44,7 @@ interface Props {
 }
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  await ensureDbReady();
   const raw = await searchParams;
   const page = Math.max(1, Number(param(raw.page)) || 1);
   const filtered = Boolean(

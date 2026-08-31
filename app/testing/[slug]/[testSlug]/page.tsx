@@ -10,6 +10,7 @@ import FaqAccordion from "@/components/FaqAccordion";
 import IconChip from "@/components/IconChip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { StandardApplicabilityChips } from "@/components/MarketApplicability";
+import { ensureDbReady } from "@/lib/db";
 import {
   countProductsForTestingService,
   getFaqs,
@@ -28,6 +29,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  await ensureDbReady();
   const { slug, testSlug } = await params;
   const svc = getTestingServiceBySlug(slug, testSlug);
   if (!svc) return {};

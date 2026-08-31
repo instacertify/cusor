@@ -11,6 +11,7 @@ import Icon from "@/components/Icon";
 import IconChip from "@/components/IconChip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { StandardApplicabilityChips } from "@/components/MarketApplicability";
+import { ensureDbReady } from "@/lib/db";
 import {
   getFaqs,
   getTestingCategories,
@@ -31,6 +32,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  await ensureDbReady();
   const { slug } = await params;
   const cat = getTestingCategoryBySlug(slug);
   if (!cat) return {};

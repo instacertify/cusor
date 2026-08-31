@@ -4,10 +4,12 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import CookieOptionsClient from "@/components/CookieOptionsClient";
 import { getGdprPublicSettings } from "@/lib/gdpr";
 import { buildMetadata } from "@/lib/seo";
+import { ensureDbReady } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
+  await ensureDbReady();
   return buildMetadata("page:privacy-cookies", {
     title: "Cookie options",
     description:

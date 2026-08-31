@@ -7,6 +7,7 @@ import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import IconChip from "@/components/IconChip";
+import { ensureDbReady } from "@/lib/db";
 import {
   getCategoryBySlug,
   getProductsByCategory,
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  await ensureDbReady();
   const { slug } = await params;
   const category = getCategoryBySlug(slug);
   if (!category) return {};

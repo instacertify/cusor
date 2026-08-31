@@ -12,6 +12,7 @@ import IconChip from "@/components/IconChip";
 import CertProductCatalog from "@/components/CertProductCatalog";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { CertMarketInsight, MarketBadge } from "@/components/MarketApplicability";
+import { ensureDbReady } from "@/lib/db";
 import {
   getCertificationBySlug,
   getCertifications,
@@ -38,6 +39,7 @@ function catalogSubtitle(cert: { slug: string; name: string; full_name: string }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  await ensureDbReady();
   const { slug } = await params;
   const cert = getCertificationBySlug(slug);
   if (!cert) return {};

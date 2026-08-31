@@ -18,22 +18,41 @@ function withSecurityHeaders(res: NextResponse, pathname: string) {
   return res;
 }
 
+/** Apex host for www → non-www. Never build from request.nextUrl (0.0.0.0 bind). */
+const PUBLIC_APEX = "https://certko.com";
+
+function absoluteApexLocation(request: NextRequest): string {
+  const path = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+  const safePath = path.startsWith("/") ? path : `/${path}`;
+  return `${PUBLIC_APEX}${safePath}`;
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const host = (request.headers.get("host") || "").split(":")[0].toLowerCase();
 
   if (host === "www.certko.com") {
-    const url = request.nextUrl.clone();
-    url.protocol = "https:";
-    url.host = "certko.com";
-    return NextResponse.redirect(url, 308);
-  }
-
-  if (pathname === "/certifications/global-market-access") {
+    // Relative Location cannot change host. Use an explicit public apex URL —
+    // never NextResponse.redirect(request.nextUrl.clone()) on Hostinger
+    // (bind host 0.0.0.0 → TypeError: Invalid URL / bad Location).
     return withSecurityHeaders(
       new NextResponse(null, {
         status: 308,
-        headers: { Location: "/certifications?section=global-market-access" },
+        headers: { Location: absoluteApexLocation(request) },
+      }),
+      pathname
+    );
+  }
+
+  if (pathname === "/certifications/global-market-access") {
+    // Absolute Location — relative Location can throw TypeError: Invalid URL
+    // inside Next/Edge on Hostinger when the runtime tries to parse it.
+    return withSecurityHeaders(
+      new NextResponse(null, {
+        status: 308,
+        headers: {
+          Location: `${PUBLIC_APEX}/certifications?section=global-market-access`,
+        },
       }),
       pathname
     );
