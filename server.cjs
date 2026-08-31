@@ -10,10 +10,15 @@
  */
 "use strict";
 
+// Mark before Next loads so instrumentation knows the warm-gate is active.
+globalThis.__certkoCustomServer = true;
+
 const { createServer } = require("node:http");
 const { pathToFileURL } = require("node:url");
 const path = require("node:path");
 const { patchOutgoingRedirects } = require("./lib/public-location.cjs");
+const { installHostingerRuntimePatches } = require("./lib/hostinger-runtime-patch.cjs");
+installHostingerRuntimePatches();
 
 const port = Number.parseInt(process.env.PORT || "3000", 10);
 const bindHost = process.env.HOSTNAME || "0.0.0.0";

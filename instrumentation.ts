@@ -1,21 +1,24 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
-  // Hostinger's Node panel SIGTERMs the process if $PORT is not serving
-  // ("Error: Server is not running"). Never block the listen path on SQLite
-  // bootstrap — warm the DB in the background as soon as Node is up so the
-  // first real page/metadata request does not race "Database not ready yet".
-  const warmSoon = setTimeout(() => {
-    void (async () => {
-      try {
-        const { ensureDbReady } = await import("@/lib/db");
-        await ensureDbReady();
-      } catch (err) {
-        console.error("[certko] early DB warm failed:", err);
-      }
-    })();
-  }, 250);
-  warmSoon.unref?.();
+  // Patches work under bare `next start` AND under server.cjs.
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("./lib/hostinger-runtime-patch.cjs").installHostingerRuntimePatches();
+  } catch (err) {
+    console.error("[certko] runtime patch install failed:", err);
+  }
+
+  // Warm CMS immediately — do not delay. getDb() will also wait if a request
+  // wins the race; early warm still cuts first-byte latency.
+  void (async () => {
+    try {
+      const { ensureDbReady } = await import("@/lib/db");
+      await ensureDbReady();
+    } catch (err) {
+      console.error("[certko] early DB warm failed:", err);
+    }
+  })();
 
   // Heavier boot work after the process has been accepting traffic for a bit.
   const later = setTimeout(() => {

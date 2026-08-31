@@ -239,8 +239,18 @@ Leaving `CERTKO_SECRET` unset used to regenerate a weak in-memory secret every p
 | Root | `./` |
 | Install | `npm install` (or `npm ci`) |
 | Build | `npm run build` |
-| Start | `npm start` (binds `$PORT` immediately via `server.cjs`) |
+| Start | **`npm start` only** (binds `$PORT` immediately via `server.cjs`). Never set Start to `next start`. |
 | Output directory | **leave empty** (do not set `out`) |
+
+#### Prove Start is correct (read logs after deploy)
+
+You **must** see these lines within a few seconds of boot:
+
+1. `[certko] listening on 0.0.0.0:$PORT (Next preparing)`
+2. `[certko] Next.js prepared … — warming CMS`
+3. `[certko] CMS ready — accepting page traffic`
+
+If you only see raw `▲ Next.js 16.x … ✓ Ready` (often twice) and **no** `[certko] listening`, Hostinger is still running `next start` / a second start. Open hPanel → Node.js → **Start command** → set exactly `npm start` → Save → Restart once.
 
 `next build` skips DB init. **Runtime** uses PostgreSQL when `DATABASE_URL` is set, otherwise SQLite so pages can serve.
 
@@ -250,8 +260,10 @@ If Deployments → Logs show these, treat them as ops + deploy checklist:
 
 | Log | Meaning | Fix |
 |-----|---------|-----|
-| `failed to get redirect response` / `fetch failed` | Next RSC followed `redirect()` with an internal fetch that cannot reach `0.0.0.0:$PORT` | Redeploy current code (public forms use `/api/contact`; www/GMA middleware redirects use absolute `https://certko.com…` `Location` headers — Edge rejects relative Location with `Invalid URL`) |
-| `Database not ready yet` | Request hit CMS before bootstrap finished | Redeploy (early DB warm + metadata awaits `ensureDbReady`). Avoid restarting the Node app repeatedly while Google is crawling |
+| Only `▲ Next.js … Ready` (no `[certko] listening`) | Start is **`next start`**, not `npm start` — warm-gate bypassed | hPanel Start = **`npm start`**. Redeploy/restart once. |
+| `WARNING: custom server … not detected` | Same as above | Fix Start command |
+| `failed to get redirect response` / `fetch failed` | Next followed a Server Action `redirect()` while the process was restarting, or bind-host origin was wrong | Keep Start = `npm start`; avoid double restarts. Public forms use `/api/contact`. |
+| `Database not ready yet` | Should be rare now — `getDb()` waits for bootstrap | If it still appears, Start is wrong or the process is being killed mid-boot. Fix Start; restart once. |
 | `DATABASE_URL is not set` | Intentional SQLite fallback on Node panel | For permanent CMS, set `DATABASE_URL` to Postgres (VPS installer or managed Postgres). SQLite under `hbuilds/data` is OK short-term |
 | Dual `Next.js ready` / `Server is not running` | Hostinger restarted the process or ran two starts | Start command must be **`npm start`** once. Do not also run `next start` |
 
