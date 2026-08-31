@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getSettings } from "@/lib/db";
-import { isMailConfigured } from "@/lib/mail";
 import { resolveColorScheme } from "@/lib/color-schemes";
 import { iconStyleLabel, resolveIconStyle } from "@/lib/icon-style";
 import { saveSettings } from "../../actions";
@@ -24,7 +23,6 @@ export default async function SettingsPage({ searchParams }: Props) {
   const s = getSettings();
   const logoPrimary = s.logo_primary || DEFAULT_LOGO_PRIMARY;
   const logoOnDark = s.logo_on_dark || DEFAULT_LOGO_ON_DARK;
-  const mailReady = isMailConfigured();
   const colorScheme = resolveColorScheme(s.color_scheme);
   const iconStyle = resolveIconStyle(s.icon_style);
 
@@ -32,11 +30,12 @@ export default async function SettingsPage({ searchParams }: Props) {
     <div>
       <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Site Settings</h1>
       <p className="text-ink-600 text-sm mb-6">
-        Brand hub: color scheme, icons, logos, hero copy, contact details and analytics. Email delivery is under{" "}
-        <Link href="/admin/email" className="font-semibold text-butter-700 hover:underline">
-          Email / SMTP
+        Brand hub: color scheme, icons, logos, hero copy, contact details and analytics.
+        Contact form leads are stored in{" "}
+        <Link href="/admin/inquiries" className="font-semibold text-butter-700 hover:underline">
+          Inquiries
         </Link>
-        . Use the sidebar <strong>Clear cache</strong> button anytime to refresh the public site.
+        {" "}(no SMTP required). Use the sidebar <strong>Clear cache</strong> button anytime to refresh the public site.
       </p>
       <SavedBanner saved={sp.saved} />
 
@@ -451,20 +450,14 @@ export default async function SettingsPage({ searchParams }: Props) {
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-3">
-          <h2 className="font-display font-bold text-ink-950">Email / SMTP</h2>
+          <h2 className="font-display font-bold text-ink-950">Contact leads</h2>
           <p className="text-sm text-ink-600">
-            Lead notification mailer status:{" "}
-            <span className={mailReady ? "font-semibold text-green-700" : "font-semibold text-amber-700"}>
-              {mailReady ? "Ready to send" : "Needs SMTP password"}
-            </span>
-            . Configure host, username, password and notify inbox on the dedicated page.
+            Website forms save leads directly in the admin backend. Open{" "}
+            <Link href="/admin/inquiries" className="font-semibold text-butter-700 hover:underline">
+              Inquiries
+            </Link>{" "}
+            to review and delete them. SMTP email alerts are not used.
           </p>
-          <Link
-            href="/admin/email"
-            className="inline-flex items-center justify-center rounded-full bg-ink-950 px-5 py-2.5 text-sm font-semibold text-cream-50 hover:bg-ink-800 transition"
-          >
-            Open Email / SMTP settings
-          </Link>
         </section>
 
         <section className="bg-white rounded-2xl border border-cream-300 shadow-card p-6 space-y-4">

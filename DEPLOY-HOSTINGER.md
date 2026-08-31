@@ -227,7 +227,7 @@ If Deployments → Logs show these, treat them as ops + deploy checklist:
 | `DATABASE_URL is not set` | Intentional SQLite fallback on Node panel | For permanent CMS, set `DATABASE_URL` to Postgres (VPS installer or managed Postgres). SQLite under `hbuilds/data` is OK short-term |
 | Dual `Next.js ready` / `Server is not running` | Hostinger restarted the process or ran two starts | Start command must be **`npm start`** once. Do not also run `next start` |
 
-SMTP: leads still save without it. Configure **Admin → Email** so inquiry notify mail works.
+SMTP: optional / unused. Contact forms save leads in **Admin → Inquiries** only — SMTP is not required.
 
 If the browser shows **Application error** with a digest like `ERROR 1358233113`, open **Deployments → Logs**. Common causes:
 

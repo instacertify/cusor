@@ -167,12 +167,6 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         icon: "sparkles",
         description: "Meta, schema and sitemap controls",
       },
-      {
-        href: "/admin/email",
-        label: "Email / SMTP",
-        icon: "mail",
-        description: "Lead notification mailer settings",
-      },
     ],
   },
 ];

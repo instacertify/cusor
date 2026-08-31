@@ -763,12 +763,12 @@ export function seedDatabase(db: SqliteDatabase) {
       contact_address:
         "A-34, 4th Floor, Sector 63A, Noida, Gautam Buddha Nagar, Uttar Pradesh – 201301, India",
       lead_notify_email: "contact@instacertify.com",
-      smtp_enabled: "1",
-      smtp_host: "smtp.gmail.com",
+      smtp_enabled: "0",
+      smtp_host: "",
       smtp_port: "587",
-      smtp_user: "contact@instacertify.com",
+      smtp_user: "",
       smtp_pass: "",
-      smtp_from: "contact@instacertify.com",
+      smtp_from: "",
       smtp_secure: "0",
       footer_text:
         "Certko — by Instacertify Labs Private Limited — is your solution partner for certification and compliance. We publish product, lab and scheme guidance and are not a government body. Fees and timelines are indicative; confirm with the regulator and lab before you commit.",
