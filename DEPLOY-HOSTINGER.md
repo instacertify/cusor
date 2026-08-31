@@ -264,8 +264,8 @@ If Deployments → Logs show these, treat them as ops + deploy checklist:
 | `WARNING: custom server … not detected` | Same as above | Fix Start command |
 | `failed to get redirect response` / `fetch failed` | Next followed a Server Action `redirect()` while the process was restarting, or bind-host origin was wrong | Keep Start = `npm start`; avoid double restarts. Public forms use `/api/contact`. |
 | `Database not ready yet` | Should be rare now — `getDb()` waits for bootstrap | If it still appears, Start is wrong or the process is being killed mid-boot. Fix Start; restart once. |
-| `DATABASE_URL is not set` | Intentional SQLite fallback on Node panel | For permanent CMS, set `DATABASE_URL` to Postgres (VPS installer or managed Postgres). SQLite under `hbuilds/data` is OK short-term |
-
+| `CMS storage: sqlite (durable)` | Normal on Hostinger Node — **not an error**; data kept in `hbuilds/data` | No action required. Optional later: set `DATABASE_URL` for Postgres |
+| `DATABASE_URL is not set` (old builds only) | Old warning — current builds no longer print this when `hbuilds/data` is durable | Redeploy current code |
 | Dual `Next.js ready` / `Server is not running` | Hostinger restarted the process or ran two starts | Start command must be **`npm start`** once. Do not also run `next start` |
 
 ### Switch to Postgres without losing CMS / images (automatic)
