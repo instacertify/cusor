@@ -58,6 +58,9 @@ function countUploads(dir: string): number {
 /**
  * Warn (never crash public pages) if config would lose password/blogs/uploads
  * on restart. Soft during `next build` so Hostinger/CI page collection can finish.
+ *
+ * Hostinger Node panel + durable SQLite under hbuilds/data is a supported mode —
+ * missing DATABASE_URL is NOT an error when the data dir is durable.
  */
 export function assertDurableRuntimeConfig(): void {
   if (isNextBuildPhase()) return;
@@ -65,12 +68,6 @@ export function assertDurableRuntimeConfig(): void {
   const production = process.env.NODE_ENV === "production";
   const url = getDatabaseUrl();
   const secret = resolveCertkoSecret();
-
-  if (!url) {
-    console.warn(
-      "[certko] DATABASE_URL is not set — using SQLite file storage so the site can boot. A Hostinger VPS + PostgreSQL is the permanent store for CMS data."
-    );
-  }
 
   if (production && (!secret || secret === "certko-dev-secret-change-me")) {
     console.warn(
@@ -86,16 +83,29 @@ export function assertDurableRuntimeConfig(): void {
     return;
   }
 
-  if (looksEphemeral(dataDir) || isInsideHbuildsVersionTree(dataDir)) {
+  const ephemeral =
+    looksEphemeral(dataDir) || isInsideHbuildsVersionTree(dataDir);
+  const insideApp = production && looksInsideReplaceableAppTree(dataDir);
+
+  if (!url && ephemeral) {
+    // Real risk: SQLite with no Postgres AND unsafe path.
     console.warn(
-      `[certko] CERTKO_DATA_DIR resolves to ephemeral / version path (${dataDir}). Uploads and blogs may vanish on the next deploy. Prefer CERTKO_DATA_DIR pointing at hbuilds/data or /var/lib/certko — never inside hbuilds/versions/.`
+      `[certko] SQLite data dir looks ephemeral (${dataDir}). Set CERTKO_DATA_DIR to hbuilds/data (outside versions/) or set DATABASE_URL for Postgres — otherwise CMS/uploads may reset on deploy.`
+    );
+  } else if (ephemeral) {
+    console.warn(
+      `[certko] CERTKO_DATA_DIR resolves to ephemeral / version path (${dataDir}). Uploads may vanish on the next deploy. Prefer hbuilds/data or /var/lib/certko — never inside hbuilds/versions/.`
     );
   }
 
-  if (production && looksInsideReplaceableAppTree(dataDir)) {
+  if (insideApp && !ephemeral) {
+    // hbuilds/data is outside the app package but may still sit under domains/… —
+    // only warn when clearly inside the replaceable app tree.
     console.warn(
-      `[certko] CERTKO_DATA_DIR is inside the app folder (${dataDir}). On Hostinger hbuilds, set CERTKO_DATA_DIR to a persistent path outside the version folder (or use managed Postgres + DATABASE_URL). Uploads and SQLite reset on each deploy otherwise.`
+      `[certko] CERTKO_DATA_DIR is inside the app folder (${dataDir}). Prefer a path outside the version folder, or DATABASE_URL for Postgres.`
     );
+  } else if (insideApp) {
+    /* already warned via ephemeral */
   }
 
   const uploads = getCertkoUploadsDir();
@@ -110,6 +120,14 @@ export function assertDurableRuntimeConfig(): void {
   }
 
   const bak = backupCertkoSqliteIfPresent();
+
+  // Quiet success path — Hostinger Node + durable SQLite is OK (not an error).
+  if (!url && !ephemeral) {
+    console.info(
+      "[certko] CMS storage: sqlite (durable) — DATABASE_URL optional. Data kept across builds.",
+      { dataDir, dbPath, dbBytes }
+    );
+  }
 
   console.info("[certko] durable runtime OK — build updates keep this data", {
     database: url ? "postgresql" : "sqlite",
