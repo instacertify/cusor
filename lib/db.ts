@@ -33,6 +33,7 @@ import { ensureBlogSidebarColumns, ensureBlogSidebarCtaSettings } from "./blog-s
 import { PRIVACY_CONTENT, TERMS_CONTENT } from "./legal-content";
 import { CONTACT_POPUP_DEFAULTS } from "./contact-popup";
 import { getCertkoDataDir } from "./storage-paths";
+import { migrateSqliteIntoPostgresIfNeeded } from "./migrate-sqlite-to-postgres";
 
 /**
  * Persistent CMS data directory for uploads (images stay on disk).
@@ -911,6 +912,18 @@ export async function ensureDbReady(): Promise<void> {
         withDeferredSqlJsPersist(() => {
           bootstrapSchema(db);
         });
+        // When DATABASE_URL is set, auto-import richer durable SQLite into Postgres.
+        // Never deletes certko.db or uploads — safe on Hostinger redeploy.
+        if (getDatabaseUrl()) {
+          try {
+            await migrateSqliteIntoPostgresIfNeeded(db);
+          } catch (err) {
+            console.error(
+              "[certko] SQLite→Postgres import failed (Postgres still usable):",
+              err
+            );
+          }
+        }
         g.__certkoDb = db;
         g.__certkoDbBootstrapped = true;
         const kind = getDatabaseUrl() ? "postgresql" : "sqlite";
