@@ -265,7 +265,19 @@ If Deployments → Logs show these, treat them as ops + deploy checklist:
 | `failed to get redirect response` / `fetch failed` | Next followed a Server Action `redirect()` while the process was restarting, or bind-host origin was wrong | Keep Start = `npm start`; avoid double restarts. Public forms use `/api/contact`. |
 | `Database not ready yet` | Should be rare now — `getDb()` waits for bootstrap | If it still appears, Start is wrong or the process is being killed mid-boot. Fix Start; restart once. |
 | `DATABASE_URL is not set` | Intentional SQLite fallback on Node panel | For permanent CMS, set `DATABASE_URL` to Postgres (VPS installer or managed Postgres). SQLite under `hbuilds/data` is OK short-term |
+
 | Dual `Next.js ready` / `Server is not running` | Hostinger restarted the process or ran two starts | Start command must be **`npm start`** once. Do not also run `next start` |
+
+### Switch to Postgres without losing CMS / images (automatic)
+
+1. Keep **`hbuilds/data/`** (do not delete `certko.db` or `uploads/`).
+2. Set `DATABASE_URL=postgres://…` in hPanel.
+3. Redeploy / restart with Start = **`npm start`**.
+4. On boot the app **auto-imports** richer SQLite CMS rows into Postgres (`[certko] Auto-importing CMS from SQLite → PostgreSQL`).
+5. **SQLite file and uploads are never deleted.** Marker: `hbuilds/data/.certko-pg-import-from-sqlite.json`.
+6. Opt out: `CERTKO_SKIP_SQLITE_MIGRATE=1`.
+
+After import, logs should show `CMS database ready: postgresql` and `sqliteKept=true uploadsKept=true`.
 
 SMTP: optional / unused. Contact forms save leads in **Admin → Inquiries** only — SMTP is not required.
 
