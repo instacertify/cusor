@@ -45,10 +45,14 @@ export function middleware(request: NextRequest) {
   }
 
   if (pathname === "/certifications/global-market-access") {
+    // Absolute Location — relative Location can throw TypeError: Invalid URL
+    // inside Next/Edge on Hostinger when the runtime tries to parse it.
     return withSecurityHeaders(
       new NextResponse(null, {
         status: 308,
-        headers: { Location: "/certifications?section=global-market-access" },
+        headers: {
+          Location: `${PUBLIC_APEX}/certifications?section=global-market-access`,
+        },
       }),
       pathname
     );
