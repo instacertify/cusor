@@ -1692,20 +1692,25 @@ export async function saveSeo(formData: FormData) {
 }
 
 // ---------- inquiries ----------
+/** @deprecated Use POST /api/admin/inquiries/status (Hostinger-safe 303). */
 export async function setInquiryStatus(formData: FormData) {
   await requireAdmin();
   const id = Number(formData.get("id"));
   const status = String(formData.get("status") ?? "new");
   getDb().prepare("UPDATE inquiries SET status=? WHERE id=?").run(status, id);
-  redirect("/admin/inquiries?saved=1");
+  // Still avoid redirect() if anything still calls this action.
+  const { seeOther } = await import("@/lib/http-redirect");
+  return seeOther("/admin/inquiries?saved=1");
 }
 
+/** @deprecated Use POST /api/admin/inquiries/delete (Hostinger-safe 303). */
 export async function deleteInquiry(formData: FormData) {
   await requireAdmin();
   const id = Number(formData.get("id"));
   const confirm = String(formData.get("confirm") ?? "").trim();
+  const { seeOther } = await import("@/lib/http-redirect");
   if (!id || confirm !== "DELETE") {
-    redirect("/admin/inquiries?error=confirm");
+    return seeOther("/admin/inquiries?error=confirm");
   }
   const row = getDb()
     .prepare("SELECT name, email, created_at FROM inquiries WHERE id = ?")
@@ -1723,7 +1728,7 @@ export async function deleteInquiry(formData: FormData) {
   getDb().prepare("DELETE FROM inquiries WHERE id = ?").run(id);
   const { flushSqlJsToDisk, isSqlJsReady } = await import("@/lib/sqlite");
   if (isSqlJsReady()) flushSqlJsToDisk();
-  redirect("/admin/inquiries?deleted=1");
+  return seeOther("/admin/inquiries?deleted=1");
 }
 
 // ---------- product testing ----------
