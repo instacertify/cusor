@@ -18,7 +18,8 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default function DataRequestPage() {
+export default async function DataRequestPage() {
+  await ensureDbReady();
   const gdpr = getGdprPublicSettings();
 
   return (

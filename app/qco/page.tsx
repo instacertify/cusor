@@ -6,6 +6,7 @@ import TestimonialStrip from "@/components/TestimonialStrip";
 import FaqAccordion from "@/components/FaqAccordion";
 import { getUpcomingQcos, getFaqs } from "@/lib/queries";
 import { buildMetadata } from "@/lib/seo";
+import { ensureDbReady } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,8 @@ function urgency(d: string): { label: string; cls: string } {
   return { label: `${Math.round(days / 30)} months away`, cls: "bg-green-100 text-green-700" };
 }
 
-export default function QcoPage() {
+export default async function QcoPage() {
+  await ensureDbReady();
   const qcos = getUpcomingQcos();
   const faqs = getFaqs("page:qco");
 

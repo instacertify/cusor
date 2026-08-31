@@ -9,6 +9,7 @@ import {
 } from "@/lib/country-certifications";
 import { GMA_REGIONS, gmaRegionLabel } from "@/lib/gma-regions";
 import { buildMetadata } from "@/lib/seo";
+import { ensureDbReady } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,8 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default function CertificationsByCountryPage() {
+export default async function CertificationsByCountryPage() {
+  await ensureDbReady();
   const hubs = getCountryHubs();
   const cards = hubs.map((h) => ({
     slug: h.slug,
