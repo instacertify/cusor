@@ -10,6 +10,7 @@ import IconChip from "@/components/IconChip";
 import { getCategories, getFaqs } from "@/lib/queries";
 import { formatNumber } from "@/lib/format";
 import { BASE_URL, buildJsonLd, buildMetadata } from "@/lib/seo";
+import { ensureDbReady } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,8 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  await ensureDbReady();
   const categories = getCategories();
   const total = categories.reduce((s, c) => s + (c.product_count ?? 0), 0);
   const faqs = getFaqs("page:products");

@@ -915,6 +915,12 @@ export async function ensureDbReady(): Promise<void> {
         g.__certkoDbBootstrapped = true;
         const kind = getDatabaseUrl() ? "postgresql" : "sqlite";
         console.info("[certko] CMS database ready:", kind);
+        try {
+          const { backupCertkoSqliteIfPresent } = await import("./storage-paths");
+          backupCertkoSqliteIfPresent();
+        } catch {
+          /* non-fatal */
+        }
         scheduleCatalogEnsure(db);
       })();
     }

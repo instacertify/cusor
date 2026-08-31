@@ -12,6 +12,7 @@ import { TestingStandardFamiliesPanel } from "@/components/MarketApplicability";
 import { markdownToPlainText } from "@/lib/markdown";
 import { getFaqs, getTestingCategories } from "@/lib/queries";
 import { BASE_URL, buildJsonLd, buildMetadata } from "@/lib/seo";
+import { ensureDbReady } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,8 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default function TestingIndexPage() {
+export default async function TestingIndexPage() {
+  await ensureDbReady();
   const categories = getTestingCategories();
   const faqs = getFaqs("page:testing");
   const faqJsonLd = buildJsonLd(["FAQPage", "BreadcrumbList"], {

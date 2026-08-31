@@ -32,8 +32,9 @@ export default async function AdminInquiries({ searchParams }: Props) {
     <div>
       <h1 className="font-display text-3xl font-semibold text-ink-950 mb-1">Inquiries</h1>
       <p className="text-ink-600 text-sm mb-6">
-        Leads from the Contact / Get Expert Help forms and lab testing requests.{" "}
-        {total.toLocaleString("en-IN")} shown with filters · 15 per page.
+        Leads from the Contact / Get Expert Help forms and lab testing requests.
+        Saved in this admin list only (no SMTP email). {total.toLocaleString("en-IN")} shown with
+        filters · 15 per page.
       </p>
 
       <AdminFilterBar
@@ -57,7 +58,7 @@ export default async function AdminInquiries({ searchParams }: Props) {
       />
       {sp.deleted === "1" ? (
         <p className="mb-4 text-sm text-green-800 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-          Inquiry deleted permanently.
+          Inquiry deleted permanently. It will not come back after a restart.
         </p>
       ) : null}
       {sp.error === "confirm" ? (

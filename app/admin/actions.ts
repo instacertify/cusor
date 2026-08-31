@@ -285,46 +285,15 @@ export async function saveSettings(formData: FormData) {
   redirect("/admin/settings?saved=1");
 }
 
-const SMTP_SETTING_KEYS = [
-  "lead_notify_email",
-  "smtp_host",
-  "smtp_port",
-  "smtp_user",
-  "smtp_pass",
-  "smtp_from",
-] as const;
-
-export async function saveSmtpSettings(formData: FormData) {
+/** SMTP UI removed — leads stay in Admin → Inquiries only. */
+export async function saveSmtpSettings(_formData: FormData) {
   await requireAdmin();
-  setSetting(
-    "smtp_enabled",
-    formData.getAll("smtp_enabled").map(String).includes("1") ? "1" : "0"
-  );
-  setSetting(
-    "smtp_secure",
-    formData.getAll("smtp_secure").map(String).includes("1") ? "1" : "0"
-  );
-  for (const key of SMTP_SETTING_KEYS) {
-    const value = formData.get(key);
-    if (typeof value !== "string") continue;
-    if (SECRET_SETTINGS.has(key) && value.trim() === "") continue;
-    setSetting(key, value.trim());
-  }
-  revalidatePath("/admin/email");
-  revalidatePath("/admin/settings");
-  redirect("/admin/email?saved=1");
+  redirect("/admin/inquiries");
 }
 
 export async function sendTestLeadEmailAction() {
   await requireAdmin();
-  const { sendTestLeadEmail } = await import("@/lib/mail");
-  const result = await sendTestLeadEmail();
-  revalidatePath("/admin/email");
-  redirect(
-    result.ok
-      ? "/admin/email?mail=sent"
-      : `/admin/email?mail=error&mail_error=${encodeURIComponent(result.error || "send failed")}`
-  );
+  redirect("/admin/inquiries");
 }
 
 // ---------- pages ----------
@@ -1742,6 +1711,8 @@ export async function deleteInquiry(formData: FormData) {
     .prepare("SELECT name, email, created_at FROM inquiries WHERE id = ?")
     .get(id) as { name: string; email: string; created_at: string } | undefined;
   if (row) {
+    // Tombstone + purge inquiries.jsonl so Hostinger bootstrap cannot restore
+    // this lead (old keys omitted message and mismatched created_at formats).
     const { archiveInquiryDeleted } = await import("@/lib/inquiry-archive");
     archiveInquiryDeleted({
       name: row.name,

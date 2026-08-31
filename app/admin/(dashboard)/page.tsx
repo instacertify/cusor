@@ -2,7 +2,6 @@ import Link from "next/link";
 import Icon from "@/components/Icon";
 import { getDb, getSettings } from "@/lib/db";
 import { ADMIN_NAV_GROUPS } from "@/lib/admin-nav";
-import { isMailConfigured } from "@/lib/mail";
 import { resolveColorScheme } from "@/lib/color-schemes";
 
 export const dynamic = "force-dynamic";
@@ -11,8 +10,8 @@ export default function AdminDashboard() {
   const db = getDb();
   const settings = getSettings();
   const scheme = resolveColorScheme(settings.color_scheme);
-  const mailReady = isMailConfigured();
   const n = (sql: string) => (db.prepare(sql).get() as { n: number }).n;
+
 
   const stats = [
     {
@@ -93,15 +92,12 @@ export default function AdminDashboard() {
           <span className="inline-flex items-center rounded-full bg-cream-100 border border-cream-300 px-3 py-1 font-semibold text-ink-700">
             Theme: {scheme.name}
           </span>
-          <span
-            className={`inline-flex items-center rounded-full border px-3 py-1 font-semibold ${
-              mailReady
-                ? "bg-green-50 border-green-200 text-green-700"
-                : "bg-amber-50 border-amber-200 text-amber-800"
-            }`}
+          <Link
+            href="/admin/inquiries"
+            className="inline-flex items-center rounded-full bg-butter-300/40 border border-butter-400 px-3 py-1 font-semibold text-butter-900 hover:bg-butter-300/70"
           >
-            SMTP: {mailReady ? "Ready" : "Needs setup"}
-          </span>
+            Leads → Inquiries
+          </Link>
         </div>
       </div>
 

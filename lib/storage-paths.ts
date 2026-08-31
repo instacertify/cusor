@@ -40,6 +40,60 @@ function copyFileIfMissing(src: string, dest: string) {
   fs.copyFileSync(src, dest);
 }
 
+/** True when path sits inside a replaceable Hostinger version folder. */
+export function isInsideHbuildsVersionTree(dir: string): boolean {
+  return path.resolve(dir).includes(`${path.sep}hbuilds${path.sep}versions${path.sep}`);
+}
+
+/**
+ * Prefer a richer SQLite file from an older deploy over a thin/fresh seed DB.
+ * Never deletes the thinner file without keeping a `.pre-recover-*.bak` copy.
+ */
+function copyDbPreferRicher(src: string, dest: string) {
+  if (!fs.existsSync(src)) return;
+  let srcSize = 0;
+  try {
+    srcSize = fs.statSync(src).size;
+  } catch {
+    return;
+  }
+  if (srcSize <= 0) return;
+
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  const destExists = fs.existsSync(dest);
+  let destSize = 0;
+  try {
+    destSize = destExists ? fs.statSync(dest).size : 0;
+  } catch {
+    destSize = 0;
+  }
+
+  if (!destExists || destSize === 0) {
+    fs.copyFileSync(src, dest);
+    return;
+  }
+
+  // Live CMS DBs are typically much larger than a fresh seed. Only upgrade dest
+  // when the source is clearly richer — never downgrade a large live DB.
+  if (srcSize > destSize * 1.2 && srcSize - destSize > 32_768) {
+    const bak = `${dest}.pre-recover-${Date.now()}.bak`;
+    try {
+      fs.copyFileSync(dest, bak);
+      fs.copyFileSync(src, dest);
+      console.info(
+        `[certko] Restored richer SQLite from prior deploy (${destSize} → ${srcSize} bytes). Thin copy kept at ${bak}`
+      );
+    } catch (err) {
+      console.warn("[certko] richer SQLite recover skipped:", err);
+    }
+  }
+}
+
+/** Prefer a real SQLite file over a zero-byte placeholder / thin seed. */
+function copyDbIfDestEmpty(src: string, dest: string) {
+  copyDbPreferRicher(src, dest);
+}
+
 /** Replace dest when source has a hashed login and dest is missing or seed defaults. */
 function copySidecarPreferStronger(src: string, dest: string) {
   if (!fs.existsSync(src)) return;
@@ -47,15 +101,6 @@ function copySidecarPreferStronger(src: string, dest: string) {
   if (srcScore < 2) return;
   const destScore = sidecarCredentialStrength(dest);
   if (srcScore <= destScore) return;
-  fs.mkdirSync(path.dirname(dest), { recursive: true });
-  fs.copyFileSync(src, dest);
-}
-
-/** Prefer a real SQLite file over a zero-byte placeholder. */
-function copyDbIfDestEmpty(src: string, dest: string) {
-  if (!fs.existsSync(src)) return;
-  const destExists = fs.existsSync(dest);
-  if (destExists && fs.statSync(dest).size > 0) return;
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.copyFileSync(src, dest);
 }
@@ -273,17 +318,30 @@ export function replicateDurableTextFile(filename: string, contents: string, mod
 
 /**
  * Persistent root for uploads (and SQLite when DATABASE_URL is unset).
- * Prefer CERTKO_DATA_DIR, then /var/lib/certko in production, then ./data.
+ * Prefer CERTKO_DATA_DIR, then /var/lib/certko in production, then Hostinger
+ * `hbuilds/data` (outside replaceable version folders), then ./data.
  * Fall back to /tmp with a warning so the public site can still boot.
+ *
+ * Build updates replace `hbuilds/versions/<uuid>/nodejs/` only. CMS data in
+ * this directory must never be deleted by a deploy.
  */
 export function getCertkoDataDir(): string {
   if (cachedDir) return cachedDir;
 
   const fromEnv = (process.env.CERTKO_DATA_DIR || "").trim();
-  if (fromEnv && canUse(fromEnv)) {
-    cachedDir = path.resolve(fromEnv);
-    migrateLegacyInto(cachedDir);
-    return cachedDir;
+  if (fromEnv) {
+    const resolved = path.resolve(fromEnv);
+    if (isInsideHbuildsVersionTree(resolved)) {
+      console.warn(
+        "[certko] CERTKO_DATA_DIR points inside hbuilds/versions (wiped on deploy):",
+        resolved,
+        "— prefer …/hbuilds/data or /var/lib/certko"
+      );
+    } else if (canUse(resolved)) {
+      cachedDir = resolved;
+      migrateLegacyInto(cachedDir);
+      return cachedDir;
+    }
   }
 
   if (process.env.NODE_ENV === "production") {
@@ -295,6 +353,7 @@ export function getCertkoDataDir(): string {
     }
 
     for (const candidate of hostingerPersistentCandidates(process.cwd())) {
+      if (isInsideHbuildsVersionTree(candidate)) continue;
       if (canUse(candidate)) {
         console.info("[certko] Using Hostinger persistent data dir:", candidate);
         cachedDir = candidate;
@@ -306,6 +365,11 @@ export function getCertkoDataDir(): string {
 
   const local = path.join(process.cwd(), "data");
   if (canUse(local)) {
+    if (process.env.NODE_ENV === "production" && isInsideHbuildsVersionTree(local)) {
+      console.warn(
+        "[certko] Falling back to in-version ./data — blogs/password/uploads will be lost on the next Hostinger deploy. Set CERTKO_DATA_DIR to hbuilds/data or create that folder writable."
+      );
+    }
     cachedDir = local;
     migrateLegacyInto(cachedDir);
     return cachedDir;
@@ -339,6 +403,48 @@ export function getCertkoUploadsDir(): string {
 
 export function getCertkoDbPath(): string {
   return path.join(getCertkoDataDir(), "certko.db");
+}
+
+/**
+ * Rolling + daily SQLite backups beside the live DB.
+ * Deploy updates must not delete this folder — backups are a safety net if a
+ * thin seed ever lands before recovery runs.
+ */
+export function backupCertkoSqliteIfPresent(): string | null {
+  try {
+    const dbPath = getCertkoDbPath();
+    if (!fs.existsSync(dbPath)) return null;
+    const size = fs.statSync(dbPath).size;
+    if (size < 1024) return null;
+
+    const dir = path.dirname(dbPath);
+    const rolling = path.join(dir, "certko.db.bak");
+    fs.copyFileSync(dbPath, rolling);
+
+    const day = new Date().toISOString().slice(0, 10);
+    const daily = path.join(dir, `certko-${day}.bak`);
+    if (!fs.existsSync(daily)) {
+      fs.copyFileSync(dbPath, daily);
+    }
+
+    // Keep at most ~8 daily backups
+    const dailies = fs
+      .readdirSync(dir)
+      .filter((n) => /^certko-\d{4}-\d{2}-\d{2}\.bak$/.test(n))
+      .sort()
+      .reverse();
+    for (const old of dailies.slice(8)) {
+      try {
+        fs.unlinkSync(path.join(dir, old));
+      } catch {
+        /* ignore */
+      }
+    }
+    return rolling;
+  } catch (err) {
+    console.warn("[certko] SQLite backup skipped:", err);
+    return null;
+  }
 }
 
 /** Secret files only — no SQLite copy / migrate. Safe to read during login. */

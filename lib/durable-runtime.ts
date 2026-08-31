@@ -1,7 +1,13 @@
 import fs from "fs";
 import path from "path";
 import { getDatabaseUrl } from "./sqlite";
-import { getCertkoDataDir, getCertkoUploadsDir } from "./storage-paths";
+import {
+  backupCertkoSqliteIfPresent,
+  getCertkoDataDir,
+  getCertkoDbPath,
+  getCertkoUploadsDir,
+  isInsideHbuildsVersionTree,
+} from "./storage-paths";
 import { resolveCertkoSecret } from "./durable-secret";
 
 function isNextBuildPhase(): boolean {
@@ -28,6 +34,25 @@ function looksInsideReplaceableAppTree(dir: string): boolean {
   const cwd = path.resolve(process.cwd());
   // App code is replaceable on deploy; uploads must live outside it when possible.
   return resolved === cwd || resolved.startsWith(cwd + path.sep);
+}
+
+function countUploads(dir: string): number {
+  try {
+    if (!fs.existsSync(dir)) return 0;
+    let n = 0;
+    const walk = (d: string) => {
+      for (const name of fs.readdirSync(d)) {
+        const p = path.join(d, name);
+        const st = fs.statSync(p);
+        if (st.isDirectory()) walk(p);
+        else n += 1;
+      }
+    };
+    walk(dir);
+    return n;
+  } catch {
+    return 0;
+  }
 }
 
 /**
@@ -61,9 +86,9 @@ export function assertDurableRuntimeConfig(): void {
     return;
   }
 
-  if (looksEphemeral(dataDir)) {
+  if (looksEphemeral(dataDir) || isInsideHbuildsVersionTree(dataDir)) {
     console.warn(
-      `[certko] CERTKO_DATA_DIR resolves to ephemeral path (${dataDir}). Uploads may vanish on restart. Prefer CERTKO_DATA_DIR=/var/lib/certko`
+      `[certko] CERTKO_DATA_DIR resolves to ephemeral / version path (${dataDir}). Uploads and blogs may vanish on the next deploy. Prefer CERTKO_DATA_DIR pointing at hbuilds/data or /var/lib/certko — never inside hbuilds/versions/.`
     );
   }
 
@@ -76,9 +101,24 @@ export function assertDurableRuntimeConfig(): void {
   const uploads = getCertkoUploadsDir();
   fs.mkdirSync(uploads, { recursive: true });
 
-  console.info("[certko] durable runtime OK", {
+  const dbPath = getCertkoDbPath();
+  let dbBytes = 0;
+  try {
+    if (fs.existsSync(dbPath)) dbBytes = fs.statSync(dbPath).size;
+  } catch {
+    dbBytes = 0;
+  }
+
+  const bak = backupCertkoSqliteIfPresent();
+
+  console.info("[certko] durable runtime OK — build updates keep this data", {
     database: url ? "postgresql" : "sqlite",
+    dataDir,
+    dbPath: url ? "(postgres)" : dbPath,
+    dbBytes: url ? undefined : dbBytes,
+    sqliteBackup: bak || undefined,
     uploadsDir: uploads,
+    uploadFiles: countUploads(uploads),
     secretConfigured: Boolean(secret) && secret !== "certko-dev-secret-change-me",
   });
 }

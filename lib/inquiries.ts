@@ -1,5 +1,4 @@
 import { ensureDbReady, getDb } from "./db";
-import { sendLeadNotification } from "./mail";
 import { flushSqlJsToDisk, isSqlJsReady } from "./sqlite";
 import { archiveInquiry } from "./inquiry-archive";
 
@@ -14,10 +13,13 @@ export type InquiryInput = {
 };
 
 export type InquiryResult =
-  | { ok: true; emailSent: boolean; emailError?: string }
+  | { ok: true; emailSent: false }
   | { ok: false; error: "missing_fields" | "save_failed"; detail?: string };
 
-/** Persist a contact/lead inquiry and best-effort email the team. */
+/**
+ * Persist a contact/lead inquiry in the CMS backend only.
+ * Email / SMTP is intentionally not used — view leads in Admin → Inquiries.
+ */
 export async function createInquiry(input: InquiryInput): Promise<InquiryResult> {
   const email = (input.email || "").trim();
   const phone = (input.phone || "").trim();
@@ -63,17 +65,5 @@ export async function createInquiry(input: InquiryInput): Promise<InquiryResult>
     };
   }
 
-  const mail = await sendLeadNotification({
-    name,
-    email,
-    phone,
-    product,
-    message,
-    intent,
-  });
-  if (!mail.ok) {
-    console.error("[inquiry] lead saved but email notify failed:", mail.error);
-  }
-
-  return { ok: true, emailSent: mail.ok, emailError: mail.error };
+  return { ok: true, emailSent: false };
 }

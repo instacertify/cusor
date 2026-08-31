@@ -6,11 +6,13 @@
  *   Error: Server is not running
  *
  * This wrapper binds 0.0.0.0:$PORT first, serves a tiny health response until
- * Next is ready, and makes close() idempotent so the race cannot crash us.
+ * Next + CMS DB are ready, and makes close() idempotent so the race cannot crash us.
  */
 "use strict";
 
 const { createServer } = require("node:http");
+const { pathToFileURL } = require("node:url");
+const path = require("node:path");
 const { patchOutgoingRedirects } = require("./lib/public-location.cjs");
 
 const port = Number.parseInt(process.env.PORT || "3000", 10);
@@ -51,7 +53,7 @@ let nextHandler = null;
 const pending = [];
 
 function flushPending() {
-  if (!nextHandler) return;
+  if (!nextHandler || !nextReady) return;
   while (pending.length) {
     const job = pending.shift();
     if (!job) continue;
@@ -64,6 +66,7 @@ function flushPending() {
 const server = createServer((req, res) => {
   patchOutgoingRedirects(res);
   const url = (req.url || "/").split("?")[0];
+  // Health must succeed before Next/CMS finish — Hostinger kills us otherwise.
   if (url === "/healthz" || url === "/ready" || (req.method === "HEAD" && url === "/")) {
     res.statusCode = 200;
     res.setHeader("cache-control", "no-store");
@@ -74,8 +77,8 @@ const server = createServer((req, res) => {
     nextHandler(req, res);
     return;
   }
-  // Do not return a fake 200 HTML body — that shows as a broken page, then
-  // a reload "fixes" it once Next is ready. Hold the request instead.
+  // Hold page traffic until Next + ensureDbReady finish — prevents
+  // "Database not ready yet" when sync RSC pages call getDb() during bootstrap.
   pending.push({ req, res });
   res.on("close", () => {
     const idx = pending.findIndex((job) => job.res === res);
@@ -105,32 +108,32 @@ const app = next({
   httpServer: server,
 });
 
+async function warmCmsInThisProcess() {
+  // Same Node process as Next — globalThis.__certkoDb is shared with SSR bundles.
+  try {
+    require("tsx/cjs/api").register();
+  } catch {
+    /* tsx may already be registered via node --import */
+  }
+  const dbUrl = pathToFileURL(path.join(process.cwd(), "lib", "db.ts")).href;
+  const { ensureDbReady } = await import(dbUrl);
+  await ensureDbReady();
+}
+
 app
   .prepare()
-  .then(() => {
+  .then(async () => {
     nextHandler = app.getRequestHandler();
+    console.info(`[certko] Next.js prepared on ${hostname}:${port} — warming CMS`);
+    try {
+      await warmCmsInThisProcess();
+      console.info(`[certko] CMS ready — accepting page traffic`);
+    } catch (err) {
+      console.error("[certko] CMS warm failed; pages may error until first ensureDbReady:", err);
+    }
     nextReady = true;
     console.info(`[certko] Next.js ready on ${hostname}:${port}`);
     flushPending();
-    // Touch a cheap internal URL so instrumentation / first-request DB warm
-    // can start while Hostinger health-checks /healthz. Avoids metadata 500s
-    // on the first public crawl after a process restart.
-    setTimeout(() => {
-      try {
-        const http = require("node:http");
-        const req = http.get(
-          { host: "127.0.0.1", port, path: "/ready", timeout: 2000 },
-          (res) => {
-            res.resume();
-          }
-        );
-        req.on("error", () => {
-          /* ignore — warm is best-effort */
-        });
-      } catch {
-        /* ignore */
-      }
-    }, 500).unref?.();
   })
   .catch((err) => {
     console.error("[certko] Next.js prepare failed:", err);
