@@ -1,21 +1,19 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { createInquiry } from "@/lib/inquiries";
 
+/**
+ * Prefer POST /api/contact (ContactForm). Kept for compatibility.
+ * Do NOT call next/navigation redirect() — Hostinger RSC follows redirects
+ * with an internal fetch that fails ("failed to get redirect response").
+ */
 export async function submitInquiry(formData: FormData) {
-  const result = await createInquiry({
+  return createInquiry({
     name: String(formData.get("name") ?? ""),
     email: String(formData.get("email") ?? ""),
     phone: String(formData.get("phone") ?? ""),
     product: String(formData.get("product") ?? ""),
     message: String(formData.get("message") ?? ""),
+    intent: String(formData.get("intent") ?? "").trim() || undefined,
   });
-
-  if (!result.ok) {
-    if (result.error === "missing_fields") redirect("/contact?error=1");
-    redirect("/contact?error=save");
-  }
-
-  redirect("/contact?sent=1");
 }

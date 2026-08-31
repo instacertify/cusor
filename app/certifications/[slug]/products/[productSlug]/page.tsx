@@ -8,6 +8,7 @@ import TestimonialStrip from "@/components/TestimonialStrip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
 import { getCertificationBySlug, getCertProductBySlug } from "@/lib/queries";
 import { formatPriceRange } from "@/lib/format";
+import { ensureDbReady } from "@/lib/db";
 import {
   BASE_URL,
   buildJsonLd,
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  await ensureDbReady();
   const { slug, productSlug } = await params;
   const product = getCertProductBySlug(slug, productSlug);
   const cert = getCertificationBySlug(slug);

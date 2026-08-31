@@ -25,6 +25,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  await ensureDbReady();
   const { slug } = await params;
   const hub = getCountryHubBySlug(slug);
   if (!hub) return {};

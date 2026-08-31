@@ -3,10 +3,12 @@ import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { getGdprPublicSettings } from "@/lib/gdpr";
 import { buildMetadata } from "@/lib/seo";
+import { ensureDbReady } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
+  await ensureDbReady();
   return buildMetadata("page:privacy-gdpr-dpdp", {
     title: "What is GDPR and DPDP?",
     description:

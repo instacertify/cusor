@@ -112,6 +112,25 @@ app
     nextReady = true;
     console.info(`[certko] Next.js ready on ${hostname}:${port}`);
     flushPending();
+    // Touch a cheap internal URL so instrumentation / first-request DB warm
+    // can start while Hostinger health-checks /healthz. Avoids metadata 500s
+    // on the first public crawl after a process restart.
+    setTimeout(() => {
+      try {
+        const http = require("node:http");
+        const req = http.get(
+          { host: "127.0.0.1", port, path: "/ready", timeout: 2000 },
+          (res) => {
+            res.resume();
+          }
+        );
+        req.on("error", () => {
+          /* ignore — warm is best-effort */
+        });
+      } catch {
+        /* ignore */
+      }
+    }, 500).unref?.();
   })
   .catch((err) => {
     console.error("[certko] Next.js prepare failed:", err);

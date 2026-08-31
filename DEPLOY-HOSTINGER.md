@@ -216,6 +216,19 @@ Leaving `CERTKO_SECRET` unset used to regenerate a weak in-memory secret every p
 
 `next build` skips DB init. **Runtime** uses PostgreSQL when `DATABASE_URL` is set, otherwise SQLite so pages can serve.
 
+### Production log issues (SEO / cold start)
+
+If Deployments → Logs show these, treat them as ops + deploy checklist:
+
+| Log | Meaning | Fix |
+|-----|---------|-----|
+| `failed to get redirect response` / `fetch failed` | Next RSC followed `redirect()` with an internal fetch that cannot reach `0.0.0.0:$PORT` | Redeploy current code (public forms use `/api/contact`; www/GMA redirects use absolute/relative `Location` headers, not RSC `redirect()`) |
+| `Database not ready yet` | Request hit CMS before bootstrap finished | Redeploy (early DB warm + metadata awaits `ensureDbReady`). Avoid restarting the Node app repeatedly while Google is crawling |
+| `DATABASE_URL is not set` | Intentional SQLite fallback on Node panel | For permanent CMS, set `DATABASE_URL` to Postgres (VPS installer or managed Postgres). SQLite under `hbuilds/data` is OK short-term |
+| Dual `Next.js ready` / `Server is not running` | Hostinger restarted the process or ran two starts | Start command must be **`npm start`** once. Do not also run `next start` |
+
+SMTP: leads still save without it. Configure **Admin → Email** so inquiry notify mail works.
+
 If the browser shows **Application error** with a digest like `ERROR 1358233113`, open **Deployments → Logs**. Common causes:
 
 1. A previous build that required `DATABASE_URL` at runtime (fixed — SQLite fallback)  

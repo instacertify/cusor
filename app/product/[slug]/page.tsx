@@ -9,6 +9,7 @@ import FaqAccordion from "@/components/FaqAccordion";
 import CtaBanner from "@/components/CtaBanner";
 import TestimonialStrip from "@/components/TestimonialStrip";
 import RequestQuoteButton from "@/components/RequestQuoteButton";
+import { ensureDbReady } from "@/lib/db";
 import {
   getProductBySlug,
   getLabsForProduct,
@@ -33,6 +34,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  await ensureDbReady();
   const { slug } = await params;
   const product = getProductBySlug(slug);
   if (!product) return {};

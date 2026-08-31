@@ -8,6 +8,7 @@ import TestimonialStrip from "@/components/TestimonialStrip";
 import BlogCoverImage from "@/components/BlogCoverImage";
 import { getAuthorBySlug, getPublishedPostsByAuthor } from "@/lib/queries";
 import { BASE_URL, absoluteUrl, buildJsonLd, buildMetadata } from "@/lib/seo";
+import { ensureDbReady } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,7 @@ function formatDate(d: string | null): string {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  await ensureDbReady();
   const { slug } = await params;
   const author = getAuthorBySlug(slug);
   if (!author) return {};
