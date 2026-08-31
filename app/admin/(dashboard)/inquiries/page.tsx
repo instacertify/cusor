@@ -1,6 +1,5 @@
 import { getDb, ensureDbReady } from "@/lib/db";
 import type { Inquiry } from "@/lib/db";
-import { setInquiryStatus, deleteInquiry } from "../../actions";
 import { SavedBanner, SubmitButton } from "@/components/admin/Field";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPagination from "@/components/admin/AdminPagination";
@@ -90,7 +89,8 @@ export default async function AdminInquiries({ searchParams }: Props) {
                     ) : null}
                   </p>
                 </div>
-                <form action={setInquiryStatus} className="flex items-center gap-2">
+                {/* Route Handler + 303 — not server-action redirect() (Hostinger fetch fail) */}
+                <form action="/api/admin/inquiries/status" method="post" className="flex items-center gap-2">
                   <input type="hidden" name="id" value={i.id} />
                   <select
                     name="status"
@@ -120,7 +120,11 @@ export default async function AdminInquiries({ searchParams }: Props) {
                 <summary className="cursor-pointer text-xs font-bold uppercase tracking-wide text-red-800">
                   Delete inquiry (requires confirmation)
                 </summary>
-                <form action={deleteInquiry} className="mt-3 flex flex-wrap items-end gap-2">
+                <form
+                  action="/api/admin/inquiries/delete"
+                  method="post"
+                  className="mt-3 flex flex-wrap items-end gap-2"
+                >
                   <input type="hidden" name="id" value={i.id} />
                   <label className="block text-xs text-ink-600">
                     Type DELETE to confirm
