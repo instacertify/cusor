@@ -3,6 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // MDXEditor ships as ESM; ensure Next transpiles it for the App Router admin bundle.
   transpilePackages: ["@mdxeditor/editor"],
+  // Hostinger rebuild skew: pair with NEXT_DEPLOYMENT_ID (set by ensure-server-actions-key.cjs).
+  ...(process.env.NEXT_DEPLOYMENT_ID
+    ? { deploymentId: process.env.NEXT_DEPLOYMENT_ID }
+    : {}),
   // Blog cover uploads (multipart) often exceed the 1MB Server Action default.
   experimental: {
     serverActions: {

@@ -8,8 +8,8 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "NODE_ENV=production node --import tsx server.cjs",
+    "build": "node --require ./scripts/ensure-server-actions-key.cjs ./node_modules/next/dist/bin/next build",
+    "start": "NODE_ENV=production node --require ./scripts/ensure-server-actions-key.cjs --import tsx server.cjs",
     "start:next": "next start -H 0.0.0.0 -p ${PORT:-3000}",
     "lint": "eslint",
     "sitemap:generate": "node scripts/generate-sitemap.mjs"
