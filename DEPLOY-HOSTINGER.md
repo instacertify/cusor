@@ -267,6 +267,13 @@ If Deployments → Logs show these, treat them as ops + deploy checklist:
 | `CMS storage: sqlite (durable)` | Normal on Hostinger Node — **not an error**; data kept in `hbuilds/data` | No action required. Optional later: set `DATABASE_URL` for Postgres |
 | `DATABASE_URL is not set` (old builds only) | Old warning — current builds no longer print this when `hbuilds/data` is durable | Redeploy current code |
 | Dual `Next.js ready` / `Server is not running` | Hostinger restarted the process or ran two starts | Start command must be **`npm start`** once. Do not also run `next start` |
+| `Failed to find Server Action` | Admin tab still on **old** build after redeploy (action ID skew) | **Hard refresh** the admin page (Ctrl/Cmd+Shift+R), then retry. Current builds derive a stable `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` from `CERTKO_SECRET` / `.certko-secret`. Keep `CERTKO_SECRET` set once in hPanel. Lead delete/status use `/api/admin/inquiries/*` (no Server Action). |
+
+### After every Hostinger redeploy
+
+1. Wait until Start logs show the app ready.
+2. **Hard-refresh** any open `/admin` tabs (or close and reopen).
+3. Do not submit forms from a tab that was open before the deploy finished.
 
 ### Switch to Postgres without losing CMS / images (automatic)
 
